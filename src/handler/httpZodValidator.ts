@@ -29,14 +29,14 @@ export const httpZodValidator = <
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  opts?: HttpZodValidatorOptions<EventSchema, ResponseSchema> &
-    Loggable<Logger>,
+  opts: HttpZodValidatorOptions<EventSchema, ResponseSchema> &
+    Loggable<Logger> = {},
 ): MiddlewareObj => {
   const {
     eventSchema,
     responseSchema,
     logger = console as unknown as Logger,
-  } = opts ?? {};
+  } = opts;
 
   return {
     before: (request) => {

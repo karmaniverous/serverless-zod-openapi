@@ -3,6 +3,8 @@ import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
+import type { SecurityContext } from './SecurityContext';
+
 export type Merge<T, U> = Omit<T, keyof U> & U;
 
 // Replace APIGatewayProxyEvent keys with the Zod-inferred ones where provided
@@ -16,6 +18,10 @@ export type HandlerReturn<R extends z.ZodType | undefined> = R extends z.ZodType
   ? Promise<z.output<R>>
   : Promise<unknown>;
 
+export type HandlerOptions<Logger extends ConsoleLogger> = {
+  securityContext: SecurityContext;
+} & Required<Loggable<Logger>>;
+
 export type Handler<
   E extends z.ZodType,
   R extends z.ZodType | undefined,
@@ -23,5 +29,5 @@ export type Handler<
 > = (
   event: InferEvent<E>,
   context: Context,
-  options: Loggable<Logger>,
+  options: HandlerOptions<Logger>,
 ) => HandlerReturn<R>;

@@ -1,14 +1,19 @@
 import { unique } from 'radash';
-import type { ZodOpenApiPathItemObject } from 'zod-openapi';
+import type {
+  ZodOpenApiPathItemObject,
+  ZodOpenApiPathsObject,
+} from 'zod-openapi';
 
-import type { Operation, SecurityContext } from './types';
+import type { SecurityContext } from '@/handler/SecurityContext';
+
+import type { BaseOperation } from './types';
 
 export const buildPathItemObject = (
   securityContexts: SecurityContext[],
   basePath: string,
   method: keyof Omit<ZodOpenApiPathItemObject, 'id'>,
-  baseOperation: Operation,
-): ZodOpenApiPathItemObject => {
+  baseOperation: BaseOperation,
+): ZodOpenApiPathsObject => {
   const basePathElements = basePath.split('/').filter(Boolean);
 
   return unique(securityContexts).reduce((acc, securityContext) => {

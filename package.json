@@ -36,6 +36,7 @@
     "serverless-apigateway-log-retention": "^1.1.0",
     "serverless-domain-manager": "^8.0.0",
     "serverless-plugin-common-excludes": "^4.0.0",
+    "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0",
     "vitest": "^3.2.4",
@@ -51,6 +52,7 @@
     "url": "git+https://github.com/karmaniverous/api.johngalt.id.git"
   },
   "scripts": {
+    "openapi": "tsx src/openapi/generate && prettier -w src/openapi/openapi.json",
     "test": "vitest"
   },
   "type": "module",

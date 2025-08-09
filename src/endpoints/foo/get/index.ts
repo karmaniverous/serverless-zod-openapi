@@ -3,7 +3,8 @@ import { wrapHandler } from '@/handler/wrapHandler';
 import { eventSchema, responseSchema } from './schema';
 
 export const handler = wrapHandler(
-  ({ queryStringParameters: { what } }, context, { logger }) => {
+  async (event, context, { logger }) => {
+    const what = event.queryStringParameters.what ?? 'bar';
     logger.debug('Handler invoked with what:', what);
     return { what };
   },

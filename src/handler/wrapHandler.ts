@@ -12,6 +12,7 @@ import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
+import { detectSecurityContext } from './detectSecurityContext';
 import type { Handler, HandlerReturn, InferEvent } from './Handler';
 import {
   httpZodValidator,
@@ -29,16 +30,13 @@ export const wrapHandler = <
   Logger extends ConsoleLogger,
 >(
   handler: Handler<E, R, Logger>,
-  opts?: WrapHandlerOptions & HttpZodValidatorOptions<E, R> & Loggable<Logger>,
-) => {
-  const {
-    contentType = 'application/json',
-    eventSchema,
-    responseSchema,
-    logger = console as unknown as Logger,
-  } = opts ?? {};
+  opts: WrapHandlerOptions &
+    HttpZodValidatorOptions<E, R> &
+    Loggable<Logger> = {},
+) =>
+  middy(async (event: APIGatewayProxyEvent, context: Context) => {
+    const { logger = console as unknown as Logger } = opts;
 
-  return middy(async (event: APIGatewayProxyEvent, context: Context) => {
     logger.debug('request context', {
       event,
       context,
@@ -47,8 +45,12 @@ export const wrapHandler = <
 
     if (get(event, 'httpMethod') === 'HEAD') return {};
 
+    const securityContext = detectSecurityContext(event);
     const typedEvent = event as unknown as InferEvent<E>;
-    const result = await handler(typedEvent, context, { logger });
+    const result = await handler(typedEvent, context, {
+      logger,
+      securityContext,
+    });
 
     return result as Awaited<HandlerReturn<R>>;
   })
@@ -56,13 +58,7 @@ export const wrapHandler = <
     .use(httpHeaderNormalizer())
     .use(httpMultipartBodyParser())
     .use(httpJsonBodyParser())
-    .use(
-      httpZodValidator<E, R, Logger>({
-        ...(eventSchema ? { eventSchema } : {}),
-        ...(responseSchema ? { responseSchema } : {}),
-        logger,
-      }),
-    )
+    .use(httpZodValidator<E, R, Logger>(opts))
     .use(
       httpErrorHandler({
         fallbackMessage: 'Non-HTTP server error. See CloudWatch for more info.',
@@ -71,7 +67,7 @@ export const wrapHandler = <
     .use(
       httpCors({
         credentials: true,
-        getOrigin: (incomingOrigin) => incomingOrigin,
+        getOrigin: (o) => o,
       }),
     )
     .use(
@@ -81,11 +77,10 @@ export const wrapHandler = <
             regex: /^application\/json$/,
             serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
               label: 'application/json',
-              logger,
+              logger: opts.logger ?? console,
             }),
           },
         ],
-        defaultContentType: contentType,
+        defaultContentType: opts.contentType ?? 'application/json',
       }),
     );
-};
