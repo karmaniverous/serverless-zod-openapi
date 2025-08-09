@@ -6,12 +6,13 @@ import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import httpJsonBodyParser from '@middy/http-json-body-parser';
 import httpMultipartBodyParser from '@middy/http-multipart-body-parser';
 import httpResponseSerializer from '@middy/http-response-serializer';
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { get } from 'radash';
-import type { ZodObject } from 'zod';
+import type { z } from 'zod';
 
-import type { ConsoleLogger, Loggable } from '../Loggable';
-import type { Handler, Merge } from './Handler';
+import type { ConsoleLogger, Loggable } from '@/types/Loggable';
+
+import type { Handler, HandlerReturn, InferEvent } from './Handler';
 import {
   httpZodValidator,
   type HttpZodValidatorOptions,
@@ -23,26 +24,45 @@ export interface WrapHandlerOptions {
 }
 
 export const wrapHandler = <
-  EventSchema extends ZodObject,
-  ResponseSchema extends ZodObject,
+  E extends z.ZodType,
+  R extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  handler: Handler<EventSchema, ResponseSchema, Logger>,
-  {
+  handler: Handler<E, R, Logger>,
+  opts?: WrapHandlerOptions & HttpZodValidatorOptions<E, R> & Loggable<Logger>,
+) => {
+  const {
     contentType = 'application/json',
     eventSchema,
     responseSchema,
     logger = console as unknown as Logger,
-  }: WrapHandlerOptions &
-    HttpZodValidatorOptions<EventSchema, ResponseSchema> &
-    Loggable<Logger> = {},
-) =>
-  middy()
+  } = opts ?? {};
+
+  return middy(async (event: APIGatewayProxyEvent, context: Context) => {
+    logger.debug('request context', {
+      event,
+      context,
+      env: { ...process.env },
+    });
+
+    if (get(event, 'httpMethod') === 'HEAD') return {};
+
+    const typedEvent = event as unknown as InferEvent<E>;
+    const result = await handler(typedEvent, context, { logger });
+
+    return result as Awaited<HandlerReturn<R>>;
+  })
     .use(httpEventNormalizer())
     .use(httpHeaderNormalizer())
-    .use(httpMultipartBodyParser(/* { disableContentTypeError: true } */))
-    .use(httpJsonBodyParser(/* { disableContentTypeError: true } */))
-    .use(httpZodValidator({ eventSchema, responseSchema, logger }))
+    .use(httpMultipartBodyParser())
+    .use(httpJsonBodyParser())
+    .use(
+      httpZodValidator<E, R, Logger>({
+        ...(eventSchema ? { eventSchema } : {}),
+        ...(responseSchema ? { responseSchema } : {}),
+        logger,
+      }),
+    )
     .use(
       httpErrorHandler({
         fallbackMessage: 'Non-HTTP server error. See CloudWatch for more info.',
@@ -50,9 +70,7 @@ export const wrapHandler = <
     )
     .use(
       httpCors({
-        // Sets Access-Control-Allow-Credentials
         credentials: true,
-        // Sets Access-Control-Allow-Origin to current origin.
         getOrigin: (incomingOrigin) => incomingOrigin,
       }),
     )
@@ -69,19 +87,5 @@ export const wrapHandler = <
         ],
         defaultContentType: contentType,
       }),
-    )
-    .handler(async (event, context) => {
-      logger.debug('request context', {
-        event,
-        context,
-        env: { ...process.env },
-      });
-
-      if (get(event, 'httpMethod') === 'HEAD') return {};
-
-      return await handler(
-        event as unknown as Merge<APIGatewayProxyEvent, EventSchema>,
-        context,
-        { logger },
-      );
-    });
+    );
+};

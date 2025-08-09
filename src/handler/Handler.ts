@@ -1,16 +1,27 @@
-import type { APIGatewayProxyEvent, Context, ProxyHandler } from 'aws-lambda';
-import type { ZodObject } from 'zod';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { z } from 'zod';
 
-import type { ConsoleLogger, Loggable } from '../Loggable';
+import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
 export type Merge<T, U> = Omit<T, keyof U> & U;
 
+// Replace APIGatewayProxyEvent keys with the Zod-inferred ones where provided
+export type InferEvent<E extends z.ZodType> = Merge<
+  APIGatewayProxyEvent,
+  z.output<E>
+>;
+
+// If a response schema is provided, the handler must return z.output<R>; else unknown
+export type HandlerReturn<R extends z.ZodType | undefined> = R extends z.ZodType
+  ? Promise<z.output<R>>
+  : Promise<unknown>;
+
 export type Handler<
-  EventSchema extends ZodObject,
-  ResponseSchema extends ZodObject,
+  E extends z.ZodType,
+  R extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 > = (
-  event: Merge<APIGatewayProxyEvent, EventSchema>,
+  event: InferEvent<E>,
   context: Context,
   options: Loggable<Logger>,
-) => Promise<Merge<ReturnType<ProxyHandler>, ResponseSchema>>;
+) => HandlerReturn<R>;

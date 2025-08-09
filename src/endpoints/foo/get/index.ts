@@ -1,4 +1,5 @@
-import { wrapHandler } from '../../../handler/wrapHandler';
+import { wrapHandler } from '@/handler/wrapHandler';
+
 import { eventSchema, responseSchema } from './schema';
 
 export const handler = wrapHandler(

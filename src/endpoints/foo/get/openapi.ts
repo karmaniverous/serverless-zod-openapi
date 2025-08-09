@@ -1,4 +1,5 @@
-import { buildPathItemObject } from '../../../openapi/buildPathItemObject';
+import { buildPathItemObject } from '@/openapi/buildPathItemObject';
+
 import { eventSchema, responseSchema } from './schema';
 
 const openapi = buildPathItemObject(['private', 'public'], 'foo', 'get', {

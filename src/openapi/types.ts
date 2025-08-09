@@ -1,6 +1,6 @@
 import type { ZodOpenApiOperationObject } from 'zod-openapi';
 
-import type { MakeRequired } from '../MakeRequired';
+import type { MakeRequired } from '../types/MakeRequired';
 
 export type SecurityContext = 'my' | 'private' | 'public';
 

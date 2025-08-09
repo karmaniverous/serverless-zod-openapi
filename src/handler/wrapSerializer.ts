@@ -1,6 +1,6 @@
 import type HttpResponseSerializer from '@middy/http-response-serializer';
 
-import type { ConsoleLogger, Loggable } from '../Loggable';
+import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
 type Serializer = NonNullable<
   Parameters<typeof HttpResponseSerializer>[0]
