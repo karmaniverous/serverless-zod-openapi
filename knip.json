@@ -1,0 +1,9 @@
+{
+  "entry": ["src/**/index.ts"],
+  "ignoreDependencies": [],
+  "project": ["*/**", "!docs/**"],
+  "rules": {
+    "exports": "off",
+    "types": "off"
+  }
+}
