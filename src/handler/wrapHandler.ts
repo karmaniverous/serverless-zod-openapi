@@ -20,22 +20,25 @@ import {
 } from './httpZodValidator';
 import { wrapSerializer } from './wrapSerializer';
 
-export interface WrapHandlerOptions {
+export type WrapHandlerOptions<
+  EventSchema extends z.ZodType,
+  ResponseSchema extends z.ZodType | undefined,
+  Logger extends ConsoleLogger,
+> = {
   contentType?: string;
-}
+} & HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> &
+  Loggable<Logger>;
 
 export const wrapHandler = <
-  E extends z.ZodType,
-  R extends z.ZodType | undefined,
+  EventSchema extends z.ZodType,
+  ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  handler: Handler<E, R, Logger>,
-  opts: WrapHandlerOptions &
-    HttpZodValidatorOptions<E, R> &
-    Loggable<Logger> = {},
+  handler: Handler<EventSchema, ResponseSchema, Logger>,
+  options: WrapHandlerOptions<EventSchema, ResponseSchema, Logger> = {},
 ) =>
   middy(async (event: APIGatewayProxyEvent, context: Context) => {
-    const { logger = console as unknown as Logger } = opts;
+    const { logger = console as unknown as Logger } = options;
 
     logger.debug('request context', {
       event,
@@ -46,19 +49,19 @@ export const wrapHandler = <
     if (get(event, 'httpMethod') === 'HEAD') return {};
 
     const securityContext = detectSecurityContext(event);
-    const typedEvent = event as unknown as InferEvent<E>;
+    const typedEvent = event as unknown as InferEvent<EventSchema>;
     const result = await handler(typedEvent, context, {
       logger,
       securityContext,
     });
 
-    return result as Awaited<HandlerReturn<R>>;
+    return result as Awaited<HandlerReturn<ResponseSchema>>;
   })
     .use(httpEventNormalizer())
     .use(httpHeaderNormalizer())
     .use(httpMultipartBodyParser())
     .use(httpJsonBodyParser())
-    .use(httpZodValidator<E, R, Logger>(opts))
+    .use(httpZodValidator<EventSchema, ResponseSchema, Logger>(options))
     .use(
       httpErrorHandler({
         fallbackMessage: 'Non-HTTP server error. See CloudWatch for more info.',
@@ -77,10 +80,10 @@ export const wrapHandler = <
             regex: /^application\/json$/,
             serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
               label: 'application/json',
-              logger: opts.logger ?? console,
+              logger: options.logger ?? console,
             }),
           },
         ],
-        defaultContentType: opts.contentType ?? 'application/json',
+        defaultContentType: options.contentType ?? 'application/json',
       }),
     );

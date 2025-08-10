@@ -10,43 +10,51 @@ const validate = (
   logger: ConsoleLogger,
 ): string | undefined => {
   if (!schema) return;
+
+  logger.debug('validating with zod', { value, schema });
+
   const result = schema.safeParse(value);
+
   if (result.success) logger.debug('zod validation succeeded', result);
   else logger.error('zod validation failed', result);
+
   return result.error?.message;
 };
 
-export interface HttpZodValidatorOptions<
+export type HttpZodValidatorOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
-> {
+  Logger extends ConsoleLogger,
+> = {
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
-}
+} & Loggable<Logger>;
 
 export const httpZodValidator = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  opts: HttpZodValidatorOptions<EventSchema, ResponseSchema> &
-    Loggable<Logger> = {},
+  options: HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> = {},
 ): MiddlewareObj => {
   const {
     eventSchema,
     responseSchema,
     logger = console as unknown as Logger,
-  } = opts;
+  } = options;
 
   return {
     before: (request) => {
-      const err = validate(request.event, eventSchema, logger);
-      if (err) throw createHttpError.BadRequest(`invalid event: ${err}`);
+      const errorMsg = validate(request.event, eventSchema, logger);
+      if (errorMsg)
+        throw createHttpError.BadRequest(`invalid event: ${errorMsg}`);
     },
     after: (request) => {
-      const err = validate(request.response, responseSchema, logger);
-      if (err)
-        throw createHttpError.InternalServerError(`invalid response: ${err}`);
+      const errorMsg = validate(request.response, responseSchema, logger);
+      if (errorMsg)
+        throw createHttpError.InternalServerError(
+          `invalid response: ${errorMsg}`,
+        );
     },
   };
 };

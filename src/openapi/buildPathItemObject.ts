@@ -8,6 +8,15 @@ import type { SecurityContext } from '@/handler/SecurityContext';
 
 import type { BaseOperation } from './types';
 
+/**
+ * Builds a path item object for OpenAPI based on the provided parameters.
+ *
+ * @param securityContexts - The security contexts to include in the path item.
+ * @param basePath - The base path for the operation.
+ * @param method - The HTTP method for the operation.
+ * @param baseOperation - The base operation object to use.
+ * @returns The constructed path item object.
+ */
 export const buildPathItemObject = (
   securityContexts: SecurityContext[],
   basePath: string,

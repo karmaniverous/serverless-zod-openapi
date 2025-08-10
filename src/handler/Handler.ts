@@ -8,26 +8,27 @@ import type { SecurityContext } from './SecurityContext';
 export type Merge<T, U> = Omit<T, keyof U> & U;
 
 // Replace APIGatewayProxyEvent keys with the Zod-inferred ones where provided
-export type InferEvent<E extends z.ZodType> = Merge<
+export type InferEvent<EventSchema extends z.ZodType> = Merge<
   APIGatewayProxyEvent,
-  z.output<E>
+  z.output<EventSchema>
 >;
 
-// If a response schema is provided, the handler must return z.output<R>; else unknown
-export type HandlerReturn<R extends z.ZodType | undefined> = R extends z.ZodType
-  ? Promise<z.output<R>>
-  : Promise<unknown>;
+// If a response schema is provided, the handler must return z.output<ResponseSchema>; else unknown
+export type HandlerReturn<ResponseSchema extends z.ZodType | undefined> =
+  ResponseSchema extends z.ZodType
+    ? Promise<z.output<ResponseSchema>>
+    : Promise<unknown>;
 
 export type HandlerOptions<Logger extends ConsoleLogger> = {
   securityContext: SecurityContext;
 } & Required<Loggable<Logger>>;
 
 export type Handler<
-  E extends z.ZodType,
-  R extends z.ZodType | undefined,
+  EventSchema extends z.ZodType,
+  ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 > = (
-  event: InferEvent<E>,
+  event: InferEvent<EventSchema>,
   context: Context,
   options: HandlerOptions<Logger>,
-) => HandlerReturn<R>;
+) => HandlerReturn<ResponseSchema>;

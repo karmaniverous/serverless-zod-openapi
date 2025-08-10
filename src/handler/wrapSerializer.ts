@@ -6,19 +6,18 @@ type Serializer = NonNullable<
   Parameters<typeof HttpResponseSerializer>[0]
 >['serializers'][number]['serializer'];
 
-interface WrapSerializerOptions {
+type WrapSerializerOptions<Logger extends ConsoleLogger> = {
   label?: string;
-}
+} & Loggable<Logger>;
 
-export const wrapSerializer =
-  <Logger extends ConsoleLogger>(
-    serializer: Serializer,
-    {
-      label = 'serializer',
-      logger = console as unknown as Logger,
-    }: WrapSerializerOptions & Loggable<Logger> = {},
-  ): Serializer =>
-  (unserialized: unknown) => {
+export const wrapSerializer = <Logger extends ConsoleLogger>(
+  serializer: Serializer,
+  options: WrapSerializerOptions<Logger> = {},
+): Serializer => {
+  const { label = 'serializer', logger = console as unknown as Logger } =
+    options;
+
+  return (unserialized: unknown) => {
     logger.debug(`serializing ${label} response`);
 
     logger.debug('unserialized response', { unserialized });
@@ -29,3 +28,4 @@ export const wrapSerializer =
 
     return serialized;
   };
+};
