@@ -15,7 +15,11 @@ export const handler = wrapHandler(
   async (event, context, { env, logger }) => {
     const what = event.queryStringParameters.what ?? 'bar';
 
+    // @ts-expect-error - Not an exposed env var.
+    logger.debug('Test global:', env.TEST_GLOBAL);
     logger.debug('Test global env:', env.TEST_GLOBAL_ENV);
+    // @ts-expect-error - Not an exposed env var.
+    logger.debug('Test stage:', env.TEST_STAGE);
     logger.debug('Test stage env:', env.TEST_STAGE_ENV);
     logger.debug('Handler invoked with:', what);
     logger.debug('Handler invoked with:', what);

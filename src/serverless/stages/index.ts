@@ -1,28 +1,33 @@
+import { diff, unique } from 'radash';
+
+import type { AllParams } from '@/handler/Handler';
+
 import * as dev from './dev';
-import { globalExposedEnvKeys, globalParams } from './global';
-import { type GlobalParams, globalParamSchema } from './globalSchema';
+import { globalEnv, stageEnv } from './env';
+import { globalParams } from './global';
+import { globalParamsSchema } from './globalSchema';
 import * as prod from './prod';
-import { type StageParams } from './stageSchema';
+import type { StageParams } from './stageSchema';
 import * as test from './test';
 
-/**
- * Merge the global params with stage‑specific params.  Stage params
- * override global params.  The resulting object is validated against
- * `globalParamSchema` to ensure required values are present.
- */
-export const mergeStageParams = (stage: StageParams): GlobalParams => {
-  // Merge without using `any`.  Cast the result to GlobalParams for type
-  // checking; actual validation happens via Zod below.
-  const merged = { ...globalParams, ...stage };
-  return globalParamSchema.parse(merged);
+// Validate that every stage + global together satisfies required GLOBAL keys.
+// This is validation-only: we don't emit the merged object anywhere.
+const validateStageGlobals = (s: StageParams) => {
+  globalParamsSchema.strip().parse({ ...globalParams, ...s });
 };
 
-/** The complete set of parameters for each stage. */
+[dev.stageParams, prod.stageParams, test.stageParams].forEach(
+  validateStageGlobals,
+);
+
+// What Serverless actually needs for `params`:
+// - default: full global defaults
+// - per-stage: ONLY overrides + stage-only keys (exactly your stage files)
 export const stages = {
   default: globalParams,
-  dev: mergeStageParams(dev.stageParams),
-  prod: mergeStageParams(prod.stageParams),
-  test: mergeStageParams(test.stageParams),
+  dev: dev.stageParams,
+  prod: prod.stageParams,
+  test: test.stageParams,
 };
 
 /**
@@ -31,7 +36,7 @@ export const stages = {
  * the correct value per stage at deploy time.
  */
 export const environment: Record<string, string> = Object.fromEntries(
-  globalExposedEnvKeys.map((key) => [key, `\${param:${key}}`]),
+  [...globalEnv, ...stageEnv].map((k) => [k, `\${param:${k}}`]),
 );
 
 /**
@@ -39,17 +44,14 @@ export const environment: Record<string, string> = Object.fromEntries(
  * name and a list of extra keys (the function’s local exposures),
  * and it returns an object mapping each key to ${param:<KEY>}.
  */
+const globallyExposed = unique([...globalEnv, ...stageEnv]);
+
 export const buildFunctionEnvironment = (
-  stageName: keyof typeof stages,
-  additionalKeys: readonly (keyof GlobalParams | keyof StageParams)[] = [],
+  additionalKeys: readonly (keyof AllParams)[] = [],
 ): Record<string, string> => {
-  const stageParams = stages[stageName];
-  const keys = new Set([...globalExposedEnvKeys, ...additionalKeys]);
-  const entries: [string, string][] = [];
-  keys.forEach((key) => {
-    if (key in stageParams) {
-      entries.push([key as string, `\${param:${key}}`]);
-    }
-  });
-  return Object.fromEntries(entries);
+  // Only include keys NOT already exposed globally
+  const functionOnly = diff(additionalKeys, globallyExposed);
+
+  // Map each key to ${param:KEY}; Serverless will resolve from default+stage
+  return Object.fromEntries(functionOnly.map((k) => [k, `\${param:${k}}`]));
 };

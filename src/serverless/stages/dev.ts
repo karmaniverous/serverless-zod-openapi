@@ -6,17 +6,6 @@ import type { StageParams } from './stageSchema';
  */
 export const stageParams: StageParams = {
   STAGE: 'dev',
-
-  /**
-   * Stage-specific param not exposed as an env var.
-   */
   TEST_STAGE: 'stage-dev',
-
-  /**
-   * Stage-specific param exposed as an env var.
-   */
   TEST_STAGE_ENV: 'stage-dev-env',
 };
-
-// no additional env keys exposed at this stage
-export const stageExposedEnvKeys: (keyof StageParams)[] = [];

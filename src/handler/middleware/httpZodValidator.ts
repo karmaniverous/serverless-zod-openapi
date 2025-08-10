@@ -44,11 +44,11 @@ export type HttpZodValidatorOptions<
   /**
    * The Zod schema for the event.
    */
-  eventSchema?: EventSchema;
+  eventSchema?: EventSchema | undefined;
   /**
    * The Zod schema for the response.
    */
-  responseSchema?: ResponseSchema;
+  responseSchema?: ResponseSchema | undefined;
 } & Loggable<Logger>;
 
 /**

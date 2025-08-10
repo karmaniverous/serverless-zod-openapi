@@ -106,3 +106,4 @@ export const detectSecurityContext = (
   // If the API key header is found, it's a private request; otherwise, it's public.
   return apiKey ? 'private' : 'public';
 };
+

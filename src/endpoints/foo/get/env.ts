@@ -1,12 +1,10 @@
 // src/endpoints/foo/get/env.ts
-import type { GlobalParams } from '@/serverless/stages/globalSchema';
-import type { StageParams } from '@/serverless/stages/stageSchema';
+import type { AllParams } from '@/handler/Handler';
 
 /**
  * Additional config keys needed by this function.  Keys declared here
  * will be exposed only to this function; globally exposed keys remain.
  */
-export const envKeys: readonly (keyof GlobalParams | keyof StageParams)[] = [
-  'TEST_GLOBAL_ENV',
+export const envKeys = [
   'TEST_STAGE_ENV',
-];
+] as const satisfies readonly (keyof AllParams)[];
