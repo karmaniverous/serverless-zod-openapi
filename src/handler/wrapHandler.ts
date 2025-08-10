@@ -20,15 +20,32 @@ import {
 } from './httpZodValidator';
 import { wrapSerializer } from './wrapSerializer';
 
+/**
+ * The options for the `wrapHandler` function.
+ *
+ * @template EventSchema The Zod schema for the event.
+ * @template ResponseSchema The Zod schema for the response.
+ * @template Logger The type of the logger.
+ */
 export type WrapHandlerOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 > = {
+  /**
+   * The content type of the response.
+   */
   contentType?: string;
 } & HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> &
   Loggable<Logger>;
 
+/**
+ * Wraps a handler function with Middy middleware.
+ *
+ * @param handler The handler function to wrap.
+ * @param options The options for the wrapper.
+ * @returns The wrapped handler function.
+ */
 export const wrapHandler = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,

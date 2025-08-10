@@ -1,0 +1,231 @@
+{
+  "C:\\Code\\karmaniverous\\api.johngalt.id\\serverless.ts": {
+    "versionFramework": "4.18.0",
+    "servicePath": "C:\\Code\\karmaniverous\\api.johngalt.id\\serverless.ts",
+    "serviceConfigFileName": "serverless.ts",
+    "service": {
+      "service": "${param:SERVICE_NAME}",
+      "frameworkVersion": "4",
+      "plugins": [
+        "serverless-apigateway-log-retention",
+        "serverless-domain-manager",
+        "serverless-plugin-common-excludes"
+      ],
+      "package": {
+        "individually": true,
+        "patterns": [
+          "!**/?(*.)test.+(!(.))"
+        ]
+      },
+      "custom": {
+        "apiGatewayLogRetention": {
+          "accessLogging": {
+            "enabled": true,
+            "days": 5
+          },
+          "executionLogging": {
+            "enabled": false
+          }
+        },
+        "customDomain": {
+          "autoDomain": true,
+          "basePath": "",
+          "certificateArn": "${param:DOMAIN_CERTIFICATE_ARN}",
+          "domainName": "${param:SERVICE_NAME}.api.johngalt.id",
+          "preserveExternalPathMappings": true
+        }
+      },
+      "stages": {
+        "default": {
+          "SERVICE_NAME": "api-johngalt-id",
+          "REGION": "ap-southeast-1",
+          "PROFILE": "JGS-SSO",
+          "ESB_MINIFY": false,
+          "ESB_SOURCEMAP": true
+        },
+        "dev": {
+          "STAGE": "dev"
+        },
+        "prod": {
+          "STAGE": "prod",
+          "ESB_MINIFY": true,
+          "ESB_SOURCEMAP": false
+        },
+        "test": {
+          "STAGE": "test"
+        }
+      },
+      "provider": {
+        "apiGateway": {
+          "apiKeys": "<REDACTED>",
+          "disableDefaultEndpoint": true
+        },
+        "apiName": "${param:SERVICE_NAME}",
+        "deploymentBucket": {
+          "name": "${param:SERVICE_NAME}-deployment",
+          "serverSideEncryption": "AES256",
+          "blockPublicAccess": true
+        },
+        "deploymentMethod": "direct",
+        "endpointType": "edge",
+        "environment": {
+          "SERVICE_NAME": "${param:key}",
+          "REGION": "${param:key}",
+          "PROFILE": "${param:key}",
+          "ESB_MINIFY": "${param:key}",
+          "ESB_SOURCEMAP": "${param:key}",
+          "STAGE": "${param:key}"
+        },
+        "iam": {
+          "role": {
+            "managedPolicies": [
+              "arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy"
+            ],
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": "*",
+                "Resource": "*"
+              }
+            ]
+          }
+        },
+        "logRetentionInDays": 5,
+        "logs": {
+          "lambda": {
+            "logFormat": "JSON",
+            "logGroup": "/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}"
+          },
+          "restApi": {
+            "accessLogging": true,
+            "executionLogging": false,
+            "format": "{ \"accountId\": \"$context.accountId\", \"apiId\": \"$context.apiId\", \"domainName\": \"$context.domainName\", \"domainPrefix\": \"$context.domainPrefix\", \"error\": { \"message\": \"$context.error.message\", \"responseType\": \"$context.error.responseType\" }, \"extendedRequestId\": \"$context.extendedRequestId\", \"httpMethod\": \"$context.httpMethod\", \"identity\" { \"accountId\": \"$context.identity.accountId\", \"apiKey\": \"$context.identity.apiKey\", \"caller\": \"$context.identity.caller\", \"clientCert\": { \"clientCertPem\": \"$context.identity.clientCert.clientCertPem\", \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validity\": { \"notBefore\": \"$context.identity.clientCert.validity.notBefore\", \"notAfter\": \"$context.identity.clientCert.validity.notAfter\" } }, \"sourceIp\": \"$context.identity.sourceIp\", \"user\": \"$context.identity.user\", \"userArn\": \"$context.identity.userArn\", \"userAgent\": \"$context.identity.userAgent\", }, \"integration\": { \"latency\": \"$context.integration.latency\" }, \"path\": \"$context.path\", \"protocol\": \"$context.protocol\", \"requestId\": \"$context.requestId\", \"requestTime\": \"$context.requestTime\", \"requestTimeEpoch\": \"$context.requestTimeEpoch\", \"resourceId\": \"$context.resourceId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"status\": \"$context.status\" }"
+          }
+        },
+        "memorySize": 256,
+        "name": "aws",
+        "region": "${param:REGION}",
+        "runtime": "nodejs22.x",
+        "profile": "${param:PROFILE}",
+        "stackName": "${param:SERVICE_NAME}-${param:STAGE}",
+        "stackTags": {
+          "service": "${param:SERVICE_NAME}",
+          "stage": "${param:STAGE}"
+        },
+        "stage": "dev",
+        "timeout": 300,
+        "tracing": {
+          "apiGateway": true,
+          "lambda": true
+        },
+        "versionFunctions": false
+      },
+      "functions": {
+        "fooGet": {
+          "handler": "src/endpoints/foo/get/index.handler",
+          "events": [
+            {
+              "http": {
+                "method": "get",
+                "path": "foo"
+              }
+            }
+          ]
+        }
+      },
+      "build": {
+        "esbuild": {
+          "bundle": true,
+          "minify": "${param:ESB_MINIFY}",
+          "sourcemap": "${param:ESB_SOURCEMAP}",
+          "exclude": [
+            "@aws-sdk/*"
+          ],
+          "target": "node22",
+          "platform": "node",
+          "define": {}
+        }
+      }
+    },
+    "provider": {
+      "apiGateway": {
+        "apiKeys": "<REDACTED>",
+        "disableDefaultEndpoint": true
+      },
+      "apiName": "${param:SERVICE_NAME}",
+      "deploymentBucket": {
+        "name": "${param:SERVICE_NAME}-deployment",
+        "serverSideEncryption": "AES256",
+        "blockPublicAccess": true
+      },
+      "deploymentMethod": "direct",
+      "endpointType": "edge",
+      "environment": {
+        "SERVICE_NAME": "${param:key}",
+        "REGION": "${param:key}",
+        "PROFILE": "${param:key}",
+        "ESB_MINIFY": "${param:key}",
+        "ESB_SOURCEMAP": "${param:key}",
+        "STAGE": "${param:key}"
+      },
+      "iam": {
+        "role": {
+          "managedPolicies": [
+            "arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy"
+          ],
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": "*",
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "logRetentionInDays": 5,
+      "logs": {
+        "lambda": {
+          "logFormat": "JSON",
+          "logGroup": "/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}"
+        },
+        "restApi": {
+          "accessLogging": true,
+          "executionLogging": false,
+          "format": "{ \"accountId\": \"$context.accountId\", \"apiId\": \"$context.apiId\", \"domainName\": \"$context.domainName\", \"domainPrefix\": \"$context.domainPrefix\", \"error\": { \"message\": \"$context.error.message\", \"responseType\": \"$context.error.responseType\" }, \"extendedRequestId\": \"$context.extendedRequestId\", \"httpMethod\": \"$context.httpMethod\", \"identity\" { \"accountId\": \"$context.identity.accountId\", \"apiKey\": \"$context.identity.apiKey\", \"caller\": \"$context.identity.caller\", \"clientCert\": { \"clientCertPem\": \"$context.identity.clientCert.clientCertPem\", \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validity\": { \"notBefore\": \"$context.identity.clientCert.validity.notBefore\", \"notAfter\": \"$context.identity.clientCert.validity.notAfter\" } }, \"sourceIp\": \"$context.identity.sourceIp\", \"user\": \"$context.identity.user\", \"userArn\": \"$context.identity.userArn\", \"userAgent\": \"$context.identity.userAgent\", }, \"integration\": { \"latency\": \"$context.integration.latency\" }, \"path\": \"$context.path\", \"protocol\": \"$context.protocol\", \"requestId\": \"$context.requestId\", \"requestTime\": \"$context.requestTime\", \"requestTimeEpoch\": \"$context.requestTimeEpoch\", \"resourceId\": \"$context.resourceId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"status\": \"$context.status\" }"
+        }
+      },
+      "memorySize": 256,
+      "name": "aws",
+      "region": "${param:REGION}",
+      "runtime": "nodejs22.x",
+      "profile": "${param:PROFILE}",
+      "stackName": "${param:SERVICE_NAME}-${param:STAGE}",
+      "stackTags": {
+        "service": "${param:SERVICE_NAME}",
+        "stage": "${param:STAGE}"
+      },
+      "stage": "dev",
+      "timeout": 300,
+      "tracing": {
+        "apiGateway": true,
+        "lambda": true
+      },
+      "versionFunctions": false
+    },
+    "error": {
+      "message": "Cannot resolve '${param:SERVICE_NAME}' variable at 'service'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.",
+      "stack": "Error: Cannot resolve '${param:SERVICE_NAME}' variable at 'service'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.\n    at _ResolverManager.resolve (file:///C:/Users/jscro/.serverless/releases/4.18.0/package/dist/sf-core.js:809:31911)\n    at async #handlePlaceholderNode (file:///C:/Users/jscro/.serverless/releases/4.18.0/package/dist/sf-core.js:809:30118)\n    at async file:///C:/Users/jscro/.serverless/releases/4.18.0/package/dist/sf-core.js:809:27990\n    at async processNodeAndHandleCompletion (file:///C:/Users/jscro/.serverless/releases/4.18.0/package/dist/sf-core.js:809:16769)",
+      "code": "MISSING_VARIABLE_RESULT"
+    },
+    "serviceRawFile": "import type { AWS } from '@serverless/typescript';\r\n\r\nimport fooGet from '@/endpoints/foo/get/serverless';\r\nimport { environment, stages } from '@/serverless/stages';\r\n\r\nconst config: AWS = {\r\n  service: '${param:SERVICE_NAME}',\r\n  frameworkVersion: '4',\r\n  plugins: [\r\n    'serverless-apigateway-log-retention',\r\n    'serverless-domain-manager',\r\n    'serverless-plugin-common-excludes',\r\n  ],\r\n  package: {\r\n    individually: true,\r\n    patterns: ['!**/?(*.)test.+(!(.))'],\r\n  },\r\n  custom: {\r\n    apiGatewayLogRetention: {\r\n      accessLogging: {\r\n        enabled: true,\r\n        days: 5,\r\n      },\r\n      executionLogging: {\r\n        enabled: false,\r\n      },\r\n    },\r\n    customDomain: {\r\n      autoDomain: true,\r\n      basePath: '',\r\n      certificateArn: '${param:DOMAIN_CERTIFICATE_ARN}',\r\n      domainName: '${param:SERVICE_NAME}.api.johngalt.id',\r\n      preserveExternalPathMappings: true,\r\n    },\r\n  },\r\n  stages,\r\n  provider: {\r\n    apiGateway: {\r\n      apiKeys: ['${param:STAGE}-${param:SERVICE_NAME}'],\r\n      disableDefaultEndpoint: true,\r\n    },\r\n    apiName: '${param:SERVICE_NAME}',\r\n    deploymentBucket: {\r\n      name: '${param:SERVICE_NAME}-deployment',\r\n      serverSideEncryption: 'AES256',\r\n      blockPublicAccess: true,\r\n    },\r\n    deploymentMethod: 'direct',\r\n    endpointType: 'edge',\r\n    environment,\r\n    iam: {\r\n      role: {\r\n        managedPolicies: [\r\n          'arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy',\r\n        ],\r\n        statements: [{ Effect: 'Allow', Action: '*', Resource: '*' }],\r\n      },\r\n    },\r\n    logRetentionInDays: 5,\r\n    logs: {\r\n      lambda: {\r\n        logFormat: 'JSON',\r\n        logGroup: '/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}',\r\n      },\r\n      restApi: {\r\n        accessLogging: true,\r\n        executionLogging: false,\r\n        format:\r\n          '{ \"accountId\": \"$context.accountId\", \"apiId\": \"$context.apiId\", \"domainName\": \"$context.domainName\", \"domainPrefix\": \"$context.domainPrefix\", \"error\": { \"message\": \"$context.error.message\", \"responseType\": \"$context.error.responseType\" }, \"extendedRequestId\": \"$context.extendedRequestId\", \"httpMethod\": \"$context.httpMethod\", \"identity\" { \"accountId\": \"$context.identity.accountId\", \"apiKey\": \"$context.identity.apiKey\", \"caller\": \"$context.identity.caller\", \"clientCert\": { \"clientCertPem\": \"$context.identity.clientCert.clientCertPem\", \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validity\": { \"notBefore\": \"$context.identity.clientCert.validity.notBefore\", \"notAfter\": \"$context.identity.clientCert.validity.notAfter\" } }, \"sourceIp\": \"$context.identity.sourceIp\", \"user\": \"$context.identity.user\", \"userArn\": \"$context.identity.userArn\", \"userAgent\": \"$context.identity.userAgent\", }, \"integration\": { \"latency\": \"$context.integration.latency\" }, \"path\": \"$context.path\", \"protocol\": \"$context.protocol\", \"requestId\": \"$context.requestId\", \"requestTime\": \"$context.requestTime\", \"requestTimeEpoch\": \"$context.requestTimeEpoch\", \"resourceId\": \"$context.resourceId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"status\": \"$context.status\" }',\r\n      },\r\n    },\r\n    memorySize: 256,\r\n    name: 'aws',\r\n    region: '${param:REGION}' as NonNullable<AWS['provider']['region']>,\r\n    runtime: 'nodejs22.x',\r\n    profile: '${param:PROFILE}',\r\n    stackName: '${param:SERVICE_NAME}-${param:STAGE}',\r\n    stackTags: {\r\n      service: '${param:SERVICE_NAME}',\r\n      stage: '${param:STAGE}',\r\n    },\r\n    stage: '${opt:stage, \"dev\"}',\r\n    timeout: 300,\r\n    tracing: {\r\n      apiGateway: true,\r\n      lambda: true,\r\n    },\r\n    versionFunctions: false,\r\n  },\r\n  functions: {\r\n    // Combine all function definitions into the final document.\r\n    ...fooGet,\r\n  },\r\n  build: {\r\n    esbuild: {\r\n      bundle: true,\r\n      minify: '${param:ESB_MINIFY}' as unknown as boolean,\r\n      sourcemap: '${param:ESB_SOURCEMAP}' as unknown as boolean,\r\n      exclude: ['@aws-sdk/*'],\r\n      target: 'node22',\r\n      platform: 'node',\r\n      define: {\r\n        'require.resolve': undefined,\r\n      },\r\n    },\r\n  },\r\n};\r\n\r\nexport default config;\r\n",
+    "command": [],
+    "options": {
+      "help": true
+    },
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}

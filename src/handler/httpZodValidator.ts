@@ -4,6 +4,14 @@ import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
+/**
+ * Validates a value against a Zod schema.
+ *
+ * @param value The value to validate.
+ * @param schema The Zod schema to validate against.
+ * @param logger The logger to use.
+ * @returns An error message if validation fails, otherwise `undefined`.
+ */
 const validate = (
   value: unknown,
   schema: z.ZodType | undefined,
@@ -21,15 +29,34 @@ const validate = (
   return result.error?.message;
 };
 
+/**
+ * The options for the `httpZodValidator` middleware.
+ *
+ * @template EventSchema The Zod schema for the event.
+ * @template ResponseSchema The Zod schema for the response.
+ * @template Logger The type of the logger.
+ */
 export type HttpZodValidatorOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 > = {
+  /**
+   * The Zod schema for the event.
+   */
   eventSchema?: EventSchema;
+  /**
+   * The Zod schema for the response.
+   */
   responseSchema?: ResponseSchema;
 } & Loggable<Logger>;
 
+/**
+ * A Middy middleware that validates the event and response against Zod schemas.
+ *
+ * @param options The options for the middleware.
+ * @returns The Middy middleware object.
+ */
 export const httpZodValidator = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
