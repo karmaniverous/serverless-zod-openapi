@@ -10,9 +10,13 @@ export const globalParamSchema = z.object({
   REGION: z.string(),
   PROFILE: z.string(),
 
-  /** esbuild settings */
+  // esbuild settings
   ESB_MINIFY: z.boolean().default(false),
   ESB_SOURCEMAP: z.boolean().default(true),
+
+  // test
+  TEST_GLOBAL: z.string(), // stage-specific param not exposed as an env var.
+  TEST_GLOBAL_ENV: z.string(), // stage-specific param exposed as an env var.
 });
 
 export type GlobalParams = z.infer<typeof globalParamSchema>;

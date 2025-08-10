@@ -1,5 +1,6 @@
 import { wrapHandler } from '@/handler/wrapHandler';
 
+import { envKeys } from './env';
 import { eventSchema, responseSchema } from './schema';
 
 /**
@@ -11,13 +12,20 @@ import { eventSchema, responseSchema } from './schema';
  * @returns The response.
  */
 export const handler = wrapHandler(
-  async (event, context, { logger }) => {
+  async (event, context, { env, logger }) => {
     const what = event.queryStringParameters.what ?? 'bar';
+
+    logger.debug('Test global env:', env.TEST_GLOBAL_ENV);
+    logger.debug('Test stage env:', env.TEST_STAGE_ENV);
     logger.debug('Handler invoked with:', what);
+    logger.debug('Handler invoked with:', what);
+
     return { what };
   },
   {
     eventSchema,
     responseSchema,
+    envKeys,
   },
 );
+

@@ -9,6 +9,7 @@ import httpResponseSerializer from '@middy/http-response-serializer';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { get } from 'radash';
 import type { z } from 'zod';
+import { z as zod } from 'zod';
 
 import { globalExposedEnvKeys } from '@/serverless/stages/global';
 import type { GlobalParams } from '@/serverless/stages/globalSchema';
@@ -17,7 +18,7 @@ import type { StageParams } from '@/serverless/stages/stageSchema';
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
 import { detectSecurityContext } from './detectSecurityContext';
-import type { Handler, HandlerReturn, InferEvent } from './Handler';
+import type { Handler, HandlerReturn, InferEvent, ParamUnion } from './Handler';
 import {
   httpZodValidator,
   type HttpZodValidatorOptions,
@@ -25,7 +26,7 @@ import {
 import { wrapSerializer } from './wrapSerializer';
 
 /**
- * Options for wrapHandler.  envKeys specify additional param keys
+ * Options for wrapHandler. envKeys specify additional param keys
  * (beyond those globally exposed) that should be parsed and delivered
  * to the handler as typed environment variables.
  */
@@ -33,45 +34,53 @@ export type WrapHandlerOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
+  Keys extends readonly (keyof (GlobalParams & StageParams))[],
 > = {
   contentType?: string;
-  envKeys?: readonly (keyof GlobalParams | keyof StageParams)[];
+  envKeys?: Keys;
 } & HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> &
   Loggable<Logger>;
+
+/** runtime schema that covers global + stage (adds STAGE etc.) */
+const combinedParamSchema = globalParamSchema.extend({
+  STAGE: zod.string(),
+});
 
 export const wrapHandler = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
-  Env extends GlobalParams & StageParams,
   Logger extends ConsoleLogger,
+  Keys extends readonly (keyof (GlobalParams & StageParams))[],
 >(
-  handler: Handler<EventSchema, ResponseSchema, Env, Logger>,
-  options: WrapHandlerOptions<EventSchema, ResponseSchema, Logger> = {},
+  handler: Handler<EventSchema, ResponseSchema, Keys, Logger>,
+  options?: WrapHandlerOptions<EventSchema, ResponseSchema, Logger, Keys>,
 ) =>
   middy(async (event: APIGatewayProxyEvent, context: Context) => {
-    const { logger = console as unknown as Logger, envKeys = [] } = options;
-
-    logger.debug('request', {
-      event,
-      context,
-    });
+    const { logger = console as unknown as Logger, envKeys } =
+      options ??
+      ({} as WrapHandlerOptions<EventSchema, ResponseSchema, Logger, Keys>);
 
     // HEAD requests should return immediately without further processing
     if (get(event, 'httpMethod') === 'HEAD') return {};
 
-    // Build and validate the environment for this handler
-    const keys = new Set([...globalExposedEnvKeys, ...envKeys]);
+    // global + function-specific keys (typed as ParamUnion keys)
+    const keys = new Set<keyof ParamUnion>([
+      ...(globalExposedEnvKeys as readonly (keyof GlobalParams)[]),
+      ...((envKeys ?? []) as unknown as readonly (keyof ParamUnion)[]),
+    ]);
 
-    const envSchema = globalParamSchema.pick(
-      Object.fromEntries([...keys].map((key) => [key, true])) as Record<
+    const envSchema = combinedParamSchema.pick(
+      Object.fromEntries([...keys].map((k) => [k, true])) as Record<
         string,
         true
       >,
     );
 
-    // Parse the environment and cast to the generic Env type
-    const env = envSchema.parse(process.env) as Env;
-    logger.debug('env', env);
+    // exact Pick by Keys
+    const env = envSchema.parse(process.env) as unknown as Pick<
+      ParamUnion,
+      Keys[number]
+    >;
 
     const securityContext = detectSecurityContext(event);
     const typedEvent = event as unknown as InferEvent<EventSchema>;
@@ -87,7 +96,8 @@ export const wrapHandler = <
     .use(httpHeaderNormalizer())
     .use(httpMultipartBodyParser())
     .use(httpJsonBodyParser())
-    .use(httpZodValidator<EventSchema, ResponseSchema, Logger>(options))
+    // don’t pass type args; let inference flow
+    .use(httpZodValidator(options ?? ({} as never)))
     .use(
       httpErrorHandler({
         fallbackMessage: 'Non-HTTP server error. See CloudWatch for more info.',
@@ -106,11 +116,11 @@ export const wrapHandler = <
             regex: /^application\/json$/,
             serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
               label: 'application/json',
-              logger: options.logger ?? console,
+              logger: (options?.logger ?? console) as Console,
             }),
           },
         ],
-        defaultContentType: options.contentType ?? 'application/json',
+        defaultContentType: options?.contentType ?? 'application/json',
       }),
     );
 

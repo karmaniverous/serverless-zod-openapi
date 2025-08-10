@@ -13,7 +13,7 @@ import * as test from './test';
 export const mergeStageParams = (stage: StageParams): GlobalParams => {
   // Merge without using `any`.  Cast the result to GlobalParams for type
   // checking; actual validation happens via Zod below.
-  const merged = { ...globalParams, ...stage } as unknown as GlobalParams;
+  const merged = { ...globalParams, ...stage };
   return globalParamSchema.parse(merged);
 };
 

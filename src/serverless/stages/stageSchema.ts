@@ -8,7 +8,11 @@ import { globalParamSchema } from './globalSchema';
  * should only specify values they wish to override.
  */
 export const stageParamSchema = globalParamSchema.partial().extend({
-  STAGE: z.string(), // e.g. "dev", "prod"
+  STAGE: z.string(), // e.g. "dev", "prod",
+
+  // test
+  TEST_STAGE: z.string(), // stage-specific param not exposed as an env var.
+  TEST_STAGE_ENV: z.string(), // stage-specific param exposed as an env var.
 });
 
 export type StageParams = z.infer<typeof stageParamSchema>;

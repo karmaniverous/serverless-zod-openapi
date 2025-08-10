@@ -12,6 +12,16 @@ export const globalParams: GlobalParams = {
   /** esbuild defaults */
   ESB_MINIFY: false,
   ESB_SOURCEMAP: true,
+
+  /**
+   * Global param not exposed as an env var.
+   */
+  TEST_GLOBAL: 'stage-global',
+
+  /**
+   * Global param exposed as an env var.
+   */
+  TEST_GLOBAL_ENV: 'stage-global-env',
 };
 
 /**
@@ -24,4 +34,5 @@ export const globalExposedEnvKeys: (keyof GlobalParams)[] = [
   'SERVICE_NAME',
   'REGION',
   'PROFILE',
+  'TEST_GLOBAL_ENV',
 ];

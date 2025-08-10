@@ -28,43 +28,34 @@ export type HandlerReturn<ResponseSchema extends z.ZodType | undefined> =
     ? Promise<z.output<ResponseSchema>>
     : Promise<unknown>;
 
+/** Universe of keys available to functions = global + stage. */
+export type ParamUnion = GlobalParams & StageParams;
+
 /**
- * Options passed to every handler.  Includes logger, securityContext,
- * and a typed map of environment variables.
- *
- * @template Env  The type of the parsed environment object.
- * @template Logger The type of the logger.
+ * Options passed to every handler. Includes logger, securityContext,
+ * and a typed map of environment variables (exact Pick by Keys).
  */
 export type HandlerOptions<
-  Env extends GlobalParams & StageParams,
+  Keys extends readonly (keyof ParamUnion)[],
   Logger extends ConsoleLogger,
 > = {
-  /**
-   * A typed map of environment variables exposed to the handler.
-   */
-  env: Env;
-  /**
-   * The security context for the handler.
-   */
+  /** A typed map of environment variables exposed to the handler. */
+  env: Pick<ParamUnion, Keys[number]>;
+  /** The security context for the handler. */
   securityContext: SecurityContext;
 } & Required<Pick<Loggable<Logger>, 'logger'>>;
 
 /**
  * The type of a handler function.
- *
- * @template EventSchema The Zod schema for the event.
- * @template ResponseSchema The Zod schema for the response.
- * @template Env The type of the parsed environment passed in options.
- * @template Logger The type of the logger.
  */
 export type Handler<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
-  Env extends GlobalParams & StageParams,
+  Keys extends readonly (keyof ParamUnion)[],
   Logger extends ConsoleLogger,
 > = (
   event: InferEvent<EventSchema>,
   context: Context,
-  options: HandlerOptions<Env, Logger>,
+  options: HandlerOptions<Keys, Logger>,
 ) => HandlerReturn<ResponseSchema>;
 
