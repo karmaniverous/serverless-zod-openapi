@@ -10,6 +10,10 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { get } from 'radash';
 import type { z } from 'zod';
 
+import { globalExposedEnvKeys } from '@/serverless/stages/global';
+import type { GlobalParams } from '@/serverless/stages/globalSchema';
+import { globalParamSchema } from '@/serverless/stages/globalSchema';
+import type { StageParams } from '@/serverless/stages/stageSchema';
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
 import { detectSecurityContext } from './detectSecurityContext';
@@ -21,53 +25,58 @@ import {
 import { wrapSerializer } from './wrapSerializer';
 
 /**
- * The options for the `wrapHandler` function.
- *
- * @template EventSchema The Zod schema for the event.
- * @template ResponseSchema The Zod schema for the response.
- * @template Logger The type of the logger.
+ * Options for wrapHandler.  envKeys specify additional param keys
+ * (beyond those globally exposed) that should be parsed and delivered
+ * to the handler as typed environment variables.
  */
 export type WrapHandlerOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 > = {
-  /**
-   * The content type of the response.
-   */
   contentType?: string;
+  envKeys?: readonly (keyof GlobalParams | keyof StageParams)[];
 } & HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> &
   Loggable<Logger>;
 
-/**
- * Wraps a handler function with Middy middleware.
- *
- * @param handler The handler function to wrap.
- * @param options The options for the wrapper.
- * @returns The wrapped handler function.
- */
 export const wrapHandler = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
+  Env extends GlobalParams & StageParams,
   Logger extends ConsoleLogger,
 >(
-  handler: Handler<EventSchema, ResponseSchema, Logger>,
+  handler: Handler<EventSchema, ResponseSchema, Env, Logger>,
   options: WrapHandlerOptions<EventSchema, ResponseSchema, Logger> = {},
 ) =>
   middy(async (event: APIGatewayProxyEvent, context: Context) => {
-    const { logger = console as unknown as Logger } = options;
+    const { logger = console as unknown as Logger, envKeys = [] } = options;
 
-    logger.debug('request context', {
+    logger.debug('request', {
       event,
       context,
-      env: { ...process.env },
     });
 
+    // HEAD requests should return immediately without further processing
     if (get(event, 'httpMethod') === 'HEAD') return {};
+
+    // Build and validate the environment for this handler
+    const keys = new Set([...globalExposedEnvKeys, ...envKeys]);
+
+    const envSchema = globalParamSchema.pick(
+      Object.fromEntries([...keys].map((key) => [key, true])) as Record<
+        string,
+        true
+      >,
+    );
+
+    // Parse the environment and cast to the generic Env type
+    const env = envSchema.parse(process.env) as Env;
+    logger.debug('env', env);
 
     const securityContext = detectSecurityContext(event);
     const typedEvent = event as unknown as InferEvent<EventSchema>;
     const result = await handler(typedEvent, context, {
+      env,
       logger,
       securityContext,
     });
@@ -104,3 +113,4 @@ export const wrapHandler = <
         defaultContentType: options.contentType ?? 'application/json',
       }),
     );
+

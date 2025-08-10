@@ -1,7 +1,7 @@
-import type { Stage } from '../types';
+import type { StageParams } from './stageSchema';
 
-const stage: Stage = {
+export const stageParams: StageParams = {
   STAGE: 'test',
 };
 
-export default stage;
+export const stageExposedEnvKeys: (keyof StageParams)[] = [];

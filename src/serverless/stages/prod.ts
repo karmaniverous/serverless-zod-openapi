@@ -1,11 +1,11 @@
-import type { Stage } from '../types';
+import type { StageParams } from './stageSchema';
 
-const stage: Stage = {
+export const stageParams: StageParams = {
   STAGE: 'prod',
 
-  /** esbuild */
+  /** override esbuild settings */
   ESB_MINIFY: true,
   ESB_SOURCEMAP: false,
 };
 
-export default stage;
+export const stageExposedEnvKeys: (keyof StageParams)[] = [];

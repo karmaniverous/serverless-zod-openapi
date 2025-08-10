@@ -1,21 +1,18 @@
 import type { AWS } from '@serverless/typescript';
 
-/**
- * The serverless function definition for the `GET /foo` endpoint.
- *
- * @see https://www.serverless.com/framework/docs/providers/aws/guide/functions
- */
+import { buildFunctionEnvironment, type stages } from '@/serverless/stages';
+
+import { envKeys } from './env';
+
+// compute environment using the current stage; you could read from
+// process.env.STAGE or default to 'dev'
+const stage = process.env.STAGE as keyof typeof stages;
+
 const functions: AWS['functions'] = {
   fooGet: {
     handler: 'src/endpoints/foo/get/index.handler',
-    events: [
-      {
-        http: {
-          method: 'get',
-          path: 'foo',
-        },
-      },
-    ],
+    environment: buildFunctionEnvironment(stage, envKeys),
+    events: [{ http: { method: 'get', path: 'foo' } }],
   },
 };
 

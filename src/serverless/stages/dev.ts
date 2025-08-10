@@ -1,7 +1,12 @@
-import type { Stage } from '../types';
+import type { StageParams } from './stageSchema';
 
-const stage: Stage = {
+/**
+ * Stage configuration for “dev”.  Only differences from global values
+ * need to be specified.
+ */
+export const stageParams: StageParams = {
   STAGE: 'dev',
 };
 
-export default stage;
+// no additional env keys exposed at this stage
+export const stageExposedEnvKeys: (keyof StageParams)[] = [];
