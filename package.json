@@ -53,6 +53,8 @@
     "url": "git+https://github.com/karmaniverous/api.johngalt.id.git"
   },
   "scripts": {
+    "domain:create": "serverless create_domain",
+    "domain:delete": "serverless delete_domain",
     "knip": "knip",
     "lint": "eslint . && prettier -c .",
     "lint:fix": "eslint --fix . && prettier -w .",

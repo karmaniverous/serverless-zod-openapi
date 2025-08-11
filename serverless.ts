@@ -29,7 +29,7 @@ const config: AWS = {
       autoDomain: true,
       basePath: '',
       certificateArn: '${param:DOMAIN_CERTIFICATE_ARN}',
-      domainName: '${param:SERVICE_NAME}.api.johngalt.id',
+      domainName: '${param:DOMAIN_NAME}',
       preserveExternalPathMappings: true,
     },
   },

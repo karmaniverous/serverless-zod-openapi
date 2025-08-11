@@ -6,10 +6,8 @@ import type { StageParams } from './stageSchema';
  * Keep these as a const tuple so we get literal types.
  */
 export const globalEnv = [
-  'SERVICE_NAME',
   'REGION',
-  'PROFILE',
-  'TEST_GLOBAL_ENV',
+  'SERVICE_NAME',
 ] as const satisfies readonly (keyof GlobalParams)[];
 
 /**

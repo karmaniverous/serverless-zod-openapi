@@ -6,13 +6,11 @@ import { z } from 'zod';
  * be omitted in stage files but will be validated after merging.
  */
 export const globalParamsSchema = z.object({
-  SERVICE_NAME: z.string(),
-  REGION: z.string(),
+  ESB_MINIFY: z.boolean(),
+  ESB_SOURCEMAP: z.boolean(),
   PROFILE: z.string(),
-  ESB_MINIFY: z.boolean().default(false),
-  ESB_SOURCEMAP: z.boolean().default(true),
-  TEST_GLOBAL: z.string(), // stage-specific param not exposed as an env var.
-  TEST_GLOBAL_ENV: z.string(), // stage-specific param exposed as an env var.
+  REGION: z.string(),
+  SERVICE_NAME: z.string(),
 });
 
 export type GlobalParams = z.infer<typeof globalParamsSchema>;
