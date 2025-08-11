@@ -1,55 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import type { GlobalParams } from '@/serverless/stages/globalSchema';
-import type { StageParams } from '@/serverless/stages/stageSchema';
+// If you want a strict union for function-level keys in this test file:
+import type { AllParams } from '@/test/stages';
+// Use the test fixture (mirrors prod surface, different values/keys)
+import { globalParamsSchema as testGlobalSchema } from '@/test/stages/globalSchema';
+import { stageParamsSchema as testStageSchema } from '@/test/stages/stageSchema';
+type ParamKeys = keyof AllParams;
 
 import {
   buildEnvSchema,
   deriveAllKeys,
   isHead,
-  type ParamKeys,
   parseTypedEnv,
   splitKeysBySchema,
 } from './envBuilder';
 
-describe('envBuilder helpers', () => {
-  // Minimal runtime schemas that reflect real shapes for the keys we exercise.
-  const globalSchema = z.object({
-    SERVICE_NAME: z.string(),
-    PROFILE: z.string(),
-    TEST_GLOBAL_ENV: z.string(),
-  });
-
-  const stageSchema = z.object({
-    STAGE: z.string(),
-    TEST_STAGE_ENV: z.string(),
-  });
+describe('envBuilder helpers (using test stages fixture)', () => {
+  // Local aliases for readability; these are the test schemas.
+  const globalSchema = testGlobalSchema;
+  const stageSchema = testStageSchema;
 
   // Typed key lists (const tuples keep the literal unions narrow).
-  const globalEnv = [
-    'SERVICE_NAME',
-    'PROFILE',
-  ] as const satisfies readonly (keyof GlobalParams)[];
+  // From test fixture, globalEnv exposes SERVICE_NAME and PROFILE
+  const globalEnv = ['SERVICE_NAME', 'PROFILE'] as const;
 
-  const stageEnv = ['STAGE'] as const satisfies readonly (keyof StageParams)[];
+  // From test fixture, stageEnv exposes STAGE
+  const stageEnv = ['STAGE'] as const;
 
+  // Function-specific keys for this test (not in the always-exposed lists).
+  // Use FN_ENV (global) + DOMAIN_NAME (stage) to exercise both sides.
   const fnEnv = [
-    'TEST_STAGE_ENV',
-    'TEST_GLOBAL_ENV',
+    'FN_ENV',
+    'DOMAIN_NAME',
   ] as const satisfies readonly ParamKeys[];
 
   it('deriveAllKeys returns the exact union set (global ∪ stage ∪ function)', () => {
     const keys = deriveAllKeys(globalEnv, stageEnv, fnEnv);
     expect(keys.size).toBe(5);
     expect(Array.from(keys).sort()).toEqual(
-      [
-        'PROFILE',
-        'SERVICE_NAME',
-        'STAGE',
-        'TEST_GLOBAL_ENV',
-        'TEST_STAGE_ENV',
-      ].sort(),
+      ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
     );
   });
 
@@ -62,15 +52,9 @@ describe('envBuilder helpers', () => {
     );
 
     expect(new Set(globalPick)).toEqual(
-      new Set<keyof GlobalParams>([
-        'SERVICE_NAME',
-        'PROFILE',
-        'TEST_GLOBAL_ENV',
-      ]),
+      new Set(['SERVICE_NAME', 'PROFILE', 'FN_ENV']),
     );
-    expect(new Set(stagePick)).toEqual(
-      new Set<keyof StageParams>(['STAGE', 'TEST_STAGE_ENV']),
-    );
+    expect(new Set(stagePick)).toEqual(new Set(['STAGE', 'DOMAIN_NAME']));
   });
 
   it('buildEnvSchema composes a schema with exactly the picked keys', () => {
@@ -87,23 +71,13 @@ describe('envBuilder helpers', () => {
       stageSchema,
     );
 
-    // Narrow safely to ZodObject (Zod v4)
-    if (!(envSchema instanceof z.ZodObject)) {
-      throw new Error('Expected env schema to be a ZodObject');
-    }
+    expect(envSchema instanceof z.ZodObject).toBe(true);
 
-    // Use a typed Object.keys to list the shape keys
     const shapeKeys = Object.keys(
       envSchema.shape,
     ) as (keyof typeof envSchema.shape)[];
     expect([...shapeKeys].sort()).toEqual(
-      [
-        'PROFILE',
-        'SERVICE_NAME',
-        'STAGE',
-        'TEST_GLOBAL_ENV',
-        'TEST_STAGE_ENV',
-      ].sort(),
+      ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
     );
   });
 
@@ -124,18 +98,18 @@ describe('envBuilder helpers', () => {
     const parsed = parseTypedEnv(envSchema, {
       SERVICE_NAME: 'svc',
       PROFILE: 'dev-profile',
-      TEST_GLOBAL_ENV: 'g-env',
+      FN_ENV: 'fnval',
       STAGE: 'dev',
-      TEST_STAGE_ENV: 's-env',
+      DOMAIN_NAME: 'api.dev.example.test',
       EXTRA: 'ignored', // should be stripped by Zod
     });
 
     expect(parsed).toEqual({
       SERVICE_NAME: 'svc',
       PROFILE: 'dev-profile',
-      TEST_GLOBAL_ENV: 'g-env',
+      FN_ENV: 'fnval',
       STAGE: 'dev',
-      TEST_STAGE_ENV: 's-env',
+      DOMAIN_NAME: 'api.dev.example.test',
     });
   });
 
@@ -157,9 +131,9 @@ describe('envBuilder helpers', () => {
     const run = () =>
       parseTypedEnv(envSchema, {
         SERVICE_NAME: 'svc',
-        TEST_GLOBAL_ENV: 'g-env',
+        FN_ENV: 'fnval',
         STAGE: 'dev',
-        TEST_STAGE_ENV: 's-env',
+        DOMAIN_NAME: 'api.dev.example.test',
       });
 
     expect(run).toThrowError();

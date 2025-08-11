@@ -1,12 +1,13 @@
-import type { AllParams } from '@/handler/Handler';
-
 import * as dev from './dev';
 import { globalEnv, stageEnv } from './env';
 import { createStagesArtifacts } from './factory';
 import { globalParams } from './global';
-import { globalParamsSchema } from './globalSchema';
+import { type GlobalParams, globalParamsSchema } from './globalSchema';
 import * as prod from './prod';
-import { stageParamsSchema } from './stageSchema';
+import { type StageParams, stageParamsSchema } from './stageSchema';
+
+// ✅ export the canonical param union type from the stages path
+export type AllParams = GlobalParams & StageParams;
 
 /** Build artifacts via factory (validation included) */
 const {
@@ -27,10 +28,7 @@ const {
 
 export { environment, stages };
 
-/**
- * Production-typed wrapper that narrows the additionalKeys parameter to keys of AllParams.
- * Reuses the generic function from the factory.
- */
+/** Narrow additionalKeys to keys of AllParams */
 export const buildFunctionEnvironment = (
   additionalKeys: readonly (keyof AllParams)[] = [],
 ): Record<string, string> => buildFnEnv(additionalKeys);

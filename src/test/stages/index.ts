@@ -3,9 +3,12 @@ import { createStagesArtifacts } from '@/serverless/stages/factory';
 import { devStageParams } from './dev';
 import { globalEnv, stageEnv } from './env';
 import { globalParams } from './global';
-import { globalParamsSchema } from './globalSchema';
+import { type GlobalParams, globalParamsSchema } from './globalSchema';
 import { prodStageParams } from './prod';
-import { stageParamsSchema } from './stageSchema';
+import { type StageParams, stageParamsSchema } from './stageSchema';
+
+// ✅ export the same type API for tests
+export type AllParams = GlobalParams & StageParams;
 
 /** Run the factory with test configs and export the artifacts */
 export const { stages, environment, buildFunctionEnvironment } =
