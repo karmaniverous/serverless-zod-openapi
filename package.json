@@ -34,6 +34,7 @@
     "prettier": "^3.6.2",
     "serverless": "^4.18.0",
     "serverless-apigateway-log-retention": "^1.1.0",
+    "serverless-deployment-bucket": "^1.6.0",
     "serverless-domain-manager": "^8.0.0",
     "serverless-plugin-common-excludes": "^4.0.0",
     "tsx": "^4.20.3",
@@ -53,12 +54,15 @@
     "url": "git+https://github.com/karmaniverous/api.johngalt.id.git"
   },
   "scripts": {
+    "deploy": "serverless deploy",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
     "knip": "knip",
     "lint": "eslint . && prettier -c .",
     "lint:fix": "eslint --fix . && prettier -w .",
     "openapi": "tsx src/openapi/generate && prettier -w src/openapi/openapi.json",
+    "package": "serverless package",
+    "remove": "serverless remove",
     "test": "vitest"
   },
   "type": "module",

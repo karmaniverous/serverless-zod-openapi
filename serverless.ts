@@ -8,6 +8,7 @@ const config: AWS = {
   frameworkVersion: '4',
   plugins: [
     'serverless-apigateway-log-retention',
+    'serverless-deployment-bucket',
     'serverless-domain-manager',
     'serverless-plugin-common-excludes',
   ],
@@ -32,18 +33,21 @@ const config: AWS = {
       domainName: '${param:DOMAIN_NAME}',
       preserveExternalPathMappings: true,
     },
+    deploymentBucket: {
+      accelerate: true,
+      blockPublicAccess: true,
+    },
   },
   stages,
   provider: {
     apiGateway: {
-      apiKeys: ['${param:STAGE}-${param:SERVICE_NAME}'],
+      apiKeys: ['${param:SERVICE_NAME}-${param:STAGE}'],
       disableDefaultEndpoint: true,
     },
     apiName: '${param:SERVICE_NAME}',
     deploymentBucket: {
       name: '${param:SERVICE_NAME}-deployment',
       serverSideEncryption: 'AES256',
-      blockPublicAccess: true,
     },
     deploymentMethod: 'direct',
     endpointType: 'edge',
@@ -60,7 +64,7 @@ const config: AWS = {
     logs: {
       lambda: {
         logFormat: 'JSON',
-        logGroup: '/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}',
+        logGroup: '/aws/lambda/${param:SERVICE_NAME}/${param:STAGE}',
       },
       restApi: {
         accessLogging: true,
@@ -80,7 +84,6 @@ const config: AWS = {
       stage: '${param:STAGE}',
     },
     stage: '${opt:stage, "dev"}',
-    timeout: 300,
     tracing: {
       apiGateway: true,
       lambda: true,

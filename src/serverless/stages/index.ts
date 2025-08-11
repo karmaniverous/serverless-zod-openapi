@@ -21,9 +21,9 @@ const validateStageGlobals = (s: StageParams) => {
 // - default: full global defaults
 // - per-stage: ONLY overrides + stage-only keys (exactly your stage files)
 export const stages = {
-  default: globalParams,
-  dev: dev.stageParams,
-  prod: prod.stageParams,
+  default: { params: globalParams },
+  dev: { params: dev.stageParams },
+  prod: { params: prod.stageParams },
 };
 
 /**

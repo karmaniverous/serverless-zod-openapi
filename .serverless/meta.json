@@ -4,10 +4,11 @@
     "servicePath": "C:\\Code\\karmaniverous\\api.johngalt.id\\serverless.ts",
     "serviceConfigFileName": "serverless.ts",
     "service": {
-      "service": "${param:SERVICE_NAME}",
+      "service": "api-johngalt-id",
       "frameworkVersion": "4",
       "plugins": [
         "serverless-apigateway-log-retention",
+        "serverless-deployment-bucket",
         "serverless-domain-manager",
         "serverless-plugin-common-excludes"
       ],
@@ -15,7 +16,8 @@
         "individually": true,
         "patterns": [
           "!**/?(*.)test.+(!(.))"
-        ]
+        ],
+        "artifactsS3KeyDirname": "serverless/api-johngalt-id/dev/code-artifacts"
       },
       "custom": {
         "apiGatewayLogRetention": {
@@ -30,30 +32,42 @@
         "customDomain": {
           "autoDomain": true,
           "basePath": "",
-          "certificateArn": "${param:DOMAIN_CERTIFICATE_ARN}",
-          "domainName": "${param:DOMAIN_NAME}",
+          "certificateArn": "arn:aws:acm:us-east-1:343218212471:certificate/8a668260-e9ec-4fde-9b48-d2be8aedb489",
+          "domainName": "api.dev.johngalt.id",
           "preserveExternalPathMappings": true
+        },
+        "deploymentBucket": {
+          "accelerate": true,
+          "blockPublicAccess": true,
+          "versioning": false,
+          "accessLog": false
         }
       },
       "stages": {
         "default": {
-          "ESB_MINIFY": false,
-          "ESB_SOURCEMAP": true,
-          "PROFILE": "JGS-SSO",
-          "REGION": "ap-southeast-1",
-          "SERVICE_NAME": "api-johngalt-id"
+          "params": {
+            "ESB_MINIFY": false,
+            "ESB_SOURCEMAP": true,
+            "PROFILE": "JGS-SSO",
+            "REGION": "ap-southeast-1",
+            "SERVICE_NAME": "api-johngalt-id"
+          }
         },
         "dev": {
-          "DOMAIN_CERTIFICATE_ARN": "arn:aws:acm:ap-southeast-1:343218212471:certificate/f72de5c4-d317-483f-810f-5a74f7a71e94",
-          "DOMAIN_NAME": "api.dev.johngalt.id",
-          "STAGE": "dev"
+          "params": {
+            "DOMAIN_CERTIFICATE_ARN": "arn:aws:acm:us-east-1:343218212471:certificate/8a668260-e9ec-4fde-9b48-d2be8aedb489",
+            "DOMAIN_NAME": "api.dev.johngalt.id",
+            "STAGE": "dev"
+          }
         },
         "prod": {
-          "DOMAIN_CERTIFICATE_ARN": "arn:aws:acm:ap-southeast-1:343218212471:certificate/de69b150-3b72-491b-8ad8-c65daa869e87",
-          "DOMAIN_NAME": "api.johngalt.id",
-          "STAGE": "prod",
-          "ESB_MINIFY": true,
-          "ESB_SOURCEMAP": false
+          "params": {
+            "DOMAIN_CERTIFICATE_ARN": "arn:aws:acm:us-east-1:343218212471:certificate/6505cd50-6d57-43f7-a199-02f3e4a08683",
+            "DOMAIN_NAME": "api.johngalt.id",
+            "STAGE": "prod",
+            "ESB_MINIFY": true,
+            "ESB_SOURCEMAP": false
+          }
         }
       },
       "provider": {
@@ -61,18 +75,14 @@
           "apiKeys": "<REDACTED>",
           "disableDefaultEndpoint": true
         },
-        "apiName": "${param:SERVICE_NAME}",
-        "deploymentBucket": {
-          "name": "${param:SERVICE_NAME}-deployment",
-          "serverSideEncryption": "AES256",
-          "blockPublicAccess": true
-        },
+        "apiName": "api-johngalt-id",
+        "deploymentBucket": "api-johngalt-id-deployment",
         "deploymentMethod": "direct",
         "endpointType": "edge",
         "environment": {
-          "REGION": "${param:REGION}",
-          "SERVICE_NAME": "${param:SERVICE_NAME}",
-          "STAGE": "${param:STAGE}"
+          "REGION": "ap-southeast-1",
+          "SERVICE_NAME": "api-johngalt-id",
+          "STAGE": "dev"
         },
         "iam": {
           "role": {
@@ -82,7 +92,9 @@
             "statements": [
               {
                 "Effect": "Allow",
-                "Action": "*",
+                "Action": [
+                  "*"
+                ],
                 "Resource": "*"
               }
             ]
@@ -92,7 +104,7 @@
         "logs": {
           "lambda": {
             "logFormat": "JSON",
-            "logGroup": "/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}"
+            "logGroup": "/aws/lambda/api-johngalt-id/dev"
           },
           "restApi": {
             "accessLogging": true,
@@ -102,28 +114,29 @@
         },
         "memorySize": 256,
         "name": "aws",
-        "region": "${param:REGION}",
+        "region": "ap-southeast-1",
         "runtime": "nodejs22.x",
-        "profile": "${param:PROFILE}",
-        "stackName": "${param:SERVICE_NAME}-${param:STAGE}",
+        "profile": "JGS-SSO",
+        "stackName": "api-johngalt-id-dev",
         "stackTags": {
-          "service": "${param:SERVICE_NAME}",
-          "stage": "${param:STAGE}"
+          "service": "api-johngalt-id",
+          "stage": "dev"
         },
-        "stage": "${opt:stage, \"dev\"}",
-        "timeout": 300,
+        "stage": "dev",
         "tracing": {
           "apiGateway": true,
           "lambda": true
         },
-        "versionFunctions": false
+        "versionFunctions": false,
+        "deploymentBucketObject": {
+          "name": "api-johngalt-id-deployment",
+          "serverSideEncryption": "AES256"
+        }
       },
       "functions": {
         "fooGet": {
           "handler": "src/endpoints/foo/get/index.handler",
-          "environment": {
-            "TEST_STAGE_ENV": "${param:TEST_STAGE_ENV}"
-          },
+          "environment": {},
           "events": [
             {
               "http": {
@@ -131,14 +144,15 @@
                 "path": "foo"
               }
             }
-          ]
+          ],
+          "name": "api-johngalt-id-dev-fooGet"
         }
       },
       "build": {
         "esbuild": {
           "bundle": true,
-          "minify": "${param:ESB_MINIFY}",
-          "sourcemap": "${param:ESB_SOURCEMAP}",
+          "minify": false,
+          "sourcemap": true,
           "exclude": [
             "@aws-sdk/*"
           ],
@@ -153,18 +167,14 @@
         "apiKeys": "<REDACTED>",
         "disableDefaultEndpoint": true
       },
-      "apiName": "${param:SERVICE_NAME}",
-      "deploymentBucket": {
-        "name": "${param:SERVICE_NAME}-deployment",
-        "serverSideEncryption": "AES256",
-        "blockPublicAccess": true
-      },
+      "apiName": "api-johngalt-id",
+      "deploymentBucket": "api-johngalt-id-deployment",
       "deploymentMethod": "direct",
       "endpointType": "edge",
       "environment": {
-        "REGION": "${param:REGION}",
-        "SERVICE_NAME": "${param:SERVICE_NAME}",
-        "STAGE": "${param:STAGE}"
+        "REGION": "ap-southeast-1",
+        "SERVICE_NAME": "api-johngalt-id",
+        "STAGE": "dev"
       },
       "iam": {
         "role": {
@@ -174,7 +184,9 @@
           "statements": [
             {
               "Effect": "Allow",
-              "Action": "*",
+              "Action": [
+                "*"
+              ],
               "Resource": "*"
             }
           ]
@@ -184,7 +196,7 @@
       "logs": {
         "lambda": {
           "logFormat": "JSON",
-          "logGroup": "/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}"
+          "logGroup": "/aws/lambda/api-johngalt-id/dev"
         },
         "restApi": {
           "accessLogging": true,
@@ -194,35 +206,51 @@
       },
       "memorySize": 256,
       "name": "aws",
-      "region": "${param:REGION}",
+      "region": "ap-southeast-1",
       "runtime": "nodejs22.x",
-      "profile": "${param:PROFILE}",
-      "stackName": "${param:SERVICE_NAME}-${param:STAGE}",
+      "profile": "JGS-SSO",
+      "stackName": "api-johngalt-id-dev",
       "stackTags": {
-        "service": "${param:SERVICE_NAME}",
-        "stage": "${param:STAGE}"
+        "service": "api-johngalt-id",
+        "stage": "dev"
       },
-      "stage": "${opt:stage, \"dev\"}",
-      "timeout": 300,
+      "stage": "dev",
       "tracing": {
         "apiGateway": true,
         "lambda": true
       },
-      "versionFunctions": false
+      "versionFunctions": false,
+      "deploymentBucketObject": {
+        "name": "api-johngalt-id-deployment",
+        "serverSideEncryption": "AES256"
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
     },
     "error": {
-      "message": "Cannot resolve '${param:SERVICE_NAME}' variable at 'service'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.",
-      "stack": "Error: Cannot resolve '${param:SERVICE_NAME}' variable at 'service'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.\n    at _ResolverManager.resolve (C:\\Users\\jscro\\.serverless\\releases\\4.18.0\\sf-core\\src\\lib\\resolvers\\manager.js:802:11)\n    at async _ResolverManager.#handlePlaceholderNode (C:\\Users\\jscro\\.serverless\\releases\\4.18.0\\sf-core\\src\\lib\\resolvers\\manager.js:703:9)\n    at async <anonymous> (C:\\Users\\jscro\\.serverless\\releases\\4.18.0\\sf-core\\src\\lib\\resolvers\\manager.js:579:11)\n    at async processNodeAndHandleCompletion (C:\\Users\\jscro\\.serverless\\releases\\4.18.0\\sf-core\\src\\lib\\resolvers\\graph.js:33:5)",
-      "code": "MISSING_VARIABLE_RESULT"
+      "message": "The specified log group does not exist.",
+      "stack": "ServerlessError2: The specified log group does not exist.\n    at file:///C:/Users/jscro/.serverless/releases/4.18.0/package/dist/sf-core.js:1133:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async persistentRequest (file:///C:/Users/jscro/.serverless/releases/4.18.0/package/dist/sf-core.js:1132:1959)",
+      "code": "AWS_CLOUD_WATCH_LOGS_DESCRIBE_LOG_STREAMS_RESOURCE_NOT_FOUND_EXCEPTION"
     },
-    "serviceRawFile": "import type { AWS } from '@serverless/typescript';\r\n\r\nimport fooGet from '@/endpoints/foo/get/serverless';\r\nimport { environment, stages } from '@/serverless/stages';\r\n\r\nconst config: AWS = {\r\n  service: '${param:SERVICE_NAME}',\r\n  frameworkVersion: '4',\r\n  plugins: [\r\n    'serverless-apigateway-log-retention',\r\n    'serverless-domain-manager',\r\n    'serverless-plugin-common-excludes',\r\n  ],\r\n  package: {\r\n    individually: true,\r\n    patterns: ['!**/?(*.)test.+(!(.))'],\r\n  },\r\n  custom: {\r\n    apiGatewayLogRetention: {\r\n      accessLogging: {\r\n        enabled: true,\r\n        days: 5,\r\n      },\r\n      executionLogging: {\r\n        enabled: false,\r\n      },\r\n    },\r\n    customDomain: {\r\n      autoDomain: true,\r\n      basePath: '',\r\n      certificateArn: '${param:DOMAIN_CERTIFICATE_ARN}',\r\n      domainName: '${param:DOMAIN_NAME}',\r\n      preserveExternalPathMappings: true,\r\n    },\r\n  },\r\n  stages,\r\n  provider: {\r\n    apiGateway: {\r\n      apiKeys: ['${param:STAGE}-${param:SERVICE_NAME}'],\r\n      disableDefaultEndpoint: true,\r\n    },\r\n    apiName: '${param:SERVICE_NAME}',\r\n    deploymentBucket: {\r\n      name: '${param:SERVICE_NAME}-deployment',\r\n      serverSideEncryption: 'AES256',\r\n      blockPublicAccess: true,\r\n    },\r\n    deploymentMethod: 'direct',\r\n    endpointType: 'edge',\r\n    environment,\r\n    iam: {\r\n      role: {\r\n        managedPolicies: [\r\n          'arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy',\r\n        ],\r\n        statements: [{ Effect: 'Allow', Action: '*', Resource: '*' }],\r\n      },\r\n    },\r\n    logRetentionInDays: 5,\r\n    logs: {\r\n      lambda: {\r\n        logFormat: 'JSON',\r\n        logGroup: '/aws/lambda/${param:STAGE}-${param:SERVICE_NAME}',\r\n      },\r\n      restApi: {\r\n        accessLogging: true,\r\n        executionLogging: false,\r\n        format:\r\n          '{ \"accountId\": \"$context.accountId\", \"apiId\": \"$context.apiId\", \"domainName\": \"$context.domainName\", \"domainPrefix\": \"$context.domainPrefix\", \"error\": { \"message\": \"$context.error.message\", \"responseType\": \"$context.error.responseType\" }, \"extendedRequestId\": \"$context.extendedRequestId\", \"httpMethod\": \"$context.httpMethod\", \"identity\" { \"accountId\": \"$context.identity.accountId\", \"apiKey\": \"$context.identity.apiKey\", \"caller\": \"$context.identity.caller\", \"clientCert\": { \"clientCertPem\": \"$context.identity.clientCert.clientCertPem\", \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validity\": { \"notBefore\": \"$context.identity.clientCert.validity.notBefore\", \"notAfter\": \"$context.identity.clientCert.validity.notAfter\" } }, \"sourceIp\": \"$context.identity.sourceIp\", \"user\": \"$context.identity.user\", \"userArn\": \"$context.identity.userArn\", \"userAgent\": \"$context.identity.userAgent\", }, \"integration\": { \"latency\": \"$context.integration.latency\" }, \"path\": \"$context.path\", \"protocol\": \"$context.protocol\", \"requestId\": \"$context.requestId\", \"requestTime\": \"$context.requestTime\", \"requestTimeEpoch\": \"$context.requestTimeEpoch\", \"resourceId\": \"$context.resourceId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"status\": \"$context.status\" }',\r\n      },\r\n    },\r\n    memorySize: 256,\r\n    name: 'aws',\r\n    region: '${param:REGION}' as NonNullable<AWS['provider']['region']>,\r\n    runtime: 'nodejs22.x',\r\n    profile: '${param:PROFILE}',\r\n    stackName: '${param:SERVICE_NAME}-${param:STAGE}',\r\n    stackTags: {\r\n      service: '${param:SERVICE_NAME}',\r\n      stage: '${param:STAGE}',\r\n    },\r\n    stage: '${opt:stage, \"dev\"}',\r\n    timeout: 300,\r\n    tracing: {\r\n      apiGateway: true,\r\n      lambda: true,\r\n    },\r\n    versionFunctions: false,\r\n  },\r\n  functions: {\r\n    // Combine all function definitions into the final document.\r\n    ...fooGet,\r\n  },\r\n  build: {\r\n    esbuild: {\r\n      bundle: true,\r\n      minify: '${param:ESB_MINIFY}' as unknown as boolean,\r\n      sourcemap: '${param:ESB_SOURCEMAP}' as unknown as boolean,\r\n      exclude: ['@aws-sdk/*'],\r\n      target: 'node22',\r\n      platform: 'node',\r\n      define: {\r\n        'require.resolve': undefined,\r\n      },\r\n    },\r\n  },\r\n};\r\n\r\nexport default config;\r\n",
+    "serviceRawFile": "import type { AWS } from '@serverless/typescript';\r\n\r\nimport fooGet from '@/endpoints/foo/get/serverless';\r\nimport { environment, stages } from '@/serverless/stages';\r\n\r\nconst config: AWS = {\r\n  service: '${param:SERVICE_NAME}',\r\n  frameworkVersion: '4',\r\n  plugins: [\r\n    'serverless-apigateway-log-retention',\r\n    'serverless-deployment-bucket',\r\n    'serverless-domain-manager',\r\n    'serverless-plugin-common-excludes',\r\n  ],\r\n  package: {\r\n    individually: true,\r\n    patterns: ['!**/?(*.)test.+(!(.))'],\r\n  },\r\n  custom: {\r\n    apiGatewayLogRetention: {\r\n      accessLogging: {\r\n        enabled: true,\r\n        days: 5,\r\n      },\r\n      executionLogging: {\r\n        enabled: false,\r\n      },\r\n    },\r\n    customDomain: {\r\n      autoDomain: true,\r\n      basePath: '',\r\n      certificateArn: '${param:DOMAIN_CERTIFICATE_ARN}',\r\n      domainName: '${param:DOMAIN_NAME}',\r\n      preserveExternalPathMappings: true,\r\n    },\r\n    deploymentBucket: {\r\n      accelerate: true,\r\n      blockPublicAccess: true,\r\n    },\r\n  },\r\n  stages,\r\n  provider: {\r\n    apiGateway: {\r\n      apiKeys: ['${param:SERVICE_NAME}-${param:STAGE}'],\r\n      disableDefaultEndpoint: true,\r\n    },\r\n    apiName: '${param:SERVICE_NAME}',\r\n    deploymentBucket: {\r\n      name: '${param:SERVICE_NAME}-deployment',\r\n      serverSideEncryption: 'AES256',\r\n    },\r\n    deploymentMethod: 'direct',\r\n    endpointType: 'edge',\r\n    environment,\r\n    iam: {\r\n      role: {\r\n        managedPolicies: [\r\n          'arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy',\r\n        ],\r\n        statements: [{ Effect: 'Allow', Action: '*', Resource: '*' }],\r\n      },\r\n    },\r\n    logRetentionInDays: 5,\r\n    logs: {\r\n      lambda: {\r\n        logFormat: 'JSON',\r\n        logGroup: '/aws/lambda/${param:SERVICE_NAME}/${param:STAGE}',\r\n      },\r\n      restApi: {\r\n        accessLogging: true,\r\n        executionLogging: false,\r\n        format:\r\n          '{ \"accountId\": \"$context.accountId\", \"apiId\": \"$context.apiId\", \"domainName\": \"$context.domainName\", \"domainPrefix\": \"$context.domainPrefix\", \"error\": { \"message\": \"$context.error.message\", \"responseType\": \"$context.error.responseType\" }, \"extendedRequestId\": \"$context.extendedRequestId\", \"httpMethod\": \"$context.httpMethod\", \"identity\" { \"accountId\": \"$context.identity.accountId\", \"apiKey\": \"$context.identity.apiKey\", \"caller\": \"$context.identity.caller\", \"clientCert\": { \"clientCertPem\": \"$context.identity.clientCert.clientCertPem\", \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validity\": { \"notBefore\": \"$context.identity.clientCert.validity.notBefore\", \"notAfter\": \"$context.identity.clientCert.validity.notAfter\" } }, \"sourceIp\": \"$context.identity.sourceIp\", \"user\": \"$context.identity.user\", \"userArn\": \"$context.identity.userArn\", \"userAgent\": \"$context.identity.userAgent\", }, \"integration\": { \"latency\": \"$context.integration.latency\" }, \"path\": \"$context.path\", \"protocol\": \"$context.protocol\", \"requestId\": \"$context.requestId\", \"requestTime\": \"$context.requestTime\", \"requestTimeEpoch\": \"$context.requestTimeEpoch\", \"resourceId\": \"$context.resourceId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"status\": \"$context.status\" }',\r\n      },\r\n    },\r\n    memorySize: 256,\r\n    name: 'aws',\r\n    region: '${param:REGION}' as NonNullable<AWS['provider']['region']>,\r\n    runtime: 'nodejs22.x',\r\n    profile: '${param:PROFILE}',\r\n    stackName: '${param:SERVICE_NAME}-${param:STAGE}',\r\n    stackTags: {\r\n      service: '${param:SERVICE_NAME}',\r\n      stage: '${param:STAGE}',\r\n    },\r\n    stage: '${opt:stage, \"dev\"}',\r\n    tracing: {\r\n      apiGateway: true,\r\n      lambda: true,\r\n    },\r\n    versionFunctions: false,\r\n  },\r\n  functions: {\r\n    // Combine all function definitions into the final document.\r\n    ...fooGet,\r\n  },\r\n  build: {\r\n    esbuild: {\r\n      bundle: true,\r\n      minify: '${param:ESB_MINIFY}' as unknown as boolean,\r\n      sourcemap: '${param:ESB_SOURCEMAP}' as unknown as boolean,\r\n      exclude: ['@aws-sdk/*'],\r\n      target: 'node22',\r\n      platform: 'node',\r\n      define: {\r\n        'require.resolve': undefined,\r\n      },\r\n    },\r\n  },\r\n};\r\n\r\nexport default config;\r\n",
     "command": [
-      "print"
+      "logs"
     ],
     "options": {
-      "debug": "*",
-      "stage": "dev"
+      "function": "fooGet"
     },
+    "orgId": "l0Q2v191952CxJH1b2",
+    "orgName": "karmaniverous",
+    "userId": "FmsPn15dKj3vVl7s3W",
+    "userName": "karmaniverous",
+    "serviceProviderAwsAccountId": "343218212471",
     "serviceProviderAwsCfStackId": null,
     "serviceProviderAwsCfStackCreated": null,
     "serviceProviderAwsCfStackUpdated": null,

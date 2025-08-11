@@ -1,10 +1,12 @@
 import type { MiddlewareObj } from '@middy/core';
-import multipart from '@middy/http-multipart-body-parser';
+// TODO: Fix multipart.
+// import multipart from '@middy/http-multipart-body-parser';
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { shake } from 'radash';
 import { z } from 'zod';
 
-import { isMultipart } from '@/handler/middleware/isMultipart';
+// TODO: Fix multipart.
+// import { isMultipart } from '@/handler/middleware/isMultipart';
 import type { ConsoleLogger } from '@/types/Loggable';
 
 export type BuildStackOptions<
@@ -45,7 +47,8 @@ export const buildMiddlewareStack = <
 >(
   opts: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
 ): MiddlewareObj<APIGatewayProxyEvent, unknown> => {
-  const parser = multipart();
+  // TODO: Fix multipart.
+  // const parser = multipart();
 
   return {
     // Auto multipart: invoke parser only when request is truly multipart
@@ -56,9 +59,10 @@ export const buildMiddlewareStack = <
       const v = opts.eventSchema.safeParse(event);
       if (!v.success) throw v.error;
 
-      if (isMultipart(event) && typeof parser.before === 'function') {
-        await parser.before(request);
-      }
+      // TODO: Fix multipart.
+      // if (isMultipart(event) && typeof parser.before === 'function') {
+      //   await parser.before(request);
+      // }
     },
 
     after: async (request) => {
