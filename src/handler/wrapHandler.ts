@@ -3,6 +3,7 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { shake } from 'radash';
 import type { z } from 'zod';
 
+import type { AllParams } from '@/serverless/stages';
 import { globalEnv, stageEnv } from '@/serverless/stages/env';
 import { globalParamsSchema } from '@/serverless/stages/globalSchema';
 import { stageParamsSchema } from '@/serverless/stages/stageSchema';
@@ -15,7 +16,7 @@ import {
   parseTypedEnv,
   splitKeysBySchema,
 } from './envBuilder';
-import type { AllParams, Handler, HandlerReturn, InferEvent } from './Handler';
+import type { Handler, HandlerReturn, InferEvent } from './Handler';
 import type { BuildStackOptions } from './middleware/stack';
 import { buildMiddlewareStack } from './middleware/stack';
 
@@ -105,4 +106,3 @@ export const wrapHandler = <
       }) as BuildStackOptions<EventSchema, ResponseSchema, Logger>,
     ),
   );
-

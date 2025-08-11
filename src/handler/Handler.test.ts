@@ -2,10 +2,10 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
 
+import type { AllParams } from '@/test/stages';
 import type { ConsoleLogger } from '@/types/Loggable';
 
 import type {
-  AllParams,
   Handler,
   HandlerOptions,
   HandlerReturn,

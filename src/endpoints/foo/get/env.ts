@@ -1,5 +1,4 @@
-// src/endpoints/foo/get/env.ts
-import type { AllParams } from '@/handler/Handler';
+import type { AllParams } from '@/serverless/stages';
 
 /**
  * Additional config keys needed by this function.  Keys declared here
