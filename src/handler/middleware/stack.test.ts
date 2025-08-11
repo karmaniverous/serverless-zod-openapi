@@ -2,6 +2,9 @@ import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { createApiGatewayV1Event as createEvent } from '@/test/aws';
+import { expectResponse, type HttpResponse } from '@/test/http';
+
 // --- mock non-local dependency (@middy/http-multipart-body-parser)
 // Use vi.hoisted so Vitest can hoist safely.
 const hoisted = vi.hoisted(() => ({
@@ -16,51 +19,11 @@ import { buildMiddlewareStack } from './stack';
 
 /* ------------------------------ helpers ------------------------------ */
 
-type HttpResponse = {
-  statusCode: number;
-  headers: Record<string, string>;
-  body: string;
-};
-
 type MiddyReq = {
   event: APIGatewayProxyEvent;
   response?: HttpResponse;
   error?: unknown;
 };
-
-const expectResponse = (req: MiddyReq): HttpResponse => {
-  expect(req.response).toBeDefined();
-  return req.response!;
-};
-
-const createEvent = (headers?: Record<string, string>): APIGatewayProxyEvent =>
-  ({
-    httpMethod: 'POST',
-    headers: headers ?? {},
-    body: undefined,
-    isBase64Encoded: false,
-    path: '/',
-    queryStringParameters: null,
-    pathParameters: null,
-    multiValueHeaders: {},
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    resource: '/',
-    requestContext: {
-      accountId: 'acc',
-      apiId: 'api',
-      httpMethod: 'POST',
-      identity: {} as unknown,
-      path: '/',
-      stage: 'test',
-      requestId: 'req',
-      requestTimeEpoch: Date.now(),
-      resourceId: 'res',
-      resourcePath: '/',
-      authorizer: {},
-      protocol: 'HTTP/1.1',
-    } as unknown,
-  }) as unknown as APIGatewayProxyEvent;
 
 const createStack = (contentType = 'application/json') =>
   buildMiddlewareStack({
@@ -76,7 +39,7 @@ describe('middleware/stack', () => {
     const stack = createStack('application/vnd.api+json');
 
     const req: MiddyReq = {
-      event: createEvent(),
+      event: createEvent('POST'),
       response: { ok: true } as unknown as HttpResponse, // will be replaced
     };
 
@@ -91,7 +54,7 @@ describe('middleware/stack', () => {
   it('after(): serializes string body as-is', async () => {
     const stack = createStack();
     const req: MiddyReq = {
-      event: createEvent(),
+      event: createEvent('POST'),
       response: 'plain' as unknown as HttpResponse,
     };
 
@@ -110,7 +73,7 @@ describe('middleware/stack', () => {
       headers: { 'Content-Type': 'text/plain' },
       body: 'ok',
     };
-    const req: MiddyReq = { event: createEvent(), response: shaped };
+    const req: MiddyReq = { event: createEvent('POST'), response: shaped };
 
     await stack.after?.(req as never);
     expect(req.response).toBe(shaped);
@@ -123,7 +86,7 @@ describe('middleware/stack', () => {
       contentType: 'application/json',
     });
 
-    const req: MiddyReq = { event: createEvent() };
+    const req: MiddyReq = { event: createEvent('POST') };
     await expect(strictStack.before?.(req as never)).rejects.toBeInstanceOf(
       z.ZodError,
     );
@@ -136,14 +99,14 @@ describe('middleware/stack', () => {
 
     // Not multipart
     const req1: MiddyReq = {
-      event: createEvent({ 'Content-Type': 'application/json' }),
+      event: createEvent('POST', { 'Content-Type': 'application/json' }),
     };
     await stack.before?.(req1 as never);
     expect(hoisted.beforeSpy).not.toHaveBeenCalled();
 
     // Multipart with boundary
     const req2: MiddyReq = {
-      event: createEvent({
+      event: createEvent('POST', {
         'Content-Type': 'multipart/form-data; boundary=----VitestBoundary',
       }),
     };
@@ -155,7 +118,10 @@ describe('middleware/stack', () => {
     const stack = createStack('application/vnd.api+json');
 
     // ZodError -> 400
-    const req1: MiddyReq = { event: createEvent(), error: new z.ZodError([]) };
+    const req1: MiddyReq = {
+      event: createEvent('POST'),
+      error: new z.ZodError([]),
+    };
     await stack.onError?.(req1 as never);
     const r1 = expectResponse(req1);
     expect(r1.statusCode).toBe(400);
@@ -164,7 +130,10 @@ describe('middleware/stack', () => {
     expect(typeof msg1.message).toBe('string');
 
     // Generic -> 500
-    const req2: MiddyReq = { event: createEvent(), error: new Error('boom') };
+    const req2: MiddyReq = {
+      event: createEvent('POST'),
+      error: new Error('boom'),
+    };
     await stack.onError?.(req2 as never);
     const r2 = expectResponse(req2);
     expect(r2.statusCode).toBe(500);

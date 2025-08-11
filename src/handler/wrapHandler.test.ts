@@ -1,151 +1,17 @@
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { mapEntries, shake } from 'radash';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import { globalEnv, stageEnv } from '@/serverless/stages/env';
-import { globalParamsSchema } from '@/serverless/stages/globalSchema';
-import { stageParamsSchema } from '@/serverless/stages/stageSchema';
+import {
+  createApiGatewayV1Event as createEvent,
+  createLambdaContext as createContext,
+} from '@/test/aws';
+import { synthesizeEnvForSuccess, withTempEnv } from '@/test/env';
+import { expectHttpJson } from '@/test/http';
 
 import { detectSecurityContext } from './detectSecurityContext';
-import { buildEnvSchema, deriveAllKeys, splitKeysBySchema } from './envBuilder';
 import { wrapHandler } from './wrapHandler';
-
-/* ------------------------------ helpers ------------------------------ */
-
-const createEvent = (
-  method: string,
-  headers?: Record<string, string>,
-): APIGatewayProxyEvent =>
-  ({
-    httpMethod: method,
-    headers: headers ?? {},
-    body: undefined,
-    isBase64Encoded: false,
-    path: '/',
-    queryStringParameters: null,
-    pathParameters: null,
-    multiValueHeaders: {},
-    multiValueQueryStringParameters: null,
-    stageVariables: null,
-    resource: '/',
-    requestContext: {
-      accountId: 'acc',
-      apiId: 'api',
-      httpMethod: method,
-      identity: {} as unknown,
-      path: '/',
-      stage: 'test',
-      requestId: 'req',
-      requestTimeEpoch: Date.now(),
-      resourceId: 'res',
-      resourcePath: '/',
-      authorizer: {},
-      protocol: 'HTTP/1.1',
-    } as unknown,
-  }) as unknown as APIGatewayProxyEvent;
-
-const createContext = (): Context =>
-  ({
-    awsRequestId: 'test-req-id',
-    callbackWaitsForEmptyEventLoop: false,
-    functionName: 'fn',
-    functionVersion: '$LATEST',
-    invokedFunctionArn: 'arn',
-    logGroupName: 'lg',
-    logStreamName: 'ls',
-    memoryLimitInMB: '128',
-    getRemainingTimeInMillis: () => 1000,
-    done: () => undefined,
-    fail: () => undefined,
-    succeed: () => undefined,
-  }) as unknown as Context;
-
-/**
- * Set env vars using radash `shake` to drop only `undefined` keys.
- */
-const withTempEnv = async <T>(
-  vars: Record<string, string | undefined>,
-  run: () => T | Promise<T>,
-): Promise<T> => {
-  const original = { ...process.env };
-  process.env = shake({ ...original, ...vars }) as NodeJS.ProcessEnv;
-  try {
-    return await run();
-  } finally {
-    process.env = original;
-  }
-};
-
-/** Build the same env schema the wrapper uses and synthesize string values that pass it. */
-const synthesizeEnvForSuccess = (): Record<string, string> => {
-  const allKeys = deriveAllKeys(globalEnv, stageEnv, [] as const);
-  const { globalPick, stagePick } = splitKeysBySchema(
-    allKeys,
-    globalParamsSchema,
-    stageParamsSchema,
-  );
-  const envSchema = buildEnvSchema(
-    globalPick,
-    stagePick,
-    globalParamsSchema,
-    stageParamsSchema,
-  );
-
-  if (!(envSchema instanceof z.ZodObject)) {
-    throw new Error('Expected env schema to be a ZodObject');
-  }
-
-  const candidates: readonly string[] = [
-    'us-east-1',
-    'test',
-    'dev',
-    'prod',
-    'true',
-    'false',
-    '1',
-    '0',
-    'application/json',
-    'x',
-  ];
-
-  const tryCandidates = (schema: z.ZodType): string => {
-    if (schema instanceof z.ZodEnum) return String(schema.options[0] ?? 'x');
-    if (schema instanceof z.ZodLiteral) {
-      const val = (schema as unknown as { value: unknown }).value;
-      return String(val);
-    }
-    for (const c of candidates) {
-      if (schema.safeParse(c).success) return c;
-    }
-    return 'x';
-  };
-
-  return mapEntries(envSchema.shape, (key, schema) => [
-    key,
-    tryCandidates(schema as unknown as z.ZodType),
-  ]) as Record<string, string>;
-};
-
-const expectHttpJson = (
-  res: unknown,
-  expectedBody: unknown,
-  expectedContentType = 'application/json',
-): void => {
-  const r = res as {
-    statusCode?: number;
-    body?: unknown;
-    headers?: Record<string, string>;
-  };
-  expect(r.statusCode).toBe(200);
-  const headers = r.headers ?? {};
-  const ct = headers['Content-Type'] ?? headers['content-type'];
-  expect(ct).toBe(expectedContentType);
-  const bodyStr = typeof r.body === 'string' ? r.body : JSON.stringify(r.body);
-  expect(bodyStr).toBe(JSON.stringify(expectedBody));
-};
-
-/* -------------------------------- tests ------------------------------ */
 
 describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
   it('short-circuits HEAD but middleware serializes an empty JSON response', async () => {
