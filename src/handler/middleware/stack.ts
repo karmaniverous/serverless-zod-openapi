@@ -120,7 +120,7 @@ export const buildMiddlewareStack = <
         'headers' in res &&
         'body' in res
       ) {
-        const headers = (res.headers ?? {}) as Record<string, string>;
+        const headers = res.headers ?? {};
         headers['Content-Type'] = defaultContentType;
         res.headers = headers;
       }
@@ -134,7 +134,7 @@ export const buildMiddlewareStack = <
         'headers' in res &&
         'body' in res
       ) {
-        const headers = (res.headers ?? {}) as Record<string, string>;
+        const headers = res.headers ?? {};
         headers['Content-Type'] = defaultContentType;
         res.headers = headers;
       }
