@@ -1,7 +1,6 @@
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-import type { AllParams } from '@/serverless/stages';
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
 import type { SecurityContext } from './SecurityContext';
@@ -15,19 +14,17 @@ export type InferEvent<EventSchema extends z.ZodType> = Merge<
 
 export type HandlerReturn<ResponseSchema extends z.ZodType | undefined> =
   ResponseSchema extends z.ZodType
-    ? Promise<z.output<ResponseSchema>>
-    : Promise<unknown>;
+    ? z.output<ResponseSchema> | Promise<z.output<ResponseSchema>>
+    : unknown | Promise<unknown>;
 
-/**
- * Handler options: typed env is an exact Pick over a key-union.
- */
 export type HandlerOptions<
-  Keys extends keyof AllParams,
+  AP extends Record<string, unknown>,
+  Keys extends keyof AP,
   Logger extends ConsoleLogger,
 > = {
-  env: Pick<AllParams, Keys>;
+  env: Pick<AP, Keys>;
   securityContext: SecurityContext;
-} & Required<Pick<Loggable<Logger>, 'logger'>>;
+} & Loggable<Logger>;
 
 /**
  * Handler signature: Keys is the union of env keys this handler receives.
@@ -35,10 +32,11 @@ export type HandlerOptions<
 export type Handler<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
-  Keys extends keyof AllParams,
+  AP extends Record<string, unknown>,
+  Keys extends keyof AP,
   Logger extends ConsoleLogger,
 > = (
   event: InferEvent<EventSchema>,
   context: Context,
-  options: HandlerOptions<Keys, Logger>,
+  options: HandlerOptions<AP, Keys, Logger>,
 ) => HandlerReturn<ResponseSchema>;

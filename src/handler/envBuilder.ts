@@ -1,81 +1,64 @@
 import type { ZodObject, ZodRawShape } from 'zod';
 import { z } from 'zod';
 
-import type { GlobalParams } from '@/serverless/stages/globalSchema';
-import type { StageParams } from '@/serverless/stages/stageSchema';
-
-export type ParamKeys = keyof GlobalParams | keyof StageParams;
-
-/**
- * Derive the exact set of keys for this function’s env:
- *   global exposed ∪ stage exposed ∪ function-specific keys
- */
-export const deriveAllKeys = (
-  globalEnv: readonly (keyof GlobalParams)[],
-  stageEnv: readonly (keyof StageParams)[],
-  fnEnv: readonly ParamKeys[],
-): ReadonlySet<ParamKeys> =>
-  new Set<ParamKeys>([...globalEnv, ...stageEnv, ...fnEnv]);
-
-/**
- * Split the key set into "global schema keys" and "stage schema keys".
- * Uses the runtime schema key lists to avoid leaking unknown keys.
- */
-export const splitKeysBySchema = (
-  allKeys: ReadonlySet<ParamKeys>,
-  globalSchema: ZodObject<ZodRawShape>,
-  stageSchema: ZodObject<ZodRawShape>,
-): {
-  globalPick: readonly (keyof GlobalParams)[];
-  stagePick: readonly (keyof StageParams)[];
-} => {
-  // In Zod v4, keyof().options is a readonly array of field names.
-  const globalFieldNames = new Set(
-    globalSchema.keyof().options as readonly (keyof GlobalParams)[],
-  );
-  const stageFieldNames = new Set(
-    stageSchema.keyof().options as readonly (keyof StageParams)[],
-  );
-
-  const globalPick = [...allKeys].filter((k): k is keyof GlobalParams =>
-    globalFieldNames.has(k as keyof GlobalParams),
-  );
-  const stagePick = [...allKeys].filter((k): k is keyof StageParams =>
-    stageFieldNames.has(k as keyof StageParams),
-  );
-
-  return { globalPick, stagePick };
+/** Derive the exact set of keys for this function’s env. */
+export const deriveAllKeys = <
+  GK extends string,
+  SK extends string,
+  FK extends string,
+>(
+  globalEnv: readonly GK[],
+  stageEnv: readonly SK[],
+  fnEnv: readonly (GK | SK | FK)[],
+): Set<GK | SK | FK> => {
+  const out = new Set<GK | SK | FK>();
+  globalEnv.forEach((k) => out.add(k));
+  stageEnv.forEach((k) => out.add(k));
+  fnEnv.forEach((k) => out.add(k));
+  return out;
 };
 
-/** Helper to build a Zod pick object shape selector without `any`. */
-const pickObj = (keys: readonly string[]) =>
-  Object.fromEntries(keys.map((k) => [k, true])) as Record<string, true>;
+/** Partition into keys present in each schema’s shape. */
+export const splitKeysBySchema = <GK extends string, SK extends string>(
+  all: ReadonlySet<GK | SK>,
+  globalSchema: ZodObject<ZodRawShape>,
+  stageSchema: ZodObject<ZodRawShape>,
+): { globalPick: readonly GK[]; stagePick: readonly SK[] } => {
+  const gShape = globalSchema.shape;
+  const sShape = stageSchema.shape;
 
-/**
- * Compose a runtime env schema from the two source schemas,
- * picking only the requested fields from each, then extending shapes.
- * (Use .extend(shape) instead of .merge to avoid deprecation.)
- */
-export const buildEnvSchema = (
-  globalPick: readonly (keyof GlobalParams)[],
-  stagePick: readonly (keyof StageParams)[],
+  const g: GK[] = [];
+  const s: SK[] = [];
+
+  all.forEach((k) => {
+    const key = k as unknown as string;
+    if (key in gShape) g.push(k as GK);
+    if (key in sShape) s.push(k as SK);
+  });
+
+  return { globalPick: g, stagePick: s };
+};
+
+/** Compose a Zod schema with exactly the picked keys. */
+export const buildEnvSchema = <GK extends string, SK extends string>(
+  globalPick: readonly GK[],
+  stagePick: readonly SK[],
   globalSchema: ZodObject<ZodRawShape>,
   stageSchema: ZodObject<ZodRawShape>,
 ): ZodObject<ZodRawShape> => {
-  const globalPicked = globalSchema.pick(pickObj(globalPick));
-  const stagePicked = stageSchema.pick(pickObj(stagePick));
+  const toPick = (keys: readonly string[]): Record<string, true> =>
+    Object.fromEntries(keys.map((k) => [k, true])) as Record<string, true>;
 
-  return z.object({}).extend(globalPicked.shape).extend(stagePicked.shape);
+  const gPicked = globalSchema.pick(toPick(globalPick as readonly string[]));
+  const sPicked = stageSchema.pick(toPick(stagePick as readonly string[]));
+
+  return z.object({}).extend(gPicked.shape).extend(sPicked.shape);
 };
 
-/**
- * Parse and return a typed env object. Zod v4's inference drives the type.
- */
 export const parseTypedEnv = <T extends z.ZodType>(
   envSchema: T,
   envSource: Record<string, unknown>,
 ): z.infer<T> => envSchema.parse(envSource);
 
-/** HEAD check (kept separate so you can test it trivially). */
 export const isHead = (method: string | undefined): boolean =>
   method === 'HEAD';

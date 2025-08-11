@@ -9,9 +9,18 @@ import {
 } from '@/test/aws';
 import { synthesizeEnvForSuccess, withTempEnv } from '@/test/env';
 import { expectHttpJson } from '@/test/http';
+import { globalParamsSchema } from '@/test/stages/globalSchema';
+import { stageParamsSchema } from '@/test/stages/stageSchema';
 
 import { detectSecurityContext } from './detectSecurityContext';
-import { wrapHandler } from './wrapHandler';
+import { makeWrapHandler } from './wrapHandler';
+
+const wrapHandler = makeWrapHandler({
+  globalParamsSchema,
+  stageParamsSchema,
+  globalEnv,
+  stageEnv,
+});
 
 describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
   it('short-circuits HEAD but middleware serializes an empty JSON response', async () => {
@@ -197,4 +206,3 @@ describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
     consoleSpy.mockRestore();
   });
 });
-
