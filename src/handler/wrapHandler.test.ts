@@ -62,8 +62,7 @@ const createContext = (): Context =>
   }) as unknown as Context;
 
 /**
- * Temporarily set env vars using radash `shake` to drop only `undefined` keys.
- * No dynamic delete; stays ESLint-clean.
+ * Set env vars using radash `shake` to drop only `undefined` keys.
  */
 const withTempEnv = async <T>(
   vars: Record<string, string | undefined>,
@@ -122,14 +121,17 @@ const synthesizeEnvForSuccess = (): Record<string, string> => {
     return 'x';
   };
 
-  // Build the env record in one pass with mapEntries
   return mapEntries(envSchema.shape, (key, schema) => [
     key,
     tryCandidates(schema as unknown as z.ZodType),
   ]) as Record<string, string>;
 };
 
-const expectHttpJson = (res: unknown, expectedBody: unknown): void => {
+const expectHttpJson = (
+  res: unknown,
+  expectedBody: unknown,
+  expectedContentType = 'application/json',
+): void => {
   const r = res as {
     statusCode?: number;
     body?: unknown;
@@ -138,7 +140,7 @@ const expectHttpJson = (res: unknown, expectedBody: unknown): void => {
   expect(r.statusCode).toBe(200);
   const headers = r.headers ?? {};
   const ct = headers['Content-Type'] ?? headers['content-type'];
-  expect(ct).toBe('application/json');
+  expect(ct).toBe(expectedContentType);
   const bodyStr = typeof r.body === 'string' ? r.body : JSON.stringify(r.body);
   expect(bodyStr).toBe(JSON.stringify(expectedBody));
 };
@@ -230,25 +232,7 @@ describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
     ).toBe(true);
   });
 
-  it('defaults to console logger when none provided', async () => {
-    const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
-    const base = async () => ({ ok: true });
-
-    const wrapped = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-    });
-
-    const envVars = synthesizeEnvForSuccess();
-
-    await withTempEnv(envVars, () =>
-      wrapped(createEvent('GET'), createContext()),
-    );
-    expect(consoleSpy).toHaveBeenCalledWith('env', expect.any(Object));
-    consoleSpy.mockRestore();
-  });
-
-  it('accepts requests regardless of custom contentType option (stack serializes JSON)', async () => {
+  it('passes contentType through to stack: default vs custom', async () => {
     const base = async () => ({ ok: true });
 
     const wrappedDefault = wrapHandler(base, {
@@ -267,12 +251,12 @@ describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
     const r1 = await withTempEnv(envVars, () =>
       wrappedDefault(createEvent('GET'), createContext()),
     );
-    expectHttpJson(r1, { ok: true });
+    expectHttpJson(r1, { ok: true }, 'application/json');
 
     const r2 = await withTempEnv(envVars, () =>
       wrappedCustom(createEvent('GET'), createContext()),
     );
-    expectHttpJson(r2, { ok: true });
+    expectHttpJson(r2, { ok: true }, 'application/vnd.api+json');
   });
 
   it('auto-detects multipart: non-multipart passes; multipart with boundary also passes', async () => {
@@ -327,6 +311,24 @@ describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
 
     expect(status).toBeGreaterThanOrEqual(400);
     expect(called).toBe(false);
+  });
+
+  it('defaults to console logger when none provided', async () => {
+    const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const base = async () => ({ ok: true });
+
+    const wrapped = wrapHandler(base, {
+      eventSchema: z.object({}),
+      responseSchema: z.object({ ok: z.boolean() }),
+    });
+
+    const envVars = synthesizeEnvForSuccess();
+
+    await withTempEnv(envVars, () =>
+      wrapped(createEvent('GET'), createContext()),
+    );
+    expect(consoleSpy).toHaveBeenCalledWith('env', expect.any(Object));
+    consoleSpy.mockRestore();
   });
 });
 

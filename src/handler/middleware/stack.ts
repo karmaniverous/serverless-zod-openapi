@@ -21,15 +21,15 @@ export type BuildStackOptions<
 // Serialize handler output into API Gateway v1 shape.
 const serializeResponse = (
   payload: unknown,
+  contentType: string,
 ): {
   statusCode: number;
   headers: Record<string, string>;
   body: string;
 } => {
-  // Use shake so optional headers (e.g., trace IDs) can be added later without undefined.
   const headers = shake({
     'Access-Control-Allow-Credentials': 'true',
-    'Content-Type': 'application/json',
+    'Content-Type': contentType,
   });
 
   if (typeof payload === 'string') {
@@ -73,7 +73,7 @@ export const buildMiddlewareStack = <
         return;
       }
 
-      request.response = serializeResponse(res);
+      request.response = serializeResponse(res, opts.contentType);
     },
 
     onError: async (request) => {
@@ -89,7 +89,7 @@ export const buildMiddlewareStack = <
         statusCode,
         headers: shake({
           'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': 'application/json',
+          'Content-Type': opts.contentType,
         }),
         body,
       };
