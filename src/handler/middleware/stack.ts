@@ -1,94 +1,98 @@
 import type { MiddlewareObj } from '@middy/core';
-import httpCors from '@middy/http-cors';
-import httpErrorHandler from '@middy/http-error-handler';
-import httpEventNormalizer from '@middy/http-event-normalizer';
-import httpHeaderNormalizer from '@middy/http-header-normalizer';
-import httpJsonBodyParser from '@middy/http-json-body-parser';
-import httpMultipartBodyParser from '@middy/http-multipart-body-parser';
-import httpResponseSerializer from '@middy/http-response-serializer';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type { z } from 'zod';
+import multipart from '@middy/http-multipart-body-parser';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
+import { shake } from 'radash';
+import { z } from 'zod';
 
+import { isMultipart } from '@/handler/middleware/isMultipart';
 import type { ConsoleLogger } from '@/types/Loggable';
-
-import { wrapSerializer } from '../wrapSerializer';
-import { asApiMiddleware } from './asApiMiddleware';
-import { combine } from './combine';
-import {
-  httpZodValidator,
-  type HttpZodValidatorOptions,
-} from './httpZodValidator';
-import { noopMiddleware } from './noop';
-import { shortCircuitHead } from './shortCircuitHead';
 
 export type BuildStackOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
-> = HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> & {
-  /** default: false */
-  enableMultipart?: boolean;
-  /** default: 'application/json' */
-  contentType?: string;
-  /** used by the serializer’s logger fallback */
-  logger?: ConsoleLogger;
+> = {
+  eventSchema: EventSchema;
+  responseSchema?: ResponseSchema;
+  contentType: string;
+  logger?: Logger;
 };
 
-/** Build a single composed middleware stack in the correct order. */
+// Serialize handler output into API Gateway v1 shape.
+const serializeResponse = (
+  payload: unknown,
+): {
+  statusCode: number;
+  headers: Record<string, string>;
+  body: string;
+} => {
+  // Use shake so optional headers (e.g., trace IDs) can be added later without undefined.
+  const headers = shake({
+    'Access-Control-Allow-Credentials': 'true',
+    'Content-Type': 'application/json',
+  });
+
+  if (typeof payload === 'string') {
+    return { statusCode: 200, headers, body: payload };
+  }
+  return { statusCode: 200, headers, body: JSON.stringify(payload ?? {}) };
+};
+
 export const buildMiddlewareStack = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  options: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
-): MiddlewareObj<APIGatewayProxyEvent, Context> => {
-  const multipart = options.enableMultipart
-    ? asApiMiddleware(httpMultipartBodyParser())
-    : noopMiddleware;
+  opts: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
+): MiddlewareObj<APIGatewayProxyEvent, unknown> => {
+  const parser = multipart();
 
-  // Re-type third-party middlewares once, then pass typed values to `combine`.
-  const mEventNormalizer = asApiMiddleware(httpEventNormalizer());
-  const mHeaderNormalizer = asApiMiddleware(httpHeaderNormalizer());
-  const mJsonBodyParser = asApiMiddleware(httpJsonBodyParser());
-  const mZodValidator = asApiMiddleware(httpZodValidator(options));
-  const mErrorHandler = asApiMiddleware(
-    httpErrorHandler({
-      fallbackMessage: 'Non-HTTP server error. See CloudWatch for more info.',
-    }),
-  );
-  const mCors = asApiMiddleware(
-    httpCors({
-      credentials: true,
-      getOrigin: (o) => o,
-    }),
-  );
-  const mResponseSerializer = asApiMiddleware(
-    httpResponseSerializer({
-      serializers: [
-        {
-          regex: /^application\/json$/,
-          serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
-            label: 'application/json',
-            logger: (options.logger ?? console) as Console,
-          }),
-        },
-      ],
-      defaultContentType: options.contentType ?? 'application/json',
-    }),
-  );
+  return {
+    // Auto multipart: invoke parser only when request is truly multipart
+    before: async (request) => {
+      const event = request.event;
 
-  return combine(
-    // BEFORE phase
-    shortCircuitHead,
-    mEventNormalizer,
-    mHeaderNormalizer,
-    multipart,
-    mJsonBodyParser,
-    mZodValidator,
+      // Validate event (fail-fast with 400 on schema errors)
+      const v = opts.eventSchema.safeParse(event);
+      if (!v.success) throw v.error;
 
-    // AFTER / ERROR phases
-    mErrorHandler,
-    mCors,
-    mResponseSerializer,
-  );
+      if (isMultipart(event) && typeof parser.before === 'function') {
+        await parser.before(request);
+      }
+    },
+
+    after: async (request) => {
+      const res = request.response;
+
+      // Pass through if handler already returned a full response
+      if (
+        res &&
+        typeof res === 'object' &&
+        'statusCode' in (res as Record<string, unknown>)
+      ) {
+        return;
+      }
+
+      request.response = serializeResponse(res);
+    },
+
+    onError: async (request) => {
+      const err = request.error;
+      const statusCode = err instanceof z.ZodError ? 400 : 500;
+
+      const body =
+        err instanceof Error
+          ? JSON.stringify({ message: err.message })
+          : JSON.stringify({ message: 'Unhandled error' });
+
+      request.response = {
+        statusCode,
+        headers: shake({
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+        }),
+        body,
+      };
+    },
+  };
 };

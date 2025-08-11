@@ -1,5 +1,6 @@
 import middy from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { shake } from 'radash';
 import type { z } from 'zod';
 
 import { globalEnv, stageEnv } from '@/serverless/stages/env';
@@ -30,7 +31,6 @@ export type WrapHandlerOptions<
 > = {
   contentType?: string;
   envKeys?: FnKeys;
-  enableMultipart?: boolean;
   eventSchema: EventSchema;
   responseSchema?: ResponseSchema;
 } & Loggable<Logger>;
@@ -50,6 +50,11 @@ export const wrapHandler = <
   options: WrapHandlerOptions<EventSchema, ResponseSchema, Logger, FnKeys>,
 ) =>
   middy(async (event: APIGatewayProxyEvent, context: Context) => {
+    if (event.httpMethod === 'HEAD') {
+      // Middleware stack will serialize this to API Gateway shape.
+      return {};
+    }
+
     const { logger = console as unknown as Logger, envKeys } = options;
 
     // 1) Exact key set for this function’s env = global + stage + function keys
@@ -81,6 +86,7 @@ export const wrapHandler = <
 
     const securityContext = detectSecurityContext(event);
     const typedEvent = event as unknown as InferEvent<EventSchema>;
+
     const result = await handler(typedEvent, context, {
       env,
       logger,
@@ -89,12 +95,14 @@ export const wrapHandler = <
 
     return result as Awaited<HandlerReturn<ResponseSchema>>;
   }).use(
-    buildMiddlewareStack<EventSchema, ResponseSchema, Logger>({
-      eventSchema: options.eventSchema,
-      responseSchema: options.responseSchema,
-      enableMultipart: options.enableMultipart ?? false,
-      contentType: options.contentType ?? 'application/json',
-      ...(options.logger ? { logger: options.logger } : {}),
-    } satisfies BuildStackOptions<EventSchema, ResponseSchema, Logger>),
+    buildMiddlewareStack<EventSchema, ResponseSchema, Logger>(
+      // With exactOptionalPropertyTypes, omit undefineds via radash.shake
+      shake({
+        eventSchema: options.eventSchema,
+        responseSchema: options.responseSchema,
+        contentType: options.contentType ?? 'application/json',
+        logger: options.logger,
+      }) as BuildStackOptions<EventSchema, ResponseSchema, Logger>,
+    ),
   );
 

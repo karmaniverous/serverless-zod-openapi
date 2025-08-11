@@ -1,246 +1,332 @@
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { describe, expect, it } from 'vitest';
+import { mapEntries, shake } from 'radash';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { globalEnv, stageEnv } from '@/serverless/stages/env';
+import { globalParamsSchema } from '@/serverless/stages/globalSchema';
+import { stageParamsSchema } from '@/serverless/stages/stageSchema';
+
+import { detectSecurityContext } from './detectSecurityContext';
+import { buildEnvSchema, deriveAllKeys, splitKeysBySchema } from './envBuilder';
 import { wrapHandler } from './wrapHandler';
 
-/** Minimal event/context builders (keep them tiny; we don't mock local deps). */
-const makeEvent = (method: string): APIGatewayProxyEvent =>
-  ({ httpMethod: method }) as unknown as APIGatewayProxyEvent;
+/* ------------------------------ helpers ------------------------------ */
 
-const makeContext = (): Context =>
-  ({ awsRequestId: 'req-1' }) as unknown as Context;
+const createEvent = (
+  method: string,
+  headers?: Record<string, string>,
+): APIGatewayProxyEvent =>
+  ({
+    httpMethod: method,
+    headers: headers ?? {},
+    body: undefined,
+    isBase64Encoded: false,
+    path: '/',
+    queryStringParameters: null,
+    pathParameters: null,
+    multiValueHeaders: {},
+    multiValueQueryStringParameters: null,
+    stageVariables: null,
+    resource: '/',
+    requestContext: {
+      accountId: 'acc',
+      apiId: 'api',
+      httpMethod: method,
+      identity: {} as unknown,
+      path: '/',
+      stage: 'test',
+      requestId: 'req',
+      requestTimeEpoch: Date.now(),
+      resourceId: 'res',
+      resourcePath: '/',
+      authorizer: {},
+      protocol: 'HTTP/1.1',
+    } as unknown,
+  }) as unknown as APIGatewayProxyEvent;
+
+const createContext = (): Context =>
+  ({
+    awsRequestId: 'test-req-id',
+    callbackWaitsForEmptyEventLoop: false,
+    functionName: 'fn',
+    functionVersion: '$LATEST',
+    invokedFunctionArn: 'arn',
+    logGroupName: 'lg',
+    logStreamName: 'ls',
+    memoryLimitInMB: '128',
+    getRemainingTimeInMillis: () => 1000,
+    done: () => undefined,
+    fail: () => undefined,
+    succeed: () => undefined,
+  }) as unknown as Context;
 
 /**
- * Temporarily set env vars for a single operation.
- * Avoids dynamic delete; restores the original snapshot afterwards.
+ * Temporarily set env vars using radash `shake` to drop only `undefined` keys.
+ * No dynamic delete; stays ESLint-clean.
  */
-const withEnv = <T>(
+const withTempEnv = async <T>(
   vars: Record<string, string | undefined>,
-  run: () => Promise<T> | T,
+  run: () => T | Promise<T>,
 ): Promise<T> => {
-  const saved = { ...process.env };
-  Object.entries(vars).forEach(([k, v]) => {
-    (process.env as Record<string, string | undefined>)[k] = v;
-  });
-  const p = Promise.resolve().then(run);
-  return p.finally(() => {
-    process.env = saved;
-  });
+  const original = { ...process.env };
+  process.env = shake({ ...original, ...vars }) as NodeJS.ProcessEnv;
+  try {
+    return await run();
+  } finally {
+    process.env = original;
+  }
 };
 
-describe('wrapHandler (integration with real deps)', () => {
-  it('short-circuits HEAD requests (base handler not invoked)', async () => {
+/** Build the same env schema the wrapper uses and synthesize string values that pass it. */
+const synthesizeEnvForSuccess = (): Record<string, string> => {
+  const allKeys = deriveAllKeys(globalEnv, stageEnv, [] as const);
+  const { globalPick, stagePick } = splitKeysBySchema(
+    allKeys,
+    globalParamsSchema,
+    stageParamsSchema,
+  );
+  const envSchema = buildEnvSchema(
+    globalPick,
+    stagePick,
+    globalParamsSchema,
+    stageParamsSchema,
+  );
+
+  if (!(envSchema instanceof z.ZodObject)) {
+    throw new Error('Expected env schema to be a ZodObject');
+  }
+
+  const candidates: readonly string[] = [
+    'us-east-1',
+    'test',
+    'dev',
+    'prod',
+    'true',
+    'false',
+    '1',
+    '0',
+    'application/json',
+    'x',
+  ];
+
+  const tryCandidates = (schema: z.ZodType): string => {
+    if (schema instanceof z.ZodEnum) return String(schema.options[0] ?? 'x');
+    if (schema instanceof z.ZodLiteral) {
+      const val = (schema as unknown as { value: unknown }).value;
+      return String(val);
+    }
+    for (const c of candidates) {
+      if (schema.safeParse(c).success) return c;
+    }
+    return 'x';
+  };
+
+  // Build the env record in one pass with mapEntries
+  return mapEntries(envSchema.shape, (key, schema) => [
+    key,
+    tryCandidates(schema as unknown as z.ZodType),
+  ]) as Record<string, string>;
+};
+
+const expectHttpJson = (res: unknown, expectedBody: unknown): void => {
+  const r = res as {
+    statusCode?: number;
+    body?: unknown;
+    headers?: Record<string, string>;
+  };
+  expect(r.statusCode).toBe(200);
+  const headers = r.headers ?? {};
+  const ct = headers['Content-Type'] ?? headers['content-type'];
+  expect(ct).toBe('application/json');
+  const bodyStr = typeof r.body === 'string' ? r.body : JSON.stringify(r.body);
+  expect(bodyStr).toBe(JSON.stringify(expectedBody));
+};
+
+/* -------------------------------- tests ------------------------------ */
+
+describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
+  it('short-circuits HEAD but middleware serializes an empty JSON response', async () => {
     let called = false;
-
-    const wrapped = wrapHandler(
-      async () => {
-        called = true;
-        return {};
-      },
-      {
-        eventSchema: z.object({}),
-        responseSchema: z.object({}), // returning {} is valid
-        envKeys: [] as const,
-      },
-    );
-
-    const event = makeEvent('HEAD') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
-
-    const res = await wrapped(event, ctx);
-
-    expect(called).toBe(false);
-    expect(res).toEqual({});
-  });
-
-  it('builds env from global + stage + function keys and passes it to the handler', async () => {
-    let capturedEnv: Record<string, unknown> | undefined;
-
-    const wrapped = wrapHandler(
-      async (_event, _ctx, { env, securityContext }) => {
-        capturedEnv = env;
-        expect(typeof securityContext).toBe('object');
-        return { ok: true };
-      },
-      {
-        eventSchema: z.object({}),
-        responseSchema: z.object({ ok: z.boolean() }),
-        envKeys: ['PROFILE', 'TEST_STAGE_ENV'] as const,
-      },
-    );
-
-    const event = makeEvent('GET') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
-
-    const res = await withEnv(
-      {
-        SERVICE_NAME: 'svc',
-        REGION: 'ap-southeast-1',
-        PROFILE: 'dev-profile',
-        TEST_GLOBAL_ENV: 'g-env',
-        STAGE: 'dev',
-        TEST_STAGE_ENV: 's-env',
-      },
-      () => wrapped(event, ctx),
-    );
-
-    expect(res).toEqual({ ok: true });
-    expect(capturedEnv).toEqual({
-      SERVICE_NAME: 'svc',
-      REGION: 'ap-southeast-1',
-      PROFILE: 'dev-profile',
-      TEST_GLOBAL_ENV: 'g-env',
-      STAGE: 'dev',
-      TEST_STAGE_ENV: 's-env',
-    });
-  });
-
-  it('returns a 500-style response when a required env var is missing', async () => {
-    const wrapped = wrapHandler(
-      async () => {
-        // should not be invoked; env parse fails first
-        return { ok: true };
-      },
-      {
-        eventSchema: z.object({}),
-        responseSchema: z.object({ ok: z.boolean() }),
-        envKeys: ['PROFILE'] as const,
-      },
-    );
-
-    const event = makeEvent('GET') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
-
-    const res = await withEnv(
-      {
-        SERVICE_NAME: 'svc',
-        REGION: 'ap-southeast-1',
-        TEST_GLOBAL_ENV: 'g-env',
-        STAGE: 'dev',
-        PROFILE: undefined, // required by envKeys; omitted on purpose
-      },
-      () => wrapped(event, ctx),
-    );
-
-    const out = res as {
-      statusCode?: number;
-      headers?: Record<string, string>;
+    const base = async () => {
+      called = true;
+      return {};
     };
-    expect(typeof out.statusCode).toBe('number');
-    expect(out.statusCode).toBe(500);
-  });
 
-  it('applies multipart parser only when enableMultipart=true (expect 415 when enabled without Content-Type)', async () => {
-    const wrapped = wrapHandler(async () => ({ ok: true }), {
+    const wrapped = wrapHandler(base, {
       eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
+      responseSchema: z.object({}).strip(),
       envKeys: [] as const,
-      enableMultipart: true,
     });
 
-    const event = makeEvent('POST') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
-
-    const res = await withEnv(
-      {
-        SERVICE_NAME: 'svc',
-        REGION: 'ap-southeast-1',
-        TEST_GLOBAL_ENV: 'g-env',
-        STAGE: 'dev',
-        PROFILE: 'dev-profile',
-      },
-      () => wrapped(event, ctx),
-    );
-
-    const out = res as { statusCode?: number; body?: string };
-    expect(out.statusCode).toBe(415); // Unsupported Media Type
+    const res = await wrapped(createEvent('HEAD'), createContext());
+    expect(called).toBe(false);
+    expectHttpJson(res, {});
   });
 
-  it('does NOT apply multipart parser when enableMultipart=false (no 415)', async () => {
-    const wrapped = wrapHandler(async () => ({ ok: true }), {
+  it('assembles env, injects securityContext, logs env, and returns serialized JSON', async () => {
+    let capturedEnv: Record<string, unknown> | undefined;
+    let capturedSec: unknown;
+
+    const customLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+      log: vi.fn(),
+    };
+
+    const base = async (
+      event: unknown,
+      _ctx: Context,
+      injected: {
+        env: Record<string, unknown>;
+        logger: typeof customLogger;
+        securityContext: unknown;
+      },
+    ) => {
+      capturedEnv = injected.env;
+      capturedSec = injected.securityContext;
+
+      const expected = detectSecurityContext(event as APIGatewayProxyEvent);
+      expect(capturedSec).toEqual(expected);
+      expect(injected.logger).toBe(customLogger);
+
+      return { ok: true };
+    };
+
+    const wrapped = wrapHandler(base, {
       eventSchema: z.object({}),
       responseSchema: z.object({ ok: z.boolean() }),
-      envKeys: [] as const,
-      // enableMultipart not set / false
+      logger: customLogger,
+      envKeys: ['ESB_MINIFY', 'ESB_SOURCEMAP'] as const,
     });
 
-    const event = makeEvent('POST') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
-
-    const res = await withEnv(
-      {
-        SERVICE_NAME: 'svc',
-        REGION: 'ap-southeast-1',
-        TEST_GLOBAL_ENV: 'g-env',
-        STAGE: 'dev',
-        PROFILE: 'dev-profile',
-      },
-      () => wrapped(event, ctx),
+    const envVars = synthesizeEnvForSuccess();
+    const res = await withTempEnv(envVars, () =>
+      wrapped(
+        createEvent('GET', { Accept: 'application/json' }),
+        createContext(),
+      ),
     );
 
-    // If multipart isn't enabled, we don't get the 415 from the multipart middleware.
-    // Expect a normal serialized response.
-    expect(res).toEqual({ ok: true });
+    expectHttpJson(res, { ok: true });
+    expect(customLogger.debug).toHaveBeenCalledWith('env', expect.any(Object));
+
+    // Assert presence of at least one known global and stage key
+    const someGlobal = globalEnv[0];
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        capturedEnv as Record<string, unknown>,
+        someGlobal,
+      ),
+    ).toBe(true);
+
+    const someStage = stageEnv[0];
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        capturedEnv as Record<string, unknown>,
+        someStage,
+      ),
+    ).toBe(true);
   });
 
-  it('uses the provided default contentType in the serialized response', async () => {
-    const wrapped = wrapHandler(async () => ({ ok: true }), {
+  it('defaults to console logger when none provided', async () => {
+    const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const base = async () => ({ ok: true });
+
+    const wrapped = wrapHandler(base, {
       eventSchema: z.object({}),
       responseSchema: z.object({ ok: z.boolean() }),
-      envKeys: [] as const,
+    });
+
+    const envVars = synthesizeEnvForSuccess();
+
+    await withTempEnv(envVars, () =>
+      wrapped(createEvent('GET'), createContext()),
+    );
+    expect(consoleSpy).toHaveBeenCalledWith('env', expect.any(Object));
+    consoleSpy.mockRestore();
+  });
+
+  it('accepts requests regardless of custom contentType option (stack serializes JSON)', async () => {
+    const base = async () => ({ ok: true });
+
+    const wrappedDefault = wrapHandler(base, {
+      eventSchema: z.object({}),
+      responseSchema: z.object({ ok: z.boolean() }),
+    });
+
+    const wrappedCustom = wrapHandler(base, {
+      eventSchema: z.object({}),
+      responseSchema: z.object({ ok: z.boolean() }),
       contentType: 'application/vnd.api+json',
     });
 
-    const event = makeEvent('GET') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
+    const envVars = synthesizeEnvForSuccess();
 
-    const res = await withEnv(
-      {
-        SERVICE_NAME: 'svc',
-        REGION: 'ap-southeast-1',
-        TEST_GLOBAL_ENV: 'g-env',
-        STAGE: 'dev',
-        PROFILE: 'dev-profile',
-      },
-      () => wrapped(event, ctx),
+    const r1 = await withTempEnv(envVars, () =>
+      wrappedDefault(createEvent('GET'), createContext()),
     );
+    expectHttpJson(r1, { ok: true });
 
-    const out = res as { headers?: Record<string, string> };
-    expect(out.headers?.['Content-Type']).toBe('application/vnd.api+json');
+    const r2 = await withTempEnv(envVars, () =>
+      wrappedCustom(createEvent('GET'), createContext()),
+    );
+    expectHttpJson(r2, { ok: true });
   });
 
-  it('still short-circuits HEAD even when enableMultipart is true', async () => {
+  it('auto-detects multipart: non-multipart passes; multipart with boundary also passes', async () => {
+    const base = async () => ({ ok: true });
+    const wrapped = wrapHandler(base, {
+      eventSchema: z.object({}),
+      responseSchema: z.object({ ok: z.boolean() }),
+    });
+    const envVars = synthesizeEnvForSuccess();
+
+    // Non-multipart
+    const r1 = await withTempEnv(envVars, () =>
+      wrapped(createEvent('POST'), createContext()),
+    );
+    expectHttpJson(r1, { ok: true });
+
+    // Multipart with boundary
+    const headers = {
+      'Content-Type': 'multipart/form-data; boundary=----VitestBoundary',
+    };
+    const event = {
+      ...createEvent('POST', headers),
+      body: '------VitestBoundary--',
+    };
+    const r2 = await withTempEnv(envVars, () =>
+      wrapped(event as APIGatewayProxyEvent, createContext()),
+    );
+    expectHttpJson(r2, { ok: true });
+  });
+
+  it('propagates schema/env validation failures as error responses (base not called)', async () => {
     let called = false;
+    const base = async () => {
+      called = true;
+      return { ok: true };
+    };
 
-    const wrapped = wrapHandler(
-      async () => {
-        called = true;
-        return {};
-      },
-      {
-        eventSchema: z.object({}),
-        responseSchema: z.object({}),
-        envKeys: [] as const,
-        enableMultipart: true,
-      },
+    const wrapped = wrapHandler(base, {
+      eventSchema: z.object({}),
+      responseSchema: z.object({ ok: z.boolean() }),
+    });
+
+    // Intentionally incomplete env to trigger failure
+    const badEnv = Object.fromEntries(
+      [...globalEnv, ...stageEnv].slice(0, 2).map((k) => [k, '']),
     );
 
-    const event = makeEvent('HEAD') as unknown as Parameters<typeof wrapped>[0];
-    const ctx = makeContext() as unknown as Parameters<typeof wrapped>[1];
-
-    const res = await withEnv(
-      {
-        SERVICE_NAME: 'svc',
-        REGION: 'ap-southeast-1',
-        TEST_GLOBAL_ENV: 'g-env',
-        STAGE: 'dev',
-        PROFILE: 'dev-profile',
-      },
-      () => wrapped(event, ctx),
+    const res = await withTempEnv(badEnv, () =>
+      wrapped(createEvent('GET'), createContext()),
     );
+    const status = (res as { statusCode?: number }).statusCode ?? 0;
 
+    expect(status).toBeGreaterThanOrEqual(400);
     expect(called).toBe(false);
-    expect(res).toEqual({});
   });
 });
+

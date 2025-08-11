@@ -41,9 +41,8 @@ describe('envBuilder helpers', () => {
 
   it('deriveAllKeys returns the exact union set (global ∪ stage ∪ function)', () => {
     const keys = deriveAllKeys(globalEnv, stageEnv, fnEnv);
-    // Expected: SERVICE_NAME, PROFILE, STAGE, TEST_STAGE_ENV, TEST_GLOBAL_ENV
     expect(keys.size).toBe(5);
-    expect([...keys].sort()).toEqual(
+    expect(Array.from(keys).sort()).toEqual(
       [
         'PROFILE',
         'SERVICE_NAME',
@@ -62,7 +61,6 @@ describe('envBuilder helpers', () => {
       stageSchema,
     );
 
-    // Order is not guaranteed; compare as sets.
     expect(new Set(globalPick)).toEqual(
       new Set<keyof GlobalParams>([
         'SERVICE_NAME',
@@ -89,9 +87,16 @@ describe('envBuilder helpers', () => {
       stageSchema,
     );
 
-    // Validate the composed shape has only the expected properties.
-    const shapeKeys = Object.keys(envSchema.shape).sort();
-    expect(shapeKeys).toEqual(
+    // Narrow safely to ZodObject (Zod v4)
+    if (!(envSchema instanceof z.ZodObject)) {
+      throw new Error('Expected env schema to be a ZodObject');
+    }
+
+    // Use a typed Object.keys to list the shape keys
+    const shapeKeys = Object.keys(
+      envSchema.shape,
+    ) as (keyof typeof envSchema.shape)[];
+    expect([...shapeKeys].sort()).toEqual(
       [
         'PROFILE',
         'SERVICE_NAME',
