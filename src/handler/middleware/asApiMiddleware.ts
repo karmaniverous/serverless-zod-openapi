@@ -1,4 +1,3 @@
-// src/handler/middleware/asApiMiddleware.ts
 import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
