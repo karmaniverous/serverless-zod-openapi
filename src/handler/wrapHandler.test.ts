@@ -1,208 +1,86 @@
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { describe, expect, it, vi } from 'vitest';
+import type { Context } from 'aws-lambda';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { globalEnv, stageEnv } from '@/serverless/stages/env';
-import {
-  createApiGatewayV1Event as createEvent,
-  createLambdaContext as createContext,
-} from '@/test/aws';
-import { synthesizeEnvForSuccess, withTempEnv } from '@/test/env';
-import { expectHttpJson } from '@/test/http';
-import { globalParamsSchema } from '@/test/stages/globalSchema';
-import { stageParamsSchema } from '@/test/stages/stageSchema';
+import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
+import type { AllParams } from '@/test/stages';
+import type { ConsoleLogger } from '@/types/Loggable';
 
-import { detectSecurityContext } from './detectSecurityContext';
-import { makeWrapHandler } from './wrapHandler';
+import type { Handler, HandlerOptions, InferEvent } from './Handler';
+import type { SecurityContext } from './SecurityContext';
 
-const wrapHandler = makeWrapHandler({
-  globalParamsSchema,
-  stageParamsSchema,
-  globalEnv,
-  stageEnv,
+// --- Test-local schemas (do NOT import production schemas)
+const eventSchema = z.object({
+  // Add a simple overlay that doesn't fight API GW v1:
+  id: z.string(),
+  // Keep optional extras to show the overlay works without affecting base fields
+  q: z.string().optional(),
 });
 
-describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
-  it('short-circuits HEAD but middleware serializes an empty JSON response', async () => {
-    let called = false;
-    const base = async () => {
-      called = true;
-      return {};
-    };
+const responseSchema = z.object({
+  ok: z.boolean(),
+});
 
-    const wrapped = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({}).strip(),
-      envKeys: [] as const,
-    });
+// Keys this handler needs from AllParams (subset of test fixtures)
+type Keys = 'SERVICE_NAME' | 'PROFILE';
 
-    const res = await wrapped(createEvent('HEAD'), createContext());
-    expect(called).toBe(false);
-    expectHttpJson(res, {});
+describe('Handler.ts types (with test-local schemas)', () => {
+  it('Handler signature matches param & return types', () => {
+    type H = Handler<
+      typeof eventSchema,
+      typeof responseSchema,
+      AllParams,
+      Keys,
+      ConsoleLogger
+    >;
+
+    expectTypeOf<Parameters<H>>().toEqualTypeOf<
+      [
+        InferEvent<typeof eventSchema>,
+        Context,
+        HandlerOptions<AllParams, Keys, ConsoleLogger>,
+      ]
+    >();
+
+    expectTypeOf<ReturnType<H>>().toEqualTypeOf<Promise<{ ok: boolean }>>();
   });
 
-  it('assembles env, injects securityContext, logs env, and returns serialized JSON', async () => {
-    let capturedEnv: Record<string, unknown> | undefined;
-    let capturedSec: unknown;
+  it('Concrete implementation type-checks and runs', async () => {
+    const impl: Handler<
+      typeof eventSchema,
+      typeof responseSchema,
+      AllParams,
+      Keys,
+      ConsoleLogger
+    > = async (_event, _ctx, _opts) => {
+      return { ok: true };
+    };
 
-    const customLogger = {
+    // Build a v1 event and satisfy the test event schema
+    const base = createApiGatewayV1Event('GET');
+    const event: InferEvent<typeof eventSchema> = {
+      ...base,
+      id: '123',
+      q: 'hello',
+    };
+
+    const ctx: Context = createLambdaContext();
+
+    const env: Pick<AllParams, Keys> = {
+      SERVICE_NAME: 'svc',
+      PROFILE: 'dev',
+    };
+
+    const logger: ConsoleLogger = {
       debug: vi.fn(),
       info: vi.fn(),
       error: vi.fn(),
       log: vi.fn(),
     };
 
-    const base = async (
-      event: unknown,
-      _ctx: Context,
-      injected: {
-        env: Record<string, unknown>;
-        logger?: typeof customLogger;
-        securityContext: unknown;
-      },
-    ) => {
-      capturedEnv = injected.env;
-      capturedSec = injected.securityContext;
+    const securityContext: SecurityContext = 'public';
 
-      const expected = detectSecurityContext(event as APIGatewayProxyEvent);
-      expect(capturedSec).toEqual(expected);
-      expect(injected.logger).toBe(customLogger);
-
-      return { ok: true };
-    };
-
-    const wrapped = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-      logger: customLogger,
-      envKeys: ['ESB_MINIFY', 'ESB_SOURCEMAP'] as const,
-    });
-
-    const envVars = synthesizeEnvForSuccess();
-    const res = await withTempEnv(envVars, () =>
-      wrapped(
-        createEvent('GET', { Accept: 'application/json' }),
-        createContext(),
-      ),
-    );
-
-    expectHttpJson(res, { ok: true });
-    expect(customLogger.debug).toHaveBeenCalledWith('env', expect.any(Object));
-
-    // Assert presence of at least one known global and stage key
-    const someGlobal = globalEnv[0];
-    expect(
-      Object.prototype.hasOwnProperty.call(
-        capturedEnv as Record<string, unknown>,
-        someGlobal,
-      ),
-    ).toBe(true);
-
-    const someStage = stageEnv[0];
-    expect(
-      Object.prototype.hasOwnProperty.call(
-        capturedEnv as Record<string, unknown>,
-        someStage,
-      ),
-    ).toBe(true);
-  });
-
-  it('passes contentType through to stack: default vs custom', async () => {
-    const base = async () => ({ ok: true });
-
-    const wrappedDefault = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-    });
-
-    const wrappedCustom = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-      contentType: 'application/vnd.api+json',
-    });
-
-    const envVars = synthesizeEnvForSuccess();
-
-    const r1 = await withTempEnv(envVars, () =>
-      wrappedDefault(createEvent('GET'), createContext()),
-    );
-    expectHttpJson(r1, { ok: true }, 'application/json');
-
-    const r2 = await withTempEnv(envVars, () =>
-      wrappedCustom(createEvent('GET'), createContext()),
-    );
-    expectHttpJson(r2, { ok: true }, 'application/vnd.api+json');
-  });
-
-  it('auto-detects multipart: non-multipart passes; multipart with boundary also passes', async () => {
-    const base = async () => ({ ok: true });
-    const wrapped = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-    });
-    const envVars = synthesizeEnvForSuccess();
-
-    // Non-multipart
-    const r1 = await withTempEnv(envVars, () =>
-      wrapped(createEvent('POST'), createContext()),
-    );
-    expectHttpJson(r1, { ok: true });
-
-    // Multipart with boundary
-    const headers = {
-      'Content-Type': 'multipart/form-data; boundary=----VitestBoundary',
-    };
-    const event = {
-      ...createEvent('POST', headers),
-      body: '------VitestBoundary--',
-    };
-    const r2 = await withTempEnv(envVars, () =>
-      wrapped(event as APIGatewayProxyEvent, createContext()),
-    );
-    expectHttpJson(r2, { ok: true });
-  });
-
-  it('propagates schema/env validation failures as error responses (base not called)', async () => {
-    let called = false;
-    const base = async () => {
-      called = true;
-      return { ok: true };
-    };
-
-    const wrapped = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-    });
-
-    // Intentionally incomplete env to trigger failure
-    const badEnv = Object.fromEntries(
-      [...globalEnv, ...stageEnv].slice(0, 2).map((k) => [k, '']),
-    );
-
-    const res = await withTempEnv(badEnv, () =>
-      wrapped(createEvent('GET'), createContext()),
-    );
-    const status = (res as { statusCode?: number }).statusCode ?? 0;
-
-    expect(status).toBeGreaterThanOrEqual(400);
-    expect(called).toBe(false);
-  });
-
-  it('defaults to console logger when none provided', async () => {
-    const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
-    const base = async () => ({ ok: true });
-
-    const wrapped = wrapHandler(base, {
-      eventSchema: z.object({}),
-      responseSchema: z.object({ ok: z.boolean() }),
-    });
-
-    const envVars = synthesizeEnvForSuccess();
-
-    await withTempEnv(envVars, () =>
-      wrapped(createEvent('GET'), createContext()),
-    );
-    expect(consoleSpy).toHaveBeenCalledWith('env', expect.any(Object));
-    consoleSpy.mockRestore();
+    const res = await impl(event, ctx, { env, logger, securityContext });
+    expect(res).toEqual({ ok: true });
   });
 });

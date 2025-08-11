@@ -1,92 +1,40 @@
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { describe, expect, expectTypeOf, it } from 'vitest';
-import { z } from 'zod';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
-import type { AllParams } from '@/test/stages';
+import { eventSchema, responseSchema } from '@/endpoints/foo/get/schema';
+import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
+import type {eventSchema, responseSchema AllParams } from '@/test/stages';
 import type { ConsoleLogger } from '@/types/Loggable';
 
-import type {
-  Handler,
-  HandlerOptions,
-  HandlerReturn,
-  InferEvent,
-} from './Handler';
+import type { Handler, HandlerOptions, InferEvent } from './Handler';
 import type { SecurityContext } from './SecurityContext';
 
-describe('Handler.ts types', () => {
-  it('InferEvent merges APIGatewayProxyEvent with Zod output (additive fields)', () => {
-    const eventSchema = z.object({ foo: z.string() });
-    // value-use to satisfy no-unused-vars when used in type positions
-    void eventSchema;
+type Keys = 'SERVICE_NAME' | 'PROFILE';
 
+describe('Handler.ts types (using fixture schemas)', () => {
+  it('InferEvent overrides APIGatewayProxyEvent fields with fixture eventSchema', () => {
     type E = InferEvent<typeof eventSchema>;
-    expectTypeOf<E>().toExtend<APIGatewayProxyEvent & { foo: string }>();
+
+    // Still has the base APIGatewayProxyEvent shape
+    expectTypeOf<E>().toExtend<APIGatewayProxyEvent>();
+
+    // But queryStringParameters is overridden by the schema’s shape
+    expectTypeOf<E['queryStringParameters']>().toEqualTypeOf<{
+      what?: string;
+      answer?: number;
+    }>();
   });
 
-  it('InferEvent allows Zod output to override overlapping keys', () => {
-    // Zod v4: z.record requires key + value schemas
-    const eventSchema = z.object({ headers: z.record(z.string(), z.string()) });
-    void eventSchema;
-
-    type E = InferEvent<typeof eventSchema>;
-    // headers from InferEvent should equal Record<string, string>
-    expectTypeOf<E['headers']>().toEqualTypeOf<Record<string, string>>();
-  });
-
-  it('HandlerReturn resolves to Promise<z.output<ResponseSchema>> when schema is provided', () => {
-    const responseSchema = z.object({ ok: z.boolean() });
-    void responseSchema;
-
-    type R = HandlerReturn<typeof responseSchema>;
-    expectTypeOf<R>().toEqualTypeOf<Promise<{ ok: boolean }>>();
-  });
-
-  it('HandlerReturn resolves to Promise<unknown> when ResponseSchema is undefined', () => {
-    type R = HandlerReturn<undefined>;
-    expectTypeOf<R>().toEqualTypeOf<Promise<unknown>>();
-  });
-
-  it('HandlerOptions.env is an exact Pick across provided keys, and includes logger & securityContext', () => {
-    type Keys = Extract<keyof AllParams, 'SERVICE_NAME' | 'STAGE'>;
-
-    type Env = HandlerOptions<AllParams, Keys, ConsoleLogger>['env'];
-    expectTypeOf<Env>().toEqualTypeOf<Pick<AllParams, Keys>>();
-
-    type Sec = HandlerOptions<
-      AllParams,
-      Keys,
-      ConsoleLogger
-    >['securityContext'];
-    expectTypeOf<Sec>().toExtend<SecurityContext>();
-
-    type L = HandlerOptions<AllParams, Keys, ConsoleLogger>['logger'];
-    expectTypeOf<L>().toExtend<ConsoleLogger>();
-  });
-
-  it('Handler ties event, response, env keys, and logger together coherently', () => {
-    const eventSchema = z.object({ foo: z.string() });
-    const responseSchema = z.object({ ok: z.boolean() });
-    void eventSchema;
-    void responseSchema;
-
-    type Keys = Extract<keyof AllParams, 'SERVICE_NAME' | 'STAGE'>;
+  it('Handler signature matches expected param & return types', () => {
     type H = Handler<
       typeof eventSchema,
       typeof responseSchema,
+      AllParams,
       Keys,
       ConsoleLogger
     >;
 
-    // Concrete value satisfying H; consume params to keep ESLint happy
-    const impl: H = async (event, ctx, opts) => {
-      void event;
-      void ctx;
-      void opts;
-      return { ok: true };
-    };
-
-    expect(impl).toBeDefined();
-
+    // Parameters: [event, context, options]
     expectTypeOf<Parameters<H>>().toEqualTypeOf<
       [
         InferEvent<typeof eventSchema>,
@@ -94,6 +42,48 @@ describe('Handler.ts types', () => {
         HandlerOptions<AllParams, Keys, ConsoleLogger>,
       ]
     >();
-    expectTypeOf<ReturnType<H>>().toEqualTypeOf<Promise<{ ok: boolean }>>();
+
+    // Return: Promise<output<typeof responseSchema>>
+    expectTypeOf<ReturnType<H>>().toEqualTypeOf<Promise<{ what: string }>>();
+  });
+
+  it('A concrete implementation type-checks and runs', async () => {
+    // Concrete handler using the fixture schemas
+    const impl: Handler<
+      typeof eventSchema,
+      typeof responseSchema,
+      AllParams,
+      Keys,
+      ConsoleLogger
+    > = async (_event, _ctx, _opts) => {
+      return { what: 'ok' };
+    };
+
+    // Build a V1 event and enrich it to satisfy the fixture event schema
+    const base = createApiGatewayV1Event('GET');
+    const event = {
+      ...base,
+      // Matches fixture event schema (overrides the base type in InferEvent)
+      queryStringParameters: { what: 'life', answer: 42 },
+    } as InferEvent<typeof eventSchema>;
+
+    const ctx = createLambdaContext();
+
+    const env: Pick<AllParams, Keys> = {
+      SERVICE_NAME: 'svc',
+      PROFILE: 'dev',
+    };
+
+    const logger: ConsoleLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+      log: vi.fn(),
+    };
+
+    const sec: SecurityContext = 'public';
+
+    const res = await impl(event, ctx, { env, logger, securityContext: sec });
+    expect(res).toEqual({ what: 'ok' });
   });
 });

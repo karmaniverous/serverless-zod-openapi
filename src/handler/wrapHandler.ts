@@ -82,11 +82,11 @@ export const makeWrapHandler = <
     const base = async (event: APIGatewayProxyEvent, context: Context) => {
       // 1) Keys
       const fnEnv = (options.envKeys ?? []) as readonly (keyof AP)[];
-      const allKeys: ReadonlySet<PropertyKey> = new Set<PropertyKey>([
-        ...(cfg.globalEnv as readonly PropertyKey[]),
-        ...(cfg.stageEnv as readonly PropertyKey[]),
-        ...(fnEnv as readonly PropertyKey[]),
-      ]);
+      const allKeys = deriveAllKeys(
+        cfg.globalEnv as readonly PropertyKey[],
+        cfg.stageEnv as readonly PropertyKey[],
+        fnEnv as readonly PropertyKey[],
+      );
 
       // 2) Split and build schema
       const { globalPick, stagePick } = splitKeysBySchema(
@@ -110,6 +110,8 @@ export const makeWrapHandler = <
         ExposedKey | FnKeys[number]
       >;
       const securityContext = detectSecurityContext(typedEvent);
+
+      (options.logger ?? console).debug('env', env);
 
       const result = await handler(typedEvent, context, {
         env,

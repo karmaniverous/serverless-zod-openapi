@@ -10,15 +10,14 @@ export const deriveAllKeys = <
 >(
   globalEnv: readonly GK[],
   stageEnv: readonly SK[],
-  fnEnv: readonly (GK | SK | FK)[],
-): Set<GK | SK | FK> => {
-  const out = new Set<GK | SK | FK>();
+  fnEnv: readonly FK[],
+): ReadonlySet<PropertyKey> => {
+  const out = new Set<PropertyKey>();
   globalEnv.forEach((k) => out.add(k));
   stageEnv.forEach((k) => out.add(k));
   fnEnv.forEach((k) => out.add(k));
   return out;
 };
-
 /** Split a combined key set into the portions belonging to each schema. */
 export const splitKeysBySchema = <
   G extends ZodObject<ZodRawShape>,
