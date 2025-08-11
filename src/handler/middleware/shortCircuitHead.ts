@@ -11,7 +11,7 @@ export const shortCircuitHead: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     if (method === 'HEAD') {
       // Returning early by setting a response is enough; Middy will still run
       // AFTER middlewares (serializer, CORS) to finish the response.
-      request.response = {} as Context;
+      request.response = {};
     }
   },
 };

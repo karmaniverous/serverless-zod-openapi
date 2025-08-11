@@ -112,7 +112,8 @@ export const buildMiddlewareStack = <
    */
   const mForceContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     after: (request) => {
-      const res = (request as { response?: ShapedResponse }).response;
+      const res = (request as unknown as { response?: ShapedResponse })
+        .response;
       if (
         res &&
         typeof res === 'object' &&
@@ -126,7 +127,8 @@ export const buildMiddlewareStack = <
       }
     },
     onError: (request) => {
-      const res = (request as { response?: ShapedResponse }).response;
+      const res = (request as unknown as { response?: ShapedResponse })
+        .response;
       if (
         res &&
         typeof res === 'object' &&

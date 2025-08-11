@@ -57,7 +57,7 @@ describe('wrapHandler (Vitest, Zod v4, ESLint-clean, no local mocks)', () => {
       _ctx: Context,
       injected: {
         env: Record<string, unknown>;
-        logger: typeof customLogger;
+        logger?: typeof customLogger;
         securityContext: unknown;
       },
     ) => {

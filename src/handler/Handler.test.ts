@@ -49,13 +49,17 @@ describe('Handler.ts types', () => {
   it('HandlerOptions.env is an exact Pick across provided keys, and includes logger & securityContext', () => {
     type Keys = Extract<keyof AllParams, 'SERVICE_NAME' | 'STAGE'>;
 
-    type Env = HandlerOptions<Keys, ConsoleLogger>['env'];
+    type Env = HandlerOptions<AllParams, Keys, ConsoleLogger>['env'];
     expectTypeOf<Env>().toEqualTypeOf<Pick<AllParams, Keys>>();
 
-    type Sec = HandlerOptions<Keys, ConsoleLogger>['securityContext'];
+    type Sec = HandlerOptions<
+      AllParams,
+      Keys,
+      ConsoleLogger
+    >['securityContext'];
     expectTypeOf<Sec>().toExtend<SecurityContext>();
 
-    type L = HandlerOptions<Keys, ConsoleLogger>['logger'];
+    type L = HandlerOptions<AllParams, Keys, ConsoleLogger>['logger'];
     expectTypeOf<L>().toExtend<ConsoleLogger>();
   });
 
@@ -87,7 +91,7 @@ describe('Handler.ts types', () => {
       [
         InferEvent<typeof eventSchema>,
         Context,
-        HandlerOptions<Keys, ConsoleLogger>,
+        HandlerOptions<AllParams, Keys, ConsoleLogger>,
       ]
     >();
     expectTypeOf<ReturnType<H>>().toEqualTypeOf<Promise<{ ok: boolean }>>();

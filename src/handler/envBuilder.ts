@@ -1,11 +1,12 @@
+// src/handler/envBuilder.ts
 import type { ZodObject, ZodRawShape } from 'zod';
 import { z } from 'zod';
 
 /** Derive the exact set of keys for this function’s env. */
 export const deriveAllKeys = <
-  GK extends string,
-  SK extends string,
-  FK extends string,
+  GK extends PropertyKey,
+  SK extends PropertyKey,
+  FK extends PropertyKey,
 >(
   globalEnv: readonly GK[],
   stageEnv: readonly SK[],
@@ -18,35 +19,42 @@ export const deriveAllKeys = <
   return out;
 };
 
-/** Partition into keys present in each schema’s shape. */
-export const splitKeysBySchema = <GK extends string, SK extends string>(
-  all: ReadonlySet<GK | SK>,
-  globalSchema: ZodObject<ZodRawShape>,
-  stageSchema: ZodObject<ZodRawShape>,
-): { globalPick: readonly GK[]; stagePick: readonly SK[] } => {
-  const gShape = globalSchema.shape;
-  const sShape = stageSchema.shape;
+/** Split a combined key set into the portions belonging to each schema. */
+export const splitKeysBySchema = <
+  G extends ZodObject<ZodRawShape>,
+  S extends ZodObject<ZodRawShape>,
+>(
+  allKeys: ReadonlySet<PropertyKey>,
+  globalSchema: G,
+  stageSchema: S,
+): {
+  globalPick: (keyof z.infer<G>)[];
+  stagePick: (keyof z.infer<S>)[];
+} => {
+  const gKeySet = new Set(Object.keys(globalSchema.shape));
+  const sKeySet = new Set(Object.keys(stageSchema.shape));
 
-  const g: GK[] = [];
-  const s: SK[] = [];
+  const globalPick = [...allKeys].filter((k): k is keyof z.infer<G> =>
+    gKeySet.has(String(k)),
+  );
+  const stagePick = [...allKeys].filter((k): k is keyof z.infer<S> =>
+    sKeySet.has(String(k)),
+  );
 
-  all.forEach((k) => {
-    const key = k as unknown as string;
-    if (key in gShape) g.push(k as GK);
-    if (key in sShape) s.push(k as SK);
-  });
-
-  return { globalPick: g, stagePick: s };
+  return { globalPick, stagePick };
 };
 
-/** Compose a Zod schema with exactly the picked keys. */
-export const buildEnvSchema = <GK extends string, SK extends string>(
-  globalPick: readonly GK[],
-  stagePick: readonly SK[],
-  globalSchema: ZodObject<ZodRawShape>,
-  stageSchema: ZodObject<ZodRawShape>,
-): ZodObject<ZodRawShape> => {
-  const toPick = (keys: readonly string[]): Record<string, true> =>
+/** Build a Zod schema from picked keys of both global & stage schemas. */
+export const buildEnvSchema = <
+  G extends ZodObject<ZodRawShape>,
+  S extends ZodObject<ZodRawShape>,
+>(
+  globalPick: readonly (keyof z.infer<G>)[],
+  stagePick: readonly (keyof z.infer<S>)[],
+  globalSchema: G,
+  stageSchema: S,
+) => {
+  const toPick = (keys: readonly string[]) =>
     Object.fromEntries(keys.map((k) => [k, true])) as Record<string, true>;
 
   const gPicked = globalSchema.pick(toPick(globalPick as readonly string[]));

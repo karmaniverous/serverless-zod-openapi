@@ -1,3 +1,4 @@
+// src/handler/Handler.ts
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
@@ -14,8 +15,8 @@ export type InferEvent<EventSchema extends z.ZodType> = Merge<
 
 export type HandlerReturn<ResponseSchema extends z.ZodType | undefined> =
   ResponseSchema extends z.ZodType
-    ? z.output<ResponseSchema> | Promise<z.output<ResponseSchema>>
-    : unknown | Promise<unknown>;
+    ? Promise<z.output<ResponseSchema>>
+    : Promise<Record<string, never>>;
 
 export type HandlerOptions<
   AP extends Record<string, unknown>,

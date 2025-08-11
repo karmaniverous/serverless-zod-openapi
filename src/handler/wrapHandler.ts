@@ -1,6 +1,5 @@
 import middy from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { shake } from 'radash';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
@@ -12,8 +11,7 @@ import {
   parseTypedEnv,
   splitKeysBySchema,
 } from './envBuilder';
-import type { Handler, HandlerReturn, InferEvent } from './Handler';
-import type { BuildStackOptions } from './middleware/stack';
+import type { HandlerOptions, HandlerReturn, InferEvent } from './Handler';
 import { buildMiddlewareStack } from './middleware/stack';
 
 /** Generic options (no prod types). */
@@ -22,20 +20,19 @@ export type WrapHandlerOptions<
   ResponseSchema extends z.ZodType | undefined,
   AP extends Record<string, unknown>,
   Logger extends ConsoleLogger,
-  const FnKeys extends readonly (keyof AP)[],
+  FnKeys extends readonly (keyof AP)[],
 > = {
   contentType?: string;
   envKeys?: FnKeys;
-  eventSchema: EventSchema;
+  eventSchema: EventSchema; // always required
   responseSchema?: ResponseSchema;
 } & Loggable<Logger>;
 
-/** Config that defines schemas and exposed env keys (prod or test). */
 export type StagesRuntime<
   G extends ZodObject<ZodRawShape>,
   S extends ZodObject<ZodRawShape>,
-  const GKeys extends readonly (keyof z.infer<G>)[],
-  const SKeys extends readonly (keyof z.infer<S>)[],
+  GKeys extends readonly (keyof z.infer<G>)[],
+  SKeys extends readonly (keyof z.infer<S>)[],
 > = {
   globalParamsSchema: G;
   stageParamsSchema: S;
@@ -43,7 +40,7 @@ export type StagesRuntime<
   stageEnv: SKeys;
 };
 
-/** Factory that binds a stages runtime and returns a fully-typed wrapHandler. */
+// Keep 'const' on the function; that’s allowed.
 export const makeWrapHandler = <
   G extends ZodObject<ZodRawShape>,
   S extends ZodObject<ZodRawShape>,
@@ -59,15 +56,13 @@ export const makeWrapHandler = <
     EventSchema extends z.ZodType,
     ResponseSchema extends z.ZodType | undefined,
     Logger extends ConsoleLogger,
-    const FnKeys extends readonly (keyof AP)[],
+    FnKeys extends readonly (keyof AP)[],
   >(
-    handler: Handler<
-      EventSchema,
-      ResponseSchema,
-      AP,
-      ExposedKey | FnKeys[number],
-      Logger
-    >,
+    handler: (
+      event: InferEvent<EventSchema>,
+      context: Context,
+      options: HandlerOptions<AP, ExposedKey | FnKeys[number], Logger>,
+    ) => HandlerReturn<ResponseSchema>,
     options: WrapHandlerOptions<
       EventSchema,
       ResponseSchema,
@@ -75,27 +70,29 @@ export const makeWrapHandler = <
       Logger,
       FnKeys
     >,
-  ) =>
-    middy(async (event: APIGatewayProxyEvent, context: Context) => {
-      if (event.httpMethod === 'HEAD') {
-        // Middleware stack will serialize this to API Gateway shape.
-        return {};
-      }
+  ) => {
+    const stack = buildMiddlewareStack<EventSchema, ResponseSchema, Logger>({
+      contentType: options.contentType,
+      responseSchema: options.responseSchema,
+      eventSchema: options.eventSchema,
+      logger: (options.logger || console) as Logger,
+    });
 
-      const { logger = console as unknown as Logger, envKeys } = options;
+    const wrapped = middy(handler).use(stack);
 
-      // 1) Exact key set for this function’s env = global + stage + function keys
-      const fnEnv = (envKeys ?? []) as readonly (keyof AP)[];
+    return async (event: APIGatewayProxyEvent, context: Context) => {
+      // 1) Combine keys
+      const fnEnv = (options.envKeys ?? []) as readonly (keyof AP)[];
       const allKeys = deriveAllKeys(cfg.globalEnv, cfg.stageEnv, fnEnv);
 
-      // 2) Split into global vs stage using schema key lists
+      // 2) Split by schema
       const { globalPick, stagePick } = splitKeysBySchema(
         allKeys,
         cfg.globalParamsSchema,
         cfg.stageParamsSchema,
       );
 
-      // 3) Build runtime schema from the two Zod objects
+      // 3) Build parsing schema
       const envSchema = buildEnvSchema(
         globalPick,
         stagePick,
@@ -103,12 +100,13 @@ export const makeWrapHandler = <
         cfg.stageParamsSchema,
       );
 
-      // 4) Parse env and pass strongly-typed object to handler
-      const typedEvent = options.eventSchema
-        ? (options.eventSchema.parse(event) as InferEvent<EventSchema>)
-        : (event as unknown as InferEvent<EventSchema>);
-
-      const securityContext = detectSecurityContext(typedEvent);
+      // 4) Parse event & env, then call handler
+      const typedEvent = options.eventSchema.parse(
+        event,
+      ) as InferEvent<EventSchema>;
+      const securityContext = detectSecurityContext(
+        typedEvent as APIGatewayProxyEvent,
+      );
 
       const env = parseTypedEnv(envSchema, process.env) as Pick<
         AP,
@@ -117,22 +115,13 @@ export const makeWrapHandler = <
 
       const result = await handler(typedEvent, context, {
         env,
-        logger,
+        logger: (options.logger || console) as Logger,
         securityContext,
       });
 
       return result as Awaited<HandlerReturn<ResponseSchema>>;
-    }).use(
-      buildMiddlewareStack<EventSchema, ResponseSchema, Logger>(
-        // With exactOptionalPropertyTypes, omit undefineds via radash.shake
-        shake({
-          eventSchema: options.eventSchema,
-          responseSchema: options.responseSchema,
-          contentType: options.contentType ?? 'application/json',
-          logger: options.logger,
-        }) as BuildStackOptions<EventSchema, ResponseSchema, Logger>,
-      ),
-    );
+    };
+  };
 };
 
 /** ---- PROD-BOUND VERSION (keeps existing imports working) ---- */
