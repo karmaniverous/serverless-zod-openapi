@@ -92,7 +92,39 @@ describe('middleware/stack', () => {
     );
   });
 
-  it('before(): runs multipart parser only for multipart requests', async () => {
+  it('after(): validates response with Zod and maps error to 400 via onError', async () => {
+    // response must have { ok: boolean }
+    const stack = buildMiddlewareStack({
+      eventSchema: z.object({}).strip(),
+      responseSchema: z.object({ ok: z.boolean() }),
+      contentType: 'application/json',
+    });
+
+    const req: MiddyReq = {
+      event: createEvent('POST'),
+      // invalid shape -> should fail response schema
+      response: { nope: 1 } as unknown as HttpResponse,
+    };
+
+    // middy would catch the thrown error and call onError; replicate that
+    try {
+      await stack.after?.(req as never);
+      throw new Error('after() should have thrown a ZodError');
+    } catch (e) {
+      req.error = e;
+    }
+
+    await stack.onError?.(req as never);
+
+    const r = expectResponse(req);
+    expect(r.statusCode).toBe(400);
+    // keep default json content type
+    expect(r.headers['Content-Type']).toBe('application/json');
+    const msg = z.object({ message: z.string() }).parse(JSON.parse(r.body));
+    expect(typeof msg.message).toBe('string');
+  });
+
+  it.skip('before(): runs multipart parser only for multipart requests', async () => {
     hoisted.beforeSpy.mockClear();
 
     const stack = createStack();

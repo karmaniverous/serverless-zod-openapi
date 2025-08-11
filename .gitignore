@@ -1,4 +1,4 @@
 *.local
-.serverless
-local
-node_modules
+.serverless/
+local/
+node_modules/

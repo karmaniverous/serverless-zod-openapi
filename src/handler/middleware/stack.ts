@@ -2,6 +2,7 @@ import type { MiddlewareObj } from '@middy/core';
 // TODO: Fix multipart.
 // import multipart from '@middy/http-multipart-body-parser';
 import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { HttpError } from 'http-errors';
 import { shake } from 'radash';
 import { z } from 'zod';
 
@@ -51,11 +52,10 @@ export const buildMiddlewareStack = <
   // const parser = multipart();
 
   return {
-    // Auto multipart: invoke parser only when request is truly multipart
+    // Validate the incoming event; (optional) run multipart parser.
     before: async (request) => {
       const event = request.event;
 
-      // Validate event (fail-fast with 400 on schema errors)
       const v = opts.eventSchema.safeParse(event);
       if (!v.success) throw v.error;
 
@@ -65,6 +65,7 @@ export const buildMiddlewareStack = <
       // }
     },
 
+    // Validate *object-like* responses and always serialize to API GW v1.
     after: async (request) => {
       const res = request.response;
 
@@ -77,25 +78,72 @@ export const buildMiddlewareStack = <
         return;
       }
 
+      // Only validate JSON-like payloads; primitives like string/number/boolean bypass
+      if (opts.responseSchema && (res === null || typeof res === 'object')) {
+        const v = opts.responseSchema.safeParse(res);
+        if (!v.success) throw v.error; // onError will map ZodError -> 400
+      }
+
       request.response = serializeResponse(res, opts.contentType);
     },
 
+    // Map ZodError -> 400; honor HttpError status/expose; default to 500.
     onError: async (request) => {
-      const err = request.error;
-      const statusCode = err instanceof z.ZodError ? 400 : 500;
+      const err = request.error as Partial<HttpError> & Error;
 
-      const body =
-        err instanceof Error
-          ? JSON.stringify({ message: err.message })
-          : JSON.stringify({ message: 'Unhandled error' });
+      const hasHttpStatus =
+        typeof err.statusCode === 'number' || typeof err.status === 'number';
+      const isHttpLike =
+        hasHttpStatus ||
+        typeof err.expose === 'boolean' ||
+        typeof (err as { headers?: unknown }).headers === 'object';
+
+      const statusCode =
+        typeof err.statusCode === 'number'
+          ? err.statusCode
+          : typeof err.status === 'number'
+            ? err.status
+            : err instanceof z.ZodError
+              ? 400
+              : 500;
+
+      // Respect explicit headers if provided by a thrown HttpError
+      const providedHeaders =
+        typeof (err as { headers?: unknown }).headers === 'object' &&
+        (err as { headers?: Record<string, string> }).headers
+          ? (err as { headers?: Record<string, string> }).headers
+          : {};
+
+      const headers = {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': opts.contentType,
+        ...providedHeaders,
+      };
+
+      // Expose rules:
+      // - ZodError: expose details
+      // - http-errors: honor err.expose (default expose 4xx)
+      // - plain Error: expose by default (matches previous behavior/tests)
+      const expose =
+        err instanceof z.ZodError
+          ? true
+          : isHttpLike
+            ? typeof err.expose === 'boolean'
+              ? err.expose
+              : statusCode < 500
+            : true;
+
+      const message =
+        err instanceof z.ZodError
+          ? err.message
+          : expose && err.message
+            ? err.message
+            : 'Unhandled error';
 
       request.response = {
         statusCode,
-        headers: shake({
-          'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': opts.contentType,
-        }),
-        body,
+        headers,
+        body: JSON.stringify({ message }),
       };
     },
   };
