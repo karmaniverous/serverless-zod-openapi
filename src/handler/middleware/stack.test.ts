@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { createApiGatewayV1Event as createEvent } from '@/test/aws';
 import { expectResponse, type HttpResponse } from '@/test/http';
+import { runAfter, runBefore, runOnError } from '@/test/middyLifecycle';
 
 // --- mock non-local dependency (@middy/http-multipart-body-parser)
 // Use vi.hoisted so Vitest can hoist safely.
@@ -43,7 +44,8 @@ describe('middleware/stack', () => {
       response: { ok: true } as unknown as HttpResponse, // will be replaced
     };
 
-    await stack.after?.(req as never);
+    await runBefore(stack as never, req as never);
+    await runAfter(stack as never, req as never);
 
     const r = expectResponse(req);
     expect(r.statusCode).toBe(200);
@@ -58,7 +60,8 @@ describe('middleware/stack', () => {
       response: 'plain' as unknown as HttpResponse,
     };
 
-    await stack.after?.(req as never);
+    await runBefore(stack as never, req as never);
+    await runAfter(stack as never, req as never);
 
     const r = expectResponse(req);
     expect(r.statusCode).toBe(200);
@@ -75,7 +78,8 @@ describe('middleware/stack', () => {
     };
     const req: MiddyReq = { event: createEvent('POST'), response: shaped };
 
-    await stack.after?.(req as never);
+    await runBefore(stack as never, req as never);
+    await runAfter(stack as never, req as never);
     expect(req.response).toBe(shaped);
   });
 
@@ -108,13 +112,14 @@ describe('middleware/stack', () => {
 
     // middy would catch the thrown error and call onError; replicate that
     try {
-      await stack.after?.(req as never);
+      await runBefore(stack as never, req as never);
+      await runAfter(stack as never, req as never);
       throw new Error('after() should have thrown a ZodError');
     } catch (e) {
       req.error = e;
     }
 
-    await stack.onError?.(req as never);
+    await runOnError(stack as never, req as never);
 
     const r = expectResponse(req);
     expect(r.statusCode).toBe(400);

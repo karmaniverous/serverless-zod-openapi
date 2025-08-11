@@ -1,25 +1,22 @@
 import type { MiddlewareObj } from '@middy/core';
-import createHttpError from 'http-errors';
 import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
-/**
- * Validates a value against a Zod schema. Returns a compact error string when invalid.
- */
-const validate = (
+const assertWithZod = (
   value: unknown,
   schema: z.ZodType | undefined,
   logger: ConsoleLogger,
-): string | undefined => {
+): void => {
   if (!schema) return;
   logger.debug('validating with zod', { value, schema });
-
   const result = schema.safeParse(value);
-  if (result.success) logger.debug('zod validation succeeded', result);
-  else logger.error('zod validation failed', result);
-
-  return result.error?.message;
+  if (result.success) {
+    logger.debug('zod validation succeeded', result);
+    return;
+  }
+  logger.error('zod validation failed', result);
+  throw result.error; // throw raw ZodError
 };
 
 export type HttpZodValidatorOptions<
@@ -31,11 +28,6 @@ export type HttpZodValidatorOptions<
   responseSchema?: ResponseSchema | undefined;
 } & Loggable<Logger>;
 
-/**
- * Middy middleware that validates the event and the *unshaped* response with Zod.
- * We deliberately throw 400 (BadRequest) for both invalid event *and* invalid response
- * so your API surface remains debuggable and consistent in local/dev environments.
- */
 export const httpZodValidator = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
@@ -50,13 +42,22 @@ export const httpZodValidator = <
   Logger
 > = {}): MiddlewareObj => ({
   before: (request) => {
-    const errorMsg = validate(request.event, eventSchema, logger);
-    if (errorMsg)
-      throw createHttpError.BadRequest(`invalid event: ${errorMsg}`);
+    assertWithZod(request.event, eventSchema, logger);
   },
   after: (request) => {
-    const errorMsg = validate(request.response, responseSchema, logger);
-    if (errorMsg)
-      throw createHttpError.BadRequest(`invalid response: ${errorMsg}`);
+    const res = request.response as unknown;
+
+    // Skip if the handler already returned a shaped HTTP response...
+    const looksShaped =
+      typeof res === 'object' &&
+      res !== null &&
+      'statusCode' in (res as Record<string, unknown>) &&
+      'headers' in (res as Record<string, unknown>) &&
+      'body' in (res as Record<string, unknown>);
+
+    // ...or a raw string (serializer will pass it through).
+    if (looksShaped || typeof res === 'string') return;
+
+    assertWithZod(res, responseSchema, logger);
   },
 });

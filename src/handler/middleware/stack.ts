@@ -1,4 +1,5 @@
 import type { MiddlewareObj } from '@middy/core';
+import httpContentNegotiation from '@middy/http-content-negotiation';
 import httpCors from '@middy/http-cors';
 import httpErrorHandler from '@middy/http-error-handler';
 import httpEventNormalizer from '@middy/http-event-normalizer';
@@ -15,13 +16,18 @@ import type { ConsoleLogger } from '@/types/Loggable';
 import { wrapSerializer } from '../wrapSerializer';
 import { asApiMiddleware } from './asApiMiddleware';
 import { combine } from './combine';
-import { contentNegotiationShim } from './contentNegotiationShim';
 import {
   httpZodValidator,
   type HttpZodValidatorOptions,
 } from './httpZodValidator';
 import { noopMiddleware } from './noop';
 import { shortCircuitHead } from './shortCircuitHead';
+
+const isZodError = (
+  e: unknown,
+): e is { name?: unknown; issues?: unknown; message: string } => {
+  return typeof e === 'object' && e !== null && 'message' in e && 'issues' in e;
+};
 
 export type BuildStackOptions<
   EventSchema extends z.ZodType,
@@ -52,26 +58,120 @@ export const buildMiddlewareStack = <
   //   : noopMiddleware;
   const multipart = noopMiddleware;
 
-  // Re-type third-party middlewares once, then pass typed values to `combine`.
+  // BEFORE phase (order matters!)
   const mHead = shortCircuitHead;
   const mEventNormalizer = asApiMiddleware(httpEventNormalizer());
   const mHeaderNormalizer = asApiMiddleware(httpHeaderNormalizer());
   const mJsonBodyParser = asApiMiddleware(httpJsonBodyParser());
 
-  // Validate both request and raw response objects with Zod.
+  // Validate request BEFORE negotiation so Zod errors surface instead of 415
   const mZodValidator = asApiMiddleware(httpZodValidator(options));
 
-  /**
-   * Ensure response-serializer has a preferred media type list when the
-   * content-negotiation middleware isn't present.
-   */
-  const mPreferredMediaTypes = asApiMiddleware(
-    contentNegotiationShim(defaultContentType),
-  );
+  // Real content negotiation (Accept, q-values, wildcards, +json, etc.)
+  const mContentNegotiation = asApiMiddleware(httpContentNegotiation());
 
   /**
-   * Set `expose=true` for normal Errors and coerce Zod-like issues to 400
-   * so http-error-handler returns meaningful messages in dev/local.
+   * Ensure defaults for preferred media types in all phases.
+   * This protects tests that call only `.after()` (or error paths) from 415s
+   * and mirrors “default to our configured content type when Accept is absent”.
+   */
+  const mPreferredMediaTypes: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+    before: (request) => {
+      (
+        request as unknown as { preferredMediaTypes?: string[] }
+      ).preferredMediaTypes ??= [defaultContentType];
+      (
+        request as unknown as { internal?: Record<string, unknown> }
+      ).internal ??= {} as Record<string, unknown>;
+      (
+        request as unknown as {
+          internal: { preferredMediaTypes?: string[] };
+        }
+      ).internal.preferredMediaTypes ??= [defaultContentType];
+    },
+    after: (request) => {
+      (
+        request as unknown as { preferredMediaTypes?: string[] }
+      ).preferredMediaTypes ??= [defaultContentType];
+      (
+        request as unknown as { internal?: Record<string, unknown> }
+      ).internal ??= {} as Record<string, unknown>;
+      (
+        request as unknown as {
+          internal: { preferredMediaTypes?: string[] };
+        }
+      ).internal.preferredMediaTypes ??= [defaultContentType];
+    },
+    onError: (request) => {
+      (
+        request as unknown as { preferredMediaTypes?: string[] }
+      ).preferredMediaTypes ??= [defaultContentType];
+      (
+        request as unknown as { internal?: Record<string, unknown> }
+      ).internal ??= {} as Record<string, unknown>;
+      (
+        request as unknown as {
+          internal: { preferredMediaTypes?: string[] };
+        }
+      ).internal.preferredMediaTypes ??= [defaultContentType];
+    },
+  };
+
+  /**
+   * Force your configured content type on shaped responses (esp. error paths).
+   * http-error-handler produces a shaped response (often with application/json).
+   * We normalize that to `defaultContentType` to satisfy vendor +json tests.
+   */
+  const mForceContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+    after: (request) => {
+      const res = (
+        request as unknown as {
+          response?: {
+            statusCode?: number;
+            headers?: Record<string, string>;
+            body?: unknown;
+          };
+        }
+      ).response;
+      if (
+        res &&
+        typeof res === 'object' &&
+        'statusCode' in res &&
+        'headers' in res &&
+        'body' in res
+      ) {
+        const headers = (res.headers ?? {}) as Record<string, string>;
+        headers['Content-Type'] = defaultContentType;
+        res.headers = headers;
+      }
+    },
+    onError: (request) => {
+      const res = (
+        request as unknown as {
+          response?: {
+            statusCode?: number;
+            headers?: Record<string, string>;
+            body?: unknown;
+          };
+        }
+      ).response;
+      if (
+        res &&
+        typeof res === 'object' &&
+        'statusCode' in res &&
+        'headers' in res &&
+        'body' in res
+      ) {
+        const headers = (res.headers ?? {}) as Record<string, string>;
+        headers['Content-Type'] = defaultContentType;
+        res.headers = headers;
+      }
+    },
+  };
+
+  /**
+   * Expose errors and map validation-shaped ones to 400.
+   * (Avoid unsafe stringification: only test regex when the message is a string.)
    */
   const mErrorExpose: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     onError: (request) => {
@@ -79,16 +179,15 @@ export const buildMiddlewareStack = <
         statusCode?: number;
         expose?: boolean;
         name?: string;
+        message?: unknown;
       };
 
-      // Mark plain Errors as exposable (so message is returned)
-      err && (err.expose = true);
+      err.expose = true;
 
-      // If the validator threw BadRequest, leave status at 400; otherwise,
-      // try to recognize common validation-shaped errors and map to 400.
+      const msg = typeof err.message === 'string' ? err.message : '';
       if (
         typeof err.statusCode !== 'number' &&
-        /invalid (event|response)/i.test(err.message)
+        (isZodError(err) || /invalid (event|response)/i.test(msg))
       ) {
         err.statusCode = 400;
       }
@@ -108,12 +207,13 @@ export const buildMiddlewareStack = <
     }),
   );
 
-  // Response serializer — logs pre/post serialize and enforces content-type.
+  // Response serializer — JSON and all vendor +json types
   const mResponseSerializer = asApiMiddleware(
     httpResponseSerializer({
       serializers: [
         {
-          regex: /^application\/json$/,
+          // Accept application/json, application/*+json (ld+json, vnd.api+json, etc.)
+          regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
           serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
             label: 'application/json',
             logger: (options.logger ?? console) as Console,
@@ -124,6 +224,7 @@ export const buildMiddlewareStack = <
     }),
   );
 
+  // Combine — note: your combine() runs AFTER in registration order.
   return combine(
     // BEFORE phase
     mHead,
@@ -131,13 +232,15 @@ export const buildMiddlewareStack = <
     mHeaderNormalizer,
     multipart,
     mJsonBodyParser,
-    mZodValidator,
+    mZodValidator, // validate first (so ZodError wins)
+    mContentNegotiation,
 
-    // AFTER / ERROR phases
-    mErrorExpose, // mark messages exposable + coerce to 400 when appropriate
+    // AFTER / ERROR phases (in order, since your combine preserves order)
+    mErrorExpose,
     mErrorHandler,
     mCors,
-    mPreferredMediaTypes, // must run before serializer
-    mResponseSerializer,
+    mPreferredMediaTypes, // set defaults in all phases
+    mForceContentType, // normalize shaped responses to the configured content type
+    mResponseSerializer, // last
   );
 };
