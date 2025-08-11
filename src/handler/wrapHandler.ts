@@ -72,27 +72,28 @@ export const makeWrapHandler = <
     >,
   ) => {
     const stack = buildMiddlewareStack<EventSchema, ResponseSchema, Logger>({
-      contentType: options.contentType,
-      responseSchema: options.responseSchema,
+      ...(options.contentType ? { contentType: options.contentType } : {}),
+      ...(options.logger ? { logger: options.logger } : {}),
       eventSchema: options.eventSchema,
-      logger: (options.logger || console) as Logger,
+      responseSchema: options.responseSchema,
     });
 
-    const wrapped = middy(handler).use(stack);
-
-    return async (event: APIGatewayProxyEvent, context: Context) => {
-      // 1) Combine keys
+    // Lambda-shaped base that injects env + security context
+    const base = async (event: APIGatewayProxyEvent, context: Context) => {
+      // 1) Keys
       const fnEnv = (options.envKeys ?? []) as readonly (keyof AP)[];
-      const allKeys = deriveAllKeys(cfg.globalEnv, cfg.stageEnv, fnEnv);
+      const allKeys: ReadonlySet<PropertyKey> = new Set<PropertyKey>([
+        ...(cfg.globalEnv as readonly PropertyKey[]),
+        ...(cfg.stageEnv as readonly PropertyKey[]),
+        ...(fnEnv as readonly PropertyKey[]),
+      ]);
 
-      // 2) Split by schema
+      // 2) Split and build schema
       const { globalPick, stagePick } = splitKeysBySchema(
         allKeys,
         cfg.globalParamsSchema,
         cfg.stageParamsSchema,
       );
-
-      // 3) Build parsing schema
       const envSchema = buildEnvSchema(
         globalPick,
         stagePick,
@@ -100,18 +101,15 @@ export const makeWrapHandler = <
         cfg.stageParamsSchema,
       );
 
-      // 4) Parse event & env, then call handler
+      // 3) Parse event + env and call business handler
       const typedEvent = options.eventSchema.parse(
         event,
       ) as InferEvent<EventSchema>;
-      const securityContext = detectSecurityContext(
-        typedEvent as APIGatewayProxyEvent,
-      );
-
       const env = parseTypedEnv(envSchema, process.env) as Pick<
         AP,
         ExposedKey | FnKeys[number]
       >;
+      const securityContext = detectSecurityContext(typedEvent);
 
       const result = await handler(typedEvent, context, {
         env,
@@ -119,8 +117,11 @@ export const makeWrapHandler = <
         securityContext,
       });
 
-      return result as Awaited<HandlerReturn<ResponseSchema>>;
+      return result;
     };
+
+    const wrapped = middy(base).use(stack);
+    return (evt: APIGatewayProxyEvent, ctx: Context) => wrapped(evt, ctx);
   };
 };
 

@@ -34,12 +34,16 @@ export const splitKeysBySchema = <
   const gKeySet = new Set(Object.keys(globalSchema.shape));
   const sKeySet = new Set(Object.keys(stageSchema.shape));
 
+  // global = intersection(allKeys, globalSchema)
   const globalPick = [...allKeys].filter((k): k is keyof z.infer<G> =>
     gKeySet.has(String(k)),
   );
-  const stagePick = [...allKeys].filter((k): k is keyof z.infer<S> =>
-    sKeySet.has(String(k)),
-  );
+
+  // stage = intersection(allKeys, stageSchema) MINUS global keys
+  const stagePick = [...allKeys].filter((k): k is keyof z.infer<S> => {
+    const key = String(k);
+    return sKeySet.has(key) && !gKeySet.has(key);
+  });
 
   return { globalPick, stagePick };
 };

@@ -15,9 +15,17 @@ import type { SecurityContext } from './SecurityContext';
  */
 export const isV1 = (
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2,
-): event is APIGatewayProxyEvent =>
-  // V1 events have an `identity` property on the `requestContext`.
-  'identity' in (event as APIGatewayProxyEvent).requestContext;
+): event is APIGatewayProxyEvent => {
+  if (!event || typeof event !== 'object') return false;
+  const obj = event as Record<string, unknown>;
+  if (!('requestContext' in obj)) return false;
+  const ctx = (obj as { requestContext?: unknown }).requestContext;
+  return (
+    !!ctx &&
+    typeof ctx === 'object' &&
+    'identity' in (ctx as Record<string, unknown>)
+  );
+};
 
 /**
  * A minimal shape for a V2 authorizer.
