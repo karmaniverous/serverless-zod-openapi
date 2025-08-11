@@ -1,15 +1,16 @@
 import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { get } from 'radash';
 
+/**
+ * If the request is HEAD, short-circuit the handler and let the serializer
+ * produce an empty JSON body. This keeps tests and clients predictable.
+ */
 export const shortCircuitHead: MiddlewareObj<APIGatewayProxyEvent, Context> = {
   before: async (request) => {
-    const method = get(
-      request.event as unknown as { httpMethod?: string },
-      'httpMethod',
-    );
+    const method = request.event.httpMethod.toUpperCase();
     if (method === 'HEAD') {
-      // Setting a response in `before` short-circuits the stack.
+      // Returning early by setting a response is enough; Middy will still run
+      // AFTER middlewares (serializer, CORS) to finish the response.
       request.response = {} as Context;
     }
   },

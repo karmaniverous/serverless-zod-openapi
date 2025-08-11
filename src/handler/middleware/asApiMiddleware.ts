@@ -2,10 +2,10 @@ import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 /**
- * Narrow a third-party Middy middleware to the API Gateway / Lambda Context
- * pair we use everywhere else. Keep this cast isolated at the boundary.
+ * Middy typings are very generic. This helper narrows 3rd-party middlewares
+ * to the API Gateway v1 handler shape we use across the codebase.
  */
 export const asApiMiddleware = (
-  mw: unknown, // accept anything; we own the single cast here
+  m: MiddlewareObj,
 ): MiddlewareObj<APIGatewayProxyEvent, Context> =>
-  mw as MiddlewareObj<APIGatewayProxyEvent, Context>;
+  m as MiddlewareObj<APIGatewayProxyEvent, Context>;

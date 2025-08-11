@@ -1,150 +1,143 @@
 import type { MiddlewareObj } from '@middy/core';
-// TODO: Fix multipart.
-// import multipart from '@middy/http-multipart-body-parser';
-import type { APIGatewayProxyEvent } from 'aws-lambda';
-import type { HttpError } from 'http-errors';
-import { shake } from 'radash';
-import { z } from 'zod';
+import httpCors from '@middy/http-cors';
+import httpErrorHandler from '@middy/http-error-handler';
+import httpEventNormalizer from '@middy/http-event-normalizer';
+import httpHeaderNormalizer from '@middy/http-header-normalizer';
+import httpJsonBodyParser from '@middy/http-json-body-parser';
+// NOTE: multipart intentionally disabled for now to avoid dynamic import in AWS VM.
+// import httpMultipartBodyParser from '@middy/http-multipart-body-parser';
+import httpResponseSerializer from '@middy/http-response-serializer';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { z } from 'zod';
 
-// TODO: Fix multipart.
-// import { isMultipart } from '@/handler/middleware/isMultipart';
 import type { ConsoleLogger } from '@/types/Loggable';
+
+import { wrapSerializer } from '../wrapSerializer';
+import { asApiMiddleware } from './asApiMiddleware';
+import { combine } from './combine';
+import { contentNegotiationShim } from './contentNegotiationShim';
+import {
+  httpZodValidator,
+  type HttpZodValidatorOptions,
+} from './httpZodValidator';
+import { noopMiddleware } from './noop';
+import { shortCircuitHead } from './shortCircuitHead';
 
 export type BuildStackOptions<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
-> = {
-  eventSchema: EventSchema;
-  responseSchema?: ResponseSchema;
-  contentType: string;
-  logger?: Logger;
+> = HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> & {
+  /** default: false — kept off until we resolve the Lambda dynamic import issue */
+  enableMultipart?: boolean;
+  /** default: 'application/json' */
+  contentType?: string;
+  /** used by the serializer’s logger fallback */
+  logger?: ConsoleLogger;
 };
 
-// Serialize handler output into API Gateway v1 shape.
-const serializeResponse = (
-  payload: unknown,
-  contentType: string,
-): {
-  statusCode: number;
-  headers: Record<string, string>;
-  body: string;
-} => {
-  const headers = shake({
-    'Access-Control-Allow-Credentials': 'true',
-    'Content-Type': contentType,
-  });
-
-  if (typeof payload === 'string') {
-    return { statusCode: 200, headers, body: payload };
-  }
-  return { statusCode: 200, headers, body: JSON.stringify(payload ?? {}) };
-};
-
+/** Build a single composed middleware stack in the correct order. */
 export const buildMiddlewareStack = <
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  opts: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
-): MiddlewareObj<APIGatewayProxyEvent, unknown> => {
-  // TODO: Fix multipart.
-  // const parser = multipart();
+  options: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
+): MiddlewareObj<APIGatewayProxyEvent, Context> => {
+  const defaultContentType = options.contentType ?? 'application/json';
 
-  return {
-    // Validate the incoming event; (optional) run multipart parser.
-    before: async (request) => {
-      const event = request.event;
+  // Optional (currently disabled) multipart parsing.
+  // const multipart = options.enableMultipart
+  //   ? asApiMiddleware(httpMultipartBodyParser())
+  //   : noopMiddleware;
+  const multipart = noopMiddleware;
 
-      const v = opts.eventSchema.safeParse(event);
-      if (!v.success) throw v.error;
+  // Re-type third-party middlewares once, then pass typed values to `combine`.
+  const mHead = shortCircuitHead;
+  const mEventNormalizer = asApiMiddleware(httpEventNormalizer());
+  const mHeaderNormalizer = asApiMiddleware(httpHeaderNormalizer());
+  const mJsonBodyParser = asApiMiddleware(httpJsonBodyParser());
 
-      // TODO: Fix multipart.
-      // if (isMultipart(event) && typeof parser.before === 'function') {
-      //   await parser.before(request);
-      // }
-    },
+  // Validate both request and raw response objects with Zod.
+  const mZodValidator = asApiMiddleware(httpZodValidator(options));
 
-    // Validate *object-like* responses and always serialize to API GW v1.
-    after: async (request) => {
-      const res = request.response;
+  /**
+   * Ensure response-serializer has a preferred media type list when the
+   * content-negotiation middleware isn't present.
+   */
+  const mPreferredMediaTypes = asApiMiddleware(
+    contentNegotiationShim(defaultContentType),
+  );
 
-      // Pass through if handler already returned a full response
+  /**
+   * Set `expose=true` for normal Errors and coerce Zod-like issues to 400
+   * so http-error-handler returns meaningful messages in dev/local.
+   */
+  const mErrorExpose: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+    onError: (request) => {
+      const err = request.error as Error & {
+        statusCode?: number;
+        expose?: boolean;
+        name?: string;
+      };
+
+      // Mark plain Errors as exposable (so message is returned)
+      err && (err.expose = true);
+
+      // If the validator threw BadRequest, leave status at 400; otherwise,
+      // try to recognize common validation-shaped errors and map to 400.
       if (
-        res &&
-        typeof res === 'object' &&
-        'statusCode' in (res as Record<string, unknown>)
+        typeof err.statusCode !== 'number' &&
+        /invalid (event|response)/i.test(err.message)
       ) {
-        return;
+        err.statusCode = 400;
       }
-
-      // Only validate JSON-like payloads; primitives like string/number/boolean bypass
-      if (opts.responseSchema && (res === null || typeof res === 'object')) {
-        const v = opts.responseSchema.safeParse(res);
-        if (!v.success) throw v.error; // onError will map ZodError -> 400
-      }
-
-      request.response = serializeResponse(res, opts.contentType);
-    },
-
-    // Map ZodError -> 400; honor HttpError status/expose; default to 500.
-    onError: async (request) => {
-      const err = request.error as Partial<HttpError> & Error;
-
-      const hasHttpStatus =
-        typeof err.statusCode === 'number' || typeof err.status === 'number';
-      const isHttpLike =
-        hasHttpStatus ||
-        typeof err.expose === 'boolean' ||
-        typeof (err as { headers?: unknown }).headers === 'object';
-
-      const statusCode =
-        typeof err.statusCode === 'number'
-          ? err.statusCode
-          : typeof err.status === 'number'
-            ? err.status
-            : err instanceof z.ZodError
-              ? 400
-              : 500;
-
-      // Respect explicit headers if provided by a thrown HttpError
-      const providedHeaders =
-        typeof (err as { headers?: unknown }).headers === 'object' &&
-        (err as { headers?: Record<string, string> }).headers
-          ? (err as { headers?: Record<string, string> }).headers
-          : {};
-
-      const headers = {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': opts.contentType,
-        ...providedHeaders,
-      };
-
-      // Expose rules:
-      // - ZodError: expose details
-      // - http-errors: honor err.expose (default expose 4xx)
-      // - plain Error: expose by default (matches previous behavior/tests)
-      const expose =
-        err instanceof z.ZodError
-          ? true
-          : isHttpLike
-            ? typeof err.expose === 'boolean'
-              ? err.expose
-              : statusCode < 500
-            : true;
-
-      const message =
-        err instanceof z.ZodError
-          ? err.message
-          : expose && err.message
-            ? err.message
-            : 'Unhandled error';
-
-      request.response = {
-        statusCode,
-        headers,
-        body: JSON.stringify({ message }),
-      };
     },
   };
+
+  const mErrorHandler = asApiMiddleware(
+    httpErrorHandler({
+      fallbackMessage: 'Non-HTTP server error. See CloudWatch for more info.',
+    }),
+  );
+
+  const mCors = asApiMiddleware(
+    httpCors({
+      credentials: true,
+      getOrigin: (o) => o,
+    }),
+  );
+
+  // Response serializer — logs pre/post serialize and enforces content-type.
+  const mResponseSerializer = asApiMiddleware(
+    httpResponseSerializer({
+      serializers: [
+        {
+          regex: /^application\/json$/,
+          serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
+            label: 'application/json',
+            logger: (options.logger ?? console) as Console,
+          }),
+        },
+      ],
+      defaultContentType,
+    }),
+  );
+
+  return combine(
+    // BEFORE phase
+    mHead,
+    mEventNormalizer,
+    mHeaderNormalizer,
+    multipart,
+    mJsonBodyParser,
+    mZodValidator,
+
+    // AFTER / ERROR phases
+    mErrorExpose, // mark messages exposable + coerce to 400 when appropriate
+    mErrorHandler,
+    mCors,
+    mPreferredMediaTypes, // must run before serializer
+    mResponseSerializer,
+  );
 };
