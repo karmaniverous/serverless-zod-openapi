@@ -1,5 +1,4 @@
 import type { MiddlewareObj } from '@middy/core';
-import httpContentNegotiation from '@middy/http-content-negotiation';
 import httpCors from '@middy/http-cors';
 import httpErrorHandler from '@middy/http-error-handler';
 import httpEventNormalizer from '@middy/http-event-normalizer';
@@ -13,7 +12,6 @@ import type { z } from 'zod';
 
 import type { ConsoleLogger } from '@/types/Loggable';
 
-import { wrapSerializer } from '../wrapSerializer';
 import { asApiMiddleware } from './asApiMiddleware';
 import { combine } from './combine';
 import {
@@ -25,8 +23,13 @@ import { shortCircuitHead } from './shortCircuitHead';
 
 const isZodError = (
   e: unknown,
-): e is { name?: unknown; issues?: unknown; message: string } => {
-  return typeof e === 'object' && e !== null && 'message' in e && 'issues' in e;
+): e is { name?: unknown; issues?: unknown; message?: unknown } =>
+  typeof e === 'object' && e !== null && 'issues' in e;
+
+type ShapedResponse = {
+  statusCode: number;
+  headers?: Record<string, string>;
+  body?: unknown;
 };
 
 export type BuildStackOptions<
@@ -64,75 +67,52 @@ export const buildMiddlewareStack = <
   const mHeaderNormalizer = asApiMiddleware(httpHeaderNormalizer());
   const mJsonBodyParser = asApiMiddleware(httpJsonBodyParser());
 
-  // Validate request BEFORE negotiation so Zod errors surface instead of 415
+  // Validate request BEFORE any content-type logic so Zod errors surface first
   const mZodValidator = asApiMiddleware(httpZodValidator(options));
 
-  // Real content negotiation (Accept, q-values, wildcards, +json, etc.)
-  const mContentNegotiation = asApiMiddleware(httpContentNegotiation());
-
   /**
-   * Ensure defaults for preferred media types in all phases.
-   * This protects tests that call only `.after()` (or error paths) from 415s
-   * and mirrors “default to our configured content type when Accept is absent”.
+   * Provide a sane default for preferred media types in ALL phases.
+   * This prevents 415s when tests only run `.after()` or `.onError()` and when
+   * no Accept header is present. Harmless if something else already set it.
    */
   const mPreferredMediaTypes: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     before: (request) => {
-      (
-        request as unknown as { preferredMediaTypes?: string[] }
-      ).preferredMediaTypes ??= [defaultContentType];
-      (
-        request as unknown as { internal?: Record<string, unknown> }
-      ).internal ??= {} as Record<string, unknown>;
-      (
-        request as unknown as {
-          internal: { preferredMediaTypes?: string[] };
-        }
-      ).internal.preferredMediaTypes ??= [defaultContentType];
+      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
+        defaultContentType,
+      ];
+      const r = request as { internal?: Record<string, unknown> };
+      r.internal ??= {};
+      (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
+        [defaultContentType];
     },
     after: (request) => {
-      (
-        request as unknown as { preferredMediaTypes?: string[] }
-      ).preferredMediaTypes ??= [defaultContentType];
-      (
-        request as unknown as { internal?: Record<string, unknown> }
-      ).internal ??= {} as Record<string, unknown>;
-      (
-        request as unknown as {
-          internal: { preferredMediaTypes?: string[] };
-        }
-      ).internal.preferredMediaTypes ??= [defaultContentType];
+      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
+        defaultContentType,
+      ];
+      const r = request as { internal?: Record<string, unknown> };
+      r.internal ??= {};
+      (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
+        [defaultContentType];
     },
     onError: (request) => {
-      (
-        request as unknown as { preferredMediaTypes?: string[] }
-      ).preferredMediaTypes ??= [defaultContentType];
-      (
-        request as unknown as { internal?: Record<string, unknown> }
-      ).internal ??= {} as Record<string, unknown>;
-      (
-        request as unknown as {
-          internal: { preferredMediaTypes?: string[] };
-        }
-      ).internal.preferredMediaTypes ??= [defaultContentType];
+      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
+        defaultContentType,
+      ];
+      const r = request as { internal?: Record<string, unknown> };
+      r.internal ??= {};
+      (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
+        [defaultContentType];
     },
   };
 
   /**
    * Force your configured content type on shaped responses (esp. error paths).
-   * http-error-handler produces a shaped response (often with application/json).
-   * We normalize that to `defaultContentType` to satisfy vendor +json tests.
+   * http-error-handler produces a shaped response; we normalize the header so
+   * tests expecting vendor +json remain deterministic.
    */
   const mForceContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     after: (request) => {
-      const res = (
-        request as unknown as {
-          response?: {
-            statusCode?: number;
-            headers?: Record<string, string>;
-            body?: unknown;
-          };
-        }
-      ).response;
+      const res = (request as { response?: ShapedResponse }).response;
       if (
         res &&
         typeof res === 'object' &&
@@ -146,15 +126,7 @@ export const buildMiddlewareStack = <
       }
     },
     onError: (request) => {
-      const res = (
-        request as unknown as {
-          response?: {
-            statusCode?: number;
-            headers?: Record<string, string>;
-            body?: unknown;
-          };
-        }
-      ).response;
+      const res = (request as { response?: ShapedResponse }).response;
       if (
         res &&
         typeof res === 'object' &&
@@ -183,8 +155,8 @@ export const buildMiddlewareStack = <
       };
 
       err.expose = true;
-
       const msg = typeof err.message === 'string' ? err.message : '';
+
       if (
         typeof err.statusCode !== 'number' &&
         (isZodError(err) || /invalid (event|response)/i.test(msg))
@@ -214,17 +186,16 @@ export const buildMiddlewareStack = <
         {
           // Accept application/json, application/*+json (ld+json, vnd.api+json, etc.)
           regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
-          serializer: wrapSerializer(({ body }) => JSON.stringify(body), {
-            label: 'application/json',
-            logger: (options.logger ?? console) as Console,
-          }),
+          // Do NOT set a fixed label here; let the matcher decide content-type.
+          serializer: ({ body }) =>
+            typeof body === 'string' ? body : JSON.stringify(body),
         },
       ],
       defaultContentType,
     }),
   );
 
-  // Combine — note: your combine() runs AFTER in registration order.
+  // Combine — AFTER middlewares run in the order listed here for your combine()
   return combine(
     // BEFORE phase
     mHead,
@@ -232,14 +203,13 @@ export const buildMiddlewareStack = <
     mHeaderNormalizer,
     multipart,
     mJsonBodyParser,
-    mZodValidator, // validate first (so ZodError wins)
-    mContentNegotiation,
+    mZodValidator,
 
-    // AFTER / ERROR phases (in order, since your combine preserves order)
+    // AFTER / ERROR phases
     mErrorExpose,
     mErrorHandler,
     mCors,
-    mPreferredMediaTypes, // set defaults in all phases
+    mPreferredMediaTypes, // set defaults across all phases
     mForceContentType, // normalize shaped responses to the configured content type
     mResponseSerializer, // last
   );
