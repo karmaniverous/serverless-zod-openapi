@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ARCHIVE_NAME="${ARCHIVE_NAME:-archive.tar}"
+ARCHIVE_NAME="${ARCHIVE_NAME:-archived.tar}"
 TMP="${ARCHIVE_NAME}.tmp"
 
 TAR=tar
