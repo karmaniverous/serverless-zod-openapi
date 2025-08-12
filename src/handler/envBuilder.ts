@@ -1,16 +1,11 @@
-// src/handler/envBuilder.ts
 import type { ZodObject, ZodRawShape } from 'zod';
 import { z } from 'zod';
 
-/** Derive the exact set of keys for this function’s env. */
-export const deriveAllKeys = <
-  GK extends PropertyKey,
-  SK extends PropertyKey,
-  FK extends PropertyKey,
->(
-  globalEnv: readonly GK[],
-  stageEnv: readonly SK[],
-  fnEnv: readonly FK[],
+/** Union all env keys we plan to expose into a single set. */
+export const deriveAllKeys = (
+  globalEnv: readonly PropertyKey[],
+  stageEnv: readonly PropertyKey[],
+  fnEnv: readonly PropertyKey[],
 ): ReadonlySet<PropertyKey> => {
   const out = new Set<PropertyKey>();
   globalEnv.forEach((k) => out.add(k));
@@ -18,7 +13,12 @@ export const deriveAllKeys = <
   fnEnv.forEach((k) => out.add(k));
   return out;
 };
-/** Split a combined key set into the portions belonging to each schema. */
+
+/**
+ * Split a combined key set into the portions belonging to each schema.
+ * NOTE: Stage pick excludes keys that are also global, so global required keys
+ * are never shadowed by stage.partial().
+ */
 export const splitKeysBySchema = <
   G extends ZodObject<ZodRawShape>,
   S extends ZodObject<ZodRawShape>,
@@ -33,12 +33,10 @@ export const splitKeysBySchema = <
   const gKeySet = new Set(Object.keys(globalSchema.shape));
   const sKeySet = new Set(Object.keys(stageSchema.shape));
 
-  // global = intersection(allKeys, globalSchema)
   const globalPick = [...allKeys].filter((k): k is keyof z.infer<G> =>
     gKeySet.has(String(k)),
   );
 
-  // stage = intersection(allKeys, stageSchema) MINUS global keys
   const stagePick = [...allKeys].filter((k): k is keyof z.infer<S> => {
     const key = String(k);
     return sKeySet.has(key) && !gKeySet.has(key);
@@ -47,7 +45,7 @@ export const splitKeysBySchema = <
   return { globalPick, stagePick };
 };
 
-/** Build a Zod schema from picked keys of both global & stage schemas. */
+/** Build a Zod schema that picks only the requested keys from both schemas. */
 export const buildEnvSchema = <
   G extends ZodObject<ZodRawShape>,
   S extends ZodObject<ZodRawShape>,
@@ -70,6 +68,3 @@ export const parseTypedEnv = <T extends z.ZodType>(
   envSchema: T,
   envSource: Record<string, unknown>,
 ): z.infer<T> => envSchema.parse(envSource);
-
-export const isHead = (method: string | undefined): boolean =>
-  method === 'HEAD';

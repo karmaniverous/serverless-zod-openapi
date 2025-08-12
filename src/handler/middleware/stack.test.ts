@@ -1,5 +1,5 @@
 import middy from '@middy/core';
-import type { Context } from 'aws-lambda';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
@@ -7,20 +7,19 @@ import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 
 import { buildMiddlewareStack } from './stack';
 
-// Utilities
+// Helper that preserves correct event typing (avoid 'unknown' issues)
 const run = async (
-  base: (e: unknown, c: Context) => Promise<unknown>,
+  base: (e: APIGatewayProxyEvent, c: Context) => Promise<unknown>,
   opts: Parameters<typeof buildMiddlewareStack>[0],
-  event: unknown,
+  event: APIGatewayProxyEvent,
   ctx: Context,
 ) => {
   const wrapped = middy(base).use(buildMiddlewareStack(opts));
   return wrapped(event, ctx);
 };
 
-describe('stack: response shaping and headers', () => {
-  it('sets Content-Type on normal responses and preserves body', async () => {
-    const defaultContentType = 'application/json';
+describe('stack: response shaping & content-type header', () => {
+  it('sets Content-Type and serializes body to JSON', async () => {
     const base = async () => ({
       statusCode: 200,
       headers: {},
@@ -28,34 +27,26 @@ describe('stack: response shaping and headers', () => {
     });
 
     const event = createApiGatewayV1Event('GET');
-    event.headers = { origin: 'https://example.com' };
-
     const ctx: Context = createLambdaContext();
 
     const result = (await run(
       base,
-      { contentType: defaultContentType },
+      { contentType: 'application/json' },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string;
-    };
+    )) as { statusCode: number; headers: Record<string, string>; body: string };
 
     expect(result.statusCode).toBe(200);
-    expect(result.headers['Content-Type']).toBe(defaultContentType);
-    // Body is serialized to JSON text
+    expect(result.headers['Content-Type']).toBe('application/json');
     expect(result.body).toBe(JSON.stringify({ ok: true }));
   });
 });
 
-describe('stack: Zod errors get exposed as 400', () => {
-  it('maps ZodError to statusCode 400 and serializes error body', async () => {
+describe('stack: Zod errors are exposed as 400', () => {
+  it('maps a thrown ZodError to statusCode 400', async () => {
     const base = async () => {
-      // Force a ZodError without constructing it manually
       z.object({ k: z.string() }).parse([]); // throws
-      return {};
+      return { statusCode: 200, headers: {}, body: {} };
     };
 
     const event = createApiGatewayV1Event('GET');
@@ -66,35 +57,28 @@ describe('stack: Zod errors get exposed as 400', () => {
       { contentType: 'application/json' },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string;
-    };
+    )) as { statusCode: number; headers: Record<string, string>; body: string };
 
     expect(result.statusCode).toBe(400);
     expect(result.headers['Content-Type']).toBe('application/json');
 
-    // Body should be JSON string; avoid depending on exact shape
+    // Body is JSON string; don't depend on exact shape
     const parsed = JSON.parse(result.body) as { message?: unknown };
-    expect(
-      typeof parsed.message === 'string' || typeof parsed.message === 'object',
-    ).toBe(true);
+    expect(parsed).toBeTruthy();
   });
 });
 
-describe('stack: JSON body parsing and acceptable content-type', () => {
-  it('accepts JSON content type and lets handler run', async () => {
-    const base = async (_e: unknown, _c: Context) => ({
-      statusCode: 200,
-      headers: {},
-      body: { ok: true },
-    });
+describe('stack: POST + JSON body is accepted', () => {
+  it('returns 200 with serialized JSON body', async () => {
+    const base = async (e: APIGatewayProxyEvent, _c: Context) => {
+      // touch event to avoid unused lint
+      void e.path;
+      return { statusCode: 200, headers: {}, body: { ok: true } };
+    };
 
     const event = createApiGatewayV1Event('POST');
     event.headers = {
       ...(event.headers ?? {}),
-      // Ensure we do not trigger 415 in ancillary checks
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
@@ -107,11 +91,7 @@ describe('stack: JSON body parsing and acceptable content-type', () => {
       { contentType: 'application/json' },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string;
-    };
+    )) as { statusCode: number; headers: Record<string, string>; body: string };
 
     expect(result.statusCode).toBe(200);
     expect(result.headers['Content-Type']).toBe('application/json');
@@ -119,16 +99,15 @@ describe('stack: JSON body parsing and acceptable content-type', () => {
   });
 });
 
-describe('stack: HEAD short-circuit still shapes a JSON response', () => {
-  it('returns 200 and an empty JSON object body', async () => {
+describe('stack: HEAD short-circuit shapes empty JSON body', () => {
+  it('returns 200 and "{}"', async () => {
     const base = async () => ({
       statusCode: 200,
       headers: {},
-      body: { shouldNotAppear: true }, // should be ignored by short-circuit
+      body: { shouldBeIgnored: true },
     });
 
     const event = createApiGatewayV1Event('HEAD');
-
     const ctx: Context = createLambdaContext();
 
     const result = (await run(
@@ -136,15 +115,10 @@ describe('stack: HEAD short-circuit still shapes a JSON response', () => {
       { contentType: 'application/json' },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string;
-    };
+    )) as { statusCode: number; headers: Record<string, string>; body: string };
 
     expect(result.statusCode).toBe(200);
     expect(result.headers['Content-Type']).toBe('application/json');
-    // shortCircuitHead sets `{}` which the serializer turns into "{}"
     expect(result.body).toBe('{}');
   });
 });

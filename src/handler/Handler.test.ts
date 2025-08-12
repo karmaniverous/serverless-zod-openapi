@@ -9,24 +9,24 @@ import type { ConsoleLogger } from '@/types/Loggable';
 import type { SecurityContext } from './detectSecurityContext';
 import type { Handler, HandlerOptions, InferEvent } from './Handler';
 
-// --- Test-local schemas (do NOT import production)
-const tEventSchema = z.object({
+// --- Test-local schemas (no production imports)
+export const eventSchema = z.object({
   id: z.string(),
   q: z.string().optional(),
 });
 
-const tResponseSchema = z.object({
+export const responseSchema = z.object({
   ok: z.boolean(),
 });
 
-// Keys this handler needs from AllParams (keep in sync with the fixture)
+// Keys this handler needs from AllParams (fixture)
 type Keys = 'SERVICE_NAME' | 'PROFILE';
 
-describe('Handler.ts (typed contract using test-local schemas)', () => {
+describe('Handler.ts (typed contract with test-local schemas)', () => {
   it('Handler signature matches parameter and return types', () => {
     type H = Handler<
-      typeof tEventSchema,
-      typeof tResponseSchema,
+      typeof eventSchema,
+      typeof responseSchema,
       AllParams,
       Keys,
       ConsoleLogger
@@ -34,28 +34,33 @@ describe('Handler.ts (typed contract using test-local schemas)', () => {
 
     expectTypeOf<Parameters<H>>().toEqualTypeOf<
       [
-        InferEvent<typeof tEventSchema>,
+        InferEvent<typeof eventSchema>,
         Context,
         HandlerOptions<AllParams, Keys, ConsoleLogger>,
       ]
     >();
 
     expectTypeOf<ReturnType<H>>().toEqualTypeOf<Promise<{ ok: boolean }>>();
+
+    // Use the schemas at runtime once to avoid "used only as a type" lint
+    expect(eventSchema.parse({ id: 'x' })).toEqual({ id: 'x' });
+    expect(responseSchema.parse({ ok: true })).toEqual({ ok: true });
   });
 
   it('Concrete implementation type-checks and runs end-to-end', async () => {
     const impl: Handler<
-      typeof tEventSchema,
-      typeof tResponseSchema,
+      typeof eventSchema,
+      typeof responseSchema,
       AllParams,
       Keys,
       ConsoleLogger
-    > = async (_event, _ctx, _opts) => {
+    > = async (event, _ctx, opts) => {
+      // touch inputs to avoid "unused var" lint
+      opts.logger.debug?.('id', event.id);
       return { ok: true };
     };
 
-    // Build an API GW v1 event and satisfy the schema overlay
-    const event: InferEvent<typeof tEventSchema> = {
+    const event: InferEvent<typeof eventSchema> = {
       ...createApiGatewayV1Event('GET'),
       id: '123',
       q: 'hello',
