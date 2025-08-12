@@ -6,8 +6,8 @@ import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { AllParams } from '@/test/stages';
 import type { ConsoleLogger } from '@/types/Loggable';
 
+import type { SecurityContext } from './detectSecurityContext';
 import type { Handler, HandlerOptions, InferEvent } from './Handler';
-import type { SecurityContext } from './SecurityContext';
 
 // --- Test-local schemas (do NOT import production schemas)
 const eventSchema = z.object({

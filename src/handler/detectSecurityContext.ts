@@ -5,7 +5,14 @@ import type {
   APIGatewayProxyEventV2,
 } from 'aws-lambda';
 
-import type { SecurityContext } from './SecurityContext';
+/**
+ * The security context of a request.
+ *
+ * - `my`: The request is authenticated as a user.
+ * - `private`: The request is authenticated with an API key.
+ * - `public`: The request is not authenticated.
+ */
+export type SecurityContext = 'my' | 'private' | 'public';
 
 /**
  * Type guard to check if an event is a V1 API Gateway event.
@@ -16,7 +23,7 @@ import type { SecurityContext } from './SecurityContext';
 export const isV1 = (
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2,
 ): event is APIGatewayProxyEvent => {
-  if (!event || typeof event !== 'object') return false;
+  if (typeof event !== 'object') return false;
   const obj = event as Record<string, unknown>;
   if (!('requestContext' in obj)) return false;
   const ctx = (obj as { requestContext?: unknown }).requestContext;

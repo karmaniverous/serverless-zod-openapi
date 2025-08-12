@@ -4,7 +4,7 @@ import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
-import type { SecurityContext } from './SecurityContext';
+import type { SecurityContext } from './detectSecurityContext';
 
 export type Merge<T, U> = Omit<T, keyof U> & U;
 
