@@ -2,3 +2,4 @@
 .serverless/
 local/
 node_modules/
+/archive.tar
