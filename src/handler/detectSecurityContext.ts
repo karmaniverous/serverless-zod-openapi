@@ -116,11 +116,10 @@ const hasApiKey = (
     };
     const identKey = rc.identity?.apiKey;
     if (typeof identKey === 'string' && identKey.length > 0) return true;
-  
+
     const identKeyId = rc.identity?.apiKeyId;
     if (typeof identKeyId === 'string' && identKeyId.length > 0) return true;
-}
-
+  }
 
   return false;
 };

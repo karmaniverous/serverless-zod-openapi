@@ -9,14 +9,23 @@ export type MiddyReq = {
   internal?: Record<string, unknown>;
 };
 
-export const runBefore = async (stack: MiddlewareObj, req: MiddyReq): Promise<void> => {
+export const runBefore = async (
+  stack: MiddlewareObj,
+  req: MiddyReq,
+): Promise<void> => {
   if (stack.before) await stack.before(req as never);
 };
 
-export const runAfter = async (stack: MiddlewareObj, req: MiddyReq): Promise<void> => {
+export const runAfter = async (
+  stack: MiddlewareObj,
+  req: MiddyReq,
+): Promise<void> => {
   if (stack.after) await stack.after(req as never);
 };
 
-export const runOnError = async (stack: MiddlewareObj, req: MiddyReq): Promise<void> => {
+export const runOnError = async (
+  stack: MiddlewareObj,
+  req: MiddyReq,
+): Promise<void> => {
   if (stack.onError && req.error) await stack.onError(req as never);
 };

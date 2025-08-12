@@ -13,4 +13,3 @@ export const wrapSerializer = <T extends (args: { body: unknown }) => string>(
     return serialized;
   }) as T;
 };
-

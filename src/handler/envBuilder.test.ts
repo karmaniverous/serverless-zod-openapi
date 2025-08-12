@@ -73,9 +73,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
 
     expect(envSchema instanceof z.ZodObject).toBe(true);
 
-    const shapeKeys = Object.keys(
-      envSchema.shape,
-    );
+    const shapeKeys = Object.keys(envSchema.shape);
     expect([...shapeKeys].sort()).toEqual(
       ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
     );
