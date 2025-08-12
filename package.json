@@ -60,6 +60,7 @@
   "scripts": {
     "context:archive": "tsx context/archive.ts",
     "context:lint": "tsx context/lint.ts",
+    "context:patch": "git apply --recount context/refactor.diff",
     "context:test": "tsx context/test.ts",
     "context": "concurrently -n archive,lint,test -c auto \"npm:context:archive\" \"npm:context:lint\" \"npm:context:test\"",
     "deploy": "serverless deploy",

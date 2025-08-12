@@ -113,6 +113,18 @@ export const makeWrapHandler = <
 
       (options.logger ?? console).debug('env', env);
 
+      // HEAD short-circuit (defense-in-depth): if the request method is HEAD,
+      // skip the business handler entirely and let AFTER middlewares shape "{}".
+      {
+        const evt = event as unknown as {
+          httpMethod?: string;
+          requestContext?: { http?: { method?: string } };
+        };
+        const method = (evt.httpMethod ?? evt.requestContext?.http?.method ?? '').toUpperCase();
+        if (method === 'HEAD') {
+          return { statusCode: 200, headers: {}, body: {} } as { statusCode: number; headers?: Record<string, string>; body?: unknown };
+        }
+      }
       const result = await handler(typedEvent, context, {
         env,
         logger: (options.logger || console) as Logger,
