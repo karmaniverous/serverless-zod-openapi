@@ -2,4 +2,4 @@
 .serverless/
 local/
 node_modules/
-gpt/
+context/out/
