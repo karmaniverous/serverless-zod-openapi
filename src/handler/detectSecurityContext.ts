@@ -46,24 +46,6 @@ const getMultiHeader = (
   );
   return found ? headers[found]?.[0] : undefined;
 };
-
-/** Get a query string parameter from v1 or v2 events (single or multi). */
-const getQueryParam = (
-  evt: APIGatewayProxyEvent | APIGatewayProxyEventV2,
-  key: string,
-): string | undefined => {
-  const single = (
-    evt as { queryStringParameters?: Record<string, string | undefined> }
-  ).queryStringParameters?.[key];
-  if (typeof single === 'string') return single;
-  const multi = (
-    evt as {
-      multiValueQueryStringParameters?: Record<string, string[] | undefined>;
-    }
-  ).multiValueQueryStringParameters?.[key];
-  return Array.isArray(multi) && multi.length > 0 ? multi[0] : undefined;
-};
-
 /** Get a header value from either single- or multi-value maps. */
 const getHeaderFromEvent = (
   evt: APIGatewayProxyEvent | APIGatewayProxyEventV2,
@@ -134,7 +116,11 @@ const hasApiKey = (
     };
     const identKey = rc.identity?.apiKey;
     if (typeof identKey === 'string' && identKey.length > 0) return true;
-  }
+  
+    const identKeyId = rc.identity?.apiKeyId;
+    if (typeof identKeyId === 'string' && identKeyId.length > 0) return true;
+}
+
 
   return false;
 };

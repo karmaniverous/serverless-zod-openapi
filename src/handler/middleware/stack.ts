@@ -122,6 +122,10 @@ export const buildMiddlewareStack = <
         'body' in res
       ) {
         const headers = res.headers ?? {};
+        // Ensure body is a string so the serializer won't 415
+        if (res.body !== undefined && typeof res.body !== 'string') {
+          try { res.body = JSON.stringify(res.body); } catch { res.body = String(res.body); }
+        }
         headers['Content-Type'] = defaultContentType;
         res.headers = headers;
       }
@@ -137,6 +141,10 @@ export const buildMiddlewareStack = <
         'body' in res
       ) {
         const headers = res.headers ?? {};
+        // Ensure body is a string so the serializer won't 415
+        if (res.body !== undefined && typeof res.body !== 'string') {
+          try { res.body = JSON.stringify(res.body); } catch { res.body = String(res.body); }
+        }
         headers['Content-Type'] = defaultContentType;
         res.headers = headers;
       }

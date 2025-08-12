@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { ConsoleLogger } from '@/types/Loggable';
+
 import { makeWrapHandler } from './wrapHandler';
 
 const globalParamsSchema = z.object({

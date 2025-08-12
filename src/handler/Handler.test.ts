@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { AllParams } from '@/test/stages';
 import type { ConsoleLogger } from '@/types/Loggable';
+
 import type { SecurityContext } from './detectSecurityContext';
 import type { Handler, HandlerOptions, InferEvent } from './Handler';
 

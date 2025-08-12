@@ -76,6 +76,6 @@ export const synthesizeEnvForSuccess = (): Record<string, string> => {
 
   return mapEntries(envSchema.shape, (key, schema) => [
     key,
-    tryCandidates(schema as unknown as z.ZodType),
+    tryCandidates(schema),
   ]) as Record<string, string>;
 };

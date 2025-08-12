@@ -75,7 +75,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
 
     const shapeKeys = Object.keys(
       envSchema.shape,
-    ) as (keyof typeof envSchema.shape)[];
+    );
     expect([...shapeKeys].sort()).toEqual(
       ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
     );
