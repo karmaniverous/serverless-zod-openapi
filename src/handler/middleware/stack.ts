@@ -19,6 +19,7 @@ import {
   httpZodValidator,
   type HttpZodValidatorOptions,
 } from './httpZodValidator';
+import { isMultipart } from './isMultipart';
 import { noopMiddleware } from './noop';
 import { shortCircuitHead } from './shortCircuitHead';
 
@@ -66,7 +67,24 @@ export const buildMiddlewareStack = <
   const mHead = shortCircuitHead;
   const mEventNormalizer = asApiMiddleware(httpEventNormalizer());
   const mHeaderNormalizer = asApiMiddleware(httpHeaderNormalizer());
-  const mJsonBodyParser = asApiMiddleware(httpJsonBodyParser());
+
+  const mJsonBodyParser: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+    before: async (request) => {
+      const { event } = request;
+      const method = event.httpMethod.toUpperCase();
+
+      // Only parse when it makes sense
+      if (method === 'GET' || method === 'HEAD') return;
+      if (!event.body) return;
+      if (isMultipart(event)) return;
+
+      // Don’t 415 on missing/mismatched content-type
+      const inner = asApiMiddleware(
+        httpJsonBodyParser({ disableContentTypeError: true }),
+      );
+      if (inner.before) await inner.before(request);
+    },
+  };
 
   // Parse Accept header early to populate request.preferredMediaTypes
   const mContentNegotiation = asApiMiddleware(

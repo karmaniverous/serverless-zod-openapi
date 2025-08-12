@@ -113,7 +113,7 @@ const resolveVitestBin = async (
         shell: false,
       };
     }
-  } catch {
+  } catch (err) {
     // fall through
   }
 
@@ -177,6 +177,7 @@ const main = async (): Promise<void> => {
         failed: fails.length,
         failures: fails,
         rawReporter: parsed,
+        runnerStderr: jsonRun.stderr ? jsonRun.stderr : undefined,
       };
 
       await writeFile(
@@ -189,7 +190,7 @@ const main = async (): Promise<void> => {
       );
       process.exitCode = jsonRun.code;
       return;
-    } catch {
+    } catch (err) {
       // Fall back to basic reporter if JSON stdout wasn't parseable
       const basic = await runVitest(repoRoot, 'basic');
       const jsonOut = {
@@ -197,6 +198,7 @@ const main = async (): Promise<void> => {
         failed: basic.code === 0 ? 0 : undefined,
         raw: `${basic.stdout}${basic.stderr}`,
         note: 'json reporter not available; using basic reporter output',
+        previousRun: { code: jsonRun.code, stderr: jsonRun.stderr },
       };
       await writeFile(
         outJsonAbs,
@@ -208,7 +210,7 @@ const main = async (): Promise<void> => {
       );
       process.exitCode = basic.code;
     }
-  } catch {
+  } catch (err) {
     const jsonOut = {
       success: false,
       error: 'vitest-not-found-or-failed-to-run',
