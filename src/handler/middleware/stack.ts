@@ -1,4 +1,5 @@
 import type { MiddlewareObj } from '@middy/core';
+import httpContentNegotiation from '@middy/http-content-negotiation';
 import httpCors from '@middy/http-cors';
 import httpErrorHandler from '@middy/http-error-handler';
 import httpEventNormalizer from '@middy/http-event-normalizer';
@@ -66,6 +67,17 @@ export const buildMiddlewareStack = <
   const mEventNormalizer = asApiMiddleware(httpEventNormalizer());
   const mHeaderNormalizer = asApiMiddleware(httpHeaderNormalizer());
   const mJsonBodyParser = asApiMiddleware(httpJsonBodyParser());
+
+  // Parse Accept header early to populate request.preferredMediaTypes
+  const mContentNegotiation = asApiMiddleware(
+    httpContentNegotiation({
+      parseLanguages: false,
+      parseCharsets: false,
+      parseEncodings: false,
+      availableMediaTypes: [defaultContentType],
+      defaultMediaType: defaultContentType,
+    }),
+  );
 
   // Validate request BEFORE any content-type logic so Zod errors surface first
   const mZodValidator = asApiMiddleware(httpZodValidator(options));
@@ -227,6 +239,7 @@ export const buildMiddlewareStack = <
     mHead,
     mEventNormalizer,
     mHeaderNormalizer,
+    mContentNegotiation,
     multipart,
     mJsonBodyParser,
     mZodValidator,
