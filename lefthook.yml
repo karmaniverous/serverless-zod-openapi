@@ -2,18 +2,12 @@ pre-commit:
   scripts:
     update-archive:
       runner: bash
-post-commit:
-  commands:
-    update-archive:
-      env:
-        ARCHIVE_NAME: 'archive.tar' # optional; defaults to archive.tar
-      run: >
-        git ls-files -z --cached --others --exclude-standard
-        | ( tar --version 2>/dev/null | head -n1 | grep -qi 'gnu'
-            && tar --format=pax -cf "${ARCHIVE_NAME}.tmp" --null --files-from=- --exclude="${ARCHIVE_NAME}"
-            || tar --format pax -cf "${ARCHIVE_NAME}.tmp" -T - -0 --exclude "${ARCHIVE_NAME}" )
-        && mv -f "${ARCHIVE_NAME}.tmp" "${ARCHIVE_NAME}"
 prepare-commit-msg:
   scripts:
     add-issue:
       runner: bash
+post-commit:
+  scripts:
+    update-archive:
+      env:
+        ARCHIVE_NAME: 'archive.tar'

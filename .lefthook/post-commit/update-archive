@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ARCHIVE_NAME="${ARCHIVE_NAME:-archive.tar}"
+TMP="${ARCHIVE_NAME}.tmp"
+
+TAR=tar
+TARVER="$($TAR --version 2>/dev/null | head -n1 || true)"
+FLAVOR=gnu
+if ! echo "$TARVER" | grep -qi 'gnu'; then
+  # Prefer Windows' bsdtar if we're not on GNU tar
+  if [ -x /c/Windows/System32/tar.exe ]; then
+    TAR=/c/Windows/System32/tar.exe
+    TARVER="$($TAR --version 2>/dev/null | head -n1 || true)"
+  fi
+  FLAVOR=bsd
+fi
+
+if [ "$FLAVOR" = gnu ]; then
+  git ls-files -z --cached --others --exclude-standard \
+  | "$TAR" --format=pax --exclude="$ARCHIVE_NAME" --exclude="$ARCHIVE_NAME.tmp" \
+      -cf "$TMP" --null --files-from=-
+else
+  # bsdtar: --exclude must come before the list; -T - -0 reads NUL-delimited names
+  git ls-files -z --cached --others --exclude-standard \
+  | "$TAR" --format pax --exclude "$ARCHIVE_NAME" --exclude "$ARCHIVE_NAME.tmp" \
+      -cf "$TMP" -T - -0
+fi
+
+mv -f "$TMP" "$ARCHIVE_NAME"
+echo "Updated $ARCHIVE_NAME using: $TARVER"
