@@ -106,48 +106,64 @@ export const buildMiddlewareStack = <
   };
 
   /**
-   * Force your configured content type on shaped responses (esp. error paths).
-   * http-error-handler produces a shaped response; we normalize the header so
-   * tests expecting vendor +json remain deterministic.
+   * Shape ANY response (shaped or not) to a normalized HTTP response and
+   * force the configured content type. This guarantees the serializer will
+   * never produce a 415 for our happy paths.
    */
-  const mForceContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+  const mShapeAndContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     after: (request) => {
-      const res = (request as unknown as { response?: ShapedResponse })
-        .response;
-      if (
-        res &&
-        typeof res === 'object' &&
-        'statusCode' in res &&
-        'headers' in res &&
-        'body' in res
-      ) {
-        const headers = res.headers ?? {};
-        // Ensure body is a string so the serializer won't 415
-        if (res.body !== undefined && typeof res.body !== 'string') {
-          try { res.body = JSON.stringify(res.body); } catch { res.body = String(res.body); }
-        }
-        headers['Content-Type'] = defaultContentType;
-        res.headers = headers;
+      const container = request as unknown as { response?: unknown };
+      const current = container.response;
+
+      if (current === undefined) return;
+
+      // Determine if it's already a shaped HTTP response
+      const looksShaped =
+        typeof current === 'object' &&
+        current !== null &&
+        'statusCode' in (current as Record<string, unknown>) &&
+        'headers' in (current as Record<string, unknown>) &&
+        'body' in (current as Record<string, unknown>);
+
+      let res: ShapedResponse;
+      if (looksShaped) {
+        res = current as ShapedResponse;
+      } else {
+        res = { statusCode: 200, headers: {}, body: current };
       }
+
+      // Ensure body is a string so the serializer won't 415
+      if (res.body !== undefined && typeof res.body !== 'string') {
+        try {
+          res.body = JSON.stringify(res.body);
+        } catch {
+          res.body = String(res.body);
+        }
+      }
+
+      const headers = res.headers ?? {};
+      headers['Content-Type'] = defaultContentType;
+      res.headers = headers;
+
+      (request as unknown as { response: ShapedResponse }).response = res;
     },
     onError: (request) => {
-      const res = (request as unknown as { response?: ShapedResponse })
-        .response;
-      if (
-        res &&
-        typeof res === 'object' &&
-        'statusCode' in res &&
-        'headers' in res &&
-        'body' in res
-      ) {
-        const headers = res.headers ?? {};
-        // Ensure body is a string so the serializer won't 415
-        if (res.body !== undefined && typeof res.body !== 'string') {
-          try { res.body = JSON.stringify(res.body); } catch { res.body = String(res.body); }
+      const container = request as unknown as { response?: unknown };
+      const current = container.response;
+      if (!current || typeof current !== 'object') return;
+      const res = current as ShapedResponse;
+
+      // Ensure body is a string so the serializer won't 415
+      if (res.body !== undefined && typeof res.body !== 'string') {
+        try {
+          res.body = JSON.stringify(res.body);
+        } catch {
+          res.body = String(res.body);
         }
-        headers['Content-Type'] = defaultContentType;
-        res.headers = headers;
       }
+      const headers = res.headers ?? {};
+      headers['Content-Type'] = defaultContentType;
+      res.headers = headers;
     },
   };
 
@@ -220,7 +236,7 @@ export const buildMiddlewareStack = <
     mErrorHandler,
     mCors,
     mPreferredMediaTypes, // set defaults across all phases
-    mForceContentType, // normalize shaped responses to the configured content type
+    mShapeAndContentType, // shape + normalize responses to the configured content type
     mResponseSerializer, // last
   );
 };

@@ -19,7 +19,7 @@ export const withTempEnv = async <T>(
   run: () => T | Promise<T>,
 ): Promise<T> => {
   const original = { ...process.env };
-  process.env = shake({ ...original, ...vars }) as NodeJS.ProcessEnv;
+  process.env = shake({ ...original, ...vars });
   try {
     return await run();
   } finally {

@@ -112,7 +112,7 @@ const hasApiKey = (
   // Some v1 events surface API key on requestContext.identity.apiKey
   if (isV1(evt)) {
     const rc = evt.requestContext as {
-      identity?: { apiKey?: unknown };
+      identity?: { apiKey?: unknown; apiKeyId?: unknown };
     };
     const identKey = rc.identity?.apiKey;
     if (typeof identKey === 'string' && identKey.length > 0) return true;
