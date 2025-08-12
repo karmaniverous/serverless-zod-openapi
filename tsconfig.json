@@ -20,5 +20,6 @@
     "target": "esnext",
     "types": [],
     "verbatimModuleSyntax": true
-  }
+  },
+  "exclude": [".serverless", "context/out"]
 }
