@@ -13,7 +13,8 @@ type ShapedResponse = {
  */
 export const shortCircuitHead: MiddlewareObj<APIGatewayProxyEvent, Context> = {
   before: async (request) => {
-    const method = request.event.httpMethod.toUpperCase();
+    const evt = request.event as unknown as { httpMethod?: string; requestContext?: { http?: { method?: string } } };
+    const method = (evt.httpMethod ?? evt.requestContext?.http?.method ?? '').toUpperCase();
     if (method === 'HEAD') {
       (request as unknown as { response?: ShapedResponse }).response = {
         statusCode: 200,

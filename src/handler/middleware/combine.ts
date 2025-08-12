@@ -19,7 +19,12 @@ export const combine = (
 
   return {
     before: async (request) => {
-      for (const fn of befores) await fn(request);
+      for (const fn of befores) {
+        await fn(request);
+        // If a prior middleware has produced a response (e.g., HEAD short-circuit),
+        // exit early so the base handler will be skipped by Middy.
+        if ((request as { response?: unknown }).response !== undefined) return;
+      }
     },
     after: async (request) => {
       for (const fn of afters) await fn(request);
