@@ -14,6 +14,10 @@ export const deriveAllKeys = (
   return out;
 };
 
+/** HEAD helper preserved for tests that import it. */
+export const isHead = (method: string | undefined): boolean =>
+  typeof method === 'string' && method.toUpperCase() === 'HEAD';
+
 /**
  * Split a combined key set into the portions belonging to each schema.
  * NOTE: Stage pick excludes keys that are also global, so global required keys
@@ -24,14 +28,14 @@ export const splitKeysBySchema = <
   S extends ZodObject<ZodRawShape>,
 >(
   allKeys: ReadonlySet<PropertyKey>,
-  globalSchema: G,
-  stageSchema: S,
+  globalParamsSchema: G,
+  stageParamsSchema: S,
 ): {
   globalPick: (keyof z.infer<G>)[];
   stagePick: (keyof z.infer<S>)[];
 } => {
-  const gKeySet = new Set(Object.keys(globalSchema.shape));
-  const sKeySet = new Set(Object.keys(stageSchema.shape));
+  const gKeySet = new Set(Object.keys(globalParamsSchema.shape));
+  const sKeySet = new Set(Object.keys(stageParamsSchema.shape));
 
   const globalPick = [...allKeys].filter((k): k is keyof z.infer<G> =>
     gKeySet.has(String(k)),
@@ -52,14 +56,18 @@ export const buildEnvSchema = <
 >(
   globalPick: readonly (keyof z.infer<G>)[],
   stagePick: readonly (keyof z.infer<S>)[],
-  globalSchema: G,
-  stageSchema: S,
+  globalParamsSchema: G,
+  stageParamsSchema: S,
 ) => {
   const toPick = (keys: readonly string[]) =>
     Object.fromEntries(keys.map((k) => [k, true])) as Record<string, true>;
 
-  const gPicked = globalSchema.pick(toPick(globalPick as readonly string[]));
-  const sPicked = stageSchema.pick(toPick(stagePick as readonly string[]));
+  const gPicked = globalParamsSchema.pick(
+    toPick(globalPick as readonly string[]),
+  );
+  const sPicked = stageParamsSchema.pick(
+    toPick(stagePick as readonly string[]),
+  );
 
   return z.object({}).extend(gPicked.shape).extend(sPicked.shape);
 };

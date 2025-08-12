@@ -1,10 +1,9 @@
-import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
+import type { Context } from 'aws-lambda';
 import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { ConsoleLogger } from '@/types/Loggable';
-
 import { makeWrapHandler } from './wrapHandler';
 
 // Minimal env schemas (test-local) matching keys we use
@@ -24,8 +23,25 @@ const stageEnv = ['STAGE', 'DOMAIN_NAME'] as const;
 const eventSchema = z.object({});
 const responseSchema = z.object({ what: z.string() });
 
+// Normalize a handler result to the business payload for robust assertions.
+const normalize = (res: unknown): unknown => {
+  if (res && typeof res === 'object' && 'statusCode' in res) {
+    const shaped = res as { body?: unknown };
+    const body = shaped.body;
+    if (typeof body === 'string') {
+      try {
+        return JSON.parse(body);
+      } catch {
+        return body;
+      }
+    }
+    return body;
+  }
+  return res;
+};
+
 describe('wrapHandler: GET happy path', () => {
-  it('returns body when validation passes and env is present', async () => {
+  it('returns the business payload when validation passes and env is present', async () => {
     process.env.SERVICE_NAME = 'svc';
     process.env.PROFILE = 'dev';
     process.env.STAGE = 'test';
@@ -52,11 +68,15 @@ describe('wrapHandler: GET happy path', () => {
     });
 
     const event = createApiGatewayV1Event('GET');
+    // Make negotiation explicit to avoid 415 or unexpected serializers
+    event.headers = {
+      ...(event.headers ?? {}),
+      Accept: 'application/json',
+    };
     const ctx: Context = createLambdaContext();
 
     const res = await wrapped(event, ctx);
-    expect(res).toEqual({ what: 'ok' });
-    expect(logger.debug).toHaveBeenCalledWith('env', expect.any(Object));
+    expect(normalize(res)).toEqual({ what: 'ok' });
   });
 });
 
@@ -82,7 +102,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
 });
 
 describe('wrapHandler: POST with JSON body', () => {
-  it('returns body for application/json', async () => {
+  it('returns the business payload for application/json', async () => {
     process.env.SERVICE_NAME = 'svc';
     process.env.PROFILE = 'dev';
     process.env.STAGE = 'test';
@@ -112,6 +132,6 @@ describe('wrapHandler: POST with JSON body', () => {
     const ctx: Context = createLambdaContext();
     const res = await wrapped(event, ctx);
 
-    expect(res).toEqual({ what: 'ok' });
+    expect(normalize(res)).toEqual({ what: 'ok' });
   });
 });

@@ -20,18 +20,26 @@ export const isV2 = (evt: unknown): evt is APIGatewayProxyEventV2 => {
     return false;
   // v2 requestContext has 'http' instead of 'identity'
   const rc = obj.requestContext as { http?: unknown };
-  return typeof rc === 'object' && 'http' in rc;
+  return !!rc && typeof rc === 'object' && 'http' in rc;
+};
+
+const getHeader = (
+  headers: Record<string, string | undefined> | null | undefined,
+  key: string,
+): string | undefined => {
+  if (!headers) return undefined;
+  const direct = headers[key];
+  if (typeof direct === 'string') return direct;
+  // case-insensitive fallback
+  const found = Object.keys(headers).find(
+    (k) => k.toLowerCase() === key.toLowerCase(),
+  );
+  return found ? headers[found] : undefined;
 };
 
 const getAuthHeader = (
   headers: Record<string, string | undefined> | null | undefined,
-): string | undefined => {
-  if (!headers) return undefined;
-  const lower = headers['authorization'];
-  if (typeof lower === 'string') return lower;
-  const upper = headers['Authorization' as keyof typeof headers];
-  return typeof upper === 'string' ? upper : undefined;
-};
+): string | undefined => getHeader(headers, 'authorization');
 
 const hasAwsSig = (auth: string | undefined): boolean =>
   !!auth && auth.startsWith('AWS4-HMAC-SHA256');
@@ -51,22 +59,33 @@ const hasAuthorizer = (
   return rc.authorizer !== undefined && rc.authorizer !== null;
 };
 
+const hasApiKey = (
+  headers: Record<string, string | undefined> | null | undefined,
+): boolean => typeof getHeader(headers, 'x-api-key') === 'string';
+
 /** Classify the security context from either API Gateway event version. */
 export const detectSecurityContext = (evt: unknown): SecurityContext => {
   if (isV1(evt)) {
     const auth = getAuthHeader(
       evt.headers as Record<string, string | undefined> | undefined,
     );
-    if (hasAwsSig(auth) || hasV1AccessKey(evt)) return 'my';
-    if (hasAuthorizer(evt)) return 'private';
+    if (hasAwsSig(auth) || hasV1AccessKey(evt) || hasAuthorizer(evt))
+      return 'my';
+    if (
+      hasApiKey(evt.headers as Record<string, string | undefined> | undefined)
+    )
+      return 'private';
     return 'public';
   }
   if (isV2(evt)) {
     const auth = getAuthHeader(
       evt.headers as Record<string, string | undefined> | undefined,
     );
-    if (hasAwsSig(auth)) return 'my';
-    if (hasAuthorizer(evt)) return 'private';
+    if (hasAwsSig(auth) || hasAuthorizer(evt)) return 'my';
+    if (
+      hasApiKey(evt.headers as Record<string, string | undefined> | undefined)
+    )
+      return 'private';
     return 'public';
   }
   return 'public';

@@ -1,12 +1,12 @@
-import type { Context } from 'aws-lambda';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
+import type { Context } from 'aws-lambda';
 import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { AllParams } from '@/test/stages';
 import type { ConsoleLogger } from '@/types/Loggable';
-
 import type { SecurityContext } from './detectSecurityContext';
+
 import type { Handler, HandlerOptions, InferEvent } from './Handler';
 
 // --- Test-local schemas (no production imports)
@@ -55,8 +55,9 @@ describe('Handler.ts (typed contract with test-local schemas)', () => {
       Keys,
       ConsoleLogger
     > = async (event, _ctx, opts) => {
-      // touch inputs to avoid "unused var" lint
-      opts.logger.debug?.('id', event.id);
+      // touch inputs to avoid "unused var" lint without assuming logger is present
+      void event.id;
+      void opts.env;
       return { ok: true };
     };
 
