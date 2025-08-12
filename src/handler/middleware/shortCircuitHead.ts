@@ -13,14 +13,22 @@ type ShapedResponse = {
  */
 export const shortCircuitHead: MiddlewareObj<APIGatewayProxyEvent, Context> = {
   before: async (request) => {
-    const evt = request.event as unknown as { httpMethod?: string; requestContext?: { http?: { method?: string } } };
-    const method = (evt.httpMethod ?? evt.requestContext?.http?.method ?? '').toUpperCase();
+    const evt = request.event as unknown as {
+      httpMethod?: string;
+      requestContext?: { http?: { method?: string } };
+    };
+    const method = (
+      evt.httpMethod ??
+      evt.requestContext?.http?.method ??
+      ''
+    ).toUpperCase();
     if (method === 'HEAD') {
-      (request as unknown as { response?: ShapedResponse }).response = {
-        statusCode: 200,
-        headers: {},
-        body: {},
-      };
+      (request as unknown as { earlyResponse?: ShapedResponse }).earlyResponse =
+        {
+          statusCode: 200,
+          headers: {},
+          body: {},
+        };
     }
   },
 };

@@ -1,6 +1,7 @@
 import type { MiddlewareObj } from '@middy/core';
 import type { z } from 'zod';
 
+import { pojofy } from '@/pojofy';
 import type { ConsoleLogger, Loggable } from '@/types/Loggable';
 
 const assertWithZod = (
@@ -9,13 +10,13 @@ const assertWithZod = (
   logger: ConsoleLogger,
 ): void => {
   if (!schema) return;
-  logger.debug('validating with zod', { value, schema });
+  logger.debug('validating with zod', value);
   const result = schema.safeParse(value);
   if (result.success) {
-    logger.debug('zod validation succeeded', result);
+    logger.debug('zod validation succeeded', pojofy(result));
     return;
   }
-  logger.error('zod validation failed', result);
+  logger.error('zod validation failed', pojofy(result));
   throw result.error; // throw raw ZodError
 };
 
