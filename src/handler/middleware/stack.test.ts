@@ -1,14 +1,11 @@
-// External
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import middy from '@middy/core';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-// Internal
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import { buildMiddlewareStack } from './stack';
 
-// Helper that preserves correct event typing
 const run = async (
   base: (e: APIGatewayProxyEvent, c: Context) => Promise<unknown>,
   opts: Parameters<typeof buildMiddlewareStack>[0],
@@ -19,7 +16,6 @@ const run = async (
   return wrapped(event, ctx);
 };
 
-// Robust normalization: accept shaped or raw, string or object body
 const getJsonBody = (res: unknown): unknown => {
   if (res && typeof res === 'object' && 'statusCode' in res) {
     const shaped = res as { body?: unknown };
@@ -91,7 +87,6 @@ describe('stack: Zod errors are exposed as 400', () => {
 describe('stack: POST + JSON body is accepted', () => {
   it('returns 200 and JSON payload', async () => {
     const base = async (e: APIGatewayProxyEvent, ctx: Context) => {
-      // touch vars to satisfy strict unused-vars
       void e.path;
       void ctx.awsRequestId;
       return { statusCode: 200, headers: {}, body: { ok: true } };

@@ -1,14 +1,11 @@
-// External
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-// Internal
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { ConsoleLogger } from '@/types/Loggable';
 import { makeWrapHandler } from './wrapHandler';
 
-// Minimal env schemas (test-local) matching keys we use
 const globalParamsSchema = z.object({
   SERVICE_NAME: z.string(),
   PROFILE: z.string(),
@@ -21,11 +18,9 @@ const stageParamsSchema = globalParamsSchema.partial().extend({
 const globalEnv = ['SERVICE_NAME', 'PROFILE'] as const;
 const stageEnv = ['STAGE', 'DOMAIN_NAME'] as const;
 
-// Consistent naming per your convention
 const eventSchema = z.object({});
 const responseSchema = z.object({ what: z.string() });
 
-// Normalize a handler result to the business payload for robust assertions.
 const normalize = (res: unknown): unknown => {
   if (res && typeof res === 'object' && 'statusCode' in res) {
     const shaped = res as { body?: unknown };
@@ -70,7 +65,6 @@ describe('wrapHandler: GET happy path', () => {
     });
 
     const event = createApiGatewayV1Event('GET');
-    // Be explicit about negotiation to avoid 415 / serializer surprises
     event.headers = { ...event.headers, Accept: 'application/json' };
 
     const ctx: Context = createLambdaContext();

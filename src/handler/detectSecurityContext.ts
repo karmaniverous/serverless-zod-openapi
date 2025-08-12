@@ -5,21 +5,17 @@ export type SecurityContext = 'my' | 'private' | 'public';
 
 /** Narrow to API Gateway v1 events with safe property checks. */
 export const isV1 = (evt: unknown): evt is APIGatewayProxyEvent => {
-  if (!evt || typeof evt !== 'object') return false;
-  const obj = evt as { httpMethod?: unknown; requestContext?: unknown };
-  return typeof obj.httpMethod === 'string' && obj.requestContext != null;
+  if (typeof evt !== 'object' || evt === null) return false;
+  return 'httpMethod' in evt && 'requestContext' in evt;
 };
 
 /** Narrow to API Gateway v2 events with safe property checks. */
 export const isV2 = (evt: unknown): evt is APIGatewayProxyEventV2 => {
-  if (!evt || typeof evt !== 'object') return false;
-  const obj = evt as { version?: unknown; requestContext?: unknown };
-  const rc = obj.requestContext as unknown;
+  if (typeof evt !== 'object' || evt === null) return false;
+  if (!('version' in evt) || !('requestContext' in evt)) return false;
+  const rc = (evt as { requestContext?: unknown }).requestContext;
   return (
-    typeof obj.version === 'string' &&
-    rc != null &&
-    typeof rc === 'object' &&
-    'http' in (rc as Record<string, unknown>)
+    !!rc && typeof rc === 'object' && 'http' in (rc as Record<string, unknown>)
   );
 };
 
@@ -74,8 +70,8 @@ const hasAwsSig = (auth: string | undefined): boolean =>
   typeof auth === 'string' && auth.startsWith('AWS4-HMAC-SHA256');
 
 const hasV1AccessKey = (evt: APIGatewayProxyEvent): boolean => {
-  const rc = evt.requestContext as unknown as {
-    identity?: { accessKey?: unknown };
+  const rc = (evt.requestContext ?? {}) as {
+    identity?: { accessKey?: unknown; apiKey?: unknown };
   };
   const ak = rc.identity?.accessKey;
   return typeof ak === 'string' && ak.length > 0;
@@ -84,13 +80,28 @@ const hasV1AccessKey = (evt: APIGatewayProxyEvent): boolean => {
 const hasAuthorizer = (
   evt: APIGatewayProxyEvent | APIGatewayProxyEventV2,
 ): boolean => {
-  const rc = evt.requestContext as unknown as { authorizer?: unknown };
+  const rc = (evt.requestContext ?? {}) as { authorizer?: unknown };
   return rc.authorizer !== undefined && rc.authorizer !== null;
 };
 
+/** Detect API key via header or v1 identity.apiKey. */
 const hasApiKey = (
   evt: APIGatewayProxyEvent | APIGatewayProxyEventV2,
-): boolean => typeof getHeaderFromEvent(evt, 'x-api-key') === 'string';
+): boolean => {
+  const fromHeader = getHeaderFromEvent(evt, 'x-api-key');
+  if (typeof fromHeader === 'string') return true;
+
+  // Some v1 events surface API key on requestContext.identity.apiKey
+  if (isV1(evt)) {
+    const rc = (evt.requestContext ?? {}) as {
+      identity?: { apiKey?: unknown };
+    };
+    const identKey = rc.identity?.apiKey;
+    if (typeof identKey === 'string' && identKey.length > 0) return true;
+  }
+
+  return false;
+};
 
 /** Classify the security context from either API Gateway event version. */
 export const detectSecurityContext = (evt: unknown): SecurityContext => {
