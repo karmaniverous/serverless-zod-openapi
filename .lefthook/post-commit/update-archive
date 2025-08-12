@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# Work from the repo root so relative paths resolve correctly
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
 ARCHIVE_NAME="${ARCHIVE_NAME:-gpt/archive.tar}"
+DIR="$(dirname "$ARCHIVE_NAME")"
+mkdir -p "$DIR"  # <-- ensure the directory exists
+
 TMP="${ARCHIVE_NAME}.tmp"
 
+# Build a NUL-delimited file list on disk (avoid pipes => no interactive stalls)
+LIST="$(mktemp "${TMP}.list.XXXXXX" 2>/dev/null || mktemp -t archive_list)"
+trap 'rm -f "$LIST" "$TMP"' EXIT
+
+git ls-files -z --cached --others --exclude-standard > "$LIST"
+
+# Pick a tar that understands our flags
 TAR=tar
 TARVER="$($TAR --version 2>/dev/null | head -n1 || true)"
 FLAVOR=gnu
 if ! echo "$TARVER" | grep -qi 'gnu'; then
-  # Prefer Windows' bsdtar if we're not on GNU tar
   if [ -x /c/Windows/System32/tar.exe ]; then
     TAR=/c/Windows/System32/tar.exe
     TARVER="$($TAR --version 2>/dev/null | head -n1 || true)"
@@ -16,15 +29,13 @@ if ! echo "$TARVER" | grep -qi 'gnu'; then
   FLAVOR=bsd
 fi
 
-if [ "$FLAVOR" = gnu ]; then
-  git ls-files -z --cached --others --exclude-standard \
-  | "$TAR" --format=pax --exclude="$ARCHIVE_NAME" --exclude="$ARCHIVE_NAME.tmp" \
-      -cf "$TMP" --null --files-from=-
+# Excludes must come BEFORE the list; also exclude the tmp archive itself.
+if [ "$FLAVOR" = "gnu" ]; then
+  "$TAR" --format=pax --exclude="$ARCHIVE_NAME" --exclude="$TMP" \
+    -cf "$TMP" --null --files-from="$LIST"
 else
-  # bsdtar: --exclude must come before the list; -T - -0 reads NUL-delimited names
-  git ls-files -z --cached --others --exclude-standard \
-  | "$TAR" --format pax --exclude "$ARCHIVE_NAME" --exclude "$ARCHIVE_NAME.tmp" \
-      -cf "$TMP" -T - -0
+  "$TAR" --format pax --exclude "$ARCHIVE_NAME" --exclude "$TMP" \
+    -cf "$TMP" -T "$LIST" -0
 fi
 
 mv -f "$TMP" "$ARCHIVE_NAME"
