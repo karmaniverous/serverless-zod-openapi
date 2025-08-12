@@ -44,8 +44,24 @@ const getMultiHeader = (
   const found = Object.keys(headers).find(
     (k) => k.toLowerCase() === key.toLowerCase(),
   );
-  const val = found ? headers[found] : undefined;
-  return Array.isArray(val) && val.length > 0 ? val[0] : undefined;
+  return found ? headers[found]?.[0] : undefined;
+};
+
+/** Get a query string parameter from v1 or v2 events (single or multi). */
+const getQueryParam = (
+  evt: APIGatewayProxyEvent | APIGatewayProxyEventV2,
+  key: string,
+): string | undefined => {
+  const single = (
+    evt as { queryStringParameters?: Record<string, string | undefined> }
+  ).queryStringParameters?.[key];
+  if (typeof single === 'string') return single;
+  const multi = (
+    evt as {
+      multiValueQueryStringParameters?: Record<string, string[] | undefined>;
+    }
+  ).multiValueQueryStringParameters?.[key];
+  return Array.isArray(multi) && multi.length > 0 ? multi[0] : undefined;
 };
 
 /** Get a header value from either single- or multi-value maps. */
@@ -70,7 +86,7 @@ const hasAwsSig = (auth: string | undefined): boolean =>
   typeof auth === 'string' && auth.startsWith('AWS4-HMAC-SHA256');
 
 const hasV1AccessKey = (evt: APIGatewayProxyEvent): boolean => {
-  const rc = (evt.requestContext ?? {}) as {
+  const rc = evt.requestContext as {
     identity?: { accessKey?: unknown; apiKey?: unknown };
   };
   const ak = rc.identity?.accessKey;
@@ -80,8 +96,28 @@ const hasV1AccessKey = (evt: APIGatewayProxyEvent): boolean => {
 const hasAuthorizer = (
   evt: APIGatewayProxyEvent | APIGatewayProxyEventV2,
 ): boolean => {
-  const rc = (evt.requestContext ?? {}) as { authorizer?: unknown };
-  return rc.authorizer !== undefined && rc.authorizer !== null;
+  // V1: any truthy authorizer object indicates an authenticated request
+  if (isV1(evt)) {
+    const rc = evt.requestContext as { authorizer?: unknown };
+    return !!rc.authorizer;
+  }
+
+  // V2: authorizer may include jwt/iam/lambda shapes
+  const authHeader = getHeaderFromEvent(evt, 'authorization');
+  if (hasAwsSig(authHeader)) return true;
+
+  const rc = (evt as { requestContext: { authorizer?: unknown } })
+    .requestContext;
+  const { authorizer } = rc;
+  if (!authorizer || typeof authorizer !== 'object') return false;
+
+  const a = authorizer as Record<string, unknown> & {
+    jwt?: unknown;
+    iam?: unknown;
+    lambda?: unknown;
+  };
+
+  return !!(a.jwt || a.iam || a.lambda);
 };
 
 /** Detect API key via header or v1 identity.apiKey. */
@@ -93,7 +129,7 @@ const hasApiKey = (
 
   // Some v1 events surface API key on requestContext.identity.apiKey
   if (isV1(evt)) {
-    const rc = (evt.requestContext ?? {}) as {
+    const rc = evt.requestContext as {
       identity?: { apiKey?: unknown };
     };
     const identKey = rc.identity?.apiKey;
