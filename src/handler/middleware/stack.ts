@@ -93,7 +93,6 @@ export const buildMiddlewareStack = <
       parseCharsets: false,
       parseEncodings: false,
       availableMediaTypes: [defaultContentType],
-      defaultMediaType: defaultContentType,
     }),
   );
 
