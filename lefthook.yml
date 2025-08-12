@@ -10,4 +10,4 @@ post-commit:
   scripts:
     update-archive:
       env:
-        ARCHIVE_NAME: 'archive.tar'
+        ARCHIVE_NAME: 'gpt/archive.tar'
