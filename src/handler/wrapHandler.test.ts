@@ -1,7 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+// External
 import type { Context } from 'aws-lambda';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+// Internal
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { ConsoleLogger } from '@/types/Loggable';
 import { makeWrapHandler } from './wrapHandler';
@@ -68,14 +70,12 @@ describe('wrapHandler: GET happy path', () => {
     });
 
     const event = createApiGatewayV1Event('GET');
-    // Make negotiation explicit to avoid 415 or unexpected serializers
-    event.headers = {
-      ...(event.headers ?? {}),
-      Accept: 'application/json',
-    };
-    const ctx: Context = createLambdaContext();
+    // Be explicit about negotiation to avoid 415 / serializer surprises
+    event.headers = { ...event.headers, Accept: 'application/json' };
 
+    const ctx: Context = createLambdaContext();
     const res = await wrapped(event, ctx);
+
     expect(normalize(res)).toEqual({ what: 'ok' });
   });
 });
@@ -93,9 +93,11 @@ describe('wrapHandler: HEAD short-circuit', () => {
     const wrapped = wrap(handler, { eventSchema, responseSchema });
 
     const event = createApiGatewayV1Event('HEAD');
-    const ctx: Context = createLambdaContext();
+    event.headers = { ...event.headers, Accept: 'application/json' };
 
+    const ctx: Context = createLambdaContext();
     const res = await wrapped(event, ctx);
+
     expect((res as { statusCode: number }).statusCode).toBe(200);
     expect(handler).not.toHaveBeenCalled();
   });
@@ -123,7 +125,7 @@ describe('wrapHandler: POST with JSON body', () => {
 
     const event = createApiGatewayV1Event('POST');
     event.headers = {
-      ...(event.headers ?? {}),
+      ...event.headers,
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };

@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+// External
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import middy from '@middy/core';
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
+// Internal
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import { buildMiddlewareStack } from './stack';
 
@@ -43,7 +45,7 @@ describe('stack: response shaping & content-type header', () => {
     });
 
     const event = createApiGatewayV1Event('GET');
-    event.headers = { ...(event.headers ?? {}), Accept: 'application/json' };
+    event.headers = { ...event.headers, Accept: 'application/json' };
     const ctx: Context = createLambdaContext();
 
     const result = await run(
@@ -53,7 +55,6 @@ describe('stack: response shaping & content-type header', () => {
       ctx,
     );
 
-    // body may be a string or object depending on serializer path — normalize
     expect(getJsonBody(result)).toEqual({ ok: true });
   });
 });
@@ -66,7 +67,7 @@ describe('stack: Zod errors are exposed as 400', () => {
     };
 
     const event = createApiGatewayV1Event('GET');
-    event.headers = { ...(event.headers ?? {}), Accept: 'application/json' };
+    event.headers = { ...event.headers, Accept: 'application/json' };
     const ctx: Context = createLambdaContext();
 
     const result = (await run(
@@ -89,14 +90,16 @@ describe('stack: Zod errors are exposed as 400', () => {
 
 describe('stack: POST + JSON body is accepted', () => {
   it('returns 200 and JSON payload', async () => {
-    const base = async (e: APIGatewayProxyEvent, _c: Context) => {
-      void e.path; // avoid unused
+    const base = async (e: APIGatewayProxyEvent, ctx: Context) => {
+      // touch vars to satisfy strict unused-vars
+      void e.path;
+      void ctx.awsRequestId;
       return { statusCode: 200, headers: {}, body: { ok: true } };
     };
 
     const event = createApiGatewayV1Event('POST');
     event.headers = {
-      ...(event.headers ?? {}),
+      ...event.headers,
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
@@ -124,7 +127,7 @@ describe('stack: HEAD short-circuit shapes empty JSON body', () => {
     });
 
     const event = createApiGatewayV1Event('HEAD');
-    event.headers = { ...(event.headers ?? {}), Accept: 'application/json' };
+    event.headers = { ...event.headers, Accept: 'application/json' };
     const ctx: Context = createLambdaContext();
 
     const result = (await run(
@@ -140,7 +143,6 @@ describe('stack: HEAD short-circuit shapes empty JSON body', () => {
 
     expect(result.statusCode).toBe(200);
     const body = getJsonBody(result);
-    // shortCircuitHead sets `{}` which serializer may stringify; accept either
     expect(body).toEqual({});
   });
 });
