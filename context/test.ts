@@ -113,7 +113,7 @@ const resolveVitestBin = async (
         shell: false,
       };
     }
-  } catch (err) {
+  } catch {
     // fall through
   }
 
@@ -190,7 +190,7 @@ const main = async (): Promise<void> => {
       );
       process.exitCode = jsonRun.code;
       return;
-    } catch (err) {
+    } catch {
       // Fall back to basic reporter if JSON stdout wasn't parseable
       const basic = await runVitest(repoRoot, 'basic');
       const jsonOut = {
@@ -210,7 +210,7 @@ const main = async (): Promise<void> => {
       );
       process.exitCode = basic.code;
     }
-  } catch (err) {
+  } catch {
     const jsonOut = {
       success: false,
       error: 'vitest-not-found-or-failed-to-run',
