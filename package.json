@@ -74,7 +74,8 @@
     "openapi": "tsx src/openapi/generate && prettier -w src/openapi/openapi.json",
     "package": "serverless package",
     "remove": "serverless remove",
-    "test": "vitest"
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
   "version": "1.0.0"

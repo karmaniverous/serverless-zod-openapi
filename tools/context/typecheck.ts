@@ -59,10 +59,6 @@ const IGNORED_DIRS = new Set([
   'node_modules',
   '.git',
   '.serverless',
-  'dist',
-  'build',
-  'coverage',
-  'openapi',
   'context/out',
 ]);
 
