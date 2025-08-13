@@ -1,25 +1,10 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "declaration": true,
-    "declarationMap": true,
-    "exactOptionalPropertyTypes": true,
-    "isolatedModules": true,
-    "module": "esnext",
-    "moduleDetection": "force",
-    "moduleResolution": "bundler",
-    "noUncheckedIndexedAccess": true,
-    "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["*"]
-    },
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "esnext",
-    "types": [],
-    "verbatimModuleSyntax": true
+    }
   },
   "exclude": [".serverless", "context/out"]
 }
