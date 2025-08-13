@@ -9,21 +9,17 @@ import {
   parseTypedEnv,
   splitKeysBySchema,
 } from '@/src/handler/envBuilder';
-import type {
-  HandlerOptions,
-  HandlerReturn,
-  InferEvent,
-} from '@/src/handler/Handler';
+import type { Handler } from '@/src/handler/Handler';
 import { buildMiddlewareStack } from '@/src/handler/middleware/buildStack';
 import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
+import type { ShapedEvent } from '@/src/types/ShapedEvent';
 
-/** Generic options (no prod types). */
 export type WrapHandlerOptions<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   AllParams extends Record<string, unknown>,
-  Logger extends ConsoleLogger,
   FnEnvKeys extends readonly (keyof AllParams)[],
+  Logger extends ConsoleLogger,
 > = {
   contentType: string;
   eventSchema: EventSchema;
@@ -43,7 +39,6 @@ export type StagesRuntime<
   stageParamsSchema: StageParamsSchema;
 };
 
-// Keep 'const' on the function; that’s allowed.
 export const makeWrapHandler = <
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   const GlobalEnvKeys extends readonly (keyof z.infer<GlobalParamsSchema>)[],
@@ -58,21 +53,26 @@ export const makeWrapHandler = <
   >,
 ) => {
   type AllParams = z.infer<GlobalParamsSchema> & z.infer<StageParamsSchema>;
-  type ExposedKey = GlobalEnvKeys[number] | StageEnvKeys[number];
 
   return <
     EventSchema extends z.ZodType,
     ResponseSchema extends z.ZodType | undefined,
     Logger extends ConsoleLogger,
-    FnKeys extends readonly (keyof AllParams)[],
+    FnEnvKeys extends readonly (keyof AllParams)[],
+    EnvKeys extends
+      | GlobalEnvKeys[number]
+      | StageEnvKeys[number]
+      | FnEnvKeys[number],
   >(
-    handler: (
-      event: InferEvent<EventSchema>,
-      context: Context,
-      options: HandlerOptions<AllParams, ExposedKey | FnKeys[number], Logger>,
-    ) => HandlerReturn<ResponseSchema>,
+    handler: Handler<EventSchema, ResponseSchema, AllParams, EnvKeys, Logger>,
     options: Partial<
-      WrapHandlerOptions<EventSchema, ResponseSchema, AllParams, Logger, FnKeys>
+      WrapHandlerOptions<
+        EventSchema,
+        ResponseSchema,
+        AllParams,
+        FnEnvKeys,
+        Logger
+      >
     >,
   ) => {
     const {
@@ -116,43 +116,17 @@ export const makeWrapHandler = <
         stageParamsSchema,
       );
 
-      // 3) Parse event + env and call business handler
-      const typedEvent = options.eventSchema.parse(
-        event,
-      ) as InferEvent<EventSchema>;
-
       const env = parseTypedEnv(envSchema, process.env) as Pick<
         AllParams,
-        ExposedKey | FnKeys[number]
+        GlobalEnvKeys[number] | StageEnvKeys[number] | FnEnvKeys[number]
       >;
 
-      const securityContext = detectSecurityContext(typedEvent);
+      const securityContext = detectSecurityContext(event);
 
       logger.debug('env', env);
 
-      // HEAD short-circuit (defense-in-depth): if the request method is HEAD,
-      // skip the business handler entirely and let AFTER middlewares shape "{}".
-      // {
-      //   const evt = event as unknown as {
-      //     httpMethod?: string;
-      //     requestContext?: { http?: { method?: string } };
-      //   };
-      //   const method = (
-      //     evt.httpMethod ??
-      //     evt.requestContext?.http?.method ??
-      //     ''
-      //   ).toUpperCase();
-      //   if (method === 'HEAD') {
-      //     return { statusCode: 200, headers: {}, body: {} } as {
-      //       statusCode: number;
-      //       headers?: Record<string, string>;
-      //       body?: unknown;
-      //     };
-      //   }
-      // }
-
       // 4) Call the business handler
-      const result = await handler(typedEvent, context, {
+      const result = await handler(event as ShapedEvent<EventSchema>, context, {
         env,
         logger,
         securityContext,
@@ -161,8 +135,7 @@ export const makeWrapHandler = <
       return result;
     };
 
-    const wrapped = middy(base).use(stack);
-    return (evt: APIGatewayProxyEvent, ctx: Context) => wrapped(evt, ctx);
+    return middy(base).use(stack);
   };
 };
 

@@ -5,29 +5,29 @@ type Dict<T> = Record<string, T>;
 
 export type StagesFactoryInput<
   GlobalParams extends Record<string, unknown>,
-  StagePrams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 > = {
   globalParamsSchema: ZodObject<ZodRawShape>;
   stageParamsSchema: ZodObject<ZodRawShape>;
   globalParams: GlobalParams;
   globalEnvKeys: readonly (keyof GlobalParams)[];
-  stageEnvKeys: readonly (keyof StagePrams)[];
-  stages: Dict<StagePrams>;
+  stageEnvKeys: readonly (keyof StageParams)[];
+  stages: Dict<StageParams>;
 };
 
 export type StagesFactoryOutput<
   GlobalParams extends Record<string, unknown>,
-  StagePrams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 > = {
-  /** Serverless 'params' object: { default: { params: GlobalParams }, <stage>: { params: StagePrams } } */
+  /** Serverless 'params' object: { default: { params: GlobalParams }, <stage>: { params: StageParams } } */
   stages: { default: { params: GlobalParams } } & {
-    [K in keyof Dict<StagePrams>]: { params: StagePrams };
+    [K in keyof Dict<StageParams>]: { params: StageParams };
   };
   /** Provider-level environment mapping for globally exposed keys */
   environment: Record<string, string>;
   /** Helper to build per-function environment mapping for additional keys */
   buildFnEnv: (
-    fnEnvKeys?: readonly (keyof (GlobalParams & StagePrams))[],
+    fnEnvKeys?: readonly (keyof (GlobalParams & StageParams))[],
   ) => Record<string, string>;
 };
 
@@ -37,10 +37,10 @@ export type StagesFactoryOutput<
  */
 export const stagesFactory = <
   GlobalParams extends Record<string, unknown>,
-  StagePrams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 >(
-  input: StagesFactoryInput<GlobalParams, StagePrams>,
-): StagesFactoryOutput<GlobalParams, StagePrams> => {
+  input: StagesFactoryInput<GlobalParams, StageParams>,
+): StagesFactoryOutput<GlobalParams, StageParams> => {
   const {
     globalParamsSchema,
     stageParamsSchema,
@@ -62,13 +62,13 @@ export const stagesFactory = <
   // Build Serverless 'params' structure
   const stagesOut = entries.reduce(
     (acc, [name, params]) => {
-      acc[name] = { params } as { params: StagePrams };
+      acc[name] = { params } as { params: StageParams };
       return acc;
     },
     { default: { params: globalParams } } as {
       default: { params: GlobalParams };
     } & {
-      [K in keyof Dict<StagePrams>]: { params: StagePrams };
+      [K in keyof Dict<StageParams>]: { params: StageParams };
     },
   );
 
@@ -83,7 +83,7 @@ export const stagesFactory = <
 
   // Helper for function-level environment: include only non-globally-exposed
   const buildFnEnv = (
-    fnEnvKeys: readonly (keyof (GlobalParams & StagePrams))[] = [],
+    fnEnvKeys: readonly (keyof (GlobalParams & StageParams))[] = [],
   ): Record<string, string> => {
     const extras = diff(fnEnvKeys as readonly string[], globallyExposed);
     return Object.fromEntries(extras.map((k) => [k, `\${param:${k}}`]));

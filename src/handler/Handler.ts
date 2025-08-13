@@ -1,43 +1,33 @@
 // src/handler/Handler.ts
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
 
+import type { ShapedEvent } from '../types/ShapedEvent';
+import type { ShapedResponse } from '../types/ShapedResponse';
 import type { SecurityContext } from './detectSecurityContext';
 
-export type Merge<T, U> = Omit<T, keyof U> & U;
-
-export type InferEvent<EventSchema extends z.ZodType> = Merge<
-  APIGatewayProxyEvent,
-  z.output<EventSchema>
->;
-
-export type HandlerReturn<ResponseSchema extends z.ZodType | undefined> =
-  ResponseSchema extends z.ZodType
-    ? Promise<z.output<ResponseSchema>>
-    : Promise<Record<string, never>>;
-
 export type HandlerOptions<
-  AP extends Record<string, unknown>,
-  Keys extends keyof AP,
+  AllParams extends Record<string, unknown>,
+  EnvKeys extends keyof AllParams,
   Logger extends ConsoleLogger,
 > = {
-  env: Pick<AP, Keys>;
+  env: Pick<AllParams, EnvKeys>;
   securityContext: SecurityContext;
 } & Loggable<Logger>;
 
 /**
- * Handler signature: Keys is the union of env keys this handler receives.
+ * Handler signature: EnvKeys is the union of env keys this handler receives.
  */
 export type Handler<
   EventSchema extends z.ZodType,
   ResponseSchema extends z.ZodType | undefined,
-  AP extends Record<string, unknown>,
-  Keys extends keyof AP,
+  AllParams extends Record<string, unknown>,
+  EnvKeys extends keyof AllParams,
   Logger extends ConsoleLogger,
 > = (
-  event: InferEvent<EventSchema>,
+  event: ShapedEvent<EventSchema>,
   context: Context,
-  options: HandlerOptions<AP, Keys, Logger>,
-) => HandlerReturn<ResponseSchema>;
+  options: HandlerOptions<AllParams, EnvKeys, Logger>,
+) => ShapedResponse<ResponseSchema>;

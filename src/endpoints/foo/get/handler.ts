@@ -1,6 +1,6 @@
 import { wrapHandler } from '@/src/handler/wrapHandler';
 
-import { envKeys } from './env';
+import { fnEnvKeys } from './env';
 import { eventSchema, responseSchema } from './schema';
 
 /**
@@ -21,7 +21,7 @@ export const handler = wrapHandler(
   },
   {
     eventSchema,
+    fnEnvKeys,
     responseSchema,
-    envKeys,
   },
 );
