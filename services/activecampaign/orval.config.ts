@@ -24,7 +24,7 @@ export default defineConfig({
       workspace: 'generated',
     },
     hooks: {
-      afterAllFilesWrite: ['../../eslint --fix', 'prettier -w'],
+      afterAllFilesWrite: ['eslint --fix', 'prettier -w'],
     },
   },
 });
