@@ -4,9 +4,9 @@ import { z } from 'zod';
 
 import type { ConsoleLogger } from '@/src/types/Loggable';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
+import { globalEnvKeys, globalParamsSchema } from '@/test/stages/global';
+import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage';
 
-import { globalEnvKeys, globalParamsSchema } from '../serverless/stages/global';
-import { stageEnvKeys, stageParamsSchema } from '../serverless/stages/stage';
 import { makeWrapHandler } from './makeWrapHandler';
 
 const eventSchema = z.object({});
@@ -83,7 +83,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
     const ctx: Context = createLambdaContext();
     const res = await wrapped(event, ctx);
 
-    expect((res as { statusCode: number }).statusCode).toBe(200);
+    expect(res.statusCode).toBe(200);
     expect(handler).not.toHaveBeenCalled();
   });
 });
