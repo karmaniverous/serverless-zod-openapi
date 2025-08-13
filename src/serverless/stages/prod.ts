@@ -1,4 +1,4 @@
-import type { StageParams } from './stageSchema';
+import type { StageParams } from './stage';
 
 export const stageParams: StageParams = {
   DOMAIN_CERTIFICATE_ARN:

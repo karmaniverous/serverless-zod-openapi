@@ -1,4 +1,4 @@
-import type { StageParams } from './stageSchema';
+import type { StageParams } from './stage';
 
 /**
  * Stage configuration for “dev”.  Only differences from global values

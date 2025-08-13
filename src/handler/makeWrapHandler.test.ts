@@ -5,19 +5,9 @@ import { z } from 'zod';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 
-import { makeWrapHandler } from './wrapHandler';
-
-const globalParamsSchema = z.object({
-  SERVICE_NAME: z.string(),
-  PROFILE: z.string(),
-});
-const stageParamsSchema = globalParamsSchema.partial().extend({
-  STAGE: z.string(),
-  DOMAIN_NAME: z.string(),
-});
-
-const globalEnv = ['SERVICE_NAME', 'PROFILE'] as const;
-const stageEnv = ['STAGE', 'DOMAIN_NAME'] as const;
+import { globalEnvKeys, globalParamsSchema } from '../serverless/stages/global';
+import { stageEnvKeys, stageParamsSchema } from '../serverless/stages/stage';
+import { makeWrapHandler } from './makeWrapHandler';
 
 const eventSchema = z.object({});
 const responseSchema = z.object({ what: z.string() });
@@ -45,11 +35,11 @@ describe('wrapHandler: GET happy path', () => {
     process.env.STAGE = 'test';
     process.env.DOMAIN_NAME = 'example.test';
 
-    const wrap = makeWrapHandler({
+    const wrapHandler = makeWrapHandler({
       globalParamsSchema,
       stageParamsSchema,
-      globalEnv,
-      stageEnv,
+      globalEnvKeys,
+      stageEnvKeys,
     });
 
     const logger: ConsoleLogger = {
@@ -59,7 +49,7 @@ describe('wrapHandler: GET happy path', () => {
       log: vi.fn(),
     };
 
-    const wrapped = wrap(async () => ({ what: 'ok' }), {
+    const wrapped = wrapHandler(async () => ({ what: 'ok' }), {
       eventSchema,
       responseSchema,
       logger,
@@ -77,15 +67,15 @@ describe('wrapHandler: GET happy path', () => {
 
 describe('wrapHandler: HEAD short-circuit', () => {
   it('skips the business handler and produces a shaped response with 200', async () => {
-    const wrap = makeWrapHandler({
+    const wrapHandler = makeWrapHandler({
       globalParamsSchema,
       stageParamsSchema,
-      globalEnv,
-      stageEnv,
+      globalEnvKeys,
+      stageEnvKeys,
     });
 
     const handler = vi.fn(async () => ({ what: 'nope' }));
-    const wrapped = wrap(handler, { eventSchema, responseSchema });
+    const wrapped = wrapHandler(handler, { eventSchema, responseSchema });
 
     const event = createApiGatewayV1Event('HEAD');
     event.headers = { ...event.headers, Accept: 'application/json' };
@@ -105,14 +95,14 @@ describe('wrapHandler: POST with JSON body', () => {
     process.env.STAGE = 'test';
     process.env.DOMAIN_NAME = 'example.test';
 
-    const wrap = makeWrapHandler({
+    const wrapHandler = makeWrapHandler({
       globalParamsSchema,
       stageParamsSchema,
-      globalEnv,
-      stageEnv,
+      globalEnvKeys,
+      stageEnvKeys,
     });
 
-    const wrapped = wrap(async () => ({ what: 'ok' }), {
+    const wrapped = wrapHandler(async () => ({ what: 'ok' }), {
       eventSchema,
       responseSchema,
       logger: console,

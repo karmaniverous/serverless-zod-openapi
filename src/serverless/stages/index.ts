@@ -1,34 +1,25 @@
+import { stagesFactory } from '../stagesFactory';
 import * as dev from './dev';
-import { globalEnv, stageEnv } from './env';
-import { createStagesArtifacts } from './factory';
-import { globalParams } from './global';
-import { type GlobalParams, globalParamsSchema } from './globalSchema';
+import {
+  globalEnvKeys,
+  type GlobalParams,
+  globalParams,
+  globalParamsSchema,
+} from './global';
 import * as prod from './prod';
-import { type StageParams, stageParamsSchema } from './stageSchema';
+import { stageEnvKeys, type StageParams, stageParamsSchema } from './stage';
 
-// ✅ export the canonical param union type from the stages path
 export type AllParams = GlobalParams & StageParams;
+export type AllParamsKeys = keyof AllParams;
 
-/** Build artifacts via factory (validation included) */
-const {
-  stages,
-  environment,
-  buildFunctionEnvironment: buildFnEnv,
-} = createStagesArtifacts({
+export const { stages, environment, buildFnEnv } = stagesFactory({
   globalParamsSchema,
   stageParamsSchema,
   globalParams,
-  globalEnv,
-  stageEnv,
+  globalEnvKeys,
+  stageEnvKeys,
   stages: {
     dev: dev.stageParams,
     prod: prod.stageParams,
   },
 });
-
-export { environment, stages };
-
-/** Narrow additionalKeys to keys of AllParams */
-export const buildFunctionEnvironment = (
-  additionalKeys: readonly (keyof AllParams)[] = [],
-): Record<string, string> => buildFnEnv(additionalKeys);

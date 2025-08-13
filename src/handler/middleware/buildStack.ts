@@ -11,7 +11,7 @@ import httpResponseSerializer from '@middy/http-response-serializer';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-import type { ConsoleLogger } from '@/src/types/Loggable';
+import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
 
 import { asApiMiddleware } from './asApiMiddleware';
 import { combine } from './combine';
@@ -44,8 +44,7 @@ export type BuildStackOptions<
   /** default: 'application/json' */
   contentType?: string;
   /** used by the serializer’s logger fallback */
-  logger?: ConsoleLogger;
-};
+} & Loggable<Logger>;
 
 /** Build a single composed middleware stack in the correct order. */
 export const buildMiddlewareStack = <

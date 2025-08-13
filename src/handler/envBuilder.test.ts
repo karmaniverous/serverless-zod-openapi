@@ -2,11 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 // If you want a strict union for function-level keys in this test file:
-import type { AllParams } from '@/test/stages';
+import type { AllParamsKeys } from '@/test/stages';
 // Use the test fixture (mirrors prod surface, different values/keys)
-import { globalParamsSchema as testGlobalSchema } from '@/test/stages/globalSchema';
-import { stageParamsSchema as testStageSchema } from '@/test/stages/stageSchema';
-type ParamKeys = keyof AllParams;
+import { globalEnvKeys, globalParamsSchema } from '@/test/stages/global';
+import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage';
 
 import {
   buildEnvSchema,
@@ -17,26 +16,15 @@ import {
 } from './envBuilder';
 
 describe('envBuilder helpers (using test stages fixture)', () => {
-  // Local aliases for readability; these are the test schemas.
-  const globalSchema = testGlobalSchema;
-  const stageSchema = testStageSchema;
-
-  // Typed key lists (const tuples keep the literal unions narrow).
-  // From test fixture, globalEnv exposes SERVICE_NAME and PROFILE
-  const globalEnv = ['SERVICE_NAME', 'PROFILE'] as const;
-
-  // From test fixture, stageEnv exposes STAGE
-  const stageEnv = ['STAGE'] as const;
-
   // Function-specific keys for this test (not in the always-exposed lists).
   // Use FN_ENV (global) + DOMAIN_NAME (stage) to exercise both sides.
   const fnEnv = [
     'FN_ENV',
     'DOMAIN_NAME',
-  ] as const satisfies readonly ParamKeys[];
+  ] as const satisfies readonly AllParamsKeys[];
 
   it('deriveAllKeys returns the exact union set (global ∪ stage ∪ function)', () => {
-    const keys = deriveAllKeys(globalEnv, stageEnv, fnEnv);
+    const keys = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     expect(keys.size).toBe(5);
     expect(Array.from(keys).sort()).toEqual(
       ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
@@ -44,11 +32,11 @@ describe('envBuilder helpers (using test stages fixture)', () => {
   });
 
   it('splitKeysBySchema partitions keys according to schema key sets', () => {
-    const all = deriveAllKeys(globalEnv, stageEnv, fnEnv);
+    const all = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     const { globalPick, stagePick } = splitKeysBySchema(
       all,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
 
     expect(new Set(globalPick)).toEqual(
@@ -58,17 +46,17 @@ describe('envBuilder helpers (using test stages fixture)', () => {
   });
 
   it('buildEnvSchema composes a schema with exactly the picked keys', () => {
-    const all = deriveAllKeys(globalEnv, stageEnv, fnEnv);
+    const all = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     const { globalPick, stagePick } = splitKeysBySchema(
       all,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
     const envSchema = buildEnvSchema(
       globalPick,
       stagePick,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
 
     expect(envSchema instanceof z.ZodObject).toBe(true);
@@ -80,17 +68,17 @@ describe('envBuilder helpers (using test stages fixture)', () => {
   });
 
   it('parseTypedEnv returns the typed env object on success', () => {
-    const all = deriveAllKeys(globalEnv, stageEnv, fnEnv);
+    const all = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     const { globalPick, stagePick } = splitKeysBySchema(
       all,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
     const envSchema = buildEnvSchema(
       globalPick,
       stagePick,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
 
     const parsed = parseTypedEnv(envSchema, {
@@ -112,17 +100,17 @@ describe('envBuilder helpers (using test stages fixture)', () => {
   });
 
   it('parseTypedEnv throws when a required key is missing', () => {
-    const all = deriveAllKeys(globalEnv, stageEnv, fnEnv);
+    const all = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     const { globalPick, stagePick } = splitKeysBySchema(
       all,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
     const envSchema = buildEnvSchema(
       globalPick,
       stagePick,
-      globalSchema,
-      stageSchema,
+      globalParamsSchema,
+      stageParamsSchema,
     );
 
     // Omit PROFILE to trigger a validation error.

@@ -4,28 +4,30 @@ import type { ZodObject, ZodRawShape } from 'zod';
 type Dict<T> = Record<string, T>;
 
 export type StagesFactoryInput<
-  G extends Record<string, unknown>,
-  S extends Record<string, unknown>,
+  GlobalParams extends Record<string, unknown>,
+  StagePrams extends Record<string, unknown>,
 > = {
   globalParamsSchema: ZodObject<ZodRawShape>;
   stageParamsSchema: ZodObject<ZodRawShape>;
-  globalParams: G;
-  globalEnv: readonly (keyof G)[];
-  stageEnv: readonly (keyof S)[];
-  stages: Dict<S>;
+  globalParams: GlobalParams;
+  globalEnvKeys: readonly (keyof GlobalParams)[];
+  stageEnvKeys: readonly (keyof StagePrams)[];
+  stages: Dict<StagePrams>;
 };
 
 export type StagesFactoryOutput<
-  G extends Record<string, unknown>,
-  S extends Record<string, unknown>,
+  GlobalParams extends Record<string, unknown>,
+  StagePrams extends Record<string, unknown>,
 > = {
-  /** Serverless 'params' object: { default: { params: G }, <stage>: { params: S } } */
-  stages: { default: { params: G } } & { [K in keyof Dict<S>]: { params: S } };
+  /** Serverless 'params' object: { default: { params: GlobalParams }, <stage>: { params: StagePrams } } */
+  stages: { default: { params: GlobalParams } } & {
+    [K in keyof Dict<StagePrams>]: { params: StagePrams };
+  };
   /** Provider-level environment mapping for globally exposed keys */
   environment: Record<string, string>;
   /** Helper to build per-function environment mapping for additional keys */
-  buildFunctionEnvironment: (
-    additionalKeys?: readonly (keyof (G & S))[],
+  buildFnEnv: (
+    fnEnvKeys?: readonly (keyof (GlobalParams & StagePrams))[],
   ) => Record<string, string>;
 };
 
@@ -33,18 +35,18 @@ export type StagesFactoryOutput<
  * Create all stage artifacts from provided configs.  This is generic and can
  * be used by both production and tests.
  */
-export const createStagesArtifacts = <
-  G extends Record<string, unknown>,
-  S extends Record<string, unknown>,
+export const stagesFactory = <
+  GlobalParams extends Record<string, unknown>,
+  StagePrams extends Record<string, unknown>,
 >(
-  input: StagesFactoryInput<G, S>,
-): StagesFactoryOutput<G, S> => {
+  input: StagesFactoryInput<GlobalParams, StagePrams>,
+): StagesFactoryOutput<GlobalParams, StagePrams> => {
   const {
     globalParamsSchema,
     stageParamsSchema,
     globalParams,
-    globalEnv,
-    stageEnv,
+    globalEnvKeys,
+    stageEnvKeys,
     stages,
   } = input;
 
@@ -60,30 +62,32 @@ export const createStagesArtifacts = <
   // Build Serverless 'params' structure
   const stagesOut = entries.reduce(
     (acc, [name, params]) => {
-      acc[name] = { params } as { params: S };
+      acc[name] = { params } as { params: StagePrams };
       return acc;
     },
-    { default: { params: globalParams } } as { default: { params: G } } & {
-      [K in keyof Dict<S>]: { params: S };
+    { default: { params: globalParams } } as {
+      default: { params: GlobalParams };
+    } & {
+      [K in keyof Dict<StagePrams>]: { params: StagePrams };
     },
   );
 
   // Build provider.environment mapping for globally exposed keys
   const globallyExposed = unique([
-    ...(globalEnv as readonly string[]),
-    ...(stageEnv as readonly string[]),
+    ...(globalEnvKeys as readonly string[]),
+    ...(stageEnvKeys as readonly string[]),
   ]);
   const environment = Object.fromEntries(
     globallyExposed.map((k) => [k, `\${param:${k}}`]),
   );
 
   // Helper for function-level environment: include only non-globally-exposed
-  const buildFunctionEnvironment = (
-    additionalKeys: readonly (keyof (G & S))[] = [],
+  const buildFnEnv = (
+    fnEnvKeys: readonly (keyof (GlobalParams & StagePrams))[] = [],
   ): Record<string, string> => {
-    const extras = diff(additionalKeys as readonly string[], globallyExposed);
+    const extras = diff(fnEnvKeys as readonly string[], globallyExposed);
     return Object.fromEntries(extras.map((k) => [k, `\${param:${k}}`]));
   };
 
-  return { stages: stagesOut, environment, buildFunctionEnvironment };
+  return { stages: stagesOut, environment, buildFnEnv };
 };

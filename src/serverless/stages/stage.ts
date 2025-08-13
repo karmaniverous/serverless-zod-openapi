@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { globalParamsSchema } from './globalSchema';
+import { globalParamsSchema } from './global';
 
 /**
  * Stage‑specific parameters are defined as a partial version of the
@@ -14,3 +14,11 @@ export const stageParamsSchema = globalParamsSchema.partial().extend({
 });
 
 export type StageParams = z.infer<typeof stageParamsSchema>;
+
+/**
+ * Keys from StageParams exposed to EVERY function via provider.environment.
+ * Example includes STAGE and any stage-scoped vars you want globally.
+ */
+export const stageEnvKeys = [
+  'STAGE',
+] as const satisfies readonly (keyof StageParams)[];

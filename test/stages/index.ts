@@ -1,25 +1,27 @@
-import { createStagesArtifacts } from '@/src/serverless/stages/factory';
+import { stagesFactory } from '@/src/serverless/stagesFactory';
 
 import { devStageParams } from './dev';
-import { globalEnv, stageEnv } from './env';
-import { globalParams } from './global';
-import { type GlobalParams, globalParamsSchema } from './globalSchema';
+import {
+  globalEnvKeys,
+  type GlobalParams,
+  globalParams,
+  globalParamsSchema,
+} from './global';
 import { prodStageParams } from './prod';
-import { type StageParams, stageParamsSchema } from './stageSchema';
+import { stageEnvKeys, type StageParams, stageParamsSchema } from './stage';
 
-// ✅ export the same type API for tests
 export type AllParams = GlobalParams & StageParams;
+export type AllParamsKeys = keyof AllParams;
 
 /** Run the factory with test configs and export the artifacts */
-export const { stages, environment, buildFunctionEnvironment } =
-  createStagesArtifacts({
-    globalParamsSchema,
-    stageParamsSchema,
-    globalParams,
-    globalEnv,
-    stageEnv,
-    stages: {
-      dev: devStageParams,
-      prod: prodStageParams,
-    },
-  });
+export const { stages, environment, buildFnEnv } = stagesFactory({
+  globalParamsSchema,
+  stageParamsSchema,
+  globalParams,
+  globalEnvKeys,
+  stageEnvKeys,
+  stages: {
+    dev: devStageParams,
+    prod: prodStageParams,
+  },
+});
