@@ -4,8 +4,8 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import type { Field6 } from './field6';
 import type { Labels } from './labels';
+import type { Field6 } from './field6';
 import type { Relationship } from './relationship';
 
 export interface Schema {

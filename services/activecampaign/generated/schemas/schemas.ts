@@ -4,8 +4,8 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as axios from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import type { CreateSchemaRequest, UpdateSchemaRequest } from '../api.schemas';
 

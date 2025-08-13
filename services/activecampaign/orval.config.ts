@@ -10,7 +10,7 @@ export default defineConfig({
       workspace: 'generated',
     },
     hooks: {
-      afterAllFilesWrite: ['eslint --fix', 'prettier -w'],
+      afterAllFilesWrite: ['prettier -w'],
     },
   },
   zod: {
@@ -24,7 +24,7 @@ export default defineConfig({
       workspace: 'generated',
     },
     hooks: {
-      afterAllFilesWrite: ['eslint --fix', 'prettier -w'],
+      afterAllFilesWrite: ['prettier -w'],
     },
   },
 });

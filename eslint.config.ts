@@ -4,7 +4,7 @@ import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['.serverless/**', 'context/out/**'] },
+  { ignores: ['.serverless/**', 'context/out/**', '**/generated/**'] },
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   {
@@ -28,6 +28,10 @@ export default tseslint.config(
       'no-unused-vars': 'off',
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
+      'no-restricted-imports': [
+        'error',
+        { patterns: ['services/*/generated/*', '**/generated/*'] },
+      ],
     },
   },
 );

@@ -4,15 +4,15 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as axios from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import type {
   BulkupdatedealownersRequest,
-  CreateadealnoteRequest,
   CreateadealRequest,
-  UpdateadealnoteRequest,
+  CreateadealnoteRequest,
   UpdateadealRequest,
+  UpdateadealnoteRequest,
 } from '../api.schemas';
 
 export const getDeals = () => {

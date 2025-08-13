@@ -1,5 +1,5 @@
 {
-  "name": "@karmaniverous/activecampaign",
+  "name": "activecampaign",
   "private": true,
   "type": "module",
   "exports": {
