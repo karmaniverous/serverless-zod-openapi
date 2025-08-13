@@ -1,5 +1,9 @@
 import middy from '@middy/core';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import { detectSecurityContext } from '@/src/handler/detectSecurityContext';
@@ -13,6 +17,11 @@ import type { Handler } from '@/src/handler/Handler';
 import { buildMiddlewareStack } from '@/src/handler/middleware/buildStack';
 import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
 import type { ShapedEvent } from '@/src/types/ShapedEvent';
+
+type ProxyV1PromiseHandler = (
+  event: APIGatewayProxyEvent,
+  context: Context,
+) => Promise<APIGatewayProxyResult>;
 
 export type WrapHandlerOptions<
   EventSchema extends z.ZodType | undefined,
@@ -135,7 +144,7 @@ export const makeWrapHandler = <
       return result;
     };
 
-    return middy(base).use(stack);
+    return middy(base).use(stack) as unknown as ProxyV1PromiseHandler;
   };
 };
 

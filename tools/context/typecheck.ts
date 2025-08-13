@@ -1,6 +1,6 @@
-import * as ts from 'typescript';
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
+import { promises as fs } from 'fs';
+import path from 'path';
+import ts from 'typescript';
 
 type Pos = { line: number; character: number };
 type FlatDiagnostic = {
@@ -243,7 +243,6 @@ const main = async (): Promise<void> => {
 main().catch((err: unknown) => {
   const msg = err instanceof Error ? (err.stack ?? err.message) : String(err);
   // Ensure the error is visible in CI logs, but do not block JSON writing if it already happened.
-  // eslint-disable-next-line no-console
   console.error(msg);
   process.exitCode = 1;
 });

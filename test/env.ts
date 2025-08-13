@@ -6,9 +6,8 @@ import {
   deriveAllKeys,
   splitKeysBySchema,
 } from '@/src/handler/envBuilder';
-import { globalEnv, stageEnv } from '@/src/serverless/stages/env';
-import { globalParamsSchema } from '@/src/serverless/stages/globalSchema';
-import { stageParamsSchema } from '@/src/serverless/stages/stage'; // types live there, but we import runtime schema below
+import { globalEnvKeys, globalParamsSchema } from '@/test/stages/global';
+import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage'; // types live there, but we import runtime schema below
 
 /**
  * Safely set env vars for the duration of a test, omitting only `undefined` keys.
@@ -31,7 +30,7 @@ export const withTempEnv = async <T>(
  * Build the same env schema the app uses and synthesize valid string values for it.
  */
 export const synthesizeEnvForSuccess = (): Record<string, string> => {
-  const allKeys = deriveAllKeys(globalEnv, stageEnv, [] as const);
+  const allKeys = deriveAllKeys(globalEnvKeys, stageEnvKeys, [] as const);
   const { globalPick, stagePick } = splitKeysBySchema(
     allKeys,
     globalParamsSchema,
