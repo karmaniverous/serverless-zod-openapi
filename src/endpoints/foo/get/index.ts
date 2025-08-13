@@ -1,4 +1,4 @@
-import { wrapHandler } from '@/handler/wrapHandler';
+import { wrapHandler } from '@/src/handler/wrapHandler';
 
 import { envKeys } from './env';
 import { eventSchema, responseSchema } from './schema';

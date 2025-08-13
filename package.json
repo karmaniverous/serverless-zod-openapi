@@ -59,11 +59,12 @@
     "url": "git+https://github.com/karmaniverous/api.johngalt.id.git"
   },
   "scripts": {
-    "context:archive": "tsx context/archive.ts",
-    "context:lint": "tsx context/lint.ts",
-    "context:patch": "git apply --recount context/refactor.diff",
-    "context:test": "rimraf context/out/test.json && vitest --config context/vitest.config.ts",
-    "context": "concurrently -n archive,lint,test -c auto \"npm:context:archive\" \"npm:context:lint\" \"npm:context:test\"",
+    "context": "concurrently -n archive,lint,test,typecheck -c auto \"npm:context:archive\" \"npm:context:lint\" \"npm:context:test\" \"npm:context:typecheck\"",
+    "context:archive": "tsx tools/context/archive.ts",
+    "context:lint": "tsx tools/context/lint.ts",
+    "context:patch": "git apply --recount",
+    "context:test": "rimraf tools/context/out/test.json && vitest --config tools/context/vitest.config.ts",
+    "context:typecheck": "tsx tools/context/typecheck.ts",
     "deploy": "serverless deploy",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",

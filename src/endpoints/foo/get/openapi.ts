@@ -1,4 +1,4 @@
-import { buildPathItemObject } from '@/openapi/buildPathItemObject';
+import { buildPathItemObject } from '@/src/openapi/buildPathItemObject';
 
 import { eventSchema, responseSchema } from './schema';
 

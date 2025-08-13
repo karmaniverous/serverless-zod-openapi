@@ -40,10 +40,10 @@ const main = async (): Promise<void> => {
   );
   const repoRoot = root.code === 0 ? root.stdout.trim() : process.cwd();
 
-  const outDirAbs = path.join(repoRoot, 'context/out');
+  const outDirAbs = path.join(repoRoot, 'tools/context/out');
   await mkdir(outDirAbs, { recursive: true });
 
-  const outJsonAbs = path.join(repoRoot, 'context/out/lint.json');
+  const outJsonAbs = path.join(repoRoot, 'tools/context/out/lint.json');
 
   try {
     const eslint = new ESLint({ cwd: repoRoot });
@@ -75,7 +75,7 @@ const main = async (): Promise<void> => {
 
     if (errorTotal > 0) process.exitCode = 1;
     console.log(
-      `lint: wrote context/out/lint.json (errors: ${errorTotal.toString()}, warnings: ${warningTotal.toString()})`,
+      `lint: wrote tools/context/out/lint.json (errors: ${errorTotal.toString()}, warnings: ${warningTotal.toString()})`,
     );
   } catch {
     const errJson = {
@@ -88,7 +88,7 @@ const main = async (): Promise<void> => {
       'utf8',
     );
     process.exitCode = 1;
-    console.log('lint: wrote context/out/lint.json (runner failed)');
+    console.log('lint: wrote tools/context/out/lint.json (runner failed)');
   }
 };
 

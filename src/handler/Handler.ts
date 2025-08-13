@@ -2,7 +2,7 @@
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-import type { ConsoleLogger, Loggable } from '@/types/Loggable';
+import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
 
 import type { SecurityContext } from './detectSecurityContext';
 

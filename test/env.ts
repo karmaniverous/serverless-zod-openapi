@@ -5,10 +5,10 @@ import {
   buildEnvSchema,
   deriveAllKeys,
   splitKeysBySchema,
-} from '@/handler/envBuilder';
-import { globalEnv, stageEnv } from '@/serverless/stages/env';
-import { globalParamsSchema } from '@/serverless/stages/globalSchema';
-import { stageParamsSchema } from '@/serverless/stages/stageSchema'; // types live there, but we import runtime schema below
+} from '@/src/handler/envBuilder';
+import { globalEnv, stageEnv } from '@/src/serverless/stages/env';
+import { globalParamsSchema } from '@/src/serverless/stages/globalSchema';
+import { stageParamsSchema } from '@/src/serverless/stages/stageSchema'; // types live there, but we import runtime schema below
 
 /**
  * Safely set env vars for the duration of a test, omitting only `undefined` keys.

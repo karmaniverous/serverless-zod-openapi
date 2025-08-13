@@ -41,7 +41,7 @@ const main = async (): Promise<void> => {
   );
   const repoRoot = root.code === 0 ? root.stdout.trim() : process.cwd();
 
-  const outDirRel = 'context/out';
+  const outDirRel = 'tools/context/out';
   const outDirAbs = path.join(repoRoot, outDirRel);
   await mkdir(outDirAbs, { recursive: true });
 
@@ -51,17 +51,18 @@ const main = async (): Promise<void> => {
     repoRoot,
   );
   if (list.code !== 0) {
-    console.log('archive: no file list; left context/out/ in place');
+    console.log('archive: no file list; left tools/context/out/ in place');
     process.exitCode = 1;
     return;
   }
 
   const allRel = list.stdout.split('\u0000').filter((f) => f.length > 0);
   const filesRel = allRel.filter(
-    (p) => !p.startsWith('context/out/') && existsSync(path.join(repoRoot, p)),
+    (p) =>
+      !p.startsWith('tools/context/out/') && existsSync(path.join(repoRoot, p)),
   );
 
-  const archiveRel = 'context/out/archive.tar';
+  const archiveRel = 'tools/context/out/archive.tar';
   const archiveAbs = path.join(repoRoot, archiveRel);
   const tmpAbs = `${archiveAbs}.tmp`;
   if (existsSync(tmpAbs)) await unlink(tmpAbs);

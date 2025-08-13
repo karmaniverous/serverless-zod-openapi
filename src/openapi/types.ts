@@ -1,6 +1,6 @@
 import type { ZodOpenApiOperationObject } from 'zod-openapi';
 
-import type { MakeRequired } from '@/types/MakeRequired';
+import type { MakeRequired } from '@/src/types/MakeRequired';
 
 /**
  * A base OpenAPI operation object, with the `summary` field required.

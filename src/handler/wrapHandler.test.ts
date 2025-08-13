@@ -2,8 +2,8 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import type { ConsoleLogger } from '@/src/types/Loggable';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
-import type { ConsoleLogger } from '@/types/Loggable';
 
 import { makeWrapHandler } from './wrapHandler';
 

@@ -1,7 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
-import fooGet from '@/endpoints/foo/get/serverless';
-import { environment, stages } from '@/serverless/stages';
+import fooGet from '@/src/endpoints/foo/get/serverless';
+import { environment, stages } from '@/src/serverless/stages';
 
 const config: AWS = {
   service: '${param:SERVICE_NAME}',

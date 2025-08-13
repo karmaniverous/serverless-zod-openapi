@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 
-import { buildMiddlewareStack } from './stack';
+import { buildMiddlewareStack } from './buildStack';
 
 const run = async (
   base: (e: APIGatewayProxyEvent, c: Context) => Promise<unknown>,

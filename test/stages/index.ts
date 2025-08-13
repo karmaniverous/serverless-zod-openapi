@@ -1,4 +1,4 @@
-import { createStagesArtifacts } from '@/serverless/stages/factory';
+import { createStagesArtifacts } from '@/src/serverless/stages/factory';
 
 import { devStageParams } from './dev';
 import { globalEnv, stageEnv } from './env';

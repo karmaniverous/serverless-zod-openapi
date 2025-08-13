@@ -2,5 +2,3 @@
 .serverless/
 local/
 node_modules/
-context/out/
-context/refactor.diff

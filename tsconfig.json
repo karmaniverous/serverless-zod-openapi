@@ -12,7 +12,7 @@
     "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["*"]
     },
     "skipLibCheck": true,
     "sourceMap": true,

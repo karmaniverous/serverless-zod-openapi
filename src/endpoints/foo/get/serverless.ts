@@ -1,6 +1,6 @@
 import type { AWS } from '@serverless/typescript';
 
-import { buildFunctionEnvironment } from '@/serverless/stages';
+import { buildFunctionEnvironment } from '@/src/serverless/stages';
 
 import { envKeys } from './env';
 
