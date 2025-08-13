@@ -1,4 +1,4 @@
-import { mapEntries, shake } from 'radash';
+import { shake } from 'radash';
 import { z } from 'zod';
 
 import {
@@ -7,11 +7,11 @@ import {
   splitKeysBySchema,
 } from '@/src/handler/envBuilder';
 import { globalEnvKeys, globalParamsSchema } from '@/test/stages/global';
-import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage'; // types live there, but we import runtime schema below
+import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage';
 
 /**
- * Safely set env vars for the duration of a test, omitting only `undefined` keys.
- * Avoids dynamic delete (ESLint).
+ * Temporarily set env vars for the duration of a test.
+ * Keys with `undefined` will be removed; others set to the given string.
  */
 export const withTempEnv = async <T>(
   vars: Record<string, string | undefined>,
@@ -19,6 +19,7 @@ export const withTempEnv = async <T>(
 ): Promise<T> => {
   const original = { ...process.env };
   process.env = shake({ ...original, ...vars });
+
   try {
     return await run();
   } finally {
@@ -27,10 +28,11 @@ export const withTempEnv = async <T>(
 };
 
 /**
- * Build the same env schema the app uses and synthesize valid string values for it.
+ * Build the same env schema the app uses, then synthesize valid string values.
  */
 export const synthesizeEnvForSuccess = (): Record<string, string> => {
   const allKeys = deriveAllKeys(globalEnvKeys, stageEnvKeys, [] as const);
+
   const { globalPick, stagePick } = splitKeysBySchema(
     allKeys,
     globalParamsSchema,
@@ -44,12 +46,9 @@ export const synthesizeEnvForSuccess = (): Record<string, string> => {
     stageParamsSchema,
   );
 
-  if (!(envSchema instanceof z.ZodObject)) {
-    throw new Error('Expected env schema to be a ZodObject');
-  }
-
-  const candidates: readonly string[] = [
+  const candidates = [
     'us-east-1',
+    'us-west-2',
     'test',
     'dev',
     'prod',
@@ -59,13 +58,12 @@ export const synthesizeEnvForSuccess = (): Record<string, string> => {
     '0',
     'application/json',
     'x',
-  ];
+  ] as const;
 
-  const tryCandidates = (schema: z.ZodType): string => {
+  const choose = (schema: z.ZodType): string => {
     if (schema instanceof z.ZodEnum) return String(schema.options[0] ?? 'x');
     if (schema instanceof z.ZodLiteral) {
-      const val = (schema as unknown as { value: unknown }).value;
-      return String(val);
+      return schema.value as string;
     }
     for (const c of candidates) {
       if (schema.safeParse(c).success) return c;
@@ -73,8 +71,11 @@ export const synthesizeEnvForSuccess = (): Record<string, string> => {
     return 'x';
   };
 
-  return mapEntries(envSchema.shape, (key, schema) => [
-    key,
-    tryCandidates(schema),
-  ]);
+  const out: Record<string, string> = {};
+  for (const [key, schema] of Object.entries(envSchema.shape) as Array<
+    [string, z.ZodType]
+  >) {
+    out[key] = choose(schema);
+  }
+  return out;
 };

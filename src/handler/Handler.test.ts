@@ -6,8 +6,9 @@ import type { ConsoleLogger } from '@/src/types/Loggable';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
 import type { AllParams } from '@/test/stages';
 
+import type { ShapedEvent } from '../types/ShapedEvent';
 import type { SecurityContext } from './detectSecurityContext';
-import type { Handler, HandlerOptions, InferEvent } from './Handler';
+import type { Handler, HandlerOptions } from './Handler';
 
 export const eventSchema = z.object({
   id: z.string(),
@@ -32,7 +33,7 @@ describe('Handler.ts (typed contract with test-local schemas)', () => {
 
     expectTypeOf<Parameters<H>>().toEqualTypeOf<
       [
-        InferEvent<typeof eventSchema>,
+        ShapedEvent<typeof eventSchema>,
         Context,
         HandlerOptions<AllParams, Keys, ConsoleLogger>,
       ]
@@ -59,7 +60,7 @@ describe('Handler.ts (typed contract with test-local schemas)', () => {
       return { ok: true };
     };
 
-    const event: InferEvent<typeof eventSchema> = {
+    const event: ShapedEvent<typeof eventSchema> = {
       ...createApiGatewayV1Event('GET'),
       id: '123',
       q: 'hello',

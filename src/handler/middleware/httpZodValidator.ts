@@ -27,7 +27,7 @@ export type HttpZodValidatorOptions<
 > = {
   eventSchema?: EventSchema | undefined;
   responseSchema?: ResponseSchema | undefined;
-} & Loggable<Logger>;
+} & Partial<Loggable<Logger>>;
 
 export const httpZodValidator = <
   EventSchema extends z.ZodType,

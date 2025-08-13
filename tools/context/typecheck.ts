@@ -46,7 +46,10 @@ const flattenMessage = (msg: string | ts.DiagnosticMessageChain): string => {
   const walk = (m: ts.DiagnosticMessageChain, depth: number): void => {
     const prefix = depth > 0 ? '  '.repeat(depth) + '- ' : '';
     parts.push(`${prefix}${m.messageText}`);
-    if (m.next) m.next.forEach((n) => walk(n, depth + 1));
+    if (m.next)
+      m.next.forEach((n) => {
+        walk(n, depth + 1);
+      });
   };
   walk(msg, 0);
   return parts.join('\n');
@@ -127,17 +130,17 @@ const main = async (): Promise<void> => {
   // Load & parse your existing tsconfig.json
   const configPath = ts.findConfigFile(
     process.cwd(),
-    ts.sys.fileExists,
+    (f) => ts.sys.fileExists(f),
     projectTsconfig,
   );
   if (!configPath) throw new Error(`Cannot find tsconfig: ${projectTsconfig}`);
 
-  const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+  const configFile = ts.readConfigFile(configPath, (p) => ts.sys.readFile(p));
   if (configFile.error) {
     // rethrow as plain error text
     const host: ts.FormatDiagnosticsHost = {
       getCanonicalFileName: (f) => f,
-      getCurrentDirectory: ts.sys.getCurrentDirectory,
+      getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
       getNewLine: () => ts.sys.newLine,
     };
     const text = ts.formatDiagnosticsWithColorAndContext(
@@ -175,21 +178,20 @@ const main = async (): Promise<void> => {
     const file = d.file;
     const startNum = typeof d.start === 'number' ? d.start : undefined;
     const lenNum = typeof d.length === 'number' ? d.length : undefined;
-    const related =
-      d.relatedInformation?.map((ri) => {
-        const rf = ri.file;
-        const rstart = typeof ri.start === 'number' ? ri.start : undefined;
-        const rlen = typeof ri.length === 'number' ? ri.length : undefined;
-        return {
-          filePath: rf ? path.normalize(rf.fileName) : null,
-          start: posOf(rf, rstart),
-          length: typeof rlen === 'number' ? rlen : null,
-          message:
-            typeof ri.messageText === 'string'
-              ? ri.messageText
-              : flattenMessage(ri.messageText),
-        };
-      }) ?? undefined;
+    const related = d.relatedInformation?.map((ri) => {
+      const rf = ri.file;
+      const rstart = typeof ri.start === 'number' ? ri.start : undefined;
+      const rlen = typeof ri.length === 'number' ? ri.length : undefined;
+      return {
+        filePath: rf ? path.normalize(rf.fileName) : null,
+        start: posOf(rf, rstart),
+        length: typeof rlen === 'number' ? rlen : null,
+        message:
+          typeof ri.messageText === 'string'
+            ? ri.messageText
+            : flattenMessage(ri.messageText),
+      };
+    });
 
     return {
       filePath: file ? path.normalize(file.fileName) : null,
@@ -201,7 +203,7 @@ const main = async (): Promise<void> => {
         typeof d.messageText === 'string'
           ? d.messageText
           : flattenMessage(d.messageText),
-      related,
+      ...(related ? { related } : {}),
     };
   });
 

@@ -44,7 +44,7 @@ export type BuildStackOptions<
   /** default: 'application/json' */
   contentType?: string;
   /** used by the serializer’s logger fallback */
-} & Loggable<Logger>;
+} & Partial<Loggable<Logger>>;
 
 /** Build a single composed middleware stack in the correct order. */
 export const buildMiddlewareStack = <
@@ -54,7 +54,12 @@ export const buildMiddlewareStack = <
 >(
   options: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
 ): MiddlewareObj<APIGatewayProxyEvent, Context> => {
-  const defaultContentType = options.contentType ?? 'application/json';
+  const {
+    contentType = 'application/json',
+    eventSchema,
+    responseSchema,
+    logger = console as unknown as Logger,
+  } = options;
 
   // Optional (currently disabled) multipart parsing.
   // const multipart = options.enableMultipart
@@ -91,12 +96,14 @@ export const buildMiddlewareStack = <
       parseLanguages: false,
       parseCharsets: false,
       parseEncodings: false,
-      availableMediaTypes: [defaultContentType],
+      availableMediaTypes: [contentType],
     }),
   );
 
   // Validate request BEFORE any content-type logic so Zod errors surface first
-  const mZodValidator = asApiMiddleware(httpZodValidator(options));
+  const mZodValidator = asApiMiddleware(
+    httpZodValidator({ eventSchema, responseSchema, logger }),
+  );
 
   /**
    * Provide a sane default for preferred media types in ALL phases.
@@ -106,30 +113,30 @@ export const buildMiddlewareStack = <
   const mPreferredMediaTypes: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     before: (request) => {
       (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
-        defaultContentType,
+        contentType,
       ];
       const r = request as { internal?: Record<string, unknown> };
       r.internal ??= {};
       (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
-        [defaultContentType];
+        [contentType];
     },
     after: (request) => {
       (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
-        defaultContentType,
+        contentType,
       ];
       const r = request as { internal?: Record<string, unknown> };
       r.internal ??= {};
       (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
-        [defaultContentType];
+        [contentType];
     },
     onError: (request) => {
       (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
-        defaultContentType,
+        contentType,
       ];
       const r = request as { internal?: Record<string, unknown> };
       r.internal ??= {};
       (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
-        [defaultContentType];
+        [contentType];
     },
   };
 
@@ -170,7 +177,7 @@ export const buildMiddlewareStack = <
       }
 
       const headers = res.headers ?? {};
-      headers['Content-Type'] = defaultContentType;
+      headers['Content-Type'] = contentType;
       res.headers = headers;
 
       (request as unknown as { response: ShapedResponse }).response = res;
@@ -190,7 +197,7 @@ export const buildMiddlewareStack = <
         }
       }
       const headers = res.headers ?? {};
-      headers['Content-Type'] = defaultContentType;
+      headers['Content-Type'] = contentType;
       res.headers = headers;
     },
   };
@@ -245,7 +252,7 @@ export const buildMiddlewareStack = <
             typeof body === 'string' ? body : JSON.stringify(body),
         },
       ],
-      defaultContentType,
+      defaultContentType: contentType,
     }),
   );
 
