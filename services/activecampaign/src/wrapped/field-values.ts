@@ -1,11 +1,11 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { withMutation, withQuery } from 'axios';
 
 import { getFieldValues } from '../../generated/field-values/field-values';
 import * as FieldValuesZ from '../../generated/field-values/field-values.zod';
 import { cacheConfig } from '../api/config';
+import { coerceFieldValueForUpdate } from '../api/contacts/format';
 import { getFieldMaps } from '../api/contacts/helpers';
-import { acDefaults } from '../http';
+import { cache } from '../http';
 
 const fvs = getFieldValues();
 
@@ -25,7 +25,7 @@ export const listFieldValues = async (
   const id = cacheConfig.contacts.id(['fieldValues', JSON.stringify(query)]);
   const tags = [cacheConfig.contacts.tag(['fieldValues'])];
 
-  return withQuery(
+  return cache.query<{ fieldValues: ACFieldValue[] }>(
     (opts) => {
       const extraParams = (opts.params ?? {}) as Record<string, unknown>;
       const mergedParams: Record<string, unknown> = {
@@ -33,15 +33,13 @@ export const listFieldValues = async (
         ...extraParams,
       };
       return fvs.listAllCustomFieldValues({
-        ...acDefaults(),
-        ...options,
         ...opts,
         params: mergedParams,
       });
     },
     id,
     tags,
-    { ...acDefaults(), ...(options ?? {}) },
+    options,
   );
 };
 
@@ -49,27 +47,27 @@ export const listFieldValues = async (
 export const upsertFieldValue = async (
   contactId: number,
   fieldId: number,
-  value: string,
+  value: string | string[],
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ fieldValue: ACFieldValue }>> => {
+  const maps = await getFieldMaps(options);
+  const meta = maps.byId.get(String(fieldId));
+
+  const finalValue = coerceFieldValueForUpdate(meta, value);
+
   const payload = {
     fieldValue: {
       contact: contactId,
       field: fieldId,
-      value,
+      value: finalValue,
     },
   };
   FieldValuesZ.updateCustomFieldValueForContactBody.parse(payload);
   const cid = String(contactId);
-  return withMutation(
-    (opts) =>
-      fvs.updateCustomFieldValueForContact(payload as never, {
-        ...acDefaults(),
-        ...options,
-        ...opts,
-      }),
+  return cache.mutation<{ fieldValue: ACFieldValue }>(
+    (opts) => fvs.updateCustomFieldValueForContact(payload as never, opts),
     [cacheConfig.contacts.detail.tag(cid), cacheConfig.contacts.list.any.tag()],
-    { ...acDefaults(), ...(options ?? {}) },
+    options,
   );
 };
 
@@ -77,14 +75,17 @@ export const upsertFieldValue = async (
 export const upsertFieldValueByPerstag = async (
   contactId: number,
   perstag: string,
-  value: string,
+  value: string | string[],
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ fieldValue: ACFieldValue }>> => {
   const maps = await getFieldMaps(options);
   const field = maps.byName.get(perstag);
   if (!field) throw new Error(`Custom field with perstag ${perstag} not found`);
   const fieldId = Number(field.id);
-  return upsertFieldValue(contactId, fieldId, value, options);
+
+  const finalValue = coerceFieldValueForUpdate(field, value);
+
+  return upsertFieldValue(contactId, fieldId, finalValue, options);
 };
 
 /**
@@ -93,20 +94,21 @@ export const upsertFieldValueByPerstag = async (
  */
 export const upsertManyFieldValuesByPerstag = async (
   contactId: number,
-  updates: Record<string, string>, // perstag -> value
+  updates: Record<string, string | string[]>, // perstag -> value (string or array)
   options?: AxiosRequestConfig,
 ): Promise<Array<AxiosResponse<{ fieldValue: ACFieldValue }>>> => {
   const maps = await getFieldMaps(options);
 
   const tasks: Array<{ perstag: string; fieldId: number; value: string }> = [];
   const missing: string[] = [];
-  for (const [perstag, value] of Object.entries(updates)) {
+  for (const [perstag, raw] of Object.entries(updates)) {
     const meta = maps.byName.get(perstag);
     if (!meta) {
       missing.push(perstag);
       continue;
     }
-    tasks.push({ perstag, fieldId: Number(meta.id), value });
+    const coerced = coerceFieldValueForUpdate(meta, raw);
+    tasks.push({ perstag, fieldId: Number(meta.id), value: coerced });
   }
   if (missing.length) {
     throw new Error(`Unknown perstag(s): ${missing.join(', ')}`);
@@ -119,7 +121,6 @@ export const upsertManyFieldValuesByPerstag = async (
   while (i < tasks.length) {
     const slice = tasks.slice(i, i + limit);
     // Execute this batch in parallel
-    // eslint-disable-next-line no-await-in-loop
     const batch = await Promise.all(
       slice.map((t) =>
         upsertFieldValue(contactId, t.fieldId, t.value, options),
