@@ -1,6 +1,4 @@
-import http from './http';
-export default http;
-
+export { cachedAxios } from './cachedAxios';
 export { withMutation, withQuery } from './cache';
 export type { BuiltNode, ConfigInput, Id, Tag } from './config';
 export { buildConfig, ConfigInputSchema } from './config';

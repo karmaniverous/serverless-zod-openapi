@@ -7,11 +7,10 @@ import { setupCache } from 'axios-cache-interceptor';
  */
 const base = axios.create();
 
-const http = setupCache(base, {
+export const cachedAxios = setupCache(base, {
   interpretHeader: true,
   staleIfError: true,
   ttl: 1000 * 60 * 5, // 5 minutes default if headers are missing
 });
 
-export default http;
 export type { AxiosCacheInstance } from 'axios-cache-interceptor';
