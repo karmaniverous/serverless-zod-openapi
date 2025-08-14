@@ -6,7 +6,7 @@ import {
   fetchContactFieldValues,
 } from '../../wrapped/contacts';
 import { getFieldMaps, materialize } from './helpers';
-import { type Contact, ContactZ } from './schemas';
+import { type Contact, contactSchema } from './schemas';
 
 export const getContact = async (
   contactId: string,
@@ -20,5 +20,5 @@ export const getContact = async (
   const core = coreRes.contact as ACContact | undefined;
   if (!core) return undefined;
   const fvals = fvRes.fieldValues;
-  return ContactZ.parse(materialize(core, fvals, maps));
+  return contactSchema.parse(materialize(core, fvals, maps));
 };

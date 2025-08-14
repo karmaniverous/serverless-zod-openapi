@@ -12,3 +12,9 @@ export {
 
 // Re-export axios types for generated code compatibility
 export type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios-raw';
+
+// Re-export ACI types used in our local augmentations
+export type {
+  CacheProperties,
+  CacheRequestConfig,
+} from 'axios-cache-interceptor';

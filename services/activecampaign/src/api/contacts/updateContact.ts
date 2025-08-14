@@ -1,15 +1,27 @@
 import type { AxiosRequestConfig } from 'axios';
+import { z } from 'zod';
 
 import { syncContactRaw } from '../../wrapped/contacts';
 import { cacheConfig } from '../config';
 import { getContact } from './getContact';
-import { type Contact,UpdateContactInputZ } from './schemas';
+import { type Contact } from './schemas';
+
+/** Function-specific schema & type */
+export const updateContactInputSchema = z.object({
+  contactId: z.string().min(1),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phone: z.string().optional(),
+  /** Direct field-id keyed updates (business layer keeps it simple) */
+  fields: z.record(z.string(), z.unknown()).optional(),
+});
+export type UpdateContactInput = z.infer<typeof updateContactInputSchema>;
 
 export const updateContact = async (
   rawInput: unknown,
   options?: AxiosRequestConfig,
 ): Promise<Contact | undefined> => {
-  const input = UpdateContactInputZ.parse(rawInput);
+  const input = updateContactInputSchema.parse(rawInput);
 
   const current = await getContact(input.contactId, options);
   if (!current?.email) return current;
@@ -27,8 +39,6 @@ export const updateContact = async (
   if (input.phone !== undefined) bodyContact.phone = input.phone;
 
   if (input.fields) {
-    // Defer mapping to wrapped layer? We keep business layer simple:
-    // We rely on wrapped.sync to accept fieldValues; if missing, wrapped ignores.
     bodyContact.fieldValues = Object.entries(input.fields).map(
       ([field, value]) => ({
         field,

@@ -1,24 +1,38 @@
-/* packages/axios/src/augmentation.d.ts */
+/* packages/axios/src/types.d.ts */
 
-import type { CacheRequestConfig } from 'axios-cache-interceptor';
+import type { CacheProperties } from 'axios-cache-interceptor';
 
 declare module 'axios-raw' {
   export interface AxiosRequestConfig<D = unknown> {
     /**
      * Axios Cache Interceptor request configuration.
-     * Added by module augmentation to avoid `any` usage.
+     * Use `false` to disable caching for a single request.
      */
-    cache?: CacheRequestConfig<D>;
+    cache?: false | Partial<CacheProperties>;
   }
 
   export interface AxiosResponse<T = unknown, D = unknown> {
-    /**
-     * Present when response was served from cache.
-     */
+    /** Present when response was served from cache. */
     cached?: boolean;
-    /**
-     * Previous response, when stale-while-revalidate is used.
-     */
+    /** Previous response, when stale-while-revalidate is used. */
     previous?: AxiosResponse<T, D>;
+  }
+}
+
+/**
+ * Extend ACI's `CacheProperties` with fields our helpers use.
+ * No generics here to avoid unused type parameter lint.
+ */
+declare module 'axios-cache-interceptor' {
+  interface CacheProperties {
+    /** Custom cache id to override the default key */
+    id?: string;
+    /** ETag to associate with the request when server doesn't set one */
+    etag?: string;
+    /**
+     * Map of cacheId => 'delete' operations used for invalidation.
+     * This mirrors the internal shape consumed by setupCache().
+     */
+    update?: Record<string, 'delete'>;
   }
 }

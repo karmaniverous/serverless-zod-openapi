@@ -78,16 +78,22 @@ export const fetchContactsList = async (
   params: Record<string, unknown>,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contacts: ACContact[] }>> => {
-  const id = cacheConfig.contacts.list.any.id(JSON.stringify(params ?? {}));
+  const id = cacheConfig.contacts.list.any.id(JSON.stringify(params));
   const tags = [cacheConfig.contacts.list.any.tag()];
   return withQuery(
-    (opts) =>
-      contacts.getContacts({
+    (opts) => {
+      const extraParams = (opts.params ?? {}) as Record<string, unknown>;
+      const mergedParams: Record<string, unknown> = {
+        ...params,
+        ...extraParams,
+      };
+      return contacts.getContacts({
         ...acDefaults(),
         ...options,
         ...opts,
-        params: { ...(params ?? {}), ...(opts.params ?? {}) },
-      }),
+        params: mergedParams,
+      });
+    },
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
@@ -136,10 +142,9 @@ export const syncContactRaw = async (
       fieldValues?: Array<{ field: string | number; value: string }>;
     };
   },
-  invalidateTags: Array<
-    | ReturnType<typeof cacheConfig.contacts.detail.tag>
-     
-  > = [cacheConfig.contacts.list.any.tag()],
+  invalidateTags: Array<ReturnType<typeof cacheConfig.contacts.detail.tag>> = [
+    cacheConfig.contacts.list.any.tag(),
+  ],
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contact: ACContact }>> => {
   ContactsZ.syncContactDataBody

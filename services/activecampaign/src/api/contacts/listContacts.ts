@@ -1,70 +1,65 @@
 import type { AxiosRequestConfig } from 'axios';
 
-import type { ACContact, ACFieldValue } from '../../wrapped/contacts';
 import {
   fetchContactFieldValues,
   fetchContactsList,
 } from '../../wrapped/contacts';
 import { getFieldMaps, materialize } from './helpers';
 import {
-  type ListContactsParams,
-  ListContactsParamsZ,
+  listContactsParamsSchema,
   type ListContactsResult,
-  ListContactsResultZ,
+  listContactsResultSchema,
 } from './schemas';
 
 export const listContacts = async (
-  rawParams: unknown = {},
+  rawParams: unknown,
   options?: AxiosRequestConfig,
 ): Promise<ListContactsResult> => {
-  const params = ListContactsParamsZ.parse(rawParams);
+  const params = listContactsParamsSchema.parse(rawParams);
+
   const maps = await getFieldMaps(options);
 
-  const query: Record<string, unknown> = {};
-  if (params.search !== undefined) query.search = params.search;
-  if (params.limit !== undefined) query.limit = params.limit;
-  if (params.offset !== undefined) query.offset = params.offset;
+  // 1) Coarse list
+  const baseRes = await fetchContactsList(
+    {
+      email: params.email,
+      phone: params.phone,
+      tag: params.tag,
+      listid: params.listId,
+      limit: params.limit,
+      offset: params.offset,
+    },
+    options,
+  );
 
-  const baseRes = await fetchContactsList(query, options);
-  const rows = (baseRes.data?.contacts ?? []);
+  const coarse = baseRes.data.contacts;
+  // 2) If filtering by custom field, post-filter coarse by that
+  const filtered =
+    params.customFieldFilter === undefined
+      ? coarse
+      : coarse.filter((c) => {
+          const name = params.customFieldFilter?.name;
+          const val = params.customFieldFilter?.value;
+          return Boolean(
+            name &&
+              val &&
+              (c as unknown as { fields?: Record<string, unknown> }).fields?.[
+                name
+              ] === val,
+          );
+        });
 
-  let filtered: ACContact[] = rows;
-  if (params.customFieldFilter) {
-    const meta = maps.byName.get(params.customFieldFilter.name);
-    if (meta) {
-      // Lightweight client-side filter via field values fetch for each row
-      const allow = new Set<string>();
-      // Fetch values in sequence to avoid AC rate limits (optimize later if needed)
-      for (const r of rows) {
-        const { data: fvRes } = await fetchContactFieldValues(
-          Number(r.id),
-          options,
-        );
-        const fvals = (fvRes?.fieldValues ?? []);
-        if (
-          fvals.some(
-            (v) =>
-              v.field === meta.id &&
-              v.value === params.customFieldFilter!.value,
-          )
-        ) {
-          allow.add(r.id);
-        }
-      }
-      filtered = rows.filter((r) => allow.has(r.id));
-    }
-  }
-
+  // 3) Hydrate each with field values and materialize with catalog
   const out = await Promise.all(
     filtered.map(async (r) => {
       const { data: fvRes } = await fetchContactFieldValues(
         Number(r.id),
         options,
       );
-      const fvals = (fvRes?.fieldValues ?? []);
+      const fvals = fvRes.fieldValues;
       return materialize(r, fvals, maps);
     }),
   );
 
-  return ListContactsResultZ.parse({ contacts: out, total: out.length });
+  return listContactsResultSchema.parse({ contacts: out, total: out.length });
 };

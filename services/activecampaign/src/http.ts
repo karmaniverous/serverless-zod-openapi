@@ -1,5 +1,3 @@
-/* services/activecampaign/src/http.ts */
-
 import type { AxiosRequestConfig } from 'axios';
 
 export const acDefaults = (): AxiosRequestConfig => {

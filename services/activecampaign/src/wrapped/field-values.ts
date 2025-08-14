@@ -1,8 +1,8 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { withQuery } from 'axios';
 
+import { getFieldValues } from '../../generated/field-values/field-values';
 import { cacheConfig } from '../api/config';
-import { getFieldValues } from '../generated/field-values/field-values';
 import { acDefaults } from '../http';
 
 const fvs = getFieldValues();
@@ -18,16 +18,22 @@ export const listFieldValues = async (
   query: { 'filters[fieldid]'?: string | number; 'filters[val]'?: string },
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>> => {
-  const id = cacheConfig.contacts.list.any.id(JSON.stringify(query ?? {}));
+  const id = cacheConfig.contacts.list.any.id(JSON.stringify(query));
   const tags = [cacheConfig.contacts.list.any.tag()];
   return withQuery(
-    (opts) =>
-      fvs.listAllCustomFieldValues({
+    (opts) => {
+      const extraParams = (opts.params ?? {}) as Record<string, unknown>;
+      const mergedParams: Record<string, unknown> = {
+        ...query,
+        ...extraParams,
+      };
+      return fvs.listAllCustomFieldValues({
         ...acDefaults(),
         ...options,
         ...opts,
-        params: { ...query, ...(opts.params ?? {}) },
-      }),
+        params: mergedParams,
+      });
+    },
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },

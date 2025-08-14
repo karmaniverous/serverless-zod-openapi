@@ -3,7 +3,7 @@ import type { AxiosRequestConfig } from 'axios';
 import type { ACContact, ACFieldValue } from '../../wrapped/contacts';
 import type { ACField } from '../../wrapped/custom-fields-and-values';
 import { fetchAllFields } from '../../wrapped/custom-fields-and-values';
-import { type Contact, ContactZ } from './schemas';
+import { type Contact, contactSchema } from './schemas';
 
 const toMapById = <T extends { id: string }>(rows: T[]): Map<string, T> => {
   const m = new Map<string, T>();
@@ -20,7 +20,7 @@ export const getFieldMaps = async (
   options?: AxiosRequestConfig,
 ): Promise<FieldMaps> => {
   const { data } = await fetchAllFields(options);
-  const rows = (data?.fields ?? []);
+  const rows = data.fields;
   const byId = toMapById(rows);
   const byName = new Map<string, ACField>();
   for (const f of rows) {
@@ -32,18 +32,18 @@ export const getFieldMaps = async (
 
 export const materialize = (
   core: ACContact,
-  fvals: ACFieldValue[],
+  fieldValues: ACFieldValue[],
   maps: FieldMaps,
 ): Contact => {
   const fields: Record<string, unknown> = {};
-  for (const v of fvals) {
+  for (const v of fieldValues) {
     const meta = maps.byId.get(v.field);
     const name = meta?.title ?? meta?.perstag ?? `field:${v.field}`;
     fields[name] = v.value;
   }
   const { id, email, phone, firstName, lastName, ...rest } = core;
   // Validate and freeze the shape from Zod
-  return ContactZ.parse({
+  return contactSchema.parse({
     id,
     email,
     phone,

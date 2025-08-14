@@ -1,6 +1,6 @@
 /* packages/axios/src/cache.ts */
 
-import type { CacheRequestConfig } from 'axios-cache-interceptor';
+import type { CacheProperties } from 'axios-cache-interceptor';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios-raw';
 
 import type { Id, Tag } from './config';
@@ -16,20 +16,25 @@ const remember = (cacheId: Id, tags: Tag[]): void => {
   }
 };
 
-const idsFor = (tags: Tag[]): Id[] => {
-  const acc = new Set<Id>();
+const idsFor = (tags: Tag[]): Set<Id> => {
+  const out = new Set<Id>();
   for (const t of tags) {
-    const s = tagIndex.get(t);
-    if (!s) continue;
-    for (const id of s) acc.add(id);
+    for (const id of tagIndex.get(t) ?? []) out.add(id);
   }
-  return [...acc];
+  return out;
 };
 
 const updateMapFor = (tags: Tag[]): Record<string, 'delete'> => {
   const map: Record<string, 'delete'> = {};
   for (const id of idsFor(tags)) map[id] = 'delete';
   return map;
+};
+
+const inheritCache = (
+  base?: AxiosRequestConfig,
+): Partial<CacheProperties> | undefined => {
+  const c = base?.cache;
+  return c && typeof c === 'object' ? c : undefined;
 };
 
 /** Apply ACI cache id to a GET-like request and register tags on success. */
@@ -39,34 +44,28 @@ export const withQuery = async <T>(
   tags: Tag[],
   base?: AxiosRequestConfig,
 ): Promise<AxiosResponse<T>> => {
-  const baseCache: CacheRequestConfig | undefined = base?.cache ?? undefined;
-
-  const cacheCfg: CacheRequestConfig = {
-    id: cacheId,
-    etag: true,
-    modifiedSince: true,
-    staleIfError: true,
-    ...(baseCache ?? {}),
+  const cacheCfg: Partial<CacheProperties> = {
+    ...(inheritCache(base) ?? {}),
+    id: String(cacheId),
   };
 
   const res = await call({
     ...(base ?? {}),
     cache: cacheCfg,
   });
+
   remember(cacheId, tags);
   return res;
 };
 
-/** Attach ACI cache.update built from tags. Invalidation occurs after success. */
+/** Apply invalidation map to a mutation-like request and clear tag buckets. */
 export const withMutation = async <T>(
   call: (opts: AxiosRequestConfig) => Promise<AxiosResponse<T>>,
   invalidate: Tag[],
   base?: AxiosRequestConfig,
 ): Promise<AxiosResponse<T>> => {
-  const baseCache: CacheRequestConfig | undefined = base?.cache ?? undefined;
-
-  const cacheCfg: CacheRequestConfig = {
-    ...(baseCache ?? {}),
+  const cacheCfg: Partial<CacheProperties> = {
+    ...(inheritCache(base) ?? {}),
     update: updateMapFor(invalidate),
   };
 
@@ -74,6 +73,7 @@ export const withMutation = async <T>(
     ...(base ?? {}),
     cache: cacheCfg,
   });
+
   // clear tag buckets (ids will be gone from storage)
   for (const t of invalidate) tagIndex.delete(t);
   return res;

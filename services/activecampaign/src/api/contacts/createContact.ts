@@ -1,28 +1,32 @@
 import type { AxiosRequestConfig } from 'axios';
+import { z } from 'zod';
 
-import type { ACFieldValue } from '../../wrapped/contacts';
 import {
   createContactRaw,
   fetchContactFieldValues,
 } from '../../wrapped/contacts';
 import { getFieldMaps, materialize } from './helpers';
-import { type Contact, CreateContactInputZ } from './schemas';
+import { type Contact } from './schemas';
+
+/** Function-specific schema & type */
+export const createContactInputSchema = z.object({
+  email: z.email(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phone: z.string().optional(),
+  /** Named, user-facing custom fields to map into AC field ids */
+  fields: z.record(z.string(), z.unknown()).optional(),
+});
+export type CreateContactInput = z.infer<typeof createContactInputSchema>;
 
 export const createContact = async (
   rawInput: unknown,
   options?: AxiosRequestConfig,
 ): Promise<Contact> => {
-  const input = CreateContactInputZ.parse(rawInput);
+  const input = createContactInputSchema.parse(rawInput);
 
   const maps = await getFieldMaps(options);
-  const fieldValues = input.fields
-    ? Object.entries(input.fields).flatMap(([name, value]) => {
-        const f = maps.byName.get(name);
-        return f ? [{ field: f.id, value: String(value) }] : [];
-      })
-    : [];
 
-  // Build body without undefined keys to satisfy exactOptionalPropertyTypes
   const contactBody: {
     email: string;
     firstName?: string;
@@ -30,6 +34,14 @@ export const createContact = async (
     phone?: string;
     fieldValues?: Array<{ field: string | number; value: string }>;
   } = { email: input.email };
+
+  // Build AC field values from user-supplied named fields
+  const fieldValues: Array<{ field: string | number; value: string }> = [];
+  for (const [name, value] of Object.entries(input.fields ?? {})) {
+    const meta = maps.byName.get(name);
+    if (!meta) continue;
+    fieldValues.push({ field: meta.id, value: String(value) });
+  }
 
   if (input.firstName !== undefined) contactBody.firstName = input.firstName;
   if (input.lastName !== undefined) contactBody.lastName = input.lastName;
@@ -43,6 +55,6 @@ export const createContact = async (
     Number(data.contact.id),
     options,
   );
-  const fvals = (fvRes?.fieldValues ?? []);
+  const fvals = fvRes.fieldValues;
   return materialize(data.contact, fvals, maps);
 };
