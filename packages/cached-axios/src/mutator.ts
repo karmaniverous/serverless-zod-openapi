@@ -3,7 +3,7 @@ import type {
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
-} from 'axios';
+} from 'axios-raw';
 
 import { cachedAxios } from './cachedAxios';
 
@@ -13,7 +13,7 @@ export type OrvalBodyType<B> = B;
 /**
  * Orval-compatible mutator.
  * Always resolves to AxiosResponse<T>, regardless of how the generator
- * instantiates the generic parameter (some specs emit `orvalMutator<null>`).
+ * instantiates the generic parameter.
  */
 export const orvalMutator = async <T = unknown, R = unknown>(
   config: AxiosRequestConfig<R>,

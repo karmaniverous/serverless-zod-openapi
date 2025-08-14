@@ -1,17 +1,14 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { withMutation, withQuery } from 'axios';
 
-import type {
-  CreateContactRequest,
-  SyncContactDataRequest,
-} from '../../generated/api.schemas';
 import { getContacts } from '../../generated/contacts/contacts';
 import * as ContactsZ from '../../generated/contacts/contacts.zod';
 import { cacheConfig } from '../api/config';
-import { cache } from '../http';
+import { acDefaults } from '../http';
 
 const contacts = getContacts();
 
-/** Minimal response shapes (spec lacks typed responses in codegen) */
+/** Minimal shapes we care about */
 export type ACContact = {
   id: string;
   email?: string;
@@ -23,12 +20,12 @@ export type ACContact = {
 
 export type ACFieldValue = {
   id: string;
-  contact: number; // ActiveCampaign expects numeric contact id in field values
+  contact: number; // numeric contact id
   field: number;
   value: string;
 };
 
-/** Retrieve a single contact by ID */
+/** Detail (core) */
 export const fetchContactCore = async (
   contactId: string,
   options?: AxiosRequestConfig,
@@ -39,42 +36,52 @@ export const fetchContactCore = async (
     cacheConfig.contacts.detail.tag(contactId),
     cacheConfig.contacts.list.any.tag(),
   ];
-  return cache.query<{ contact: ACContact }>(
-    (opts) => contacts.getContactbyID(contactId, opts),
+  return withQuery(
+    (opts) =>
+      contacts.getContactbyID(contactId, {
+        ...acDefaults(),
+        ...options,
+        ...opts,
+      }),
     id,
     tags,
-    options,
+    { ...acDefaults(), ...(options ?? {}) },
   );
 };
 
-/** Retrieve all field values for a contact */
+/** Field values for a contact */
 export const fetchContactFieldValues = async (
   contactId: number,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>> => {
   ContactsZ.getContactFieldValuesParams.parse({ contactId });
   const cid = String(contactId);
-  const id = cacheConfig.contacts.detail.id(cid); // share the detail bucket
+  const id = cacheConfig.contacts.detail.id(cid);
   const tags = [
     cacheConfig.contacts.detail.tag(cid),
     cacheConfig.contacts.list.any.tag(),
   ];
-  return cache.query<{ fieldValues: ACFieldValue[] }>(
-    (opts) => contacts.getContactFieldValues(contactId, opts),
+  return withQuery(
+    (opts) =>
+      contacts.getContactFieldValues(contactId, {
+        ...acDefaults(),
+        ...options,
+        ...opts,
+      }),
     id,
     tags,
-    options,
+    { ...acDefaults(), ...(options ?? {}) },
   );
 };
 
-/** List/search contacts (query passthrough) */
+/** List/search contacts (coarse id from params) */
 export const fetchContactsList = async (
   params: Record<string, unknown>,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contacts: ACContact[] }>> => {
   const id = cacheConfig.contacts.list.any.id(JSON.stringify(params));
   const tags = [cacheConfig.contacts.list.any.tag()];
-  return cache.query<{ contacts: ACContact[] }>(
+  return withQuery(
     (opts) => {
       const extraParams = (opts.params ?? {}) as Record<string, unknown>;
       const mergedParams: Record<string, unknown> = {
@@ -82,54 +89,86 @@ export const fetchContactsList = async (
         ...extraParams,
       };
       return contacts.getContacts({
+        ...acDefaults(),
+        ...options,
         ...opts,
         params: mergedParams,
       });
     },
     id,
     tags,
-    options,
+    { ...acDefaults(), ...(options ?? {}) },
   );
 };
 
-/** Create a contact */
+/** Create contact (body validated minimally) */
 export const createContactRaw = async (
-  body: CreateContactRequest,
+  body: {
+    contact: {
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+    };
+  },
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contact: ACContact }>> => {
   ContactsZ.createContactBody.parse(body);
-  return cache.mutation<{ contact: ACContact }>(
-    (opts) => contacts.createContact(body, opts),
-    // A new/updated contact affects list queries
+  return withMutation(
+    (opts) =>
+      contacts.createContact(body as never, {
+        ...acDefaults(),
+        ...options,
+        ...opts,
+      }),
+    // a new contact can affect any list
     [cacheConfig.contacts.list.any.tag()],
-    options,
+    { ...acDefaults(), ...(options ?? {}) },
   );
 };
 
-/** Sync contact data (identifies by email; can include fieldValues {field,value}[]) */
+/** Update/sync contact (by email; business layer supplies email) */
 export const syncContactRaw = async (
-  body: SyncContactDataRequest,
+  body: {
+    contact: {
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      fieldValues?: Array<{ field: string | number; value: string }>;
+    };
+  },
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contact: ACContact }>> => {
   ContactsZ.syncContactDataBody.parse(body);
-  return cache.mutation<{ contact: ACContact }>(
-    (opts) => contacts.syncContactData(body, opts),
-    // We cannot safely compute a specific contact id here; drop list caches
+  return withMutation(
+    (opts) =>
+      contacts.syncContactData(body as never, {
+        ...acDefaults(),
+        ...options,
+        ...opts,
+      }),
+    // We can't target specific contact cache safely here; clear list buckets
     [cacheConfig.contacts.list.any.tag()],
-    options,
+    { ...acDefaults(), ...(options ?? {}) },
   );
 };
 
-/** Delete a contact by numeric ID */
+/** Delete contact */
 export const deleteContactRaw = async (
   contactId: number,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<null>> => {
   ContactsZ.deleteContactParams.parse({ contactId });
   const cid = String(contactId);
-  return cache.mutation<null>(
-    (opts) => contacts.deleteContact(contactId, opts),
+  return withMutation(
+    (opts) =>
+      contacts.deleteContact(contactId, {
+        ...acDefaults(),
+        ...options,
+        ...opts,
+      }),
     [cacheConfig.contacts.detail.tag(cid), cacheConfig.contacts.list.any.tag()],
-    options,
+    { ...acDefaults(), ...(options ?? {}) },
   );
 };
