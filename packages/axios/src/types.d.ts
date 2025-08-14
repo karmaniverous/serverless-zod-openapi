@@ -3,7 +3,7 @@
 import type { CacheProperties } from 'axios-cache-interceptor';
 
 declare module 'axios-raw' {
-  export interface AxiosRequestConfig<D = unknown> {
+  export interface AxiosRequestConfig {
     /**
      * Axios Cache Interceptor request configuration.
      * Use `false` to disable caching for a single request.

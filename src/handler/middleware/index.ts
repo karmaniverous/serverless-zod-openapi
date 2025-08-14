@@ -5,4 +5,4 @@
  * Example (unchanged):
  *   import { buildMiddlewareStack } from "@/handler/middleware";
  */
-export { buildMiddlewareStack } from "./buildStack";
+export { buildMiddlewareStack } from './buildStack';

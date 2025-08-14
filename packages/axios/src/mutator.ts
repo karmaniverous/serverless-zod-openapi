@@ -1,5 +1,3 @@
-/* packages/axios/src/mutator.ts */
-
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios-raw';
 
 import http from './http';

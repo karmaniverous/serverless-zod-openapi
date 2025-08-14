@@ -147,4 +147,3 @@ export const makeWrapHandler = <
     return middy(base).use(stack) as unknown as ProxyV1PromiseHandler;
   };
 };
-

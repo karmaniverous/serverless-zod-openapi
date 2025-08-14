@@ -19,9 +19,7 @@
   "paths": {
     "/accounts/{id}": {
       "get": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Retrieve an account",
         "operationId": "Retrieveanaccount",
         "parameters": [
@@ -52,9 +50,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Delete an account",
         "operationId": "Deleteanaccount",
         "parameters": [
@@ -84,9 +80,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Update an account",
         "operationId": "Updateanaccount",
         "parameters": [
@@ -146,9 +140,7 @@
     },
     "/accounts": {
       "post": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Create an account",
         "operationId": "Createanaccount",
         "parameters": [],
@@ -195,9 +187,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "List all accounts",
         "operationId": "Listallaccounts",
         "parameters": [],
@@ -218,9 +208,7 @@
     },
     "/accounts/bulk_delete": {
       "delete": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Bulk delete accounts",
         "operationId": "Bulkdeleteaccounts",
         "parameters": [],
@@ -241,9 +229,7 @@
     },
     "/accounts/{id}/notes": {
       "post": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Create an account note",
         "operationId": "Createanaccountnote",
         "parameters": [
@@ -291,9 +277,7 @@
     },
     "/accounts/{id}/notes/{noteId}": {
       "put": {
-        "tags": [
-          "Accounts"
-        ],
+        "tags": ["Accounts"],
         "summary": "Update an account note",
         "operationId": "Updateanaccountnote",
         "parameters": [
@@ -353,9 +337,7 @@
     },
     "/fieldOption/bulk": {
       "post": {
-        "tags": [
-          "Field Values"
-        ],
+        "tags": ["Field Values"],
         "summary": "Bulk Add Field Values",
         "operationId": "BulkAddFieldValues",
         "parameters": [],
@@ -412,9 +394,7 @@
     },
     "/fieldValues": {
       "post": {
-        "tags": [
-          "Field Values"
-        ],
+        "tags": ["Field Values"],
         "summary": "Update Custom Field Value For Contact",
         "operationId": "UpdateCustomFieldValueForContact",
         "parameters": [],
@@ -451,9 +431,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Field Values"
-        ],
+        "tags": ["Field Values"],
         "summary": "List All Custom Field Values",
         "operationId": "ListAllCustomFieldValues",
         "parameters": [],
@@ -474,9 +452,7 @@
     },
     "/fieldRels": {
       "post": {
-        "tags": [
-          "Field Relationships"
-        ],
+        "tags": ["Field Relationships"],
         "summary": "Add Field Relationship",
         "operationId": "AddFieldRelationship",
         "parameters": [],
@@ -514,9 +490,7 @@
     },
     "/fieldRels/{fieldRelId}": {
       "delete": {
-        "tags": [
-          "Field Relationships"
-        ],
+        "tags": ["Field Relationships"],
         "summary": "Delete Field Relationship",
         "operationId": "DeleteFieldRelationship",
         "parameters": [
@@ -549,9 +523,7 @@
     },
     "/fields": {
       "get": {
-        "tags": [
-          "Custom Fields and Values"
-        ],
+        "tags": ["Custom Fields and Values"],
         "summary": "List All Custom Fields",
         "operationId": "ListAllCustomFields",
         "parameters": [],
@@ -570,9 +542,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Custom Fields and Values"
-        ],
+        "tags": ["Custom Fields and Values"],
         "summary": "Add Custom Field",
         "operationId": "AddCustomField",
         "parameters": [],
@@ -620,9 +590,7 @@
     },
     "/fields/{fieldID}": {
       "delete": {
-        "tags": [
-          "Custom Fields and Values"
-        ],
+        "tags": ["Custom Fields and Values"],
         "summary": "Delete Custom Field",
         "operationId": "DeleteCustomField",
         "parameters": [
@@ -653,9 +621,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Custom Fields and Values"
-        ],
+        "tags": ["Custom Fields and Values"],
         "summary": "Update Custom Field",
         "operationId": "UpdateCustomField",
         "parameters": [
@@ -714,9 +680,7 @@
     },
     "/contacts": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contacts",
         "operationId": "GetContacts",
         "parameters": [],
@@ -735,9 +699,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Create Contact",
         "operationId": "CreateContact",
         "parameters": [],
@@ -777,9 +739,7 @@
     },
     "/contacts/{contactId}": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact by ID",
         "operationId": "GetContactbyID",
         "parameters": [
@@ -809,9 +769,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Delete Contact",
         "operationId": "DeleteContact",
         "parameters": [
@@ -845,9 +803,7 @@
     },
     "/contacts/{contactId}/contactData": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Data",
         "operationId": "GetContactData",
         "parameters": [
@@ -881,9 +837,7 @@
     },
     "/contacts/{contactId}/contactTags": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Tags",
         "operationId": "GetContactTags",
         "parameters": [
@@ -917,9 +871,7 @@
     },
     "/contacts/{contactId}/bounceLogs": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Bounce Logs",
         "operationId": "GetContactBounceLogs",
         "parameters": [
@@ -953,9 +905,7 @@
     },
     "/contacts/{contactId}/contactGoals": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Data Goals",
         "operationId": "GetContactDataGoals",
         "parameters": [
@@ -989,9 +939,7 @@
     },
     "/contacts/{contactId}/contactLists": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Lists",
         "operationId": "GetContactLists",
         "parameters": [
@@ -1025,9 +973,7 @@
     },
     "/contacts/{contactId}/contactLogs": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Logs",
         "operationId": "GetContactLogs",
         "parameters": [
@@ -1061,9 +1007,7 @@
     },
     "/contacts/{contactId}/contactDeals": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Deal List",
         "operationId": "GetContactDealList",
         "parameters": [
@@ -1097,9 +1041,7 @@
     },
     "/contacts/{contactId}/deals": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Deals",
         "operationId": "GetContactDeals",
         "parameters": [
@@ -1133,9 +1075,7 @@
     },
     "/contacts/{contactId}/fieldValues": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Field Values",
         "operationId": "GetContactFieldValues",
         "parameters": [
@@ -1169,9 +1109,7 @@
     },
     "/contacts/{contactId}/geoIps": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Geo Ips",
         "operationId": "GetContactGeoIps",
         "parameters": [
@@ -1205,9 +1143,7 @@
     },
     "/contacts/{contactId}/notes": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Notes",
         "operationId": "GetContactNotes",
         "parameters": [
@@ -1241,9 +1177,7 @@
     },
     "/contacts/{contactId}/organization": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Organization",
         "operationId": "GetContactOrganization",
         "parameters": [
@@ -1277,9 +1211,7 @@
     },
     "/contacts/{contactId}/accountContacts": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Account Contacts",
         "operationId": "GetContactAccountContacts",
         "parameters": [
@@ -1313,9 +1245,7 @@
     },
     "/contacts/{contactId}/automationEntryCounts": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Automation Entry Counts",
         "operationId": "GetContactAutomationEntryCounts",
         "parameters": [
@@ -1349,9 +1279,7 @@
     },
     "/contacts/{contactId}/plusAppend": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Plus Append",
         "operationId": "GetContactPlusAppend",
         "parameters": [
@@ -1385,9 +1313,7 @@
     },
     "/contacts/{contactId}/trackingLogs": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Get Contact Tracking Logs",
         "operationId": "GetContactTrackingLogs",
         "parameters": [
@@ -1421,9 +1347,7 @@
     },
     "/contact/sync": {
       "post": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Sync Contact Data",
         "operationId": "SyncContactData",
         "parameters": [],
@@ -1473,9 +1397,7 @@
     },
     "/contactLists": {
       "post": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Add contact to list",
         "operationId": "Addcontacttolist",
         "parameters": [
@@ -1526,9 +1448,7 @@
     },
     "/import/bulk_import": {
       "post": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Bulk Import",
         "operationId": "BulkImport",
         "parameters": [],
@@ -1546,9 +1466,7 @@
                     "first_name": "John",
                     "last_name": "Doe",
                     "phone": "5555551212",
-                    "tags": [
-                      "testtag1"
-                    ],
+                    "tags": ["testtag1"],
                     "fields": [
                       {
                         "id": 18,
@@ -1567,9 +1485,7 @@
                     "first_name": "John",
                     "last_name": "Doe2",
                     "phone": "5555551212",
-                    "tags": [
-                      "testtag1"
-                    ],
+                    "tags": ["testtag1"],
                     "fields": [
                       {
                         "id": 18,
@@ -1605,9 +1521,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Bulk Import Status List",
         "operationId": "BulkImportStatusList",
         "parameters": [],
@@ -1628,9 +1542,7 @@
     },
     "/import/info": {
       "get": {
-        "tags": [
-          "Contacts"
-        ],
+        "tags": ["Contacts"],
         "summary": "Bulk Import Status Info",
         "operationId": "BulkImportStatusInfo",
         "parameters": [
@@ -1664,9 +1576,7 @@
     },
     "/campaigns": {
       "get": {
-        "tags": [
-          "Campaigns"
-        ],
+        "tags": ["Campaigns"],
         "summary": "Get Campaigns",
         "operationId": "GetCampaigns",
         "parameters": [],
@@ -1687,9 +1597,7 @@
     },
     "/campaigns/{campaignId}": {
       "get": {
-        "tags": [
-          "Campaigns"
-        ],
+        "tags": ["Campaigns"],
         "summary": "Get Campaign by ID",
         "operationId": "GetCampaignbyID",
         "parameters": [
@@ -1723,9 +1631,7 @@
     },
     "/messages": {
       "get": {
-        "tags": [
-          "Messages"
-        ],
+        "tags": ["Messages"],
         "summary": "Get Messages",
         "operationId": "GetMessages",
         "parameters": [],
@@ -1746,9 +1652,7 @@
     },
     "/tags": {
       "get": {
-        "tags": [
-          "Tags"
-        ],
+        "tags": ["Tags"],
         "summary": "List all tags",
         "operationId": "Listalltags",
         "parameters": [],
@@ -1767,9 +1671,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Tags"
-        ],
+        "tags": ["Tags"],
         "summary": "Create a tag",
         "operationId": "Createatag",
         "parameters": [],
@@ -1808,9 +1710,7 @@
     },
     "/tags/{tagId}": {
       "put": {
-        "tags": [
-          "Tags"
-        ],
+        "tags": ["Tags"],
         "summary": "Update a tag",
         "operationId": "Updateatag",
         "parameters": [
@@ -1860,9 +1760,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Tags"
-        ],
+        "tags": ["Tags"],
         "summary": "Delete a tag",
         "operationId": "Deleteatag",
         "parameters": [
@@ -1896,9 +1794,7 @@
     },
     "/contactTags": {
       "post": {
-        "tags": [
-          "Tags"
-        ],
+        "tags": ["Tags"],
         "summary": "Add a tag to a contact",
         "operationId": "Addatagtoacontact",
         "parameters": [],
@@ -1936,9 +1832,7 @@
     },
     "/.api-us1.com/admin/api.php": {
       "get": {
-        "tags": [
-          "v1"
-        ],
+        "tags": ["v1"],
         "summary": "Get Contact",
         "operationId": "GetContact",
         "parameters": [
@@ -2009,9 +1903,7 @@
     },
     "/lists": {
       "get": {
-        "tags": [
-          "Lists"
-        ],
+        "tags": ["Lists"],
         "summary": "Get Lists",
         "operationId": "GetLists",
         "parameters": [
@@ -2044,9 +1936,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Lists"
-        ],
+        "tags": ["Lists"],
         "summary": "Create List",
         "operationId": "CreateList",
         "parameters": [],
@@ -2087,9 +1977,7 @@
     },
     "/customObjects/schemas/public": {
       "post": {
-        "tags": [
-          "Parent and Child Schemas"
-        ],
+        "tags": ["Parent and Child Schemas"],
         "summary": "Create a public schema",
         "operationId": "Createapublicschema",
         "parameters": [],
@@ -2153,9 +2041,7 @@
     },
     "/customObjects/schemas/{parentSchemaId}/child": {
       "post": {
-        "tags": [
-          "Parent and Child Schemas"
-        ],
+        "tags": ["Parent and Child Schemas"],
         "summary": "Create a child schema",
         "operationId": "Createachildschema",
         "parameters": [
@@ -2188,9 +2074,7 @@
     },
     "/customObjects/schemas": {
       "get": {
-        "tags": [
-          "Schemas"
-        ],
+        "tags": ["Schemas"],
         "summary": "List all schemas",
         "operationId": "Listallschemas",
         "parameters": [],
@@ -2209,9 +2093,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Schemas"
-        ],
+        "tags": ["Schemas"],
         "summary": "Create Schema",
         "operationId": "CreateSchema",
         "parameters": [],
@@ -2278,9 +2160,7 @@
     },
     "/customObjects/records/{schemaID}": {
       "get": {
-        "tags": [
-          "Schemas"
-        ],
+        "tags": ["Schemas"],
         "summary": "Listing records for a Schema",
         "operationId": "ListingrecordsforaSchema",
         "parameters": [
@@ -2314,9 +2194,7 @@
     },
     "/customObjects/schemas/{schemaId}": {
       "put": {
-        "tags": [
-          "Schemas"
-        ],
+        "tags": ["Schemas"],
         "summary": "Update Schema",
         "operationId": "UpdateSchema",
         "parameters": [
@@ -2397,9 +2275,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Schemas"
-        ],
+        "tags": ["Schemas"],
         "summary": "Get Schema by ID",
         "operationId": "GetSchemabyID",
         "parameters": [
@@ -2429,9 +2305,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Schemas"
-        ],
+        "tags": ["Schemas"],
         "summary": "Delete Schema",
         "operationId": "DeleteSchema",
         "parameters": [
@@ -2463,9 +2337,7 @@
     },
     "/customObjects/records/{schemaId}": {
       "get": {
-        "tags": [
-          "Managing Records"
-        ],
+        "tags": ["Managing Records"],
         "summary": "Get a list of records",
         "operationId": "Getalistofrecords",
         "parameters": [
@@ -2508,9 +2380,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Managing Records"
-        ],
+        "tags": ["Managing Records"],
         "summary": "Create a record",
         "operationId": "Createarecord",
         "parameters": [
@@ -2543,9 +2413,7 @@
                     }
                   ],
                   "relationships": {
-                    "primary-contact": [
-                      5
-                    ]
+                    "primary-contact": [5]
                   }
                 }
               }
@@ -2570,9 +2438,7 @@
     },
     "/.activehosted.com/api/3/customObjects/records/{schemaId}/{recordId}": {
       "get": {
-        "tags": [
-          "Managing Records"
-        ],
+        "tags": ["Managing Records"],
         "summary": "Get record by id",
         "operationId": "Getrecordbyid",
         "parameters": [
@@ -2614,9 +2480,7 @@
     },
     "/customObjects/records/{schemaId}/{recordId}": {
       "delete": {
-        "tags": [
-          "Managing Records"
-        ],
+        "tags": ["Managing Records"],
         "summary": "Delete record by id",
         "operationId": "Deleterecordbyid",
         "parameters": [
@@ -2658,9 +2522,7 @@
     },
     "/customObjects/records/{schemaId}/external/{externalId}": {
       "get": {
-        "tags": [
-          "Managing Records"
-        ],
+        "tags": ["Managing Records"],
         "summary": "Get record by external id",
         "operationId": "Getrecordbyexternalid",
         "parameters": [
@@ -2700,9 +2562,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Managing Records"
-        ],
+        "tags": ["Managing Records"],
         "summary": "Delete record by external id",
         "operationId": "Deleterecordbyexternalid",
         "parameters": [
@@ -2744,9 +2604,7 @@
     },
     "/groups": {
       "get": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Get Groups",
         "operationId": "GetGroups",
         "parameters": [],
@@ -2765,9 +2623,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Create Group",
         "operationId": "CreateGroup",
         "parameters": [],
@@ -2804,9 +2660,7 @@
     },
     "/groupLimits": {
       "get": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Get Group Limits",
         "operationId": "GetGroupLimits",
         "parameters": [],
@@ -2827,9 +2681,7 @@
     },
     "/groups/{groupId}": {
       "get": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Get Group By ID",
         "operationId": "GetGroupByID",
         "parameters": [
@@ -2863,9 +2715,7 @@
     },
     "/groups/{groupId}/userGroups": {
       "get": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Get Users By Group",
         "operationId": "GetUsersByGroup",
         "parameters": [
@@ -2899,9 +2749,7 @@
     },
     "/users": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get Users",
         "operationId": "GetUsers",
         "parameters": [],
@@ -2920,9 +2768,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Create User",
         "operationId": "CreateUser",
         "parameters": [],
@@ -2964,9 +2810,7 @@
     },
     "/dealRoles": {
       "post": {
-        "tags": [
-          "Deal Roles"
-        ],
+        "tags": ["Deal Roles"],
         "summary": "Create a deal role",
         "operationId": "Createadealrole",
         "parameters": [],
@@ -3001,9 +2845,7 @@
     },
     "/deals": {
       "post": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Create a deal",
         "operationId": "Createadeal",
         "parameters": [],
@@ -3063,9 +2905,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Retrieve all deals",
         "operationId": "Retrievealldeals",
         "parameters": [],
@@ -3086,9 +2926,7 @@
     },
     "/deals/{id}/notes": {
       "post": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Create a deal note",
         "operationId": "Createadealnote",
         "parameters": [
@@ -3137,9 +2975,7 @@
     },
     "/deals/{id}": {
       "get": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Retrieve a deal",
         "operationId": "Retrieveadeal",
         "parameters": [
@@ -3170,9 +3006,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Delete a deal",
         "operationId": "Deleteadeal",
         "parameters": [
@@ -3203,9 +3037,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Update a deal",
         "operationId": "Updateadeal",
         "parameters": [
@@ -3279,9 +3111,7 @@
     },
     "/deals/{dealId}/notes/{noteId}": {
       "put": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Update a deal note",
         "operationId": "Updateadealnote",
         "parameters": [
@@ -3341,9 +3171,7 @@
     },
     "/deals/bulkUpdate": {
       "patch": {
-        "tags": [
-          "Deals"
-        ],
+        "tags": ["Deals"],
         "summary": "Bulk update deal owners",
         "operationId": "Bulkupdatedealowners",
         "parameters": [],
@@ -3391,9 +3219,7 @@
     },
     "/eventTrackingEvents": {
       "post": {
-        "tags": [
-          "Site & Event Tracking"
-        ],
+        "tags": ["Site & Event Tracking"],
         "summary": "Create a new Event (Name Only)",
         "operationId": "CreateanewEvent(NameOnly)",
         "parameters": [],
@@ -3428,9 +3254,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "Site & Event Tracking"
-        ],
+        "tags": ["Site & Event Tracking"],
         "summary": "List All Events (Name Only)",
         "operationId": "ListAllEvents(NameOnly)",
         "parameters": [],
@@ -3451,9 +3275,7 @@
     },
     "/event": {
       "post": {
-        "tags": [
-          "Site & Event Tracking"
-        ],
+        "tags": ["Site & Event Tracking"],
         "summary": "Track Event",
         "operationId": "TrackEvent",
         "parameters": [],
@@ -3462,13 +3284,7 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "required": [
-                  "actid",
-                  "key",
-                  "event",
-                  "eventdata",
-                  "visit"
-                ],
+                "required": ["actid", "key", "event", "eventdata", "visit"],
                 "type": "object",
                 "properties": {
                   "actid": {
@@ -3521,9 +3337,7 @@
     "schemas": {
       "CreateanaccountRequest": {
         "title": "CreateanaccountRequest",
-        "required": [
-          "account"
-        ],
+        "required": ["account"],
         "type": "object",
         "properties": {
           "account": {
@@ -3550,11 +3364,7 @@
       },
       "Account": {
         "title": "Account",
-        "required": [
-          "name",
-          "accountUrl",
-          "fields"
-        ],
+        "required": ["name", "accountUrl", "fields"],
         "type": "object",
         "properties": {
           "name": {
@@ -3589,10 +3399,7 @@
       },
       "Field": {
         "title": "Field",
-        "required": [
-          "customFieldId",
-          "fieldValue"
-        ],
+        "required": ["customFieldId", "fieldValue"],
         "type": "object",
         "properties": {
           "customFieldId": {
@@ -3621,9 +3428,7 @@
       },
       "UpdateanaccountRequest": {
         "title": "UpdateanaccountRequest",
-        "required": [
-          "account"
-        ],
+        "required": ["account"],
         "type": "object",
         "properties": {
           "account": {
@@ -3650,9 +3455,7 @@
       },
       "CreateanaccountnoteRequest": {
         "title": "CreateanaccountnoteRequest",
-        "required": [
-          "note"
-        ],
+        "required": ["note"],
         "type": "object",
         "properties": {
           "note": {
@@ -3667,9 +3470,7 @@
       },
       "Note": {
         "title": "Note",
-        "required": [
-          "note"
-        ],
+        "required": ["note"],
         "type": "object",
         "properties": {
           "note": {
@@ -3682,9 +3483,7 @@
       },
       "UpdateanaccountnoteRequest": {
         "title": "UpdateanaccountnoteRequest",
-        "required": [
-          "note"
-        ],
+        "required": ["note"],
         "type": "object",
         "properties": {
           "note": {
@@ -3699,9 +3498,7 @@
       },
       "BulkAddFieldValuesRequest": {
         "title": "BulkAddFieldValuesRequest",
-        "required": [
-          "fieldOptions"
-        ],
+        "required": ["fieldOptions"],
         "type": "object",
         "properties": {
           "fieldOptions": {
@@ -3740,13 +3537,7 @@
       },
       "FieldOption": {
         "title": "FieldOption",
-        "required": [
-          "orderid",
-          "value",
-          "label",
-          "isdefault",
-          "field"
-        ],
+        "required": ["orderid", "value", "label", "isdefault", "field"],
         "type": "object",
         "properties": {
           "orderid": {
@@ -3776,9 +3567,7 @@
       },
       "UpdateCustomFieldValueForContactRequest": {
         "title": "UpdateCustomFieldValueForContactRequest",
-        "required": [
-          "fieldValue"
-        ],
+        "required": ["fieldValue"],
         "type": "object",
         "properties": {
           "fieldValue": {
@@ -3795,11 +3584,7 @@
       },
       "FieldValue": {
         "title": "FieldValue",
-        "required": [
-          "contact",
-          "field",
-          "value"
-        ],
+        "required": ["contact", "field", "value"],
         "type": "object",
         "properties": {
           "contact": {
@@ -3822,9 +3607,7 @@
       },
       "AddFieldRelationshipRequest": {
         "title": "AddFieldRelationshipRequest",
-        "required": [
-          "fieldRel"
-        ],
+        "required": ["fieldRel"],
         "type": "object",
         "properties": {
           "fieldRel": {
@@ -3840,10 +3623,7 @@
       },
       "FieldRel": {
         "title": "FieldRel",
-        "required": [
-          "field",
-          "relid"
-        ],
+        "required": ["field", "relid"],
         "type": "object",
         "properties": {
           "field": {
@@ -3862,9 +3642,7 @@
       },
       "AddCustomFieldRequest": {
         "title": "AddCustomFieldRequest",
-        "required": [
-          "field"
-        ],
+        "required": ["field"],
         "type": "object",
         "properties": {
           "field": {
@@ -3958,9 +3736,7 @@
       },
       "DeleteCustomFieldRequest": {
         "title": "DeleteCustomFieldRequest",
-        "required": [
-          "field"
-        ],
+        "required": ["field"],
         "type": "object",
         "properties": {
           "field": {
@@ -3979,13 +3755,7 @@
       },
       "Field3": {
         "title": "Field3",
-        "required": [
-          "type",
-          "title",
-          "descript",
-          "perstag",
-          "visible"
-        ],
+        "required": ["type", "title", "descript", "perstag", "visible"],
         "type": "object",
         "properties": {
           "type": {
@@ -4015,9 +3785,7 @@
       },
       "UpdateCustomFieldRequest": {
         "title": "UpdateCustomFieldRequest",
-        "required": [
-          "field"
-        ],
+        "required": ["field"],
         "type": "object",
         "properties": {
           "field": {
@@ -4112,9 +3880,7 @@
       },
       "CreateContactRequest": {
         "title": "CreateContactRequest",
-        "required": [
-          "contact"
-        ],
+        "required": ["contact"],
         "type": "object",
         "properties": {
           "contact": {
@@ -4132,12 +3898,7 @@
       },
       "Contact": {
         "title": "Contact",
-        "required": [
-          "email",
-          "firstName",
-          "lastName",
-          "phone"
-        ],
+        "required": ["email", "firstName", "lastName", "phone"],
         "type": "object",
         "properties": {
           "email": {
@@ -4162,9 +3923,7 @@
       },
       "SyncContactDataRequest": {
         "title": "SyncContactDataRequest",
-        "required": [
-          "contact"
-        ],
+        "required": ["contact"],
         "type": "object",
         "properties": {
           "contact": {
@@ -4192,13 +3951,7 @@
       },
       "Contact1": {
         "title": "Contact1",
-        "required": [
-          "email",
-          "firstName",
-          "lastName",
-          "phone",
-          "fieldValues"
-        ],
+        "required": ["email", "firstName", "lastName", "phone", "fieldValues"],
         "type": "object",
         "properties": {
           "email": {
@@ -4240,10 +3993,7 @@
       },
       "FieldValue1": {
         "title": "FieldValue1",
-        "required": [
-          "field",
-          "value"
-        ],
+        "required": ["field", "value"],
         "type": "object",
         "properties": {
           "field": {
@@ -4260,9 +4010,7 @@
       },
       "AddcontacttolistRequest": {
         "title": "AddcontacttolistRequest",
-        "required": [
-          "contactList"
-        ],
+        "required": ["contactList"],
         "type": "object",
         "properties": {
           "contactList": {
@@ -4279,11 +4027,7 @@
       },
       "ContactList": {
         "title": "ContactList",
-        "required": [
-          "list",
-          "contact",
-          "status"
-        ],
+        "required": ["list", "contact", "status"],
         "type": "object",
         "properties": {
           "list": {
@@ -4307,10 +4051,7 @@
       },
       "BulkImportRequest": {
         "title": "BulkImportRequest",
-        "required": [
-          "contacts",
-          "callback"
-        ],
+        "required": ["contacts", "callback"],
         "type": "object",
         "properties": {
           "contacts": {
@@ -4332,9 +4073,7 @@
               "first_name": "John",
               "last_name": "Doe",
               "phone": "5555551212",
-              "tags": [
-                "testtag1"
-              ],
+              "tags": ["testtag1"],
               "fields": [
                 {
                   "id": 18,
@@ -4353,9 +4092,7 @@
               "first_name": "John",
               "last_name": "Doe2",
               "phone": "5555551212",
-              "tags": [
-                "testtag1"
-              ],
+              "tags": ["testtag1"],
               "fields": [
                 {
                   "id": 18,
@@ -4430,9 +4167,7 @@
           "first_name": "John",
           "last_name": "Doe",
           "phone": "5555551212",
-          "tags": [
-            "testtag1"
-          ],
+          "tags": ["testtag1"],
           "fields": [
             {
               "id": 18,
@@ -4449,10 +4184,7 @@
       },
       "Field5": {
         "title": "Field5",
-        "required": [
-          "id",
-          "value"
-        ],
+        "required": ["id", "value"],
         "type": "object",
         "properties": {
           "id": {
@@ -4470,9 +4202,7 @@
       },
       "Subscribe": {
         "title": "Subscribe",
-        "required": [
-          "listid"
-        ],
+        "required": ["listid"],
         "type": "object",
         "properties": {
           "listid": {
@@ -4486,9 +4216,7 @@
       },
       "CreateatagRequest": {
         "title": "CreateatagRequest",
-        "required": [
-          "tag"
-        ],
+        "required": ["tag"],
         "type": "object",
         "properties": {
           "tag": {
@@ -4505,11 +4233,7 @@
       },
       "Tag": {
         "title": "Tag",
-        "required": [
-          "tag",
-          "tagType",
-          "description"
-        ],
+        "required": ["tag", "tagType", "description"],
         "type": "object",
         "properties": {
           "tag": {
@@ -4530,9 +4254,7 @@
       },
       "UpdateatagRequest": {
         "title": "UpdateatagRequest",
-        "required": [
-          "tag"
-        ],
+        "required": ["tag"],
         "type": "object",
         "properties": {
           "tag": {
@@ -4549,9 +4271,7 @@
       },
       "DeleteatagRequest": {
         "title": "DeleteatagRequest",
-        "required": [
-          "tag"
-        ],
+        "required": ["tag"],
         "type": "object",
         "properties": {
           "tag": {
@@ -4568,9 +4288,7 @@
       },
       "AddatagtoacontactRequest": {
         "title": "AddatagtoacontactRequest",
-        "required": [
-          "contactTag"
-        ],
+        "required": ["contactTag"],
         "type": "object",
         "properties": {
           "contactTag": {
@@ -4586,10 +4304,7 @@
       },
       "ContactTag": {
         "title": "ContactTag",
-        "required": [
-          "contact",
-          "tag"
-        ],
+        "required": ["contact", "tag"],
         "type": "object",
         "properties": {
           "contact": {
@@ -4606,9 +4321,7 @@
       },
       "CreateListRequest": {
         "title": "CreateListRequest",
-        "required": [
-          "list"
-        ],
+        "required": ["list"],
         "type": "object",
         "properties": {
           "list": {
@@ -4663,9 +4376,7 @@
       },
       "CreateapublicschemaRequest": {
         "title": "CreateapublicschemaRequest",
-        "required": [
-          "schema"
-        ],
+        "required": ["schema"],
         "type": "object",
         "properties": {
           "schema": {
@@ -4777,10 +4488,7 @@
       },
       "Labels": {
         "title": "Labels",
-        "required": [
-          "singular",
-          "plural"
-        ],
+        "required": ["singular", "plural"],
         "type": "object",
         "properties": {
           "singular": {
@@ -4797,11 +4505,7 @@
       },
       "Field6": {
         "title": "Field6",
-        "required": [
-          "id",
-          "labels",
-          "type"
-        ],
+        "required": ["id", "labels", "type"],
         "type": "object",
         "properties": {
           "id": {
@@ -4825,12 +4529,7 @@
       },
       "Relationship": {
         "title": "Relationship",
-        "required": [
-          "id",
-          "labels",
-          "description",
-          "namespace"
-        ],
+        "required": ["id", "labels", "description", "namespace"],
         "type": "object",
         "properties": {
           "id": {
@@ -4858,9 +4557,7 @@
       },
       "UpdateSchemaRequest": {
         "title": "UpdateSchemaRequest",
-        "required": [
-          "schema"
-        ],
+        "required": ["schema"],
         "type": "object",
         "properties": {
           "schema": {
@@ -4996,14 +4693,7 @@
       },
       "Field7": {
         "title": "Field7",
-        "required": [
-          "id",
-          "slug",
-          "labels",
-          "type",
-          "required",
-          "scale"
-        ],
+        "required": ["id", "slug", "labels", "type", "required", "scale"],
         "type": "object",
         "properties": {
           "id": {
@@ -5040,9 +4730,7 @@
       },
       "Icons": {
         "title": "Icons",
-        "required": [
-          "default"
-        ],
+        "required": ["default"],
         "type": "object",
         "properties": {
           "default": {
@@ -5055,13 +4743,7 @@
       },
       "Relationship1": {
         "title": "Relationship1",
-        "required": [
-          "id",
-          "labels",
-          "description",
-          "namespace",
-          "hasMany"
-        ],
+        "required": ["id", "labels", "description", "namespace", "hasMany"],
         "type": "object",
         "properties": {
           "id": {
@@ -5093,9 +4775,7 @@
       },
       "CreateSchemaRequest": {
         "title": "CreateSchemaRequest",
-        "required": [
-          "schema"
-        ],
+        "required": ["schema"],
         "type": "object",
         "properties": {
           "schema": {
@@ -5209,14 +4889,7 @@
       },
       "Field8": {
         "title": "Field8",
-        "required": [
-          "id",
-          "slug",
-          "labels",
-          "type",
-          "scale",
-          "isRequired"
-        ],
+        "required": ["id", "slug", "labels", "type", "scale", "isRequired"],
         "type": "object",
         "properties": {
           "id": {
@@ -5253,9 +4926,7 @@
       },
       "CreatearecordRequest": {
         "title": "CreatearecordRequest",
-        "required": [
-          "record"
-        ],
+        "required": ["record"],
         "type": "object",
         "properties": {
           "record": {
@@ -5273,21 +4944,14 @@
               }
             ],
             "relationships": {
-              "primary-contact": [
-                5
-              ]
+              "primary-contact": [5]
             }
           }
         }
       },
       "Record": {
         "title": "Record",
-        "required": [
-          "id",
-          "externalId",
-          "fields",
-          "relationships"
-        ],
+        "required": ["id", "externalId", "fields", "relationships"],
         "type": "object",
         "properties": {
           "id": {
@@ -5317,18 +4981,13 @@
             }
           ],
           "relationships": {
-            "primary-contact": [
-              5
-            ]
+            "primary-contact": [5]
           }
         }
       },
       "Field9": {
         "title": "Field9",
-        "required": [
-          "id",
-          "value"
-        ],
+        "required": ["id", "value"],
         "type": "object",
         "properties": {
           "id": {
@@ -5346,9 +5005,7 @@
       },
       "Relationships": {
         "title": "Relationships",
-        "required": [
-          "primary-contact"
-        ],
+        "required": ["primary-contact"],
         "type": "object",
         "properties": {
           "primary-contact": {
@@ -5361,16 +5018,12 @@
           }
         },
         "example": {
-          "primary-contact": [
-            5
-          ]
+          "primary-contact": [5]
         }
       },
       "CreateGroupRequest": {
         "title": "CreateGroupRequest",
-        "required": [
-          "group"
-        ],
+        "required": ["group"],
         "type": "object",
         "properties": {
           "group": {
@@ -5385,9 +5038,7 @@
       },
       "Group": {
         "title": "Group",
-        "required": [
-          "title"
-        ],
+        "required": ["title"],
         "type": "object",
         "properties": {
           "title": {
@@ -5400,9 +5051,7 @@
       },
       "CreateUserRequest": {
         "title": "CreateUserRequest",
-        "required": [
-          "user"
-        ],
+        "required": ["user"],
         "type": "object",
         "properties": {
           "user": {
@@ -5463,9 +5112,7 @@
       },
       "CreateadealroleRequest": {
         "title": "CreateadealroleRequest",
-        "required": [
-          "title"
-        ],
+        "required": ["title"],
         "type": "object",
         "properties": {
           "title": {
@@ -5478,9 +5125,7 @@
       },
       "CreateadealRequest": {
         "title": "CreateadealRequest",
-        "required": [
-          "deal"
-        ],
+        "required": ["deal"],
         "type": "object",
         "properties": {
           "deal": {
@@ -5611,9 +5256,7 @@
       },
       "CreateadealnoteRequest": {
         "title": "CreateadealnoteRequest",
-        "required": [
-          "note"
-        ],
+        "required": ["note"],
         "type": "object",
         "properties": {
           "note": {
@@ -5628,9 +5271,7 @@
       },
       "UpdateadealRequest": {
         "title": "UpdateadealRequest",
-        "required": [
-          "deal"
-        ],
+        "required": ["deal"],
         "type": "object",
         "properties": {
           "deal": {
@@ -5670,9 +5311,7 @@
       },
       "UpdateadealnoteRequest": {
         "title": "UpdateadealnoteRequest",
-        "required": [
-          "note"
-        ],
+        "required": ["note"],
         "type": "object",
         "properties": {
           "note": {
@@ -5687,9 +5326,7 @@
       },
       "BulkupdatedealownersRequest": {
         "title": "BulkupdatedealownersRequest",
-        "required": [
-          "deals"
-        ],
+        "required": ["deals"],
         "type": "object",
         "properties": {
           "deals": {
@@ -5719,10 +5356,7 @@
       },
       "Deal2": {
         "title": "Deal2",
-        "required": [
-          "id",
-          "ownerId"
-        ],
+        "required": ["id", "ownerId"],
         "type": "object",
         "properties": {
           "id": {
@@ -5741,9 +5375,7 @@
       },
       "CreateanewEventNameOnlyRequest": {
         "title": "CreateanewEventNameOnlyRequest",
-        "required": [
-          "eventTrackingEvent"
-        ],
+        "required": ["eventTrackingEvent"],
         "type": "object",
         "properties": {
           "eventTrackingEvent": {
@@ -5758,9 +5390,7 @@
       },
       "EventTrackingEvent": {
         "title": "EventTrackingEvent",
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "type": "object",
         "properties": {
           "name": {
@@ -5773,9 +5403,7 @@
       },
       "visit": {
         "title": "visit",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "type": "object",
         "properties": {
           "email": {

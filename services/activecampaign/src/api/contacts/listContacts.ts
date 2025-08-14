@@ -1,15 +1,35 @@
 import type { AxiosRequestConfig } from 'axios';
+import z from 'zod';
 
 import {
   fetchContactFieldValues,
   fetchContactsList,
 } from '../../wrapped/contacts';
 import { getFieldMaps, materialize } from './helpers';
-import {
-  listContactsParamsSchema,
-  type ListContactsResult,
-  listContactsResultSchema,
-} from './schemas';
+import { contactSchema } from './schemas';
+
+export const listContactsParamsSchema = z.object({
+  limit: z.number().int().positive().max(100).optional(),
+  offset: z.number().int().nonnegative().optional(),
+  email: z.email().optional(),
+  phone: z.string().optional(),
+  tag: z.string().optional(),
+  listId: z.union([z.string(), z.number()]).optional(),
+  customFieldFilter: z
+    .object({
+      name: z.string(),
+      value: z.string(),
+    })
+    .optional(),
+});
+
+export type ListContactsParams = z.infer<typeof listContactsParamsSchema>;
+
+export const listContactsResultSchema = z.object({
+  contacts: z.array(contactSchema),
+  total: z.number().int().nonnegative().optional(),
+});
+export type ListContactsResult = z.infer<typeof listContactsResultSchema>;
 
 export const listContacts = async (
   rawParams: unknown,
