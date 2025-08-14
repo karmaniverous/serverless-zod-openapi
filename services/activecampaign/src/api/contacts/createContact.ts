@@ -1,17 +1,17 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
+import type { CreateContactRequest } from '../../../generated/api.schemas';
 import {
   createContactRaw,
   fetchContactFieldValues,
 } from '../../wrapped/contacts';
 import { getFieldMaps, materialize } from './helpers';
 import { type Contact } from './schemas';
-import type { CreateContactRequest } from '../../../generated/api.schemas';
 
 /** Function-specific schema & type */
 export const createContactInputSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),

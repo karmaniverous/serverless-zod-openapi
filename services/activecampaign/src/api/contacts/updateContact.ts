@@ -1,10 +1,10 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
+import type { SyncContactDataRequest } from '../../../generated/api.schemas';
 import { syncContactRaw } from '../../wrapped/contacts';
 import { getContact } from './getContact';
 import { type Contact } from './schemas';
-import type { SyncContactDataRequest } from '../../../generated/api.schemas';
 
 /** Function-specific schema & type */
 export const updateContactInputSchema = z.object({
@@ -39,7 +39,7 @@ export const updateContact = async (
   if (input.fields) {
     for (const [fieldId, val] of Object.entries(input.fields)) {
       bodyContact.fieldValues.push({
-        field: String(fieldId),
+        field: fieldId,
         value: String(val),
       });
     }
