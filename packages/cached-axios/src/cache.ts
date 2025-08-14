@@ -1,7 +1,7 @@
 /* packages/axios/src/cache.ts */
 
-import type { CacheProperties } from 'axios-cache-interceptor';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { CacheProperties } from 'axios-cache-interceptor';
 
 import type { Id, Tag } from './config';
 
