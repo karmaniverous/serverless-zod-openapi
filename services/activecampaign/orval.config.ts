@@ -8,10 +8,14 @@ export default defineConfig({
       mode: 'tags-split',
       target: 'api.ts',
       workspace: 'generated',
+      override: {
+        mutator: {
+          path: '../../packages/axios/src/mutator.ts',
+          name: 'orvalMutator',
+        },
+      },
     },
-    hooks: {
-      afterAllFilesWrite: ['prettier -w'],
-    },
+    hooks: { afterAllFilesWrite: ['prettier -w'] },
   },
   zod: {
     input: 'src/openapi.json',
@@ -23,8 +27,6 @@ export default defineConfig({
       target: 'api.zod.ts',
       workspace: 'generated',
     },
-    hooks: {
-      afterAllFilesWrite: ['prettier -w'],
-    },
+    hooks: { afterAllFilesWrite: ['prettier -w'] },
   },
 });
