@@ -4,36 +4,39 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getCampaigns = () => {
   /**
    * @summary Get Campaigns
    */
-  const getCampaigns = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/campaigns`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const getCampaigns = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/campaigns`, method: 'GET' }, options);
   };
   /**
    * @summary Get Campaign by ID
    */
-  const getCampaignbyID = <TData = AxiosResponse<null>>(
+  const getCampaignbyID = (
     campaignId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/campaigns/${campaignId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/campaigns/${campaignId}`, method: 'GET' },
+      options,
+    );
   };
   return { getCampaigns, getCampaignbyID };
 };
-export type GetCampaignsResult = AxiosResponse<null>;
-export type GetCampaignbyIDResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetCampaignsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getCampaigns>['getCampaigns']>>
+>;
+export type GetCampaignbyIDResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getCampaigns>['getCampaignbyID']>>
+>;

@@ -4,44 +4,52 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { CreateListRequest, GetListsParams } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getLists = () => {
   /**
    * @summary Get Lists
    */
-  const getLists = <TData = AxiosResponse<null>>(
+  const getLists = (
     params: GetListsParams,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/lists`, {
-        ...options,
-        params: { ...params, ...options?.params },
-      })
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/lists`, method: 'GET', params },
+      options,
+    );
   };
   /**
    * @summary Create List
    */
-  const createList = <TData = AxiosResponse<null>>(
+  const createList = (
     createListRequest: CreateListRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/lists`, createListRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/lists`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createListRequest,
+      },
+      options,
+    );
   };
   return { getLists, createList };
 };
-export type GetListsResult = AxiosResponse<null>;
-export type CreateListResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetListsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getLists>['getLists']>>
+>;
+export type CreateListResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getLists>['createList']>>
+>;

@@ -4,38 +4,46 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { CreateUserRequest } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getUsers = () => {
   /**
    * @summary Get Users
    */
-  const getUsers = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/users`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const getUsers = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/users`, method: 'GET' }, options);
   };
   /**
    * @summary Create User
    */
-  const createUser = <TData = AxiosResponse<null>>(
+  const createUser = (
     createUserRequest: CreateUserRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/users`, createUserRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/users`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createUserRequest,
+      },
+      options,
+    );
   };
   return { getUsers, createUser };
 };
-export type GetUsersResult = AxiosResponse<null>;
-export type CreateUserResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetUsersResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUsers>['getUsers']>>
+>;
+export type CreateUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUsers>['createUser']>>
+>;

@@ -4,21 +4,24 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getMessages = () => {
   /**
    * @summary Get Messages
    */
-  const getMessages = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/messages`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const getMessages = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/messages`, method: 'GET' }, options);
   };
   return { getMessages };
 };
-export type GetMessagesResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetMessagesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getMessages>['getMessages']>>
+>;

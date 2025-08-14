@@ -1,5 +1,9 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { withMutation, withQuery } from 'axios';
+import {
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  withMutation,
+  withQuery,
+} from '@karmaniverous/cached-axios';
 
 import { getContacts } from '../../generated/contacts/contacts';
 import * as ContactsZ from '../../generated/contacts/contacts.zod';

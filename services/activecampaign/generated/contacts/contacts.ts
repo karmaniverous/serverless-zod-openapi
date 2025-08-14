@@ -4,9 +4,6 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   AddcontacttolistRequest,
   BulkImportRequest,
@@ -15,351 +12,323 @@ import type {
   SyncContactDataRequest,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getContacts = () => {
   /**
    * @summary Get Contacts
    */
-  const getContacts = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/contacts`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const getContacts = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/contacts`, method: 'GET' }, options);
   };
   /**
    * @summary Create Contact
    */
-  const createContact = <TData = AxiosResponse<null>>(
+  const createContact = (
     createContactRequest: CreateContactRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/contacts`, createContactRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/contacts`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createContactRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Get Contact by ID
    */
-  const getContactbyID = <TData = AxiosResponse<null>>(
+  const getContactbyID = (
     contactId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/contacts/${contactId}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Delete Contact
    */
-  const deleteContact = <TData = AxiosResponse<null>>(
+  const deleteContact = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .delete(`/contacts/${contactId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}`, method: 'DELETE' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Data
    */
-  const getContactData = <TData = AxiosResponse<null>>(
+  const getContactData = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/contactData`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/contactData`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Tags
    */
-  const getContactTags = <TData = AxiosResponse<null>>(
+  const getContactTags = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/contactTags`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/contactTags`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Bounce Logs
    */
-  const getContactBounceLogs = <TData = AxiosResponse<null>>(
+  const getContactBounceLogs = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/bounceLogs`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/bounceLogs`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Data Goals
    */
-  const getContactDataGoals = <TData = AxiosResponse<null>>(
+  const getContactDataGoals = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/contactGoals`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/contactGoals`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Lists
    */
-  const getContactLists = <TData = AxiosResponse<null>>(
+  const getContactLists = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/contactLists`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/contactLists`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Logs
    */
-  const getContactLogs = <TData = AxiosResponse<null>>(
+  const getContactLogs = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/contactLogs`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/contactLogs`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Deal List
    */
-  const getContactDealList = <TData = AxiosResponse<null>>(
+  const getContactDealList = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/contactDeals`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/contactDeals`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Deals
    */
-  const getContactDeals = <TData = AxiosResponse<null>>(
+  const getContactDeals = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/deals`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/deals`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Field Values
    */
-  const getContactFieldValues = <TData = AxiosResponse<null>>(
+  const getContactFieldValues = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/fieldValues`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/fieldValues`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Geo Ips
    */
-  const getContactGeoIps = <TData = AxiosResponse<null>>(
+  const getContactGeoIps = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/geoIps`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/geoIps`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Notes
    */
-  const getContactNotes = <TData = AxiosResponse<null>>(
+  const getContactNotes = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/notes`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/notes`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Organization
    */
-  const getContactOrganization = <TData = AxiosResponse<null>>(
+  const getContactOrganization = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/organization`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/organization`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Account Contacts
    */
-  const getContactAccountContacts = <TData = AxiosResponse<null>>(
+  const getContactAccountContacts = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/accountContacts`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/accountContacts`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Automation Entry Counts
    */
-  const getContactAutomationEntryCounts = <TData = AxiosResponse<null>>(
+  const getContactAutomationEntryCounts = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/automationEntryCounts`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/automationEntryCounts`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Plus Append
    */
-  const getContactPlusAppend = <TData = AxiosResponse<null>>(
+  const getContactPlusAppend = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/plusAppend`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/plusAppend`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Contact Tracking Logs
    */
-  const getContactTrackingLogs = <TData = AxiosResponse<null>>(
+  const getContactTrackingLogs = (
     contactId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/contacts/${contactId}/trackingLogs`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/contacts/${contactId}/trackingLogs`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Sync Contact Data
    */
-  const syncContactData = <TData = AxiosResponse<null>>(
+  const syncContactData = (
     syncContactDataRequest: SyncContactDataRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/contact/sync`, syncContactDataRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/contact/sync`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: syncContactDataRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Add contact to list
    */
-  const addcontacttolist = <TData = AxiosResponse<null>>(
+  const addcontacttolist = (
     addcontacttolistRequest: AddcontacttolistRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/contactLists`, addcontacttolistRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/contactLists`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: addcontacttolistRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Bulk Import
    */
-  const bulkImport = <TData = AxiosResponse<null>>(
+  const bulkImport = (
     bulkImportRequest: BulkImportRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/import/bulk_import`, bulkImportRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/import/bulk_import`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: bulkImportRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Bulk Import Status List
    */
-  const bulkImportStatusList = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/import/bulk_import`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const bulkImportStatusList = (
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/import/bulk_import`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Bulk Import Status Info
    */
-  const bulkImportStatusInfo = <TData = AxiosResponse<null>>(
+  const bulkImportStatusInfo = (
     params: BulkImportStatusInfoParams,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/import/info`, {
-        ...options,
-        params: { ...params, ...options?.params },
-      })
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/import/info`, method: 'GET', params },
+      options,
+    );
   };
   return {
     getContacts,
@@ -389,28 +358,89 @@ export const getContacts = () => {
     bulkImportStatusInfo,
   };
 };
-export type GetContactsResult = AxiosResponse<null>;
-export type CreateContactResult = AxiosResponse<null>;
-export type GetContactbyIDResult = AxiosResponse<null>;
-export type DeleteContactResult = AxiosResponse<null>;
-export type GetContactDataResult = AxiosResponse<null>;
-export type GetContactTagsResult = AxiosResponse<null>;
-export type GetContactBounceLogsResult = AxiosResponse<null>;
-export type GetContactDataGoalsResult = AxiosResponse<null>;
-export type GetContactListsResult = AxiosResponse<null>;
-export type GetContactLogsResult = AxiosResponse<null>;
-export type GetContactDealListResult = AxiosResponse<null>;
-export type GetContactDealsResult = AxiosResponse<null>;
-export type GetContactFieldValuesResult = AxiosResponse<null>;
-export type GetContactGeoIpsResult = AxiosResponse<null>;
-export type GetContactNotesResult = AxiosResponse<null>;
-export type GetContactOrganizationResult = AxiosResponse<null>;
-export type GetContactAccountContactsResult = AxiosResponse<null>;
-export type GetContactAutomationEntryCountsResult = AxiosResponse<null>;
-export type GetContactPlusAppendResult = AxiosResponse<null>;
-export type GetContactTrackingLogsResult = AxiosResponse<null>;
-export type SyncContactDataResult = AxiosResponse<null>;
-export type AddcontacttolistResult = AxiosResponse<null>;
-export type BulkImportResult = AxiosResponse<null>;
-export type BulkImportStatusListResult = AxiosResponse<null>;
-export type BulkImportStatusInfoResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetContactsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContacts']>>
+>;
+export type CreateContactResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['createContact']>>
+>;
+export type GetContactbyIDResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactbyID']>>
+>;
+export type DeleteContactResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['deleteContact']>>
+>;
+export type GetContactDataResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactData']>>
+>;
+export type GetContactTagsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactTags']>>
+>;
+export type GetContactBounceLogsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactBounceLogs']>>
+>;
+export type GetContactDataGoalsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactDataGoals']>>
+>;
+export type GetContactListsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactLists']>>
+>;
+export type GetContactLogsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactLogs']>>
+>;
+export type GetContactDealListResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactDealList']>>
+>;
+export type GetContactDealsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactDeals']>>
+>;
+export type GetContactFieldValuesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactFieldValues']>>
+>;
+export type GetContactGeoIpsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactGeoIps']>>
+>;
+export type GetContactNotesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactNotes']>>
+>;
+export type GetContactOrganizationResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactOrganization']>>
+>;
+export type GetContactAccountContactsResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getContacts>['getContactAccountContacts']>
+  >
+>;
+export type GetContactAutomationEntryCountsResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getContacts>['getContactAutomationEntryCounts']
+    >
+  >
+>;
+export type GetContactPlusAppendResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactPlusAppend']>>
+>;
+export type GetContactTrackingLogsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['getContactTrackingLogs']>>
+>;
+export type SyncContactDataResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['syncContactData']>>
+>;
+export type AddcontacttolistResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['addcontacttolist']>>
+>;
+export type BulkImportResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['bulkImport']>>
+>;
+export type BulkImportStatusListResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['bulkImportStatusList']>>
+>;
+export type BulkImportStatusInfoResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getContacts>['bulkImportStatusInfo']>>
+>;

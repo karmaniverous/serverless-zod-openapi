@@ -4,86 +4,106 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   AddatagtoacontactRequest,
   CreateatagRequest,
   UpdateatagRequest,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getTags = () => {
   /**
    * @summary List all tags
    */
-  const listalltags = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/tags`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const listalltags = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/tags`, method: 'GET' }, options);
   };
   /**
    * @summary Create a tag
    */
-  const createatag = <TData = AxiosResponse<null>>(
+  const createatag = (
     createatagRequest: CreateatagRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/tags`, createatagRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/tags`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createatagRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Update a tag
    */
-  const updateatag = <TData = AxiosResponse<null>>(
+  const updateatag = (
     tagId: number,
     updateatagRequest: UpdateatagRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(`/tags/${tagId}`, updateatagRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/tags/${tagId}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateatagRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Delete a tag
    */
-  const deleteatag = <TData = AxiosResponse<null>>(
+  const deleteatag = (
     tagId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.delete(`/tags/${tagId}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/tags/${tagId}`, method: 'DELETE' },
+      options,
+    );
   };
   /**
    * @summary Add a tag to a contact
    */
-  const addatagtoacontact = <TData = AxiosResponse<null>>(
+  const addatagtoacontact = (
     addatagtoacontactRequest: AddatagtoacontactRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/contactTags`, addatagtoacontactRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/contactTags`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: addatagtoacontactRequest,
+      },
+      options,
+    );
   };
   return { listalltags, createatag, updateatag, deleteatag, addatagtoacontact };
 };
-export type ListalltagsResult = AxiosResponse<null>;
-export type CreateatagResult = AxiosResponse<null>;
-export type UpdateatagResult = AxiosResponse<null>;
-export type DeleteatagResult = AxiosResponse<null>;
-export type AddatagtoacontactResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type ListalltagsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getTags>['listalltags']>>
+>;
+export type CreateatagResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getTags>['createatag']>>
+>;
+export type UpdateatagResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getTags>['updateatag']>>
+>;
+export type DeleteatagResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getTags>['deleteatag']>>
+>;
+export type AddatagtoacontactResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getTags>['addatagtoacontact']>>
+>;

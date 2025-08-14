@@ -4,73 +4,65 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { CreateGroupRequest } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getGroups = () => {
   /**
    * @summary Get Groups
    */
-  const getGroups = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/groups`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const getGroups = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/groups`, method: 'GET' }, options);
   };
   /**
    * @summary Create Group
    */
-  const createGroup = <TData = AxiosResponse<null>>(
+  const createGroup = (
     createGroupRequest: CreateGroupRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/groups`, createGroupRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/groups`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createGroupRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Get Group Limits
    */
-  const getGroupLimits = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/groupLimits`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const getGroupLimits = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/groupLimits`, method: 'GET' }, options);
   };
   /**
    * @summary Get Group By ID
    */
-  const getGroupByID = <TData = AxiosResponse<null>>(
+  const getGroupByID = (
     groupId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/groups/${groupId}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/groups/${groupId}`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Get Users By Group
    */
-  const getUsersByGroup = <TData = AxiosResponse<null>>(
+  const getUsersByGroup = (
     groupId: number,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/groups/${groupId}/userGroups`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/groups/${groupId}/userGroups`, method: 'GET' },
+      options,
+    );
   };
   return {
     getGroups,
@@ -80,8 +72,23 @@ export const getGroups = () => {
     getUsersByGroup,
   };
 };
-export type GetGroupsResult = AxiosResponse<null>;
-export type CreateGroupResult = AxiosResponse<null>;
-export type GetGroupLimitsResult = AxiosResponse<null>;
-export type GetGroupByIDResult = AxiosResponse<null>;
-export type GetUsersByGroupResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetGroupsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getGroups>['getGroups']>>
+>;
+export type CreateGroupResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getGroups>['createGroup']>>
+>;
+export type GetGroupLimitsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getGroups>['getGroupLimits']>>
+>;
+export type GetGroupByIDResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getGroups>['getGroupByID']>>
+>;
+export type GetUsersByGroupResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getGroups>['getUsersByGroup']>>
+>;

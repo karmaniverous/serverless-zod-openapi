@@ -1,11 +1,11 @@
+import axios from 'axios';
 import { setupCache } from 'axios-cache-interceptor';
-import axiosRaw, { type AxiosInstance } from 'axios-raw';
 
 /**
  * Shared Axios instance with ACI.
  * - No baseURL: services must pass baseURL+headers per request (safe for parallel calls).
  */
-const base: AxiosInstance = axiosRaw.create();
+const base = axios.create();
 
 const http = setupCache(base, {
   interpretHeader: true,

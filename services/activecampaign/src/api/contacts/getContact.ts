@@ -1,4 +1,4 @@
-import type { AxiosRequestConfig } from 'axios';
+import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 
 import type { ACContact } from '../../wrapped/contacts';
 import {

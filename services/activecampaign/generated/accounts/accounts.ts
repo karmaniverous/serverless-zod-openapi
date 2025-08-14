@@ -4,9 +4,6 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   CreateanaccountRequest,
   CreateanaccountnoteRequest,
@@ -14,118 +11,123 @@ import type {
   UpdateanaccountnoteRequest,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getAccounts = () => {
   /**
    * @summary Retrieve an account
    */
-  const retrieveanaccount = <TData = AxiosResponse<null>>(
+  const retrieveanaccount = (
     id: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/accounts/${id}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/accounts/${id}`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Delete an account
    */
-  const deleteanaccount = <TData = AxiosResponse<null>>(
+  const deleteanaccount = (
     id: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.delete(`/accounts/${id}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/accounts/${id}`, method: 'DELETE' },
+      options,
+    );
   };
   /**
    * @summary Update an account
    */
-  const updateanaccount = <TData = AxiosResponse<null>>(
+  const updateanaccount = (
     id: string,
     updateanaccountRequest: UpdateanaccountRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(`/accounts/${id}`, updateanaccountRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/accounts/${id}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateanaccountRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Create an account
    */
-  const createanaccount = <TData = AxiosResponse<null>>(
+  const createanaccount = (
     createanaccountRequest: CreateanaccountRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/accounts`, createanaccountRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/accounts`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createanaccountRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary List all accounts
    */
-  const listallaccounts = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/accounts`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const listallaccounts = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/accounts`, method: 'GET' }, options);
   };
   /**
    * @summary Bulk delete accounts
    */
-  const bulkdeleteaccounts = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .delete(`/accounts/bulk_delete`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+  const bulkdeleteaccounts = (
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/accounts/bulk_delete`, method: 'DELETE' },
+      options,
+    );
   };
   /**
    * @summary Create an account note
    */
-  const createanaccountnote = <TData = AxiosResponse<null>>(
+  const createanaccountnote = (
     id: string,
     createanaccountnoteRequest: CreateanaccountnoteRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/accounts/${id}/notes`, createanaccountnoteRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/accounts/${id}/notes`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createanaccountnoteRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Update an account note
    */
-  const updateanaccountnote = <TData = AxiosResponse<null>>(
+  const updateanaccountnote = (
     id: string,
     noteId: string,
     updateanaccountnoteRequest: UpdateanaccountnoteRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(
-        `/accounts/${id}/notes/${noteId}`,
-        updateanaccountnoteRequest,
-        options,
-      )
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/accounts/${id}/notes/${noteId}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateanaccountnoteRequest,
+      },
+      options,
+    );
   };
   return {
     retrieveanaccount,
@@ -138,11 +140,32 @@ export const getAccounts = () => {
     updateanaccountnote,
   };
 };
-export type RetrieveanaccountResult = AxiosResponse<null>;
-export type DeleteanaccountResult = AxiosResponse<null>;
-export type UpdateanaccountResult = AxiosResponse<null>;
-export type CreateanaccountResult = AxiosResponse<null>;
-export type ListallaccountsResult = AxiosResponse<null>;
-export type BulkdeleteaccountsResult = AxiosResponse<null>;
-export type CreateanaccountnoteResult = AxiosResponse<null>;
-export type UpdateanaccountnoteResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type RetrieveanaccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['retrieveanaccount']>>
+>;
+export type DeleteanaccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['deleteanaccount']>>
+>;
+export type UpdateanaccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['updateanaccount']>>
+>;
+export type CreateanaccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['createanaccount']>>
+>;
+export type ListallaccountsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['listallaccounts']>>
+>;
+export type BulkdeleteaccountsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['bulkdeleteaccounts']>>
+>;
+export type CreateanaccountnoteResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['createanaccountnote']>>
+>;
+export type UpdateanaccountnoteResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAccounts>['updateanaccountnote']>>
+>;

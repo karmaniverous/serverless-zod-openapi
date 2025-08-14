@@ -1,7 +1,7 @@
 /* packages/axios/src/cache.ts */
 
 import type { CacheProperties } from 'axios-cache-interceptor';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios-raw';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import type { Id, Tag } from './config';
 
@@ -77,9 +77,4 @@ export const withMutation = async <T>(
   // clear tag buckets (ids will be gone from storage)
   for (const t of invalidate) tagIndex.delete(t);
   return res;
-};
-
-export const _debug = {
-  tagIndex,
-  idsFor,
 };

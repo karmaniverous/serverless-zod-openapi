@@ -4,53 +4,57 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   BulkAddFieldValuesRequest,
   UpdateCustomFieldValueForContactRequest,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getFieldValues = () => {
   /**
    * @summary Bulk Add Field Values
    */
-  const bulkAddFieldValues = <TData = AxiosResponse<null>>(
+  const bulkAddFieldValues = (
     bulkAddFieldValuesRequest: BulkAddFieldValuesRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/fieldOption/bulk`, bulkAddFieldValuesRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/fieldOption/bulk`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: bulkAddFieldValuesRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Update Custom Field Value For Contact
    */
-  const updateCustomFieldValueForContact = <TData = AxiosResponse<null>>(
+  const updateCustomFieldValueForContact = (
     updateCustomFieldValueForContactRequest: UpdateCustomFieldValueForContactRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/fieldValues`, updateCustomFieldValueForContactRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/fieldValues`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateCustomFieldValueForContactRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary List All Custom Field Values
    */
-  const listAllCustomFieldValues = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/fieldValues`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const listAllCustomFieldValues = (
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>({ url: `/fieldValues`, method: 'GET' }, options);
   };
   return {
     bulkAddFieldValues,
@@ -58,6 +62,23 @@ export const getFieldValues = () => {
     listAllCustomFieldValues,
   };
 };
-export type BulkAddFieldValuesResult = AxiosResponse<null>;
-export type UpdateCustomFieldValueForContactResult = AxiosResponse<null>;
-export type ListAllCustomFieldValuesResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type BulkAddFieldValuesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getFieldValues>['bulkAddFieldValues']>>
+>;
+export type UpdateCustomFieldValueForContactResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getFieldValues>['updateCustomFieldValueForContact']
+    >
+  >
+>;
+export type ListAllCustomFieldValuesResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getFieldValues>['listAllCustomFieldValues']>
+  >
+>;

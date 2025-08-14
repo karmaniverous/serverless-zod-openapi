@@ -10,7 +10,7 @@ export default defineConfig({
       workspace: 'generated',
       override: {
         mutator: {
-          path: '../../packages/axios/src/mutator.ts',
+          path: '../../../packages/cached-axios/src/mutator.ts',
           name: 'orvalMutator',
         },
       },

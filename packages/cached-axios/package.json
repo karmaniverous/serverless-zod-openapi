@@ -1,5 +1,5 @@
 {
-  "name": "axios",
+  "name": "@karmaniverous/cached-axios",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -16,7 +16,7 @@
   "sideEffects": false,
   "dependencies": {
     "axios-cache-interceptor": "^1.8.0",
-    "axios-raw": "npm:axios@^1.11.0",
+    "axios": "^1.11.0",
     "zod": "^4.0.17"
   }
 }

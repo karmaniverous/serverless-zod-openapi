@@ -3,7 +3,7 @@ import type {
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
-} from 'axios-raw';
+} from 'axios';
 
 import http from './http';
 

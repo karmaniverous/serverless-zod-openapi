@@ -4,49 +4,60 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { CreateapublicschemaRequest } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getParentAndChildSchemas = () => {
   /**
    * @summary Create a public schema
    */
-  const createapublicschema = <TData = AxiosResponse<null>>(
+  const createapublicschema = (
     createapublicschemaRequest: CreateapublicschemaRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(
-        `/customObjects/schemas/public`,
-        createapublicschemaRequest,
-        options,
-      )
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/schemas/public`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createapublicschemaRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Create a child schema
    */
-  const createachildschema = <TData = AxiosResponse<null>>(
+  const createachildschema = (
     parentSchemaId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(
-        `/customObjects/schemas/${parentSchemaId}/child`,
-        undefined,
-        options,
-      )
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/customObjects/schemas/${parentSchemaId}/child`, method: 'POST' },
+      options,
+    );
   };
   return { createapublicschema, createachildschema };
 };
-export type CreateapublicschemaResult = AxiosResponse<null>;
-export type CreateachildschemaResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type CreateapublicschemaResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getParentAndChildSchemas>['createapublicschema']
+    >
+  >
+>;
+export type CreateachildschemaResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getParentAndChildSchemas>['createachildschema']
+    >
+  >
+>;

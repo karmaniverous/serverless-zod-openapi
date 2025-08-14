@@ -4,88 +4,92 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { CreateSchemaRequest, UpdateSchemaRequest } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getSchemas = () => {
   /**
    * @summary List all schemas
    */
-  const listallschemas = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/customObjects/schemas`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const listallschemas = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>(
+      { url: `/customObjects/schemas`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Create Schema
    */
-  const createSchema = <TData = AxiosResponse<null>>(
+  const createSchema = (
     createSchemaRequest: CreateSchemaRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/customObjects/schemas`, createSchemaRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/schemas`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createSchemaRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Listing records for a Schema
    */
-  const listingrecordsforaSchema = <TData = AxiosResponse<unknown>>(
+  const listingrecordsforaSchema = (
     schemaID: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/customObjects/records/${schemaID}`, options);
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<unknown>(
+      { url: `/customObjects/records/${schemaID}`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Update Schema
    */
-  const updateSchema = <TData = AxiosResponse<null>>(
+  const updateSchema = (
     schemaId: string,
     updateSchemaRequest: UpdateSchemaRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(`/customObjects/schemas/${schemaId}`, updateSchemaRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/schemas/${schemaId}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateSchemaRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Get Schema by ID
    */
-  const getSchemabyID = <TData = AxiosResponse<null>>(
+  const getSchemabyID = (
     schemaId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/customObjects/schemas/${schemaId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/customObjects/schemas/${schemaId}`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Delete Schema
    */
-  const deleteSchema = <TData = AxiosResponse<null>>(
+  const deleteSchema = (
     schemaId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .delete(`/customObjects/schemas/${schemaId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/customObjects/schemas/${schemaId}`, method: 'DELETE' },
+      options,
+    );
   };
   return {
     listallschemas,
@@ -96,9 +100,26 @@ export const getSchemas = () => {
     deleteSchema,
   };
 };
-export type ListallschemasResult = AxiosResponse<null>;
-export type CreateSchemaResult = AxiosResponse<null>;
-export type ListingrecordsforaSchemaResult = AxiosResponse<unknown>;
-export type UpdateSchemaResult = AxiosResponse<null>;
-export type GetSchemabyIDResult = AxiosResponse<null>;
-export type DeleteSchemaResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type ListallschemasResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSchemas>['listallschemas']>>
+>;
+export type CreateSchemaResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSchemas>['createSchema']>>
+>;
+export type ListingrecordsforaSchemaResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSchemas>['listingrecordsforaSchema']>>
+>;
+export type UpdateSchemaResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSchemas>['updateSchema']>>
+>;
+export type GetSchemabyIDResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSchemas>['getSchemabyID']>>
+>;
+export type DeleteSchemaResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSchemas>['deleteSchema']>>
+>;

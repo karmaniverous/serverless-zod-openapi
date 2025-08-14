@@ -4,61 +4,70 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   AddCustomFieldRequest,
   UpdateCustomFieldRequest,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getCustomFieldsAndValues = () => {
   /**
    * @summary List All Custom Fields
    */
-  const listAllCustomFields = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/fields`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const listAllCustomFields = (
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>({ url: `/fields`, method: 'GET' }, options);
   };
   /**
    * @summary Add Custom Field
    */
-  const addCustomField = <TData = AxiosResponse<unknown>>(
+  const addCustomField = (
     addCustomFieldRequest: AddCustomFieldRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.post(`/fields`, addCustomFieldRequest, options);
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<unknown>(
+      {
+        url: `/fields`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: addCustomFieldRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Delete Custom Field
    */
-  const deleteCustomField = <TData = AxiosResponse<null>>(
+  const deleteCustomField = (
     fieldID: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.delete(`/fields/${fieldID}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/fields/${fieldID}`, method: 'DELETE' },
+      options,
+    );
   };
   /**
    * @summary Update Custom Field
    */
-  const updateCustomField = <TData = AxiosResponse<null>>(
+  const updateCustomField = (
     fieldID: string,
     updateCustomFieldRequest: UpdateCustomFieldRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(`/fields/${fieldID}`, updateCustomFieldRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/fields/${fieldID}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateCustomFieldRequest,
+      },
+      options,
+    );
   };
   return {
     listAllCustomFields,
@@ -67,7 +76,30 @@ export const getCustomFieldsAndValues = () => {
     updateCustomField,
   };
 };
-export type ListAllCustomFieldsResult = AxiosResponse<null>;
-export type AddCustomFieldResult = AxiosResponse<unknown>;
-export type DeleteCustomFieldResult = AxiosResponse<null>;
-export type UpdateCustomFieldResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type ListAllCustomFieldsResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getCustomFieldsAndValues>['listAllCustomFields']
+    >
+  >
+>;
+export type AddCustomFieldResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getCustomFieldsAndValues>['addCustomField']>
+  >
+>;
+export type DeleteCustomFieldResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getCustomFieldsAndValues>['deleteCustomField']>
+  >
+>;
+export type UpdateCustomFieldResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getCustomFieldsAndValues>['updateCustomField']>
+  >
+>;

@@ -4,47 +4,51 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   CreateanewEventNameOnlyRequest,
   TrackEventBody,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getSiteEventTracking = () => {
   /**
    * @summary Create a new Event (Name Only)
    */
-  const createanewEventNameOnly = <TData = AxiosResponse<null>>(
+  const createanewEventNameOnly = (
     createanewEventNameOnlyRequest: CreateanewEventNameOnlyRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/eventTrackingEvents`, createanewEventNameOnlyRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/eventTrackingEvents`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createanewEventNameOnlyRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary List All Events (Name Only)
    */
-  const listAllEventsNameOnly = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/eventTrackingEvents`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const listAllEventsNameOnly = (
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/eventTrackingEvents`, method: 'GET' },
+      options,
+    );
   };
   /**
    * @summary Track Event
    */
-  const trackEvent = <TData = AxiosResponse<null>>(
+  const trackEvent = (
     trackEventBody?: TrackEventBody,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
     const formUrlEncoded = new URLSearchParams();
     if (trackEventBody?.actid !== undefined) {
       formUrlEncoded.append(`actid`, trackEventBody.actid.toString());
@@ -62,13 +66,35 @@ export const getSiteEventTracking = () => {
       formUrlEncoded.append(`visit`, JSON.stringify(trackEventBody.visit));
     }
 
-    return axios.default.post(`/event`, formUrlEncoded, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    return orvalMutator<null>(
+      {
+        url: `/event`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: formUrlEncoded,
+      },
+      options,
+    );
   };
   return { createanewEventNameOnly, listAllEventsNameOnly, trackEvent };
 };
-export type CreateanewEventNameOnlyResult = AxiosResponse<null>;
-export type ListAllEventsNameOnlyResult = AxiosResponse<null>;
-export type TrackEventResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type CreateanewEventNameOnlyResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getSiteEventTracking>['createanewEventNameOnly']
+    >
+  >
+>;
+export type ListAllEventsNameOnlyResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getSiteEventTracking>['listAllEventsNameOnly']>
+  >
+>;
+export type TrackEventResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSiteEventTracking>['trackEvent']>>
+>;

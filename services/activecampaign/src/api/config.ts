@@ -1,4 +1,4 @@
-import { buildConfig, ConfigInputSchema } from 'axios';
+import { buildConfig, ConfigInputSchema } from '@karmaniverous/cached-axios';
 
 export const contactsConfigInput = {
   contacts: {

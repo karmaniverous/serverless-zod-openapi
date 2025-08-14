@@ -4,26 +4,37 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { CreateadealroleRequest } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getDealRoles = () => {
   /**
    * @summary Create a deal role
    */
-  const createadealrole = <TData = AxiosResponse<null>>(
+  const createadealrole = (
     createadealroleRequest: CreateadealroleRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/dealRoles`, createadealroleRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/dealRoles`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createadealroleRequest,
+      },
+      options,
+    );
   };
   return { createadealrole };
 };
-export type CreateadealroleResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type CreateadealroleResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDealRoles>['createadealrole']>>
+>;

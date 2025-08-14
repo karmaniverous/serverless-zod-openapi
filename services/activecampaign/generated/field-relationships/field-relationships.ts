@@ -4,41 +4,58 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { AddFieldRelationshipRequest } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getFieldRelationships = () => {
   /**
    * @summary Add Field Relationship
    */
-  const addFieldRelationship = <TData = AxiosResponse<null>>(
+  const addFieldRelationship = (
     addFieldRelationshipRequest: AddFieldRelationshipRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/fieldRels`, addFieldRelationshipRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/fieldRels`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: addFieldRelationshipRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Delete Field Relationship
    */
-  const deleteFieldRelationship = <TData = AxiosResponse<null>>(
+  const deleteFieldRelationship = (
     fieldRelId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .delete(`/fieldRels/${fieldRelId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/fieldRels/${fieldRelId}`, method: 'DELETE' },
+      options,
+    );
   };
   return { addFieldRelationship, deleteFieldRelationship };
 };
-export type AddFieldRelationshipResult = AxiosResponse<null>;
-export type DeleteFieldRelationshipResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type AddFieldRelationshipResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getFieldRelationships>['addFieldRelationship']>
+  >
+>;
+export type DeleteFieldRelationshipResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getFieldRelationships>['deleteFieldRelationship']
+    >
+  >
+>;

@@ -1,5 +1,8 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { withQuery } from 'axios';
+import {
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  withQuery,
+} from '@karmaniverous/cached-axios';
 
 import { getFieldValues } from '../../generated/field-values/field-values';
 import { cacheConfig } from '../api/config';

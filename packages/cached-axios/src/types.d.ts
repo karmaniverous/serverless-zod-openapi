@@ -2,7 +2,7 @@
 
 import type { CacheProperties } from 'axios-cache-interceptor';
 
-declare module 'axios-raw' {
+declare module 'axios' {
   export interface AxiosRequestConfig {
     /**
      * Axios Cache Interceptor request configuration.

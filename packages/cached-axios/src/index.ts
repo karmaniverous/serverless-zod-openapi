@@ -1,7 +1,7 @@
 import http from './http';
 export default http;
 
-export { _debug as cacheDebug, withMutation, withQuery } from './cache';
+export { withMutation, withQuery } from './cache';
 export type { BuiltNode, ConfigInput, Id, Tag } from './config';
 export { buildConfig, ConfigInputSchema } from './config';
 export {
@@ -11,7 +11,7 @@ export {
 } from './mutator';
 
 // Re-export axios types for generated code compatibility
-export type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios-raw';
+export type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Re-export ACI types used in our local augmentations
 export type {

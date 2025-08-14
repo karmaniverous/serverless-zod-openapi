@@ -4,29 +4,32 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type { GetContactParams } from '../api.schemas';
+
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getV1 = () => {
   /**
    * @summary Get Contact
    */
-  const getContact = <TData = AxiosResponse<null>>(
+  const getContact = (
     params: GetContactParams,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/.api-us1.com/admin/api.php`, {
-        ...options,
-        params: { ...params, ...options?.params },
-      })
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/.api-us1.com/admin/api.php`, method: 'GET', params },
+      options,
+    );
   };
   return { getContact };
 };
-export type GetContactResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetContactResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getV1>['getContact']>>
+>;

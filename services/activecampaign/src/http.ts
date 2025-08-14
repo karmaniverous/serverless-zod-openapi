@@ -1,4 +1,4 @@
-import type { AxiosRequestConfig } from 'axios';
+import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 
 export const acDefaults = (): AxiosRequestConfig => {
   const env = process.env as Record<string, string | undefined>;

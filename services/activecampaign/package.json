@@ -1,5 +1,5 @@
 {
-  "name": "activecampaign",
+  "name": "@karmaniverous/activecampaign",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,5 +11,8 @@
   "sideEffects": false,
   "scripts": {
     "generate": "orval"
+  },
+  "dependencies": {
+    "@karmaniverous/cached-axios": "^0.1.0"
   }
 }

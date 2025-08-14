@@ -4,113 +4,110 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   CreatearecordRequest,
   GetalistofrecordsParams,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getManagingRecords = () => {
   /**
    * @summary Get a list of records
    */
-  const getalistofrecords = <TData = AxiosResponse<null>>(
+  const getalistofrecords = (
     schemaId: string,
     params: GetalistofrecordsParams,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/customObjects/records/${schemaId}`, {
-        ...options,
-        params: { ...params, ...options?.params },
-      })
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/customObjects/records/${schemaId}`, method: 'GET', params },
+      options,
+    );
   };
   /**
    * @summary Create a record
    */
-  const createarecord = <TData = AxiosResponse<null>>(
+  const createarecord = (
     schemaId: string,
     createarecordRequest: CreatearecordRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/customObjects/records/${schemaId}`, createarecordRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/records/${schemaId}`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createarecordRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Get record by id
    */
-  const getrecordbyid = <TData = AxiosResponse<null>>(
+  const getrecordbyid = (
     schemaId: string,
     recordId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(
-        `/.activehosted.com/api/3/customObjects/records/${schemaId}/${recordId}`,
-        options,
-      )
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/.activehosted.com/api/3/customObjects/records/${schemaId}/${recordId}`,
+        method: 'GET',
+      },
+      options,
+    );
   };
   /**
    * @summary Delete record by id
    */
-  const deleterecordbyid = <TData = AxiosResponse<null>>(
+  const deleterecordbyid = (
     schemaId: string,
     recordId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .delete(`/customObjects/records/${schemaId}/${recordId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/records/${schemaId}/${recordId}`,
+        method: 'DELETE',
+      },
+      options,
+    );
   };
   /**
    * @summary Get record by external id
    */
-  const getrecordbyexternalid = <TData = AxiosResponse<null>>(
+  const getrecordbyexternalid = (
     schemaId: string,
     externalId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .get(`/customObjects/records/${schemaId}/external/${externalId}`, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/records/${schemaId}/external/${externalId}`,
+        method: 'GET',
+      },
+      options,
+    );
   };
   /**
    * @summary Delete record by external id
    */
-  const deleterecordbyexternalid = <TData = AxiosResponse<null>>(
+  const deleterecordbyexternalid = (
     schemaId: string,
     externalId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .delete(
-        `/customObjects/records/${schemaId}/external/${externalId}`,
-        options,
-      )
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/customObjects/records/${schemaId}/external/${externalId}`,
+        method: 'DELETE',
+      },
+      options,
+    );
   };
   return {
     getalistofrecords,
@@ -121,9 +118,34 @@ export const getManagingRecords = () => {
     deleterecordbyexternalid,
   };
 };
-export type GetalistofrecordsResult = AxiosResponse<null>;
-export type CreatearecordResult = AxiosResponse<null>;
-export type GetrecordbyidResult = AxiosResponse<null>;
-export type DeleterecordbyidResult = AxiosResponse<null>;
-export type GetrecordbyexternalidResult = AxiosResponse<null>;
-export type DeleterecordbyexternalidResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type GetalistofrecordsResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getManagingRecords>['getalistofrecords']>
+  >
+>;
+export type CreatearecordResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getManagingRecords>['createarecord']>>
+>;
+export type GetrecordbyidResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getManagingRecords>['getrecordbyid']>>
+>;
+export type DeleterecordbyidResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getManagingRecords>['deleterecordbyid']>>
+>;
+export type GetrecordbyexternalidResult = NonNullable<
+  Awaited<
+    ReturnType<ReturnType<typeof getManagingRecords>['getrecordbyexternalid']>
+  >
+>;
+export type DeleterecordbyexternalidResult = NonNullable<
+  Awaited<
+    ReturnType<
+      ReturnType<typeof getManagingRecords>['deleterecordbyexternalid']
+    >
+  >
+>;

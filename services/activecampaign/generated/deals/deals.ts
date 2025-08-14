@@ -4,9 +4,6 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-
 import type {
   BulkupdatedealownersRequest,
   CreateadealRequest,
@@ -15,115 +12,126 @@ import type {
   UpdateadealnoteRequest,
 } from '../api.schemas';
 
+import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 export const getDeals = () => {
   /**
    * @summary Create a deal
    */
-  const createadeal = <TData = AxiosResponse<null>>(
+  const createadeal = (
     createadealRequest: CreateadealRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/deals`, createadealRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/deals`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createadealRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Retrieve all deals
    */
-  const retrievealldeals = <TData = AxiosResponse<null>>(
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/deals`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+  const retrievealldeals = (options?: SecondParameter<typeof orvalMutator>) => {
+    return orvalMutator<null>({ url: `/deals`, method: 'GET' }, options);
   };
   /**
    * @summary Create a deal note
    */
-  const createadealnote = <TData = AxiosResponse<null>>(
+  const createadealnote = (
     id: string,
     createadealnoteRequest: CreateadealnoteRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .post(`/deals/${id}/notes`, createadealnoteRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/deals/${id}/notes`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createadealnoteRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Retrieve a deal
    */
-  const retrieveadeal = <TData = AxiosResponse<null>>(
+  const retrieveadeal = (
     id: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.get(`/deals/${id}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>({ url: `/deals/${id}`, method: 'GET' }, options);
   };
   /**
    * @summary Delete a deal
    */
-  const deleteadeal = <TData = AxiosResponse<null>>(
+  const deleteadeal = (
     id: string,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default.delete(`/deals/${id}`, options).then((res) => {
-      if (res.data === '') res.data = null;
-      return res as TData;
-    });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      { url: `/deals/${id}`, method: 'DELETE' },
+      options,
+    );
   };
   /**
    * @summary Update a deal
    */
-  const updateadeal = <TData = AxiosResponse<null>>(
+  const updateadeal = (
     id: string,
     updateadealRequest: UpdateadealRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(`/deals/${id}`, updateadealRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/deals/${id}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateadealRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Update a deal note
    */
-  const updateadealnote = <TData = AxiosResponse<null>>(
+  const updateadealnote = (
     dealId: string,
     noteId: string,
     updateadealnoteRequest: UpdateadealnoteRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .put(`/deals/${dealId}/notes/${noteId}`, updateadealnoteRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/deals/${dealId}/notes/${noteId}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateadealnoteRequest,
+      },
+      options,
+    );
   };
   /**
    * @summary Bulk update deal owners
    */
-  const bulkupdatedealowners = <TData = AxiosResponse<null>>(
+  const bulkupdatedealowners = (
     bulkupdatedealownersRequest: BulkupdatedealownersRequest,
-    options?: AxiosRequestConfig,
-  ): Promise<TData> => {
-    return axios.default
-      .patch(`/deals/bulkUpdate`, bulkupdatedealownersRequest, options)
-      .then((res) => {
-        if (res.data === '') res.data = null;
-        return res as TData;
-      });
+    options?: SecondParameter<typeof orvalMutator>,
+  ) => {
+    return orvalMutator<null>(
+      {
+        url: `/deals/bulkUpdate`,
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        data: bulkupdatedealownersRequest,
+      },
+      options,
+    );
   };
   return {
     createadeal,
@@ -136,11 +144,32 @@ export const getDeals = () => {
     bulkupdatedealowners,
   };
 };
-export type CreateadealResult = AxiosResponse<null>;
-export type RetrievealldealsResult = AxiosResponse<null>;
-export type CreateadealnoteResult = AxiosResponse<null>;
-export type RetrieveadealResult = AxiosResponse<null>;
-export type DeleteadealResult = AxiosResponse<null>;
-export type UpdateadealResult = AxiosResponse<null>;
-export type UpdateadealnoteResult = AxiosResponse<null>;
-export type BulkupdatedealownersResult = AxiosResponse<null>;
+
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
+export type CreateadealResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['createadeal']>>
+>;
+export type RetrievealldealsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['retrievealldeals']>>
+>;
+export type CreateadealnoteResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['createadealnote']>>
+>;
+export type RetrieveadealResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['retrieveadeal']>>
+>;
+export type DeleteadealResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['deleteadeal']>>
+>;
+export type UpdateadealResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['updateadeal']>>
+>;
+export type UpdateadealnoteResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['updateadealnote']>>
+>;
+export type BulkupdatedealownersResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getDeals>['bulkupdatedealowners']>>
+>;
