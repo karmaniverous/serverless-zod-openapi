@@ -138,7 +138,7 @@ export const syncContactRaw = async (
   },
   invalidateTags: Array<
     | ReturnType<typeof cacheConfig.contacts.detail.tag>
-    | ReturnType<typeof cacheConfig.contacts.list.any.tag>
+     
   > = [cacheConfig.contacts.list.any.tag()],
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contact: ACContact }>> => {

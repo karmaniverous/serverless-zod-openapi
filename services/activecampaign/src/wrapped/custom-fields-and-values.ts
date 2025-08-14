@@ -1,9 +1,9 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { withQuery } from 'axios';
-import { acDefaults } from '../http';
-import { cacheConfig } from '../api/config';
 
 import { getCustomFieldsAndValues } from '../../generated/custom-fields-and-values/custom-fields-and-values';
+import { cacheConfig } from '../api/config';
+import { acDefaults } from '../http';
 
 const fields = getCustomFieldsAndValues();
 
