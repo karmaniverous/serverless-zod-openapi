@@ -1,10 +1,10 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { withQuery, withMutation } from 'axios';
-import { acDefaults } from '../http';
-import { cacheConfig } from '../api/config';
+import { withMutation, withQuery } from 'axios';
 
 import { getContacts } from '../../generated/contacts/contacts';
 import * as ContactsZ from '../../generated/contacts/contacts.zod';
+import { cacheConfig } from '../api/config';
+import { acDefaults } from '../http';
 
 const contacts = getContacts();
 

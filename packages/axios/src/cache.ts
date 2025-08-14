@@ -1,3 +1,6 @@
+/* packages/axios/src/cache.ts */
+
+import type { CacheRequestConfig } from 'axios-cache-interceptor';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios-raw';
 
 import type { Id, Tag } from './config';
@@ -36,15 +39,19 @@ export const withQuery = async <T>(
   tags: Tag[],
   base?: AxiosRequestConfig,
 ): Promise<AxiosResponse<T>> => {
+  const baseCache: CacheRequestConfig | undefined = base?.cache ?? undefined;
+
+  const cacheCfg: CacheRequestConfig = {
+    id: cacheId,
+    etag: true,
+    modifiedSince: true,
+    staleIfError: true,
+    ...(baseCache ?? {}),
+  };
+
   const res = await call({
     ...(base ?? {}),
-    cache: {
-      id: cacheId,
-      etag: true,
-      modifiedSince: true,
-      staleIfError: true,
-      ...(base?.cache ?? {}),
-    },
+    cache: cacheCfg,
   });
   remember(cacheId, tags);
   return res;
@@ -56,12 +63,16 @@ export const withMutation = async <T>(
   invalidate: Tag[],
   base?: AxiosRequestConfig,
 ): Promise<AxiosResponse<T>> => {
+  const baseCache: CacheRequestConfig | undefined = base?.cache ?? undefined;
+
+  const cacheCfg: CacheRequestConfig = {
+    ...(baseCache ?? {}),
+    update: updateMapFor(invalidate),
+  };
+
   const res = await call({
     ...(base ?? {}),
-    cache: {
-      ...(base?.cache ?? {}),
-      update: updateMapFor(invalidate),
-    },
+    cache: cacheCfg,
   });
   // clear tag buckets (ids will be gone from storage)
   for (const t of invalidate) tagIndex.delete(t);

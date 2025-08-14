@@ -1,4 +1,4 @@
-import { buildConfig, ConfigInputSchema, type Id, type Tag } from 'axios';
+import { buildConfig, ConfigInputSchema } from 'axios';
 
 export const contactsConfigInput = {
   contacts: {
@@ -10,7 +10,3 @@ export const contactsConfigInput = {
 ConfigInputSchema.parse(contactsConfigInput);
 
 export const cacheConfig = buildConfig(contactsConfigInput);
-
-// Examples (compile-time checks)
-const _t: Tag = cacheConfig.contacts.list.any.tag(); // 'contacts:list:any'
-const _i: Id = cacheConfig.contacts.detail.id(123); // 'contacts:detail:123'

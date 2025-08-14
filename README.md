@@ -375,3 +375,57 @@ The following were confirmed present (not exhaustive here; see the repo map abov
 - `services/activecampaign/{src/index.ts, orval.config.ts, generated/**}`
 - `tools/context/{archive,lint,test,typecheck,vitest.config}.ts`
 - Root: `serverless.ts`, `eslint.config.ts`, `vitest.config.ts`
+
+## Services
+
+Each service follows a consistent structure:
+
+```
+services/<service-name>/
+  generated/   # OpenAPI-generated API clients (do not edit manually)
+  src/
+    api/       # Business-facing layer for the outer application
+    wrapped/   # Wrapped generated endpoints (Zod validation + caching)
+    http.ts    # Per-service axios defaults (baseURL, auth headers, etc.)
+    api/config.ts # Service-specific cache config (buildConfig output)
+```
+
+### Service Architecture
+
+- **generated/**  
+  Output from [Orval](https://orval.dev/) based on the service's OpenAPI spec.
+  Provides typed API functions and Zod schemas for validation.
+  **Never imported directly in `api/` or tests** — only in `wrapped/`.
+
+- **wrapped/**  
+  Imports generated endpoints and wraps them with:
+  - Zod v4 input validation
+  - Shared cache helpers (`withQuery` / `withMutation`)
+  - Service cache config for id/tag generation
+
+- **api/**  
+  The business interface for the outer application.
+  - Composes wrapped endpoints to deliver complete entities
+  - Normalizes data shapes
+  - Implements business logic (e.g., joining multiple endpoint responses)
+
+---
+
+## Current Services
+
+### ActiveCampaign (`services/activecampaign`)
+
+Integrates with the [ActiveCampaign API](https://developers.activecampaign.com/reference).
+
+- **Business API**: Contacts (create, retrieve, update, delete, search)
+- **Cache-aware wrappers** for Contacts, Custom Fields, and Field Values
+- Uses shared axios instance with in-memory caching
+
+---
+
+## Shared Packages
+
+### `packages/axios`
+
+Shared HTTP client & cache layer.
+See [`packages/axios/README.md`](packages/axios/README.md) for usage.

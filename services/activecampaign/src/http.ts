@@ -1,18 +1,21 @@
+/* services/activecampaign/src/http.ts */
+
 import type { AxiosRequestConfig } from 'axios';
 
 export const acDefaults = (): AxiosRequestConfig => {
+  const env = process.env as Record<string, string | undefined>;
+
   const server =
-    process.env.AC_SERVER ??
-    process.env.ACTIVE_CAMPAIGN_SERVER ??
+    env.AC_SERVER ??
+    env.ACTIVE_CAMPAIGN_SERVER ??
     'youraccountname.api-us1.com';
 
   const baseURL =
-    process.env.AC_BASE_URL ??
-    process.env.ACTIVE_CAMPAIGN_BASE_URL ??
+    env.AC_BASE_URL ??
+    env.ACTIVE_CAMPAIGN_BASE_URL ??
     `https://${server}/api/3`;
 
-  const apiToken =
-    process.env.AC_API_TOKEN ?? process.env.ACTIVE_CAMPAIGN_API_TOKEN ?? '';
+  const apiToken = env.AC_API_TOKEN ?? env.ACTIVE_CAMPAIGN_API_TOKEN;
 
   return {
     baseURL,

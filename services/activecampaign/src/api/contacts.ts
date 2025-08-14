@@ -20,29 +20,20 @@ import {
 } from '../wrapped/field-values';
 import { cacheConfig } from './config';
 
-type Contact = {
-  id: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  fields: Record<string, unknown>; // flexible against remote schema drift
-  [k: string]: unknown;
-};
-
 export type Contact = {
   id: string;
   email?: string;
   firstName?: string;
   lastName?: string;
   phone?: string;
+  // flexible against remote schema drift
   fields: Record<string, unknown>;
   [k: string]: unknown;
 };
 
 const toMapById = <T extends { id: string }>(rows: T[]): Map<string, T> => {
   const m = new Map<string, T>();
-  for (const r of rows) m.set(String(r.id), r);
+  for (const r of rows) m.set(r.id, r);
   return m;
 };
 
@@ -52,7 +43,7 @@ const getFieldMaps = async (
   options?: AxiosRequestConfig,
 ): Promise<FieldMaps> => {
   const { data } = await fetchAllFields(options);
-  const rows = (data?.fields ?? []) as ACField[];
+  const rows = data.fields;
   const byId = toMapById(rows);
   const byName = new Map<string, ACField>();
   for (const f of rows) {
@@ -69,12 +60,12 @@ const materialize = (
 ): Contact => {
   const fields: Record<string, unknown> = {};
   for (const v of fvals) {
-    const meta = maps.byId.get(String(v.field));
+    const meta = maps.byId.get(v.field);
     const name = meta?.title ?? meta?.perstag ?? `field:${v.field}`;
     fields[name] = v.value;
   }
   const { id, email, phone, firstName, lastName, ...rest } = core;
-  return { id: String(id), email, phone, firstName, lastName, fields, ...rest };
+  return { id, email, phone, firstName, lastName, fields, ...rest };
 };
 
 /** CREATE */
@@ -109,7 +100,7 @@ export const createContact = async (
     options,
   );
 
-  const id = String((data?.contact as ACContact).id);
+  const id = data.contact.id;
   const res = await getContact(id, options);
   if (!res) throw new Error('Created contact not found');
   return res;
@@ -125,9 +116,9 @@ export const getContact = async (
     fetchContactFieldValues(Number(contactId), options),
     getFieldMaps(options),
   ]);
-  const core = coreRes?.contact as ACContact | undefined;
+  const core = coreRes.contact as ACContact | undefined;
   if (!core) return undefined;
-  const fvals = (fvRes?.fieldValues ?? []) as ACFieldValue[];
+  const fvals = fvRes.fieldValues;
   return materialize(core, fvals, maps);
 };
 
@@ -202,13 +193,11 @@ export const listContacts = async (
       const { data } = await listFieldValues(
         {
           'filters[fieldid]': meta.id,
-          'filters[val]': String(params.customFieldFilter.value),
+          'filters[val]': params.customFieldFilter.value,
         },
         options,
       );
-      allowIds = (data.fieldValues ?? []).map((v: ACFieldValueList) =>
-        String(v.contact),
-      );
+      allowIds = data.fieldValues.map((v: ACFieldValueList) => v.contact);
     }
   }
 
@@ -221,9 +210,9 @@ export const listContacts = async (
     options,
   );
 
-  const rows = (baseRes.data?.contacts ?? []) as ACContact[];
+  const rows = baseRes.data.contacts;
   const filtered = allowIds
-    ? rows.filter((r) => allowIds!.includes(String(r.id)))
+    ? rows.filter((r) => allowIds.includes(r.id))
     : rows;
 
   // Materialize each result
@@ -233,7 +222,7 @@ export const listContacts = async (
       Number(r.id),
       options,
     );
-    const fvals = (fvRes?.fieldValues ?? []) as ACFieldValue[];
+    const fvals = fvRes.fieldValues;
     out.push(materialize(r, fvals, maps));
   }
 

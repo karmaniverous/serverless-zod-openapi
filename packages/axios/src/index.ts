@@ -11,4 +11,4 @@ export {
 } from './mutator';
 
 // Re-export axios types for generated code compatibility
-export type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios-raw';
+export type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios-raw';
