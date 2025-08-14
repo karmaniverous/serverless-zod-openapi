@@ -14,5 +14,8 @@
   },
   "dependencies": {
     "@karmaniverous/cached-axios": "^0.1.0"
+  },
+  "devDependencies": {
+    "msw": "^2.10.5"
   }
 }

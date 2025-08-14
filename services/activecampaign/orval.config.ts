@@ -8,6 +8,7 @@ export default defineConfig({
       mode: 'tags-split',
       target: 'api.ts',
       workspace: 'generated',
+      mock: true,
       override: {
         mutator: {
           path: '../../../packages/cached-axios/src/mutator.ts',
