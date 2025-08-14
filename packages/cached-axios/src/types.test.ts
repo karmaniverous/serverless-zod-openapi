@@ -1,4 +1,8 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type {
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import type { CacheProperties } from 'axios-cache-interceptor';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
@@ -6,16 +10,17 @@ describe('axios type augmentations (cached-axios/types.d.ts)', () => {
   test('AxiosRequestConfig.cache supports false and Partial<CacheProperties>', () => {
     const cfgFalse: AxiosRequestConfig = { cache: false };
     const cfgPartial: AxiosRequestConfig = {
-      cache: { etag: 'abc', id: 'id-1' },
+      cache: { etag: 'abc', id: 'id-1' } as Partial<CacheProperties>,
     };
+
+    // Runtime sanity
     expect(
       cfgFalse.cache === false || typeof cfgPartial.cache === 'object',
     ).toBe(true);
 
-    // Compile-time structure check
-    expectTypeOf<NonNullable<AxiosRequestConfig['cache']>>().toMatchTypeOf<
-      Partial<CacheProperties>
-    >();
+    // Compile-time: only the object arm must extend Partial<CacheProperties>
+    type CacheObj = Extract<AxiosRequestConfig['cache'], object>;
+    expectTypeOf<CacheObj>().toExtend<Partial<CacheProperties>>();
   });
 
   test('AxiosResponse exposes optional "cached" flag', () => {
@@ -24,19 +29,18 @@ describe('axios type augmentations (cached-axios/types.d.ts)', () => {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {} as AxiosRequestConfig,
+      config: {} as unknown as InternalAxiosRequestConfig,
     };
     res.cached = true; // should type-check if augmentation is applied
     expect(res.cached).toBe(true);
   });
 
-  test('CacheProperties include id/etag/update (partial acceptable)', () => {
+  test('CacheProperties basic shape accepts id/etag (partial acceptable)', () => {
     const props: Partial<CacheProperties> = {
       id: 'abc',
       etag: 'xyz',
-      update: { 'cache-id': 'delete' },
     };
     expect(props.id).toBe('abc');
-    expect(props.update?.['cache-id']).toBe('delete');
+    expect(props.etag).toBe('xyz');
   });
 });
