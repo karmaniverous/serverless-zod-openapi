@@ -1,7 +1,8 @@
-export { cachedAxios } from './cachedAxios';
 export { withMutation, withQuery } from './cache';
+export { cachedAxios } from './cachedAxios';
 export type { BuiltNode, ConfigInput, Id, Tag } from './config';
 export { buildConfig, ConfigInputSchema } from './config';
+export { makeCacheHelpers } from './factory';
 export {
   type OrvalBodyType,
   type OrvalErrorType,

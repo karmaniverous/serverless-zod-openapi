@@ -1,4 +1,7 @@
-import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
+import {
+  type AxiosRequestConfig,
+  makeCacheHelpers,
+} from '@karmaniverous/cached-axios';
 
 export const acDefaults = (): AxiosRequestConfig => {
   const env = process.env as Record<string, string | undefined>;
@@ -24,3 +27,6 @@ export const acDefaults = (): AxiosRequestConfig => {
     },
   };
 };
+
+// Pre-bound cache helpers for ActiveCampaign requests
+export const cache = makeCacheHelpers(acDefaults);
