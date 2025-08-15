@@ -5,7 +5,7 @@ import type {
 } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 
-import { createApiGatewayV1Event, createApiGatewayV2Event } from '@/test/aws';
+import { createApiGatewayV1Event, createApiGatewayV2Event } from '@@/test/aws';
 
 import { detectSecurityContext, isV1 } from './detectSecurityContext';
 

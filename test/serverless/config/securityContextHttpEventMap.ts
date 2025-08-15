@@ -1,4 +1,4 @@
-import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
+import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
 
 export const securityContextHttpEventMap: SecurityContextHttpEventMap = {
   my: {

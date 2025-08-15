@@ -1,4 +1,4 @@
-import { buildPathItemObject } from '@/src/openapi/buildPathItemObject';
+import { buildPathItemObject } from '@@/src/openapi/buildPathItemObject';
 
 import { responseSchema } from './schema';
 import { securityContexts } from './securityContexts';

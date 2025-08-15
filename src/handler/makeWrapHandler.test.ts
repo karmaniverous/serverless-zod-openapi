@@ -2,16 +2,16 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import type { ConsoleLogger } from '@/src/types/Loggable';
-import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
+import type { ConsoleLogger } from '@@/src/types/Loggable';
+import { createApiGatewayV1Event, createLambdaContext } from '@@/test/aws';
 import {
   globalEnvKeys,
   globalParamsSchema,
-} from '@/test/serverless/config/stages/global';
+} from '@@/test/serverless/config/stages/global';
 import {
   stageEnvKeys,
   stageParamsSchema,
-} from '@/test/serverless/config/stages/stage';
+} from '@@/test/serverless/config/stages/stage';
 
 import { makeWrapHandler } from './makeWrapHandler';
 

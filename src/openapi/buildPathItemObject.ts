@@ -4,7 +4,7 @@ import type {
   ZodOpenApiPathsObject,
 } from 'zod-openapi';
 
-import type { SecurityContext } from '@/src/types/SecurityContext';
+import type { SecurityContext } from '@@/src/types/SecurityContext';
 
 import type { BaseOperation } from './types';
 

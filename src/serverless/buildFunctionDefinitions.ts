@@ -1,6 +1,6 @@
 import type { AWS } from '@serverless/typescript';
 
-import type { SecurityContext } from '@/src/types/SecurityContext';
+import type { SecurityContext } from '@@/src/types/SecurityContext';
 
 import type { SecurityContextHttpEventMap } from '../types/SecurityContextHttpEventMap';
 

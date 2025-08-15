@@ -1,10 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["*"]
+      "@@/*": ["*"]
     }
   },
-  "exclude": [".serverless", "context/out"]
+  "exclude": [".serverless", "tools/context/out/**"]
 }

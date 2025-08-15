@@ -1,4 +1,4 @@
-import { wrapHandler } from '@/src/handler/wrapHandler';
+import { wrapHandler } from '@@/src/handler/wrapHandler';
 
 import { fnEnvKeys } from './env';
 import { eventSchema, responseSchema } from './schema';

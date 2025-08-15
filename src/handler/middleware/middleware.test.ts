@@ -3,7 +3,7 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
+import { createApiGatewayV1Event, createLambdaContext } from '@@/test/aws';
 
 import { buildMiddlewareStack } from './buildStack';
 

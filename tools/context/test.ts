@@ -5,7 +5,7 @@ import type { RunnerTask, SerializedConfig } from 'vitest';
 import { VitestTestRunner } from 'vitest/runners';
 import type { VitestRunner, VitestRunnerConfig } from 'vitest/suite';
 
-import { pojofy } from '@/src/pojofy';
+import { pojofy } from '@@/src/pojofy';
 
 const dirPath = path.join(__dirname, 'out');
 const filePath = path.join(dirPath, 'test.json');

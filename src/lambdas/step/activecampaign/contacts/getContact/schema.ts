@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { contactSchema } from '@/services/activecampaign/src';
+import { contactSchema } from '@@/services/activecampaign/src';
 
 export const eventSchema = z.object({
   body: z.object({

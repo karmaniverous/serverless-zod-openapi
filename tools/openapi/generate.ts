@@ -12,8 +12,8 @@ import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
 // Import OpenAPI definitions for each endpoint.
-import fooGet from '@/src/lambdas/endpoints/foo/get/openapi';
-import openapiGet from '@/src/lambdas/endpoints/openapi/get/openapi';
+import fooGet from '@@/src/lambdas/endpoints/foo/get/openapi';
+import openapiGet from '@@/src/lambdas/endpoints/openapi/get/openapi';
 
 console.log('Generating OpenAPI document...');
 

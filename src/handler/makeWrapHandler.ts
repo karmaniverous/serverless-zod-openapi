@@ -6,17 +6,17 @@ import type {
 } from 'aws-lambda';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
-import { detectSecurityContext } from '@/src/handler/detectSecurityContext';
+import { detectSecurityContext } from '@@/src/handler/detectSecurityContext';
 import {
   buildEnvSchema,
   deriveAllKeys,
   parseTypedEnv,
   splitKeysBySchema,
-} from '@/src/handler/envBuilder';
-import type { Handler } from '@/src/handler/Handler';
-import { buildMiddlewareStack } from '@/src/handler/middleware/buildStack';
-import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
-import type { ShapedEvent } from '@/src/types/ShapedEvent';
+} from '@@/src/handler/envBuilder';
+import type { Handler } from '@@/src/handler/Handler';
+import { buildMiddlewareStack } from '@@/src/handler/middleware/buildStack';
+import type { ConsoleLogger, Loggable } from '@@/src/types/Loggable';
+import type { ShapedEvent } from '@@/src/types/ShapedEvent';
 
 type ProxyV1PromiseHandler = (
   event: APIGatewayProxyEvent,

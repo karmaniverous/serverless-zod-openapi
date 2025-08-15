@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 
-import type { SecurityContext } from '@/src/types/SecurityContext';
+import type { SecurityContext } from '@@/src/types/SecurityContext';
 
 /** Narrow to API Gateway v1 events with safe property checks. */
 export const isV1 = (evt: unknown): evt is APIGatewayProxyEvent => {

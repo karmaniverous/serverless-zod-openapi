@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 // If you want a strict union for function-level keys in this test file:
-import type { AllParamsKeys } from '@/test/serverless/config/stages';
+import type { AllParamsKeys } from '@@/test/serverless/config/stages';
 // Use the test fixture (mirrors prod surface, different values/keys)
 import {
   globalEnvKeys,
   globalParamsSchema,
-} from '@/test/serverless/config/stages/global';
+} from '@@/test/serverless/config/stages/global';
 import {
   stageEnvKeys,
   stageParamsSchema,
-} from '@/test/serverless/config/stages/stage';
+} from '@@/test/serverless/config/stages/stage';
 
 import {
   buildEnvSchema,
