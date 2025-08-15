@@ -1,28 +1,35 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
-import type { CreateContactRequest } from '../../../generated/api.schemas';
+import type { CreateContactRequest } from '@/generated/api.schemas';
+import type { Optionalize } from '@@/src/types/Optionalize';
+
 import {
   createContactRaw,
   fetchContactFieldValues,
 } from '../../wrapped/contacts';
 import { getFieldMaps, materialize } from './helpers';
-import { type Contact } from './schemas';
+import { contactSchema } from './schemas';
 
 /** Function-specific schema & type */
-export const createContactInputSchema = z.object({
+export const createContactParamsSchema = z.object({
   email: z.email(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),
 });
 
-export type CreateContactInput = z.infer<typeof createContactInputSchema>;
+export type CreateContactParams = z.infer<typeof createContactParamsSchema>;
+
+export const createContactOutputSchema = contactSchema;
+export type CreateContactOutput = z.infer<typeof createContactOutputSchema>;
 
 export const createContact = async (
-  input: CreateContactInput,
+  params: Optionalize<CreateContactParams>,
   options?: AxiosRequestConfig,
-): Promise<Contact> => {
+): Promise<CreateContactOutput> => {
+  const input = createContactParamsSchema.parse(params);
+
   const maps = await getFieldMaps(options);
 
   // Build a body that satisfies generated typings (which require names/phone)
@@ -41,5 +48,7 @@ export const createContact = async (
     options,
   );
   const fvals = fvRes.fieldValues;
-  return materialize(data.contact, fvals, maps);
+  return createContactOutputSchema.parse(
+    materialize(data.contact, fvals, maps),
+  );
 };

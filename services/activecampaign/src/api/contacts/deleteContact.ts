@@ -1,10 +1,22 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
+import { z } from 'zod';
 
-import { deleteContactRaw } from '../../wrapped/contacts';
+import { deleteContactRaw } from '@/src/wrapped/contacts';
+import type { Optionalize } from '@@/src/types/Optionalize';
+
+export const deleteContactParamsSchema = z.object({
+  contactId: z.union([z.string(), z.number()]),
+});
+
+export type DeleteContactParams = z.infer<typeof deleteContactParamsSchema>;
+
+export const deleteContactOutputSchema = z.void();
+export type DeleteContactOutput = z.infer<typeof deleteContactOutputSchema>;
 
 export const deleteContact = async (
-  contactId: string,
+  params: Optionalize<DeleteContactParams>,
   options?: AxiosRequestConfig,
-): Promise<void> => {
+): Promise<DeleteContactOutput> => {
+  const { contactId } = deleteContactParamsSchema.parse(params);
   await deleteContactRaw(Number(contactId), options);
 };

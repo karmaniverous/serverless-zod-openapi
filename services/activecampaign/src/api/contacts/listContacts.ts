@@ -1,10 +1,12 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
-import z from 'zod';
+import { z } from 'zod';
 
 import {
   fetchContactFieldValues,
   fetchContactsList,
-} from '../../wrapped/contacts';
+} from '@/src/wrapped/contacts';
+import type { Optionalize } from '@@/src/types/Optionalize';
+
 import { getFieldMaps, materialize } from './helpers';
 import { contactSchema } from './schemas';
 
@@ -25,29 +27,29 @@ export const listContactsParamsSchema = z.object({
 
 export type ListContactsParams = z.infer<typeof listContactsParamsSchema>;
 
-export const listContactsResultSchema = z.object({
+export const listContactsOutputSchema = z.object({
   contacts: z.array(contactSchema),
   total: z.number().int().nonnegative().optional(),
 });
-export type ListContactsResult = z.infer<typeof listContactsResultSchema>;
+export type ListContactsOutput = z.infer<typeof listContactsOutputSchema>;
 
 export const listContacts = async (
-  rawParams: unknown,
+  params: Optionalize<ListContactsParams>,
   options?: AxiosRequestConfig,
-): Promise<ListContactsResult> => {
-  const params = listContactsParamsSchema.parse(rawParams);
+): Promise<ListContactsOutput> => {
+  const parsed = listContactsParamsSchema.parse(params ?? {});
 
   const maps = await getFieldMaps(options);
 
   // 1) Coarse list
   const baseRes = await fetchContactsList(
     {
-      email: params.email,
-      phone: params.phone,
-      tag: params.tag,
-      listid: params.listId,
-      limit: params.limit,
-      offset: params.offset,
+      email: parsed.email,
+      phone: parsed.phone,
+      tag: parsed.tag,
+      listid: parsed.listId,
+      limit: parsed.limit,
+      offset: parsed.offset,
     },
     options,
   );
@@ -55,11 +57,11 @@ export const listContacts = async (
   const coarse = baseRes.data.contacts;
   // 2) If filtering by custom field, post-filter coarse by that
   const filtered =
-    params.customFieldFilter === undefined
+    parsed.customFieldFilter === undefined
       ? coarse
       : coarse.filter((c) => {
-          const name = params.customFieldFilter?.name;
-          const val = params.customFieldFilter?.value;
+          const name = parsed.customFieldFilter?.name;
+          const val = parsed.customFieldFilter?.value;
           return Boolean(
             name &&
               val &&
@@ -81,5 +83,5 @@ export const listContacts = async (
     }),
   );
 
-  return listContactsResultSchema.parse({ contacts: out, total: out.length });
+  return listContactsOutputSchema.parse({ contacts: out, total: out.length });
 };

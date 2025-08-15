@@ -1,13 +1,15 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
-import type { SyncContactDataRequest } from '../../../generated/api.schemas';
-import { syncContactRaw } from '../../wrapped/contacts';
+import type { SyncContactDataRequest } from '@/generated/api.schemas';
+import { syncContactRaw } from '@/src/wrapped/contacts';
+import type { Optionalize } from '@@/src/types/Optionalize';
+
 import { getContact } from './getContact';
-import { type Contact } from './schemas';
+import { contactSchema } from './schemas';
 
 /** Function-specific schema & type */
-export const updateContactInputSchema = z.object({
+export const updateContactParamsSchema = z.object({
   contactId: z.string().min(1),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
@@ -16,14 +18,19 @@ export const updateContactInputSchema = z.object({
   fields: z.record(z.string(), z.unknown()).optional(),
 });
 
-export type UpdateContactInput = z.infer<typeof updateContactInputSchema>;
+export type UpdateContactParams = z.infer<typeof updateContactParamsSchema>;
+
+export const updateContactOutputSchema = contactSchema.optional();
+export type UpdateContactOutput = z.infer<typeof updateContactOutputSchema>;
 
 export const updateContact = async (
-  input: UpdateContactInput,
+  params: Optionalize<UpdateContactParams>,
   options?: AxiosRequestConfig,
-): Promise<Contact | undefined> => {
+): Promise<UpdateContactOutput> => {
+  const input = updateContactParamsSchema.parse(params);
+
   // Load the current contact for defaults (email is required by sync API)
-  const current = await getContact(input.contactId, options);
+  const current = await getContact({ contactId: input.contactId }, options);
   if (!current) return undefined;
 
   // Build the sync payload that satisfies generated typings
@@ -47,5 +54,5 @@ export const updateContact = async (
 
   await syncContactRaw({ contact: bodyContact }, options);
 
-  return getContact(input.contactId, options);
+  return getContact({ contactId: input.contactId }, options);
 };
