@@ -1,4 +1,4 @@
-import type { AllParamsKeys } from '@/src/serverless/stages';
+import type { AllParamsKeys } from '@/src/serverless/config/stages';
 
 /**
  * Additional config keys needed by this function.  Keys declared here

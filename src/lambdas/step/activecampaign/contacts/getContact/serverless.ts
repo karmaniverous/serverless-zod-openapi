@@ -1,6 +1,6 @@
 import type { AWS } from '@serverless/typescript';
 
-import { buildFnEnv } from '@/src/serverless/stages';
+import { buildFnEnv } from '@/src/serverless/config/stages';
 
 import { fnEnvKeys } from './env';
 
