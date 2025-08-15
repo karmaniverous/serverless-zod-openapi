@@ -1,8 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
 import type { SecurityContext } from '@@/src/types/SecurityContext';
-
-import type { SecurityContextHttpEventMap } from '../types/SecurityContextHttpEventMap';
+import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
 
 // TODO: Implement the logic to build function definitions based on contexts and map
 export const buildFunctionDefinitions = (

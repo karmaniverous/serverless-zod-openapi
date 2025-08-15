@@ -66,7 +66,6 @@ const config: AWS = {
     logs: {
       lambda: {
         logFormat: 'JSON',
-        logGroup: '/aws/lambda/${param:SERVICE_NAME}/${param:STAGE}',
       },
       restApi: {
         accessLogging: true,

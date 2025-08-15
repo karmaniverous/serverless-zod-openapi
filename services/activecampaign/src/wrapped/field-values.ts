@@ -1,11 +1,11 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import { getFieldValues } from '../../generated/field-values/field-values';
-import * as FieldValuesZ from '../../generated/field-values/field-values.zod';
-import { cacheConfig } from '../api/config';
-import { coerceFieldValueForUpdate } from '../api/contacts/format';
-import { getFieldMaps } from '../api/contacts/helpers';
-import { cache } from '../http';
+import { getFieldValues } from '@/generated/field-values/field-values';
+import * as FieldValuesZ from '@/generated/field-values/field-values.zod';
+import { cacheConfig } from '@/src/api/config';
+import { coerceFieldValueForUpdate } from '@/src/api/contacts/format';
+import { getFieldMaps } from '@/src/api/contacts/helpers';
+import { cache } from '@/src/http';
 
 const fvs = getFieldValues();
 

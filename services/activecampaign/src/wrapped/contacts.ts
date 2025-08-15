@@ -1,10 +1,14 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { withMutation, withQuery } from 'axios';
+import {
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  withMutation,
+  withQuery,
+} from '@karmaniverous/cached-axios';
 
-import { getContacts } from '../../generated/contacts/contacts';
-import * as ContactsZ from '../../generated/contacts/contacts.zod';
-import { cacheConfig } from '../api/config';
-import { acDefaults } from '../http';
+import { getContacts } from '@/generated/contacts/contacts';
+import * as ContactsZ from '@/generated/contacts/contacts.zod';
+import { cacheConfig } from '@/src/api/config';
+import { acDefaults } from '@/src/http';
 
 const contacts = getContacts();
 

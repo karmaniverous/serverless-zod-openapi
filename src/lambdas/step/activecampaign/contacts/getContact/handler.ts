@@ -13,7 +13,7 @@ import { eventSchema, responseSchema } from './schema';
  * @returns The response.
  */
 export const handler = wrapHandler(
-  (event) => getContact(event.body.contactId),
+  (event) => getContact({ contactId: event.body.contactId }),
   {
     eventSchema,
     fnEnvKeys,

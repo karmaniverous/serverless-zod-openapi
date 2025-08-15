@@ -1,10 +1,10 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import type { AddCustomFieldRequest } from '../../generated/api.schemas';
-import { getCustomFieldsAndValues } from '../../generated/custom-fields-and-values/custom-fields-and-values';
-import * as CFZ from '../../generated/custom-fields-and-values/custom-fields-and-values.zod';
-import { cacheConfig } from '../api/config';
-import { cache } from '../http';
+import type { AddCustomFieldRequest } from '@/generated/api.schemas';
+import { getCustomFieldsAndValues } from '@/generated/custom-fields-and-values/custom-fields-and-values';
+import * as CFZ from '@/generated/custom-fields-and-values/custom-fields-and-values.zod';
+import { cacheConfig } from '@/src/api/config';
+import { cache } from '@/src/http';
 
 const fields = getCustomFieldsAndValues();
 

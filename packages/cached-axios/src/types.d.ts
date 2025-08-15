@@ -1,5 +1,3 @@
-/* packages/axios/src/types.d.ts */
-
 import type { CacheProperties } from 'axios-cache-interceptor';
 
 declare module 'axios' {

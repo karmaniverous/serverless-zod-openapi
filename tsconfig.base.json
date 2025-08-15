@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
-    "composite": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,
     "exactOptionalPropertyTypes": true,
-    "isolatedModules": true,
     "module": "esnext",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
