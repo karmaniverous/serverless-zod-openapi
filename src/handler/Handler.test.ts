@@ -3,11 +3,11 @@ import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import type { ConsoleLogger } from '@/src/types/Loggable';
+import type { SecurityContext } from '@/src/types/SecurityContext';
+import type { ShapedEvent } from '@/src/types/ShapedEvent';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
-import type { AllParams } from '@/test/stages';
+import type { AllParams } from '@/test/serverless/config/stages';
 
-import type { ShapedEvent } from '../types/ShapedEvent';
-import type { SecurityContext } from './detectSecurityContext';
 import type { Handler, HandlerOptions } from './Handler';
 
 export const eventSchema = z.object({

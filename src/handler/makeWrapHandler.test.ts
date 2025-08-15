@@ -4,8 +4,14 @@ import { z } from 'zod';
 
 import type { ConsoleLogger } from '@/src/types/Loggable';
 import { createApiGatewayV1Event, createLambdaContext } from '@/test/aws';
-import { globalEnvKeys, globalParamsSchema } from '@/test/stages/global';
-import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage';
+import {
+  globalEnvKeys,
+  globalParamsSchema,
+} from '@/test/serverless/config/stages/global';
+import {
+  stageEnvKeys,
+  stageParamsSchema,
+} from '@/test/serverless/config/stages/stage';
 
 import { makeWrapHandler } from './makeWrapHandler';
 

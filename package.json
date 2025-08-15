@@ -72,7 +72,7 @@
     "knip": "knip",
     "lint": "eslint . && prettier -c .",
     "lint:fix": "eslint --fix . && prettier -w .",
-    "openapi": "tsx src/openapi/generate && prettier -w src/openapi/openapi.json",
+    "openapi": "tsx tools/openapi/generate && prettier -w src/openapi/openapi.json",
     "package": "serverless package",
     "remove": "serverless remove",
     "test": "vitest",

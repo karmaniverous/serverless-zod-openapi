@@ -6,8 +6,14 @@ import {
   deriveAllKeys,
   splitKeysBySchema,
 } from '@/src/handler/envBuilder';
-import { globalEnvKeys, globalParamsSchema } from '@/test/stages/global';
-import { stageEnvKeys, stageParamsSchema } from '@/test/stages/stage';
+import {
+  globalEnvKeys,
+  globalParamsSchema,
+} from '@/test/serverless/config/stages/global';
+import {
+  stageEnvKeys,
+  stageParamsSchema,
+} from '@/test/serverless/config/stages/stage';
 
 /**
  * Temporarily set env vars for the duration of a test.

@@ -1,7 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
-import fooGet from '@/src/lambdas/endpoints/foo/get/serverless';
-import { environment, stages } from '@/src/serverless/stages';
+import endpointFooGet from '@/src/lambdas/endpoints/foo/get/serverless';
+import { environment, stages } from '@/src/serverless/config/stages';
 
 const config: AWS = {
   service: '${param:SERVICE_NAME}',
@@ -92,7 +92,7 @@ const config: AWS = {
   },
   functions: {
     // Combine all function definitions into the final document.
-    ...fooGet,
+    ...endpointFooGet,
   },
   build: {
     esbuild: {

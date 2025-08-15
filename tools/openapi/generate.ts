@@ -12,7 +12,8 @@ import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
 // Import OpenAPI definitions for each endpoint.
-import foo from '@/src/lambdas/endpoints/foo/get/openapi';
+import fooGet from '@/src/lambdas/endpoints/foo/get/openapi';
+import openapiGet from '@/src/lambdas/endpoints/openapi/get/openapi';
 
 console.log('Generating OpenAPI document...');
 
@@ -33,8 +34,8 @@ const doc = createDocument({
     version: process.env.npm_package_version ?? '',
   },
   paths: {
-    // Combine all endpoint definitions into the final document.
-    ...foo,
+    ...fooGet,
+    ...openapiGet,
   },
 });
 

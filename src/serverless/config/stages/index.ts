@@ -1,4 +1,5 @@
-import { stagesFactory } from '../stagesFactory';
+import { stagesFactory } from '@/src/serverless/stagesFactory';
+
 import * as dev from './dev';
 import {
   globalEnvKeys,

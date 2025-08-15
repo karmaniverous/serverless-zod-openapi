@@ -3,10 +3,9 @@ import type { Context } from 'aws-lambda';
 import type { z } from 'zod';
 
 import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
-
-import type { ShapedEvent } from '../types/ShapedEvent';
-import type { ShapedResponse } from '../types/ShapedResponse';
-import type { SecurityContext } from './detectSecurityContext';
+import type { SecurityContext } from '@/src/types/SecurityContext';
+import type { ShapedEvent } from '@/src/types/ShapedEvent';
+import type { ShapedResponse } from '@/src/types/ShapedResponse';
 
 export type HandlerOptions<
   AllParams extends Record<string, unknown>,

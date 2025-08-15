@@ -1,0 +1,134 @@
+{
+  "openapi": "3.1.0",
+  "servers": [
+    {
+      "description": "Production",
+      "url": "https://api.johngalt.id"
+    },
+    {
+      "description": "Local dev",
+      "url": "http://api.dev.johngalt.id"
+    }
+  ],
+  "info": {
+    "title": "api.johngalt.id",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/private/foo": {
+      "get": {
+        "summary": "Get foo (private)",
+        "description": "Get some what from foo.",
+        "tags": ["foo", "private"],
+        "operationId": "private_foo_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "what",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "answer",
+            "schema": {
+              "type": "number",
+              "minimum": 42,
+              "maximum": 42
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Got some foo!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "FooGetResponse",
+                  "type": "object",
+                  "properties": {
+                    "what": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["what"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/foo": {
+      "get": {
+        "summary": "Get foo (public)",
+        "description": "Get some what from foo.",
+        "tags": ["foo", "public"],
+        "operationId": "foo_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "what",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "answer",
+            "schema": {
+              "type": "number",
+              "minimum": 42,
+              "maximum": 42
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Got some foo!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "FooGetResponse",
+                  "type": "object",
+                  "properties": {
+                    "what": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["what"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi": {
+      "get": {
+        "summary": "Get OpenAPI spec (public)",
+        "description": "Get OpenAPI spec.",
+        "tags": ["openapi", "public"],
+        "operationId": "openapi_get",
+        "responses": {
+          "200": {
+            "description": "JGS OpenAPI specification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "OpenapiGetResponse",
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
