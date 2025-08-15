@@ -31,9 +31,11 @@ export type WrapHandlerOptions<
   Logger extends ConsoleLogger,
 > = {
   contentType: string;
+  enableMultipart?: boolean;
   eventSchema: EventSchema;
   fnEnvKeys: FnEnvKeys;
   responseSchema: ResponseSchema;
+  internal?: boolean;
 } & Loggable<Logger>;
 
 export type StagesRuntime<
@@ -86,14 +88,18 @@ export const makeWrapHandler = <
   ) => {
     const {
       contentType = 'application/json',
+      enableMultipart = false,
       eventSchema,
       fnEnvKeys = [],
       logger = console as unknown as Logger,
       responseSchema,
+      internal = false,
     } = options;
 
     const stack = buildMiddlewareStack<EventSchema, ResponseSchema, Logger>({
       contentType,
+      enableMultipart,
+      internal,
       logger,
       eventSchema,
       responseSchema,

@@ -1,10 +1,16 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type {
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { _debug, withMutation, withQuery } from './cache';
 import type { Id, Tag } from './config';
 
-const makeResp = (config: AxiosRequestConfig): AxiosResponse<unknown> => ({
+const makeResp = (
+  config: InternalAxiosRequestConfig,
+): AxiosResponse<unknown> => ({
   data: undefined,
   status: 200,
   statusText: 'OK',
@@ -19,17 +25,17 @@ describe('cache helpers (withQuery / withMutation)', () => {
 
   test('withQuery registers id under tags and forwards merged cache options', async () => {
     const id = 'id-1' as Id;
-    const tags = ['tag:a', 'tag:b'] as Tag[];
+    const tags: readonly [Tag, Tag] = ['tag:a' as Tag, 'tag:b' as Tag];
 
     let received: AxiosRequestConfig | undefined;
     const call = async (opts: AxiosRequestConfig) => {
       received = opts;
-      return makeResp(opts);
+      return makeResp({} as unknown as InternalAxiosRequestConfig);
     };
 
     const base: AxiosRequestConfig = { cache: { etag: 'E1' } };
 
-    const res = await withQuery<{ foo: string }>(call, id, tags, base);
+    const res = await withQuery<{ foo: string }>(call, id, [...tags], base);
     expect(res.status).toBe(200);
 
     // merged cache config should include inherited base.cache and our id
@@ -45,19 +51,19 @@ describe('cache helpers (withQuery / withMutation)', () => {
 
   test('withMutation builds update map from current ids and clears tag buckets', async () => {
     const id = 'id-2' as Id;
-    const tags = ['tag:x', 'tag:y'] as Tag[];
+    const tags: readonly [Tag, Tag] = ['tag:x' as Tag, 'tag:y' as Tag];
 
     let received: AxiosRequestConfig | undefined;
     const call = async (opts: AxiosRequestConfig) => {
       received = opts;
-      return makeResp(opts);
+      return makeResp({} as unknown as InternalAxiosRequestConfig);
     };
 
     // Pre-populate index by performing a query
-    await withQuery(call, id, tags, { cache: { etag: 'E0' } });
+    await withQuery(call, id, [...tags], { cache: { etag: 'E0' } });
 
     const base: AxiosRequestConfig = { cache: { etag: 'E2' } };
-    const res = await withMutation<{ ok: boolean }>(call, tags, base);
+    const res = await withMutation<{ ok: boolean }>(call, [...tags], base);
     expect(res.status).toBe(200);
 
     // The update map should include id => 'delete'

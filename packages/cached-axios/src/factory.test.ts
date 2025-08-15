@@ -1,4 +1,8 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type {
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import { describe, expect, test, vi } from 'vitest';
 
 // Mock the cache-layer helpers that factory forwards into
@@ -9,7 +13,7 @@ const withQueryMock = vi.fn(
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {} as AxiosRequestConfig,
+      config: {} as unknown as InternalAxiosRequestConfig,
     }) as AxiosResponse<unknown>,
 );
 
@@ -20,7 +24,7 @@ const withMutationMock = vi.fn(
       status: 202,
       statusText: 'Accepted',
       headers: {},
-      config: {} as AxiosRequestConfig,
+      config: {} as unknown as InternalAxiosRequestConfig,
     }) as AxiosResponse<unknown>,
 );
 
@@ -43,13 +47,16 @@ describe('makeCacheHelpers', () => {
 
     const { query } = makeCacheHelpers(baseFn);
 
-    const call = vi.fn(async (opts: AxiosRequestConfig) => ({
-      data: undefined,
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: opts,
-    }));
+    const call = vi.fn(
+      async () =>
+        ({
+          data: undefined,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as unknown as InternalAxiosRequestConfig,
+        }) as AxiosResponse<unknown>,
+    );
 
     const id = 'id-1' as Id;
     const tags = ['tag:a'] as Tag[];
@@ -57,7 +64,7 @@ describe('makeCacheHelpers', () => {
     await query(call, id, tags, { headers: { B: '2' } });
 
     expect(withQueryMock).toHaveBeenCalledTimes(1);
-    const args = withQueryMock.mock.calls[0] as [
+    const args = withQueryMock.mock.calls.at(0)! as [
       (o: AxiosRequestConfig) => Promise<AxiosResponse<unknown>>,
       Id,
       Tag[],
@@ -82,20 +89,23 @@ describe('makeCacheHelpers', () => {
     const base = { timeout: 1234 } as AxiosRequestConfig;
     const { mutation } = makeCacheHelpers(base);
 
-    const call = vi.fn(async (opts: AxiosRequestConfig) => ({
-      data: undefined,
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: opts,
-    }));
+    const call = vi.fn(
+      async () =>
+        ({
+          data: undefined,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as unknown as InternalAxiosRequestConfig,
+        }) as AxiosResponse<unknown>,
+    );
 
     const invalidate = ['tag:x', 'tag:y'] as Tag[];
 
     await mutation(call, invalidate, { headers: { C: '3' } });
 
     expect(withMutationMock).toHaveBeenCalledTimes(1);
-    const args = withMutationMock.mock.calls[0] as [
+    const args = withMutationMock.mock.calls.at(0)! as [
       (o: AxiosRequestConfig) => Promise<AxiosResponse<unknown>>,
       Tag[],
       AxiosRequestConfig,

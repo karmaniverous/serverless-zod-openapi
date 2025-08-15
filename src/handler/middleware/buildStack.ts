@@ -39,6 +39,8 @@ export type BuildStackOptions<
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 > = HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> & {
+  /** when true, skip HTTP-specific middlewares (CORS, serializers, parsers, etc.) */
+  internal?: boolean;
   /** default: false — kept off until we resolve the Lambda dynamic import issue */
   enableMultipart?: boolean;
   /** default: 'application/json' */
@@ -104,6 +106,11 @@ export const buildMiddlewareStack = <
   const mZodValidator = asApiMiddleware(
     httpZodValidator({ eventSchema, responseSchema, logger }),
   );
+
+  // Internal mode: only validate event/response schemas; skip HTTP-specific middlewares
+  if (options.internal) {
+    return combine(mZodValidator);
+  }
 
   /**
    * Provide a sane default for preferred media types in ALL phases.
