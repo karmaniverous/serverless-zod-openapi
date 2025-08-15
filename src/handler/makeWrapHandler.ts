@@ -35,7 +35,7 @@ export type WrapHandlerOptions<
   eventSchema: EventSchema;
   fnEnvKeys: FnEnvKeys;
   responseSchema: ResponseSchema;
-  internal?: boolean;
+  internal: boolean;
 } & Loggable<Logger>;
 
 export type StagesRuntime<

@@ -45,13 +45,19 @@ describe('stack: response shaping & content-type header', () => {
     event.headers = { ...event.headers, Accept: 'application/json' };
     const ctx: Context = createLambdaContext();
 
-    const result = await run(
+    const result = (await run(
       base,
       { contentType: 'application/json' },
       event,
       ctx,
-    );
+    )) as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string | object;
+    };
 
+    expect(result.statusCode).toBe(200);
+    expect(result.headers['Content-Type']).toBe('application/json');
     expect(getJsonBody(result)).toEqual({ ok: true });
   });
 });
@@ -85,22 +91,11 @@ describe('stack: Zod errors are exposed as 400', () => {
   });
 });
 
-describe('stack: POST + JSON body is accepted', () => {
-  it('returns 200 and JSON payload', async () => {
-    const base = async (e: APIGatewayProxyEvent, ctx: Context) => {
-      void e.path;
-      void ctx.awsRequestId;
-      return { statusCode: 200, headers: {}, body: { ok: true } };
-    };
+describe('stack: preferred media types default', () => {
+  it('defaults Accept to contentType across phases', async () => {
+    const base = async () => ({ ok: true });
 
-    const event = createApiGatewayV1Event('POST');
-    event.headers = {
-      ...event.headers,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    };
-    event.body = JSON.stringify({ hello: 'world' });
-
+    const event = createApiGatewayV1Event('GET');
     const ctx: Context = createLambdaContext();
 
     const result = await run(
@@ -140,5 +135,123 @@ describe('stack: HEAD short-circuit shapes empty JSON body', () => {
     expect(result.statusCode).toBe(200);
     const body = getJsonBody(result);
     expect(body).toEqual({});
+  });
+});
+
+describe('stack: internal mode', () => {
+  it('returns raw handler result and skips HTTP shaping', async () => {
+    const base = async () => ({ ok: true });
+
+    const event = createApiGatewayV1Event('GET');
+    const ctx: Context = createLambdaContext();
+
+    const result = await run(
+      base,
+      {
+        contentType: 'application/json',
+        internal: true,
+        responseSchema: z.object({ ok: z.boolean() }),
+      } as unknown as Parameters<typeof buildMiddlewareStack>[0],
+      event,
+      ctx,
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(typeof (result as Record<string, unknown>).statusCode).toBe(
+      'undefined',
+    );
+  });
+
+  it('enforces response schema and reports Zod issues', async () => {
+    const base = async () => ({ ok: 'nope' });
+
+    const event = createApiGatewayV1Event('GET');
+    const ctx: Context = createLambdaContext();
+
+    try {
+      await run(
+        base,
+        {
+          contentType: 'application/json',
+          internal: true,
+          responseSchema: z.object({ ok: z.boolean() }),
+        } as unknown as Parameters<typeof buildMiddlewareStack>[0],
+        event,
+        ctx,
+      );
+      // If we get here, validation did not run as expected
+      expect(false).toBe(true);
+    } catch (err) {
+      const parseIssues = (
+        e: unknown,
+      ): Array<Record<string, unknown>> | null => {
+        if (Array.isArray(e)) {
+          return e as Array<Record<string, unknown>>;
+        }
+        if (typeof e === 'string') {
+          try {
+            const j = JSON.parse(e) as unknown;
+            return Array.isArray(j)
+              ? (j as Array<Record<string, unknown>>)
+              : null;
+          } catch {
+            return null;
+          }
+        }
+        if (
+          e &&
+          typeof e === 'object' &&
+          'issues' in (e as Record<string, unknown>)
+        ) {
+          const maybe = (e as { issues?: unknown }).issues;
+          return Array.isArray(maybe)
+            ? (maybe as Array<Record<string, unknown>>)
+            : null;
+        }
+        return null;
+      };
+
+      const issues = parseIssues(err);
+      if (issues) {
+        const hasInvalidOk = issues.some((i) => {
+          const code = i['code'];
+          const path = i['path'];
+          return (
+            code === 'invalid_type' && Array.isArray(path) && path[0] === 'ok'
+          );
+        });
+        expect(hasInvalidOk).toBe(true);
+      } else {
+        // Fallback: ensure the thrown value mentions validation
+        expect(String(err)).toMatch(/invalid|validation/i);
+      }
+    }
+  });
+
+  it('does not JSON-parse the request body in internal mode', async () => {
+    const base = async (_e: APIGatewayProxyEvent) => _e.body;
+
+    const event = createApiGatewayV1Event('POST');
+    event.headers = {
+      ...event.headers,
+      'Content-Type': 'application/json',
+    };
+    event.body = JSON.stringify({ hello: 'world' });
+
+    const ctx: Context = createLambdaContext();
+
+    const result = await run(
+      base,
+      {
+        contentType: 'application/json',
+        internal: true,
+        responseSchema: z.string(),
+      } as unknown as Parameters<typeof buildMiddlewareStack>[0],
+      event,
+      ctx,
+    );
+
+    expect(typeof result).toBe('string');
+    expect(result).toBe(event.body);
   });
 });
