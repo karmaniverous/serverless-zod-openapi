@@ -4,12 +4,8 @@ import { fnEnvKeys } from './env';
 import { eventSchema, responseSchema } from './schema';
 
 export const handler = wrapHandler(
-  async (event, context, { logger }) => {
-    const what = event.queryStringParameters.what ?? 'bar';
-
-    logger.debug('Handler invoked with:', what);
-
-    return { what };
+  async () => {
+    return 'Ok';
   },
   {
     eventSchema,

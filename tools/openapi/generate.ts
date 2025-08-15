@@ -11,7 +11,7 @@ import path from 'path';
 import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
-// Import OpenAPI definitions for each endpoint.
+import eventActiveCampaignPost from '@@/src/lambdas/endpoints/event/activecampaign/post/openapi';
 import fooGet from '@@/src/lambdas/endpoints/foo/get/openapi';
 import openapiGet from '@@/src/lambdas/endpoints/openapi/get/openapi';
 
@@ -34,6 +34,7 @@ const doc = createDocument({
     version: process.env.npm_package_version ?? '',
   },
   paths: {
+    ...eventActiveCampaignPost,
     ...fooGet,
     ...openapiGet,
   },

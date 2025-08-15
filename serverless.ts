@@ -1,5 +1,6 @@
 import type { AWS } from '@serverless/typescript';
 
+import endpointEventActivecampaignPost from '@@/src/lambdas/endpoints/event/activecampaign/post/serverless';
 import endpointFooGet from '@@/src/lambdas/endpoints/foo/get/serverless';
 import endpointOpenapiGet from '@@/src/lambdas/endpoints/openapi/get/serverless';
 import { environment, stages } from '@@/src/serverless/config/stages';
@@ -92,6 +93,7 @@ const config: AWS = {
     versionFunctions: false,
   },
   functions: {
+    ...endpointEventActivecampaignPost,
     ...endpointFooGet,
     ...endpointOpenapiGet,
   },

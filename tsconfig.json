@@ -5,5 +5,5 @@
       "@@/*": ["*"]
     }
   },
-  "exclude": [".serverless", "tools/context/out/**"]
+  "exclude": [".serverless/**", "node_modules/**", "tools/context/out/**"]
 }
