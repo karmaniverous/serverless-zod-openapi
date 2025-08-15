@@ -34,6 +34,7 @@
     "knip": "^5.62.0",
     "lefthook": "^1.12.2",
     "orval": "^7.11.2",
+    "package-directory": "^8.1.0",
     "pkg-dir": "^8.0.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",

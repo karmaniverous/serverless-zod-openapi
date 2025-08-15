@@ -1,6 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
 import endpointFooGet from '@@/src/lambdas/endpoints/foo/get/serverless';
+import endpointOpenapiGet from '@@/src/lambdas/endpoints/openapi/get/serverless';
 import { environment, stages } from '@@/src/serverless/config/stages';
 
 const config: AWS = {
@@ -91,8 +92,8 @@ const config: AWS = {
     versionFunctions: false,
   },
   functions: {
-    // Combine all function definitions into the final document.
     ...endpointFooGet,
+    ...endpointOpenapiGet,
   },
   build: {
     esbuild: {
