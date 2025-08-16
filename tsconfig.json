@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@@/*": ["*"]
+      "@@/*": ["*"],
+      "@/*": ["services/activecampaign/*", "packages/cached-axios/*"]
     }
   },
   "include": ["./**/*"],
