@@ -2,8 +2,8 @@ import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
 import type { SyncContactDataRequest } from '@/generated/api.schemas';
+import type { Optionalize } from '@/src/types/Optionalize';
 import { syncContactRaw } from '@/src/wrapped/contacts';
-import type { Optionalize } from '@@/src/types/Optionalize';
 
 import { getContact } from './getContact';
 import { contactSchema } from './schemas';

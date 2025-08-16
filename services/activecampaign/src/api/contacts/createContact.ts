@@ -2,11 +2,11 @@ import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
 import type { CreateContactRequest } from '@/generated/api.schemas';
+import type { Optionalize } from '@/src/types/Optionalize';
 import {
   createContactRaw,
   fetchContactFieldValues,
 } from '@/src/wrapped/contacts';
-import type { Optionalize } from '@@/src/types/Optionalize';
 
 import { getFieldMaps, materialize } from './helpers';
 import { contactSchema } from './schemas';

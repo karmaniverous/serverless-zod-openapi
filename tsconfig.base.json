@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
+    "composite": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,

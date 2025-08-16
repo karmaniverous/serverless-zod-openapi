@@ -1,9 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["packages/cached-axios/*"],
-      "@@/*": ["*"]
+      "@/*": ["*"],
+      "@@/*": ["../../*"]
     }
-  }
+  },
+  "include": ["./**/*"]
 }

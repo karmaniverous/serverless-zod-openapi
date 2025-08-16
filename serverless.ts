@@ -64,9 +64,7 @@ const config: AWS = {
     },
     logRetentionInDays: 5,
     logs: {
-      lambda: {
-        logFormat: 'JSON',
-      },
+      lambda: { applicationLogLevel: 'DEBUG', logFormat: 'JSON' },
       restApi: {
         accessLogging: true,
         executionLogging: false,

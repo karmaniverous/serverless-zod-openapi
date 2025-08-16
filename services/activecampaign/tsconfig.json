@@ -1,9 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["services/activecampaign/*"],
-      "@@/*": ["*"]
+      "@/*": ["*"],
+      "@@/*": ["../../*"]
     }
-  }
+  },
+  "include": ["./**/*"],
+  "references": [{ "path": "../../packages/cached-axios" }]
 }

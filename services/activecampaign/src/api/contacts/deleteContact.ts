@@ -1,8 +1,8 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
+import type { Optionalize } from '@/src/types/Optionalize';
 import { deleteContactRaw } from '@/src/wrapped/contacts';
-import type { Optionalize } from '@@/src/types/Optionalize';
 
 export const deleteContactParamsSchema = z.object({
   contactId: z.union([z.string(), z.number()]),
