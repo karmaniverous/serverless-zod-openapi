@@ -10,6 +10,7 @@
     "moduleResolution": "bundler",
     "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,

@@ -47,8 +47,8 @@ const main = async (): Promise<void> => {
   }
 
   const args = hasBuild
-    ? ['-b', BUILD_CONFIG, '--noEmit', '--pretty', 'false']
-    : ['--project', ROOT_CONFIG, '--noEmit', '--pretty', 'false'];
+    ? ['-b', BUILD_CONFIG, '--pretty', 'false']
+    : ['--project', ROOT_CONFIG, '--pretty', 'false'];
 
   const cmd = useNodeWrapper ? process.execPath : tscEntry;
   const cmdArgs = useNodeWrapper ? [tscEntry, ...args] : args;

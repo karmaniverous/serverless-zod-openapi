@@ -2,7 +2,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "declarationDir": ".tsbuild",
-    "noEmit": false,
     "outDir": ".tsbuild",
     "paths": {
       "@@/*": ["../../*"],
@@ -10,5 +9,6 @@
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
-  "extends": "../../tsconfig.base.json"
+  "extends": "../../tsconfig.base.json",
+  "include": ["**/*", "**/*.json"]
 }
