@@ -1,6 +1,7 @@
+.serverless/
 *.local
 *.tsbuildinfo
-.serverless/
+**/.tsbuild/
+/context/
 local/
 node_modules/
-**/.tsbuild/

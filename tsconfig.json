@@ -9,7 +9,7 @@
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
-  "exclude": [".serverless/**", "node_modules/**", "tools/context/out/**"],
+  "exclude": [".serverless/**", "node_modules/**"],
   "extends": "./tsconfig.base.json",
   "include": ["**/*", "**/*.json"]
 }

@@ -15,7 +15,7 @@ export default tseslint.config(
       '**/.tsbuild/**',
       '**/generated/**',
       'node_modules/**',
-      'tools/context/out/**',
+      'context/**',
     ],
   },
   eslint.configs.recommended,
