@@ -1,12 +1,15 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "declarationDir": ".tsbuild",
+    "outDir": ".tsbuild",
     "paths": {
       "@@/*": ["*"],
       "@/*": ["services/activecampaign/*", "packages/cached-axios/*"]
-    }
+    },
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
-  "include": ["./**/*"],
-  "exclude": [".serverless/**", "node_modules/**", "tools/context/out/**"]
+  "exclude": [".serverless/**", "node_modules/**", "tools/context/out/**"],
+  "extends": "./tsconfig.base.json",
+  "include": ["./**/*"]
 }
