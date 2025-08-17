@@ -11,7 +11,6 @@
     "@middy/http-event-normalizer": "^6.4.1",
     "@middy/http-header-normalizer": "^6.4.1",
     "@middy/http-json-body-parser": "^6.4.1",
-    "@middy/http-multipart-body-parser": "^6.4.1",
     "@middy/http-response-serializer": "^6.4.1",
     "aws-lambda": "^1.0.7",
     "http-errors": "^2.0.0",

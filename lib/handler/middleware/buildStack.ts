@@ -1,3 +1,14 @@
+/**
+ * Requirements addressed by this module:
+ * - Build a single composed middleware stack for API Gateway Proxy events.
+ * - Normalize headers and legacy events; parse JSON bodies for non-GET/HEAD requests when present.
+ * - Validate the incoming event and, when provided, the response via Zod.
+ * - Support "internal" mode that returns the raw handler result (no HTTP shaping).
+ * - Apply content negotiation, response serialization, error handling, and CORS in the correct order.
+ * - Ensure HEAD requests are short-circuited with a 200 and empty JSON body.
+ * - Allow configuration of the default content type and logger.
+ */
+
 import type { MiddlewareObj } from '@middy/core';
 import httpContentNegotiation from '@middy/http-content-negotiation';
 import httpCors from '@middy/http-cors';
@@ -5,8 +16,6 @@ import httpErrorHandler from '@middy/http-error-handler';
 import httpEventNormalizer from '@middy/http-event-normalizer';
 import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import httpJsonBodyParser from '@middy/http-json-body-parser';
-// NOTE: multipart intentionally disabled for now to avoid dynamic import in AWS VM.
-// import httpMultipartBodyParser from '@middy/http-multipart-body-parser';
 import httpResponseSerializer from '@middy/http-response-serializer';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
@@ -39,8 +48,6 @@ export type BuildStackOptions<
 > = HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger> & {
   /** when true, skip HTTP-specific middlewares (CORS, serializers, parsers, etc.) */
   internal?: boolean;
-  /** default: false — kept off until we resolve the Lambda dynamic import issue */
-  enableMultipart?: boolean;
   /** default: 'application/json' */
   contentType?: string;
   /** used by the serializer’s logger fallback */
