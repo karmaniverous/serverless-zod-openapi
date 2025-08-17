@@ -1,38 +1,34 @@
-# Global Requirements & Cross-Cutting Concerns
+# requirements.md
 
-> Source of truth for policies that apply across the repo. Keep file-specific “REQUIREMENTS ADDRESSED” blocks brief and link back here.
+## 1) Logging Contract (Global)
 
-## 1) Logging Contract
+- **HandlerOptions.logger**: MUST extend `ConsoleLogger` everywhere `logger` is passed.
+  - Use the shared type: `type ConsoleLogger = Pick<Console, 'debug' | 'error' | 'info' | 'log'>`.
+  - Do not invent ad‑hoc logger shapes.
+  - Wrappers MUST always provide a `logger` to business handlers.
 
-- **HandlerOptions.logger** **MUST** satisfy the shared `ConsoleLogger` type (see `lib/types/Loggable.ts`) everywhere it is passed around—handlers, middleware, wrappers, serializers.
-- Wrappers should default to `console` when no logger is injected.
-- Do not re-declare ad‑hoc logger shapes; import and use `ConsoleLogger`.
+## 2) OpenAPI Specs (Global)
 
-## 2) OpenAPI Specs
+- OpenAPI path objects are **hand‑crafted**. Do **not** restructure or “generate”.
+- When a request/response schema is intentionally “placeholder”, use **`z.any()`**.
+- Do **not** make OpenAPI content conditional on the existence of a schema.
+- Goal: Make the runtime & tooling **consume** the spec—do not modify its content model.
 
-- **Do not attempt to “generate” or restructure the hand-crafted OpenAPI objects.** Treat them as authoritative.
-- When a request/response schema might be absent in code, **substitute a permissive placeholder** (e.g., `z.any()`) so types remain sound and `zod-openapi` isn’t given `undefined`.
+## 3) HTTP vs Non‑HTTP
 
-## 3) HTTP Semantics
+- Only base HTTP tokens (`'rest'`, `'http'`) are wrapped with HTTP middleware (Middy).
+- HEAD semantics:
+  - Response MUST be **200** with **empty JSON object** body `{}`.
+  - Business payloads must be ignored for HEAD.
 
-- For **HEAD** requests, ALWAYS return `200 {}` with the configured `Content-Type`, ignoring any business payload returned by the handler.
-- Content negotiation: default `Content-Type` to `application/json` unless a function specifies otherwise.
+## 4) Env Schema Composition
 
-## 4) Env Typing Pipeline
+- Build runtime env schema from **global + stage** schemas and an allowlist of keys:
+  - Union all keys → split by presence in global/stage schema → `pick` → compose.
+- Functions MUST pass **array** key lists to the pick builder; avoid non‑array inputs.
 
-- Use `deriveAllKeys` → `splitKeysBySchema` → `buildEnvSchema(globalPick, stagePick, globalParamsSchema, stageParamsSchema)` → `parseTypedEnv`.
-- `buildEnvSchema` **expects picks first** (arrays of keys), then schemas. Maintain this order everywhere.
+## 5) TypeScript / Lint
 
-## 5) Typing & Style
-
-- **Never** use `any`; prefer `unknown` then narrow.
-- **Never** default generic type parameters; rely on inference.
-- Use `z.ZodType` (not deprecated `ZodTypeAny`).
-- Follow `eslint-plugin-simple-import-sort` and project ESLint rules.
-
-## 6) HTTP Method Typing
-
-- When using `ZodOpenApiPathItemObject`, exclude helper keys like `'id'` from the method key union:
-  ```ts
-  type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
-  ```
+- Target **zero** ESLint errors/warnings.
+- Avoid unnecessary assertions/conversions (e.g., `String(x)`, `Number(x)` when already string/number).
+- Prefer `z.ZodType` over deprecated `ZodTypeAny`.

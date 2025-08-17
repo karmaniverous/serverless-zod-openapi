@@ -4,19 +4,18 @@ import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { HttpContext } from '@@/lib/types/HttpContext';
-import type { HTTP_EVENT_TOKENS } from '@@/lib/types/HttpEventTokens';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import type { PropFromUnion } from './PropFromUnion';
 
-/** HTTP methods we support from zod-openapi's PathItem shape (exclude helper keys like 'id'). */
+/** HTTP methods supported from zod-openapi's PathItem shape (excluding helper 'id'). */
 export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
 
 /**
- * REQUIREMENTS ADDRESSED
- * - Capture per-function schemas/env keys and HTTP metadata, strongly typed.
- * - Gate HTTP-only options by whether EventType is one of the base HTTP tokens.
- * - Allow an optional logger injection that satisfies ConsoleLogger.
+ * FunctionConfig
+ * - Per-function schemas, env requirements, routing metadata.
+ * - EventTypeMap binds event tokens (e.g., 'rest'|'http'|'sqs') to runtime shapes.
+ * - HTTP-only options are permitted only when EventType is an HTTP token.
  */
 export type FunctionConfig<
   EventSchema extends z.ZodType | undefined,
@@ -42,22 +41,20 @@ export type FunctionConfig<
   /** Optional extra serverless events (e.g., SQS triggers). */
   events?: PropFromUnion<AWS['functions'], string>['events'];
 
-  /** Optional logger used by wrapper/middleware; must satisfy ConsoleLogger. */
+  /** Optional logger; wrapper will default to `console`. */
   logger?: ConsoleLogger;
-} &
-  // Gate HTTP-only options by whether EventType is one of the base HTTP tokens.
-  (EventType extends (typeof HTTP_EVENT_TOKENS)[number]
-    ? {
-        /** HTTP-only options (permitted for base HTTP tokens). */
-        httpContexts?: readonly HttpContext[];
-        method?: MethodKey;
-        basePath?: string;
-        contentType?: string;
-      }
-    : {
-        /** Non-HTTP: deny HTTP-only options via type system. */
-        httpContexts?: never;
-        method?: never;
-        basePath?: never;
-        contentType?: never;
-      });
+} & (EventType extends keyof Pick<BaseEventTypeMap, 'rest' | 'http'>
+  ? {
+      /** HTTP-only options (permitted for base HTTP tokens). */
+      httpContexts?: readonly HttpContext[];
+      method?: MethodKey;
+      basePath?: string;
+      contentType?: string;
+    }
+  : {
+      /** Non-HTTP: deny HTTP-only options via type system. */
+      httpContexts?: never;
+      method?: never;
+      basePath?: never;
+      contentType?: never;
+    });

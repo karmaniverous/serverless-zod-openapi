@@ -1,12 +1,12 @@
-import { dirname, relative } from 'node:path';
+import { dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { unique } from 'radash';
-import type { z, ZodObject, ZodRawShape } from 'zod';
+import type { ZodObject, ZodRawShape } from 'zod';
 
 import { sanitizeBasePath } from '@@/lib/path/buildPath';
-import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
-import type { FunctionConfig, MethodKey } from '@@/lib/types/FunctionConfig';
+import type { MethodKey } from '@@/lib/types/FunctionConfig';
+import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import type { HttpContext } from '@@/lib/types/HttpContext';
 import { ENDPOINTS_ROOT_ABS } from '@@/src/endpoints/_root';
 
@@ -21,19 +21,15 @@ export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
   'trace',
 ]);
 
-/**
- * Resolve HTTP routing info from a function config + caller module URL.
- * - Returns undefined for non-HTTP functions (no httpContexts present).
- */
 export const resolveHttpFromFunctionConfig = <
-  EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
+  EventSchema,
+  ResponseSchema,
   GlobalParams extends ZodObject<ZodRawShape>,
   StageParams extends ZodObject<ZodRawShape>,
-  EventTypeMap extends BaseEventTypeMap,
+  EventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
-  config: FunctionConfig<
+  functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
     GlobalParams,
@@ -42,39 +38,45 @@ export const resolveHttpFromFunctionConfig = <
     EventType
   >,
   callerModuleUrl: string,
-):
-  | {
-      method: MethodKey;
-      basePath: string;
-      contexts: readonly HttpContext[];
-    }
-  | undefined => {
-  const { httpContexts } = config as {
+): {
+  method: MethodKey;
+  basePath: string;
+  contexts: readonly HttpContext[];
+} => {
+  const {
+    method: maybeMethod,
+    basePath: maybeBase,
+    httpContexts,
+  } = functionConfig as {
+    method?: MethodKey;
+    basePath?: string;
     httpContexts?: readonly HttpContext[];
   };
-  if (!httpContexts || httpContexts.length === 0) return undefined;
 
-  // 1) Method: explicit -> folder name
-  let method: MethodKey | undefined = (config as { method?: MethodKey }).method;
-  if (!method) {
-    const absDir = dirname(fileURLToPath(callerModuleUrl));
-    const lastSeg = absDir.split('/').filter(Boolean).pop();
-    const candidate = (lastSeg ?? '').toLowerCase() as MethodKey;
-    if (HTTP_METHODS.has(candidate)) method = candidate;
-  }
-  if (!method) {
-    throw new Error(
-      'resolveHttpFromFunctionConfig: could not infer method; set config.method or place under endpoints/<base>/<method>/',
-    );
+  let method: MethodKey;
+  if (maybeMethod && HTTP_METHODS.has(maybeMethod)) {
+    method = maybeMethod;
+  } else {
+    // derive from folder name
+    const rel = relative(
+      ENDPOINTS_ROOT_ABS,
+      dirname(fileURLToPath(callerModuleUrl)),
+    )
+      .split(sep)
+      .join('/');
+    const segs = rel.split('/').filter(Boolean);
+    const tail = segs[segs.length - 1]?.toLowerCase();
+    method = HTTP_METHODS.has(tail as MethodKey) ? (tail as MethodKey) : 'get';
   }
 
-  // 2) Base path: explicit -> parent folder(s)
-  let basePath = sanitizeBasePath(
-    (config as { basePath?: string }).basePath ?? '',
-  );
+  let basePath = sanitizeBasePath(maybeBase ?? '');
   if (!basePath) {
-    const absDir = dirname(fileURLToPath(callerModuleUrl));
-    const rel = relative(ENDPOINTS_ROOT_ABS, absDir);
+    const rel = relative(
+      ENDPOINTS_ROOT_ABS,
+      dirname(fileURLToPath(callerModuleUrl)),
+    )
+      .split(sep)
+      .join('/');
     const segs = rel.split('/').filter(Boolean);
     if (segs.length && segs[segs.length - 1]?.toLowerCase() === method)
       segs.pop();
@@ -87,6 +89,6 @@ export const resolveHttpFromFunctionConfig = <
     );
   }
 
-  const contexts = unique(httpContexts);
+  const contexts = unique(httpContexts ?? []);
   return { method, basePath, contexts };
 };

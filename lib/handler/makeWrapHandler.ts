@@ -1,16 +1,5 @@
-/**
- * REQUIREMENTS ADDRESSED
- * - Wrapper consumes only (functionConfig, businessHandler).
- * - Use eventType token (from EventTypeMap) to decide HTTP vs internal at runtime.
- * - Validate event/response via provided zod schemas.
- * - Build typed env by reading production stage/global config.
- * - Do not perform HTTP shaping for non-HTTP handlers.
- * - NEVER use dynamic type imports; use static imports only.
- * - NEVER default type parameters; rely on inference from inputs.
- * - Logger MUST satisfy ConsoleLogger everywhere.
- */
 import middy from '@middy/core';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import {
@@ -46,103 +35,56 @@ export const makeWrapHandler = <
   >,
   business: Handler<EventSchema, ResponseSchema, EventTypeMap[EventType]>,
 ) => {
-  const { eventSchema, responseSchema, fnEnvKeys, contentType } =
-    functionConfig;
-
   const base = async (event: unknown, context: Context) => {
-    const normalizedFnEnvKeys = (fnEnvKeys ?? []) as readonly (
-      | keyof z.infer<GlobalParams>
-      | keyof z.infer<StageParams>
-    )[];
-
-    const allKeys = deriveAllKeys(
-      globalEnvKeys as unknown as readonly (keyof z.infer<GlobalParams>[]),
-      stageEnvKeys as unknown as readonly (keyof z.infer<StageParams>[]),
-      normalizedFnEnvKeys,
+    // Build typed env
+    const all = deriveAllKeys(
+      globalEnvKeys as readonly string[],
+      stageEnvKeys as readonly string[],
+      (functionConfig.fnEnvKeys ?? []) as readonly string[],
     );
-
     const { globalPick, stagePick } = splitKeysBySchema(
-      allKeys,
-      globalParamsSchema as unknown as GlobalParams,
-      stageParamsSchema as unknown as StageParams,
+      all,
+      globalParamsSchema,
+      stageParamsSchema,
     );
-
     const envSchema = buildEnvSchema(
       globalPick,
       stagePick,
-      globalParamsSchema as unknown as GlobalParams,
-      stageParamsSchema as unknown as StageParams,
+      globalParamsSchema,
+      stageParamsSchema,
+    );
+    const env = parseTypedEnv(
+      envSchema,
+      process.env as unknown as Record<string, unknown>,
     );
 
-    const env = parseTypedEnv(envSchema, process.env);
-    const logger: ConsoleLogger =
-      (functionConfig as unknown as { logger?: ConsoleLogger }).logger ??
-      console;
-
-    // Validate the incoming event; thrown Zod errors will be mapped by HTTP middleware.
-    if (eventSchema) {
-      const result = eventSchema.safeParse(event);
-      if (!result.success) {
-        const e = new Error('Invalid input') as Error & {
-          expose: boolean;
-          statusCode: number;
-          issues: unknown[];
-        };
-        e.expose = true;
-        e.statusCode = 400;
-        e.issues = result.error.issues;
-        throw e;
-      }
-    }
-
-    const out = await business(
-      event as unknown as EventTypeMap[EventType],
-      context,
-      { env, logger },
+    // Decide whether to apply HTTP middleware
+    const isHttp = isHttpEventTypeToken(
+      functionConfig.eventType as keyof BaseEventTypeMap,
     );
 
-    // Validate the business response.
-    if (responseSchema) {
-      const result = responseSchema.safeParse(out as unknown);
-      if (!result.success) {
-        const e = new Error('Invalid response') as Error & {
-          expose: boolean;
-          statusCode: number;
-          issues?: unknown[];
-        };
-        // Mark as exposed only for HTTP; internal callers should see a throw.
-        if (isHttpEventTypeToken(functionConfig.eventType)) {
-          e.expose = true;
-          e.statusCode = 500;
-        }
-        e.issues = result.error.issues;
-        throw e;
-      }
+    const logger: ConsoleLogger = functionConfig.logger ?? console;
+
+    if (!isHttp) {
+      // Non-HTTP: pass through to business handler with required options
+      return business(event as never, context, { env, logger });
     }
 
-    return out;
-  };
-
-  if (isHttpEventTypeToken(functionConfig.eventType)) {
+    // HTTP: wrap with middleware (validation + content-type + HEAD handling)
     const http = buildHttpMiddlewareStack({
-      eventSchema: eventSchema as EventSchema,
-      responseSchema: responseSchema as ResponseSchema,
-      contentType: contentType ?? 'application/json',
-      logger:
-        (functionConfig as unknown as { logger?: ConsoleLogger }).logger ??
-        console,
+      eventSchema: functionConfig.eventSchema,
+      responseSchema: functionConfig.responseSchema,
+      contentType:
+        (functionConfig as { contentType?: string }).contentType ??
+        'application/json',
+      logger,
     });
 
-    const wrapped = middy(
-      base as unknown as (
-        e: APIGatewayProxyEvent,
-        c: Context,
-      ) => Promise<unknown>,
+    const wrapped = middy(async (e, c) =>
+      business(e as never, c, { env, logger }),
     ).use(http);
+    return wrapped(event, context);
+  };
 
-    return wrapped as unknown as (e: unknown, c: Context) => Promise<unknown>;
-  }
-
-  // Non‑HTTP: no middy, no shaping.
   return base;
 };

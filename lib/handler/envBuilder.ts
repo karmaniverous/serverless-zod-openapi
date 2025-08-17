@@ -74,3 +74,7 @@ export const parseTypedEnv = <T extends z.ZodType>(
   envSchema: T,
   envSource: Record<string, unknown>,
 ): z.infer<T> => envSchema.parse(envSource);
+
+/** HTTP helper used by tests and middleware. */
+export const isHead = (method?: string): boolean =>
+  typeof method === 'string' && method.toUpperCase() === 'HEAD';

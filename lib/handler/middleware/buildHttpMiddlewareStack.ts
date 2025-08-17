@@ -4,42 +4,48 @@ import type { z } from 'zod';
 
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
-/**
- * REQUIREMENTS ADDRESSED
- * - Wrap ONLY HTTP handlers with middy.
- * - Always validate event/response when schemas are provided.
- * - HEAD requests short‑circuit to 200 and an empty JSON object.
- * - Do not redefine ConsoleLogger; use the shared type.
- * - Options MUST NOT include `internal` (HTTP-only by definition).
- */
 export type BuildHttpMiddlewareStackOptions<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
 > = {
+  /** Optional schemas enforced before/after business logic. */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
+
+  /** Response content type (default: application/json). */
   contentType?: string;
+
+  /** Logger for validation/shaping; must extend ConsoleLogger if provided. */
   logger?: ConsoleLogger;
 };
 
-type ExposedError = Error & {
-  expose?: boolean;
-  statusCode?: number;
-  issues?: unknown[];
-};
-
+/** Build Middy middleware stack for HTTP handlers. */
 export const buildHttpMiddlewareStack = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
->(
-  opts: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema>,
-): MiddlewareObj<APIGatewayProxyEvent, unknown> => {
-  const {
-    eventSchema,
-    responseSchema,
-    contentType = 'application/json',
-    logger = console,
-  } = opts;
+>({
+  eventSchema,
+  responseSchema,
+  contentType = 'application/json',
+  logger = console,
+}: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema>): MiddlewareObj<
+  APIGatewayProxyEvent,
+  unknown
+> => {
+  const validate = (
+    value: unknown,
+    schema: z.ZodType | undefined,
+    side: 'event' | 'response',
+  ) => {
+    if (!schema) return;
+    const result = schema.safeParse(value);
+    if (!result.success) {
+      const e = new Error(`Invalid ${side}`);
+      (e as unknown as { expose: boolean }).expose = true;
+      (e as unknown as { issues: unknown }).issues = result.error.issues;
+      throw e;
+    }
+  };
 
   const shape = (payload: unknown, statusCode = 200) => {
     const headers: Record<string, string> = { 'Content-Type': contentType };
@@ -49,9 +55,9 @@ export const buildHttpMiddlewareStack = <
     } else {
       try {
         body = JSON.stringify(payload);
-      } catch (e) {
+      } catch (err) {
         const msg =
-          e instanceof Error ? e.message : 'Failed to serialize response';
+          err instanceof Error ? err.message : 'Failed to serialize response';
         logger.error({ message: msg });
         body = JSON.stringify({ message: msg });
       }
@@ -59,76 +65,62 @@ export const buildHttpMiddlewareStack = <
     return { statusCode, headers, body };
   };
 
-  const validate = (
-    payload: unknown,
-    schema: z.ZodType | undefined,
-    kind: 'event' | 'response',
-  ) => {
-    if (!schema) return;
-    const parsed = schema.safeParse(payload);
-    if (!parsed.success) {
-      const e = new Error(`Invalid ${kind}`) as Error & {
-        expose: boolean;
-        statusCode: number;
-        issues: unknown[];
-      };
-      e.expose = true;
-      e.statusCode = 400;
-      e.issues = parsed.error.issues;
-      throw e;
-    }
-  };
-
   const before: MiddlewareObj<APIGatewayProxyEvent, unknown>['before'] = async (
     request,
   ) => {
-    validate(request.event, eventSchema, 'event');
-    const event = request.event as APIGatewayProxyEvent;
-    if (event.httpMethod === 'HEAD') {
-      // Preempt handler; return empty JSON body.
+    // HEAD short-circuit early
+    if (request.event.httpMethod === 'HEAD') {
       request.response = shape({});
+      return;
     }
+    validate(request.event, eventSchema, 'event');
   };
 
   const after: MiddlewareObj<APIGatewayProxyEvent, unknown>['after'] = async (
     request,
   ) => {
-    // HEAD must always return {} regardless of business payload.
-    const event = request.event as APIGatewayProxyEvent;
-    if (event.httpMethod === 'HEAD') {
+    // Hard override for HEAD: ignore business payloads entirely.
+    if (request.event.httpMethod === 'HEAD') {
       request.response = shape({});
       return;
     }
 
     // If base already returned an HTTP-shaped object, preserve it and ensure Content‑Type.
-    const maybe = request.response as unknown as
-      | { statusCode?: unknown; headers?: unknown; body?: unknown }
-      | undefined;
-    if (
-      maybe &&
+    const maybe = request.response;
+    const looksShaped =
       typeof maybe === 'object' &&
-      'statusCode' in maybe &&
-      'headers' in maybe &&
-      'body' in maybe
-    ) {
-      const headers = Object.assign(
-        {},
-        ((maybe as { headers?: Record<string, string> }).headers ??
-          {}) as Record<string, string>,
-      );
-      headers['Content-Type'] = contentType;
+      maybe !== null &&
+      'statusCode' in (maybe as Record<string, unknown>) &&
+      'headers' in (maybe as Record<string, unknown>) &&
+      'body' in (maybe as Record<string, unknown>);
+
+    if (looksShaped) {
+      const shaped = maybe as {
+        statusCode?: number;
+        headers?: Record<string, string>;
+        body?: string;
+      };
+      const headers = {
+        ...(shaped.headers ?? {}),
+        'Content-Type': contentType,
+      };
       request.response = {
-        statusCode: Number(
-          (maybe as { statusCode?: number }).statusCode ?? 200,
-        ),
+        statusCode: shaped.statusCode ?? 200,
         headers,
-        body: (maybe as { body?: string }).body ?? '',
+        body: shaped.body ?? '',
       };
       return;
     }
 
-    validate(request.response, responseSchema, 'response');
-    request.response = shape(request.response);
+    // If base returned a raw string, preserve it verbatim.
+    if (typeof maybe === 'string') {
+      request.response = shape(maybe);
+      return;
+    }
+
+    // Validate the unshaped payload against response schema (if provided), then shape.
+    validate(maybe, responseSchema, 'response');
+    request.response = shape(maybe);
   };
 
   const onError: MiddlewareObj<
@@ -136,12 +128,20 @@ export const buildHttpMiddlewareStack = <
     unknown
   >['onError'] = async (request) => {
     const err = request.error;
-    if (err && typeof err === 'object' && (err as ExposedError).expose) {
-      const exposed = err as ExposedError;
+    if (
+      err &&
+      typeof err === 'object' &&
+      (err as { expose?: boolean }).expose
+    ) {
+      const exposed = err as {
+        statusCode?: number;
+        issues?: unknown;
+        message?: string;
+      };
       const statusCode = exposed.statusCode ?? 400;
       const payload = exposed.issues
         ? { issues: exposed.issues }
-        : { message: exposed.message };
+        : { message: exposed.message ?? 'Bad Request' };
       request.response = shape(payload, statusCode);
       return;
     }

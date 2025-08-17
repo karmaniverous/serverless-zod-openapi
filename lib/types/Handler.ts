@@ -4,13 +4,7 @@ import type { z } from 'zod';
 import type { DeepOverride } from '@@/lib/types/DeepOverride';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
-/**
- * REQUIREMENTS ADDRESSED
- * - Event shaping respects any provided Zod event schema.
- * - HandlerOptions.logger MUST extend ConsoleLogger everywhere (global contract).
- * - Keep business handlers free of HTTP shaping; wrappers handle that.
- */
-
+/** Event type after applying deep schema overrides. */
 export type ShapedEvent<
   EventSchema extends z.ZodType | undefined,
   EventType,
@@ -20,11 +14,10 @@ export type ShapedEvent<
 
 /** Handler options shared across invocation modes. */
 export type HandlerOptions = {
-  /** Fully-typed env constructed by the wrapper. */
   env: Record<string, unknown>;
-  /** Optional security context for HTTP calls. */
+  /** Present only for HTTP calls; omitted for SQS/Step/etc. */
   securityContext?: unknown;
-  /** Logger MUST satisfy ConsoleLogger across the codebase. */
+  /** REQUIRED and must satisfy ConsoleLogger. */
   logger: ConsoleLogger;
 };
 
