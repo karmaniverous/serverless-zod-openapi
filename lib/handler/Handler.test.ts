@@ -17,13 +17,21 @@ const responseSchema = z.object({
   ok: z.boolean(),
 });
 
+void eventSchema;
+void responseSchema;
+
 describe('Handler type', () => {
   it('accepts (ShapedEvent<EventSchema>, Context, HandlerOptions) -> payload', async () => {
     const impl: Handler<typeof eventSchema, typeof responseSchema> = async (
       _event: ShapedEvent<typeof eventSchema>,
       _ctx: Context,
       _opts: HandlerOptions,
-    ) => ({ ok: true });
+    ) => {
+      void _event;
+      void _ctx;
+      void _opts;
+      return { ok: true };
+    };
 
     expect(
       await impl(

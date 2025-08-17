@@ -1,3 +1,8 @@
+/* REQUIREMENTS ADDRESSED
+- Define OpenAPI Path Item for ActiveCampaign event webhook.
+- The request body schema is the provided `eventSchema`.
+- The 200 response schema is the provided `responseSchema`.
+*/
 import { buildPathItemObject } from '@@/lib/openapi/buildPathItemObject';
 import { serverlessConfig } from '@@/src/config/serverlessConfig';
 
@@ -12,7 +17,7 @@ export default buildPathItemObject(
     description: 'Receive ActiveCampaign event webhooks.',
     requestBody: {
       description: 'Webhook payload.',
-      content: { 'application/json': { schema: eventSchema.shape.body } },
+      content: { 'application/json': { schema: eventSchema } },
     },
     responses: {
       200: {

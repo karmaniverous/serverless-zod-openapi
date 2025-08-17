@@ -1,3 +1,8 @@
+/* REQUIREMENTS ADDRESSED
+- For HTTP HEAD requests, short-circuit the handler and return 200 with an empty JSON object body.
+- Do not run the business handler when short-circuiting.
+- Allow downstream middlewares to continue shaping (e.g., serializer, headers).
+*/
 import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
@@ -23,12 +28,11 @@ export const shortCircuitHead: MiddlewareObj<APIGatewayProxyEvent, Context> = {
       ''
     ).toUpperCase();
     if (method === 'HEAD') {
-      (request as unknown as { earlyResponse?: ShapedResponse }).earlyResponse =
-        {
-          statusCode: 200,
-          headers: {},
-          body: {},
-        };
+      (request as unknown as { response?: ShapedResponse }).response = {
+        statusCode: 200,
+        headers: {},
+        body: {},
+      };
     }
   },
 };

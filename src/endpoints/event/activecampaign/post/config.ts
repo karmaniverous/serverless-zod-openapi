@@ -5,7 +5,7 @@ import type { HttpContext } from '@@/lib/types/HttpContext';
 import type { AllParamsKeys } from '@@/src/config/stages';
 
 export const eventSchema = z.object({}); // if you want to skip, set this to undefined
-export const responseSchema = z.object({ ok: z.boolean() });
+export const responseSchema = z.string();
 
 export const functionConfig: FunctionConfig<
   typeof eventSchema,

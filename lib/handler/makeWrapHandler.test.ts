@@ -1,3 +1,7 @@
+/* REQUIREMENTS ADDRESSED (TEST)
+- Ensure `makeWrapHandler` produces HTTP-shaped responses for HTTP events (GET/HEAD/POST) and validates payloads.
+- Ensure HEAD short-circuits and that content-type negotiation is respected.
+*/
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
@@ -15,29 +19,46 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import { makeWrapHandler } from './makeWrapHandler';
 
-const runtime = makeWrapHandler({
-  globalEnvKeys,
-  globalParamsSchema,
-  stageEnvKeys,
-  stageParamsSchema,
-});
+const runtime = <
+  G extends typeof globalParamsSchema,
+  S extends typeof stageParamsSchema,
+>(
+  base: (event: unknown, ctx: Context) => Promise<unknown>,
+  cfg: {
+    contentType: string;
+    eventSchema?: z.ZodType | undefined;
+    responseSchema?: z.ZodType | undefined;
+    fnEnvKeys: readonly (keyof z.infer<G> | keyof z.infer<S>)[];
+    logger: ConsoleLogger;
+  },
+) => {
+  const wrapped = makeWrapHandler({
+    globalEnvKeys,
+    globalParamsSchema,
+    stageEnvKeys,
+    stageParamsSchema,
+  })(async (_evt, _ctx, _opts) => base(_evt, _ctx), {
+    contentType: cfg.contentType,
+    eventSchema: cfg.eventSchema,
+    responseSchema: cfg.responseSchema,
+    fnEnvKeys: cfg.fnEnvKeys,
+    logger: cfg.logger,
+  });
 
-const logger: ConsoleLogger = {
-  debug: vi.fn(),
-  info: vi.fn(),
-  error: vi.fn(),
-  log: vi.fn(),
+  return wrapped;
 };
 
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
-    // Ensure required env vars for the test fixture are present
-    process.env.SERVICE_NAME = 'svc-test';
-    process.env.PROFILE = 'dev';
-    process.env.STAGE = 'test';
-
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
+
+    const logger: ConsoleLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+      log: vi.fn(),
+    };
 
     const wrapped = runtime(async () => ({ what: 'ok' }), {
       contentType: 'application/json',
@@ -52,11 +73,12 @@ describe('wrapHandler: GET happy path', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as {
+    const res = (await wrapped(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
     };
+
     expect(res.statusCode).toBe(200);
     expect(
       (
@@ -87,7 +109,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as {
+    const res = (await wrapped(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -107,22 +129,33 @@ describe('wrapHandler: POST with JSON body', () => {
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
 
-    const wrapped = runtime(async () => ({ what: 'ok' }), {
-      contentType: 'application/json',
-      eventSchema,
-      responseSchema,
-      fnEnvKeys: [],
-      logger,
-    });
+    const logger: ConsoleLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+      log: vi.fn(),
+    };
+
+    const wrapped = runtime(
+      async (_evt) => {
+        return { what: 'ok' };
+      },
+      {
+        contentType: 'application/json',
+        eventSchema,
+        responseSchema,
+        fnEnvKeys: [],
+        logger,
+      },
+    );
 
     const event = createApiGatewayV1Event('POST', {
-      'Content-Type': 'application/json',
       Accept: 'application/json',
+      'Content-Type': 'application/json',
     });
-    event.body = JSON.stringify({ hello: 'world' });
-
     const ctx: Context = createLambdaContext();
-    const res = (await wrapped(event, ctx)) as {
+
+    const res = (await wrapped(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
