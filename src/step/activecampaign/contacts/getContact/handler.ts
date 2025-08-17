@@ -4,6 +4,6 @@ import { getContact } from '@@/services/activecampaign/src';
 import { functionConfig } from './config';
 
 export const handler = wrapHandler(
-  (event) => getContact({ contactId: event.body.contactId }),
+  (event) => getContact({ contactId: event.Payload.contactId }),
   functionConfig,
 );

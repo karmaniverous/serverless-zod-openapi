@@ -1,1 +1,1 @@
-export { buildMiddlewareStack } from './buildStack';
+export { buildHttpMiddlewareStack } from './buildHttpMiddlewareStack';

@@ -1,48 +1,59 @@
+/**
+ * REQUIREMENTS ADDRESSED
+ * - Carry GlobalParams & StageParams so fnEnvKeys is typed as a precise union.
+ * - Add EventType as a type parameter to gate HTTP-only config keys.
+ * - Keep authoring ergonomic; no casts required in config modules.
+ */
+
 import type { AWS } from '@serverless/typescript';
+import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 import type { z } from 'zod';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
-import type { HttpContext } from '@@/lib/types/HttpContext';
-import type { PropFromUnion } from '@@/lib/types/PropFromUnion';
-import type { AllParamsKeys } from '@@/src/config/stages';
+import type { HttpContext } from './HttpContext';
 
-/**
- * Unified per-function configuration:
- * - functionName (key in the Serverless functions map),
- * - env keys (for environment wiring),
- * - authored events (any Serverless events),
- * - wrapper schemas & content type,
- * - optional HTTP specifics (contexts, method, basePath).
- */
+export type PropFromUnion<T, K extends PropertyKey> =
+  T extends Record<K, infer V> ? V : never;
+
+export type HttpEvent = APIGatewayProxyEvent | APIGatewayProxyEventV2;
+
 export type FunctionConfig<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
+  GlobalParams extends z.ZodType,
+  StageParams extends z.ZodType,
+  EventType,
 > = {
-  /** Serverless key for the function */
+  /** Unique function name within the Serverless service. */
   functionName: string;
 
-  /** Keys to expose from the test/runtime env (drives typed env schema) */
-  fnEnvKeys: readonly AllParamsKeys[];
+  /**
+   * Optional list of additional env var keys required by this function.
+   * Consumers treat `undefined` as [].
+   */
+  fnEnvKeys?: readonly (
+    | keyof z.output<GlobalParams>
+    | keyof z.output<StageParams>
+  )[];
 
-  /** Direct authored events (preserved and used for overrides) */
-  events?: PropFromUnion<AWS['functions'], 'events'>;
-
-  /** Content type used for response shaping & negotiation */
-  contentType?: string;
-
-  /** Optional schemas (undefined disables validation for that phase) */
+  /** Optional Zod schemas (undefined disables validation for that phase). */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
 
-  /** HTTP surface (optional for non-HTTP Lambdas) */
-  httpContexts?: readonly HttpContext[];
-
-  /** HTTP method; if omitted, inferred from folder name or authored http events */
-  method?: keyof Omit<ZodOpenApiPathItemObject, 'id'>;
-
-  /**
-   * Base path without leading slash; if omitted, derived from caller module path
-   * relative to endpoints root. Leading/trailing slashes are ignored.
-   */
-  basePath?: string;
-};
+  /** Raw Serverless `functions[].events` (optional). */
+  events?: PropFromUnion<AWS['functions'], 'events'>;
+} & (EventType extends HttpEvent
+  ? {
+      /** HTTP-only facet (enabled by declaring an HTTP EventType) */
+      httpContexts?: readonly HttpContext[];
+      method?: keyof Omit<ZodOpenApiPathItemObject, 'id'>;
+      basePath?: string;
+      contentType?: string;
+    }
+  : {
+      /** For non-HTTP event types, HTTP-only keys are disallowed */
+      httpContexts?: never;
+      method?: never;
+      basePath?: never;
+      contentType?: never;
+    });

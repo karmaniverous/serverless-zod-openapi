@@ -2,4 +2,4 @@
 **/.tsbuild/
 **/generated/
 node_modules/
-tools/context/out/
+context/

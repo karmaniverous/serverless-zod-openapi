@@ -41,7 +41,7 @@ const main = async (): Promise<void> => {
   );
   const repoRoot = root.code === 0 ? root.stdout.trim() : process.cwd();
 
-  const outDirRel = 'tools/context/out';
+  const outDirRel = 'context';
   const outDirAbs = path.join(repoRoot, outDirRel);
   await mkdir(outDirAbs, { recursive: true });
 
@@ -51,7 +51,7 @@ const main = async (): Promise<void> => {
     repoRoot,
   );
   if (list.code !== 0) {
-    console.log('archive: no file list; left tools/context/out/ in place');
+    console.log('archive: no file list; left context directory in place');
     process.exitCode = 1;
     return;
   }

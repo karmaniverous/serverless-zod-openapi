@@ -5,7 +5,7 @@ import { z } from 'zod';
 export const deriveAllKeys = (
   globalEnv: readonly PropertyKey[],
   stageEnv: readonly PropertyKey[],
-  fnEnv: readonly PropertyKey[],
+  fnEnv: readonly PropertyKey[] = [],
 ): ReadonlySet<PropertyKey> => {
   const out = new Set<PropertyKey>();
   globalEnv.forEach((k) => out.add(k));

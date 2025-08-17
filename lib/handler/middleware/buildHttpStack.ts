@@ -1,12 +1,11 @@
-/* REQUIREMENTS ADDRESSED
-- Provide a single composed Middy middleware stack for API Gateway (HTTP) and "internal" invocations.
-- Always normalize handler results to an HTTP-shaped response and set `Content-Type` to the configured value.
-- Validate incoming events and outgoing responses against optional Zod schemas.
-- HEAD requests must short‑circuit to 200 with `{}` body without invoking the business handler.
-- In `internal` mode, skip all HTTP middlewares (no parsing/negotiation/CORS/serialization) but still perform Zod validation.
-- Be liberal on request parsing: never 415 on missing/mismatched content-type; only parse bodies for non‑GET/HEAD.
-- Expose errors and map validation-shaped errors to HTTP 400.
-*/
+/**
+ * Requirements:
+ * - Provide a single middleware stack for HTTP mode and a minimal one for internal mode.
+ * - HTTP mode: normalize responses to an HTTP envelope and set Content-Type.
+ * - HTTP mode: expose errors and map validation-shaped errors to HTTP 400.
+ * - Internal mode: validate with Zod only; DO NOT shape results or remap errors.
+ * - HEAD requests short-circuit to 200 with an empty JSON body.
+ */
 import type { MiddlewareObj } from '@middy/core';
 import httpContentNegotiation from '@middy/http-content-negotiation';
 import httpCors from '@middy/http-cors';
@@ -28,7 +27,7 @@ import {
 } from './httpZodValidator';
 import { shortCircuitHead } from './shortCircuitHead';
 
-type ShapedResponse = {
+type HttpEnvelope = {
   statusCode: number;
   headers?: Record<string, string>;
   body?: unknown;
@@ -36,19 +35,12 @@ type ShapedResponse = {
 
 const isZodError = (
   e: unknown,
-): e is {
-  name?: unknown;
-  issues?: unknown;
-  message?: unknown;
-} => {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    (e as { name?: unknown }).name === 'ZodError'
-  );
-};
+): e is { name?: unknown; issues?: unknown; message?: unknown } =>
+  typeof e === 'object' &&
+  e !== null &&
+  'issues' in (e as Record<string, unknown>);
 
-export type BuildStackOptions<
+export type BuildHttpMiddlewareStackOptions<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
@@ -57,16 +49,15 @@ export type BuildStackOptions<
   internal?: boolean;
   /** default: 'application/json' */
   contentType?: string;
-  /** used by the serializer’s logger fallback */
 } & Partial<Loggable<Logger>>;
 
 /** Build a single composed middleware stack in the correct order. */
-export const buildMiddlewareStack = <
+export const buildHttpMiddlewareStack = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   Logger extends ConsoleLogger,
 >(
-  options: BuildStackOptions<EventSchema, ResponseSchema, Logger>,
+  options: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema, Logger>,
 ): MiddlewareObj<APIGatewayProxyEvent, Context> => {
   const contentType = options.contentType ?? 'application/json';
   const logger = (options.logger ?? console) as unknown as Logger;
@@ -82,20 +73,6 @@ export const buildMiddlewareStack = <
   );
   const mEventNormalizer = asApiMiddleware(httpEventNormalizer());
 
-  // Parse Accept header early to populate request.preferredMediaTypes
-  const mContentNegotiation = asApiMiddleware(
-    httpContentNegotiation({
-      availableCharsets: undefined,
-      availableEncodings: undefined,
-      availableLanguages: undefined,
-      availableMediaTypes: [contentType],
-      parseCharsets: false,
-      parseEncodings: false,
-      parseLanguages: false,
-      parseMediaTypes: true,
-    }),
-  );
-
   // Content-type aware JSON body parser (only when body present; skip GET/HEAD)
   const mJsonBodyParser: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     before: async (request) => {
@@ -103,12 +80,14 @@ export const buildMiddlewareStack = <
         .event;
       if (!event) return;
 
-      // Req: Only parse when it makes sense; avoid 415s on mismatches.
-      const method = (
-        (event as { httpMethod?: string }).httpMethod ??
-        (event as { requestContext?: { http?: { method?: string } } })
-          .requestContext?.http?.method ??
-        ''
+      const method = String(
+        event.httpMethod ??
+          (
+            event as unknown as {
+              requestContext?: { http?: { method?: string } };
+            }
+          ).requestContext?.http?.method ??
+          '',
       ).toUpperCase();
 
       // Only parse when it makes sense
@@ -123,49 +102,17 @@ export const buildMiddlewareStack = <
     },
   };
 
-  // Expose preferred media types across the lifecycle (where present)
-  const mPreferredMediaTypes: MiddlewareObj<APIGatewayProxyEvent, Context> = {
-    before: (request) => {
-      const m = (
-        request as unknown as {
-          preferredMediaTypes?: string[];
-        }
-      ).preferredMediaTypes;
-      if (!m) return;
-      (
-        request as unknown as { internal?: Record<string, unknown> }
-      ).internal ??= {};
-      (
-        request as unknown as {
-          internal?: { preferredMediaTypes?: string[] };
-        }
-      ).internal!.preferredMediaTypes = m;
-    },
-    after: (request) => {
-      const m = (
-        request as unknown as {
-          internal?: { preferredMediaTypes?: string[] };
-        }
-      ).internal?.preferredMediaTypes;
-      if (!m) return;
-      (
-        request as unknown as { preferredMediaTypes?: string[] }
-      ).preferredMediaTypes = m;
-    },
-    onError: (request) => {
-      const m = (
-        request as unknown as {
-          internal?: { preferredMediaTypes?: string[] };
-        }
-      ).internal?.preferredMediaTypes;
-      if (!m) return;
-      (
-        request as unknown as { preferredMediaTypes?: string[] }
-      ).preferredMediaTypes = m;
-    },
-  };
+  // Parse Accept header early to populate request.preferredMediaTypes
+  const mContentNegotiation = asApiMiddleware(
+    httpContentNegotiation({
+      parseLanguages: false,
+      parseCharsets: false,
+      parseEncodings: false,
+      availableMediaTypes: [contentType],
+    }),
+  );
 
-  // Zod validation (event + response)
+  // Validate request BEFORE any content-type logic so Zod errors surface first
   const mZodValidator = asApiMiddleware(
     httpZodValidator<EventSchema, ResponseSchema, Logger>({
       eventSchema,
@@ -174,25 +121,58 @@ export const buildMiddlewareStack = <
     }),
   );
 
+  // Internal mode: only validate event/response schemas; skip HTTP-specific middlewares
+  if (options.internal) {
+    // Internal callers (e.g., SQS/Step Functions) consume the handler's raw return value.
+    // The stack intentionally includes only the Zod validator (no CORS/serializers/parsers/shaping).
+    return combine(mZodValidator);
+  }
+
   /**
-   * AFTER: normalize ANY response (shaped or not) to a normalized HTTP response and
-   * force the configured content type. This guarantees the serializer will
-   * never produce a 415 for our happy paths.
+   * Provide a sane default for preferred media types in ALL phases.
+   * This prevents 415s when tests only run `.after()` or `.onError()` and when
+   * no Accept header is present. Harmless if something else already set it.
    */
+  const mPreferredMediaTypes: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+    before: (request) => {
+      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
+        contentType,
+      ];
+      const r = request as { internal?: Record<string, unknown> };
+      r.internal ??= {};
+      (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
+        [contentType];
+    },
+    after: (request) => {
+      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
+        contentType,
+      ];
+    },
+    onError: (request) => {
+      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
+        contentType,
+      ];
+    },
+  };
+
+  // AFTER: normalize ANY response (shaped or not) to a normalized HTTP response and
+  // force the configured content type.
   const mShapeAndContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     after: (request) => {
       const container = request as unknown as { response?: unknown };
       const current = container.response;
-      if (!current || typeof current !== 'object') return;
+      if (current === undefined) return;
 
       const looksShaped =
+        typeof current === 'object' &&
+        current !== null &&
         'statusCode' in (current as Record<string, unknown>) &&
         'headers' in (current as Record<string, unknown>) &&
         'body' in (current as Record<string, unknown>);
 
-      let res: ShapedResponse;
+      let res: HttpEnvelope;
       if (looksShaped) {
-        res = current as ShapedResponse;
+        res = current as HttpEnvelope;
       } else {
         res = { statusCode: 200, headers: {}, body: current };
       }
@@ -202,7 +182,6 @@ export const buildMiddlewareStack = <
         try {
           res.body = JSON.stringify(res.body);
         } catch {
-          // Req: Only stringify primitives safely; fall back to String()
           res.body = String(res.body);
         }
       }
@@ -211,19 +190,18 @@ export const buildMiddlewareStack = <
       headers['Content-Type'] = contentType;
       res.headers = headers;
 
-      (request as unknown as { response: ShapedResponse }).response = res;
+      (request as unknown as { response: HttpEnvelope }).response = res;
     },
   };
 
   /**
-   * Expose errors and map validation-shaped ones to 400.
+   * Expose errors and map validation-shaped ones to 400 for HTTP mode.
    * (Avoid unsafe stringification: only test regex when the message is a string.)
    */
   const mErrorExpose: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     onError: (request) => {
       const maybe = (request as { error?: unknown }).error;
       if (!(maybe instanceof Error)) return;
-      // Avoid unsafe stringification; only regex-check when message is a string.
       const msg = typeof maybe.message === 'string' ? maybe.message : '';
 
       // Always expose errors from our handlers; map validation-shaped ones to 400.
@@ -240,7 +218,6 @@ export const buildMiddlewareStack = <
   // http-error-handler has nice defaults and respects `expose`/`statusCode`.
   const mErrorHandler = asApiMiddleware(
     httpErrorHandler({
-      // Req: Avoid confusing void expression
       logger: (o) => {
         if (typeof (logger as { error?: unknown }).error === 'function') {
           (logger as unknown as { error: (o: unknown) => void }).error(o);
@@ -272,11 +249,6 @@ export const buildMiddlewareStack = <
       defaultContentType: contentType,
     }),
   );
-
-  if (options.internal) {
-    // Internal mode: only validation (no HTTP shaping/negotiation/parsing/etc.)
-    return combine(mZodValidator);
-  }
 
   // Header + event normalization should happen very early
   return combine(

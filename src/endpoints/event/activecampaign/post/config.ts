@@ -1,20 +1,32 @@
+/**
+ * REQUIREMENTS ADDRESSED
+ * - HTTP config declares APIGatewayProxyEvent as the EventType.
+ * - Include eventSchema & responseSchema.
+ * - No casts; thread GlobalParams & StageParams for env key typing.
+ */
+
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { z } from 'zod';
 
-import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
-import type { HttpContext } from '@@/lib/types/HttpContext';
-import type { AllParamsKeys } from '@@/src/config/stages';
+import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
+import type { globalParamsSchema } from '@@/src/config/global';
+import type { stageParamsSchema } from '@@/src/config/stage';
 
-export const eventSchema = z.object({}); // if you want to skip, set this to undefined
-export const responseSchema = z.string();
+export const eventSchema = z.object({});
+export const responseSchema = z.string(); // handler returns 'Ok'
 
-export const functionConfig: FunctionConfig<
+export const functionConfig = makeFunctionConfig<
+  APIGatewayProxyEvent,
   typeof eventSchema,
-  typeof responseSchema
-> = {
+  typeof responseSchema,
+  typeof globalParamsSchema,
+  typeof stageParamsSchema
+>({
   functionName: 'activecampaign_post',
-  fnEnvKeys: [] as readonly AllParamsKeys[],
   contentType: 'application/json',
-  httpContexts: ['public' as HttpContext],
+  httpContexts: ['public'],
   method: 'post',
   basePath: 'event/activecampaign',
-};
+  eventSchema,
+  responseSchema,
+});

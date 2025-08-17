@@ -9,15 +9,15 @@ import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@@/lib/test/aws';
 
-import { buildMiddlewareStack } from './buildStack';
+import { buildHttpMiddlewareStack } from './buildHttpMiddlewareStack';
 
 const run = async (
   base: (e: APIGatewayProxyEvent, c: Context) => Promise<unknown>,
-  opts: Parameters<typeof buildMiddlewareStack>[0],
+  opts: Parameters<typeof buildHttpMiddlewareStack>[0],
   event: APIGatewayProxyEvent,
   ctx: Context,
 ) => {
-  const wrapped = middy(base).use(buildMiddlewareStack(opts));
+  const wrapped = middy(base).use(buildHttpMiddlewareStack(opts));
   const resp = (await wrapped(event, ctx)) as {
     statusCode: number;
     headers: Record<string, string>;
@@ -168,7 +168,7 @@ describe('stack: internal mode', () => {
           contentType: 'application/json',
           internal: true,
           responseSchema: z.object({ ok: z.boolean() }),
-        } as unknown as Parameters<typeof buildMiddlewareStack>[0],
+        } as unknown as Parameters<typeof buildHttpMiddlewareStack>[0],
         event,
         ctx,
       );

@@ -73,7 +73,7 @@ describe('wrapHandler: GET happy path', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as unknown as {
+    const res = (await wrapped(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -109,7 +109,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as unknown as {
+    const res = (await wrapped(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -155,7 +155,7 @@ describe('wrapHandler: POST with JSON body', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as unknown as {
+    const res = (await wrapped(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;

@@ -83,7 +83,7 @@ export const stagesFactory = <
 
   // Helper for function-level environment: include only non-globally-exposed
   const buildFnEnv = (
-    fnEnvKeys: readonly (keyof (GlobalParams & StageParams))[] = [],
+    fnEnvKeys: readonly (keyof (GlobalParams & StageParams))[] | undefined = [],
   ): Record<string, string> => {
     const extras = diff(fnEnvKeys as readonly string[], globallyExposed);
     return Object.fromEntries(extras.map((k) => [k, `\${param:${k}}`]));
