@@ -2,17 +2,15 @@ import type { Context } from 'aws-lambda';
 import type { z } from 'zod';
 
 import type { DeepOverride } from '@@/lib/types/DeepOverride';
+import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
-/** REQUIREMENTS ADDRESSED
- * - Define a single business handler type used by wrappers and implementers.
- * - The event parameter is *shaped* by the provided Zod schema at the type level.
- * - Do not use defaulted type parameters (project guideline).
- * - Keep the handler’s third generic (runtime event shape) as a function‑level generic
- *   so call sites may keep `Handler<E, R>` while the wrapper supplies the concrete event type.
+/**
+ * File-specific: handler/event shaping types.
+ * Cross-cutting rules: see /requirements.md (logging contract, typing guidelines).
  */
 
 /** Event type after applying deep schema overrides.
- *  IMPORTANT: use z.input<Schema> so pre‑transform shape is preserved for typing. */
+ *  IMPORTANT: use z.input<Schema> so pre‑transform input shape is preserved for typing. */
 export type ShapedEvent<
   EventSchema extends z.ZodType | undefined,
   EventType,
@@ -20,15 +18,16 @@ export type ShapedEvent<
   ? DeepOverride<EventType, z.input<EventSchema>>
   : EventType;
 
-/** Handler options shared across invocation modes. */
+/** Handler options passed by wrappers (HTTP or non-HTTP). */
 export type HandlerOptions = {
   env: Record<string, unknown>;
-  logger: Pick<Console, 'debug' | 'error' | 'info' | 'log'>;
+  /** Must satisfy ConsoleLogger (see /requirements.md §1). */
+  logger: ConsoleLogger;
 };
 
 /** Business handler:
- *  - Returns raw payloads; wrapping layers handle HTTP shaping when applicable.
- *  - Generic on the *runtime* EventType at the function level so wrappers can provide it. */
+ *  - Returns raw payloads; wrappers handle HTTP shaping when applicable.
+ *  - Function-level generic <EventType> allows wrappers to provide the concrete runtime shape. */
 export type Handler<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,

@@ -16,7 +16,7 @@ const normalizeMethod = (m: string) => m.toLowerCase();
 
 const toHttpObject = (e: HttpEvent): HttpEventObject => {
   if (typeof e.http === 'string') {
-    const [m = '', ...rest] = e.http.trim().split(/\\s+/);
+    const [m = '', ...rest] = e.http.trim().split(/\s+/);
     const method = normalizeMethod(m);
     const path = normalizePath(rest.join(' ') || '/');
     return { method, path };
@@ -101,7 +101,7 @@ export const buildFunctionDefinitions = <
   const def = {
     handler,
     events,
-    // Environment: populated via parsed param schemas + fnEnvKeys
+    // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
       ((functionConfig.fnEnvKeys ?? []) as readonly string[]) as readonly AllParamsKeys[],
     ),

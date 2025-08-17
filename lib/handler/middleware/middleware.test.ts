@@ -21,7 +21,7 @@ const run = async <R>(
   const wrapped = middy(async (e: APIGatewayProxyEvent, c: Context) =>
     base(e, c),
   ).use(stack);
-  return wrapped(event, ctx) as Promise<R>;
+  return wrapped(event, ctx);
 };
 
 describe('stack: response shaping & content-type header', () => {

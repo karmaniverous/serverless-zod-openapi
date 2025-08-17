@@ -15,12 +15,10 @@ export default buildPathItemObject(
   {
     summary: 'ActiveCampaign events',
     description: 'Receive ActiveCampaign event webhooks.',
-    requestBody: eventSchema
-      ? {
-          description: 'Webhook payload.',
-          content: { 'application/json': { schema: eventSchema } },
-        }
-      : undefined,
+    requestBody: {
+      description: 'Webhook payload.',
+      content: { 'application/json': { schema: eventSchema } },
+    },
     responses: {
       200: {
         description: 'Ok',

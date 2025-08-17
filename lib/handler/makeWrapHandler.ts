@@ -1,13 +1,3 @@
-/**
- * REQUIREMENTS ADDRESSED
- * - Wrapper consumes only (functionConfig, businessHandler).
- * - Use eventType token (from EventTypeMap) to decide HTTP vs internal at runtime.
- * - Validate event/response via provided zod schemas.
- * - Build typed env by reading production stage/global config.
- * - Do not perform HTTP shaping for non-HTTP handlers.
- * - NEVER use dynamic type imports; use static imports only.
- * - NEVER default type parameters; rely on inference from inputs.
- */
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import type { z } from 'zod';
@@ -27,6 +17,9 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
 import { globalEnvKeys, globalParamsSchema } from '@@/src/config/global';
 import { stageEnvKeys, stageParamsSchema } from '@@/src/config/stage';
 
+/**
+ * Cross-cutting rules: see /requirements.md (logging, HEAD semantics, env composition).
+ */
 type Z = z.ZodType;
 
 export const makeWrapHandler = <
@@ -38,8 +31,6 @@ export const makeWrapHandler = <
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
-    // We intentionally keep these generic in FunctionConfig and
-    // rely on the concrete project schemas below.
     Record<string, unknown>,
     Record<string, unknown>,
     EventTypeMap,
@@ -75,19 +66,19 @@ export const makeWrapHandler = <
     );
 
     const env = parseTypedEnv(envSchema, process.env);
+
     const logger: ConsoleLogger =
-      (functionConfig.logger as ConsoleLogger | undefined) ?? console;
+      (functionConfig.logger) ?? console;
 
     // --- Validate incoming event (Zod) --------------------------------------
     if (eventSchema) {
-      const result = eventSchema.safeParse(event as unknown);
+      const result = eventSchema.safeParse(event);
       if (!result.success) {
         const e = new Error('Invalid input') as Error & {
           expose: boolean;
           statusCode: number;
           issues: unknown[];
         };
-        // Mark as exposed only for HTTP; internal callers should see a throw.
         if (
           isHttpEventTypeToken(
             functionConfig.eventType as keyof BaseEventTypeMap,
@@ -102,7 +93,7 @@ export const makeWrapHandler = <
     }
 
     const out = await business(
-      event as unknown as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
+      event as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
       context,
       { env, logger },
     );
@@ -116,7 +107,6 @@ export const makeWrapHandler = <
           statusCode: number;
           issues?: unknown[];
         };
-        // Mark as exposed only for HTTP; internal callers should see a throw.
         if (
           isHttpEventTypeToken(
             functionConfig.eventType as keyof BaseEventTypeMap,
@@ -143,7 +133,7 @@ export const makeWrapHandler = <
       contentType:
         (functionConfig as { contentType?: string }).contentType ??
         'application/json',
-      logger: (functionConfig.logger as ConsoleLogger | undefined) ?? console,
+      logger: (functionConfig.logger) ?? console,
     });
 
     const wrapped = middy(async (e, c) => base(e, c)).use(http);

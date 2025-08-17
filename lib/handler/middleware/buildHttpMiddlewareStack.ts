@@ -5,12 +5,8 @@ import type { z } from 'zod';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 /**
- * REQUIREMENTS ADDRESSED
- * - Wrap ONLY HTTP handlers with middy.
- * - Always validate event/response when schemas are provided.
- * - HEAD requests short‑circuit to 200 and an empty JSON object.
- * - Do not redefine ConsoleLogger; use the shared type.
- * - Options MUST NOT include `internal` (HTTP-only by definition).
+ * File-specific: HTTP middleware for validation/shaping.
+ * Cross-cutting rules: see /requirements.md (logging, HEAD semantics).
  */
 export type BuildHttpMiddlewareStackOptions<
   EventSchema extends z.ZodType | undefined,
@@ -52,7 +48,7 @@ export const buildHttpMiddlewareStack = <
       try {
         body = JSON.stringify(payload);
       } catch (e) {
-        logger.error('Failed to JSON.stringify payload', e as unknown);
+        logger.error('Failed to JSON.stringify payload', e);
         body = '';
       }
     }
@@ -99,7 +95,7 @@ export const buildHttpMiddlewareStack = <
     }
 
     // If base already returned an HTTP-shaped object, preserve it and ensure Content‑Type.
-    const maybe = request.response as unknown;
+    const maybe = request.response;
     if (
       maybe &&
       typeof maybe === 'object' &&

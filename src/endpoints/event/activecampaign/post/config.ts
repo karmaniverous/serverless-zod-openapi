@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
 
-export const eventSchema = undefined;
+export const eventSchema = z.any();
 export const responseSchema = z.string();
 
 export const functionConfig = makeFunctionConfig({

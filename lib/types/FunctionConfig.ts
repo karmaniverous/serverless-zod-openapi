@@ -9,16 +9,14 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import type { PropFromUnion } from './PropFromUnion';
 
-/** HTTP methods we support from zod-openapi's PathItem shape (excluding the 'id' helper key). */
+/** HTTP methods supported from zod-openapi's PathItem shape (excluding helper 'id'). */
 export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
 
 /**
  * FunctionConfig
- * - Captures per-function schemas, environment requirements, and routing metadata.
- * - EventTypeMap binds event tokens (e.g., 'rest', 'http', 'sqs') to their runtime shapes.
- * - EventType is a key in EventTypeMap; it selects the runtime event shape.
- *
- * HTTP-only options are permitted only when EventType is one of the base HTTP tokens.
+ * - Per-function schemas, env requirements, routing metadata.
+ * - EventTypeMap binds event tokens (e.g., 'rest'|'http'|'sqs') to runtime shapes.
+ * - HTTP-only options are permitted only when EventType is an HTTP token.
  */
 export type FunctionConfig<
   EventSchema extends z.ZodType | undefined,
@@ -44,7 +42,7 @@ export type FunctionConfig<
   /** Optional extra serverless events (e.g., SQS triggers). */
   events?: PropFromUnion<AWS['functions'], string>['events'];
 
-  /** Optional logger override (primarily for tests); console is the default. */
+  /** Optional logger override; defaults to `console`. Must satisfy ConsoleLogger. */
   logger?: ConsoleLogger;
 } &
   // Gate HTTP-only options by whether EventType is one of the base HTTP tokens.
