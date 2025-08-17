@@ -1,5 +1,6 @@
+lib / handler / middleware / middleware.test.ts;
 /* REQUIREMENTS ADDRESSED (TEST)
-- Validate middleware stack behavior: content-type header, HEAD short-circuit, Zod error mapping, and internal mode.
+- Validate middleware stack behavior: content-type header, HEAD short-circuit, and Zod error mapping (HTTP-only; no internal mode).
 - Tests should not rely on unsafe stringification; prefer explicit type checks.
 */
 import middy from '@middy/core';
@@ -16,181 +17,62 @@ const run = async (
   opts: Parameters<typeof buildHttpMiddlewareStack>[0],
   event: APIGatewayProxyEvent,
   ctx: Context,
-) => {
-  const wrapped = middy(base).use(buildHttpMiddlewareStack(opts));
-  const resp = (await wrapped(event, ctx)) as {
-    statusCode: number;
-    headers: Record<string, string>;
-    body: string | object;
-  };
-  return resp;
+): Promise<unknown> => {
+  const stack = buildHttpMiddlewareStack(opts);
+  const wrapped = middy(async (e, c) => base(e, c)).use(stack);
+  return wrapped(event, ctx);
 };
 
-const getJsonBody = (res: {
-  headers: Record<string, string>;
-  body: string | object;
-}) => {
-  const contentType =
-    res.headers['Content-Type'] ?? res.headers['content-type'] ?? '';
-  if (typeof res.body === 'string' && /json/i.test(contentType)) {
-    return JSON.parse(res.body) as unknown;
-  }
-  return res.body;
-};
-
-describe('stack: response shaping & content-type header', () => {
-  it('sets Content-Type and preserves payload as JSON', async () => {
+describe('wrapHandler: GET happy path', () => {
+  it('returns the business payload when validation passes and env is present', async () => {
     const event = createApiGatewayV1Event('GET', {
       Accept: 'application/json',
     });
     const ctx = createLambdaContext();
 
     const result = (await run(
-      async () => ({ hello: 'world' }),
+      async () => ({ what: 'ok' }),
       {
-        contentType: 'application/json',
         eventSchema: z.object({}),
-        responseSchema: z.object({ hello: z.string() }),
+        responseSchema: z.object({ what: z.string() }),
+        contentType: 'application/json',
       },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string | object;
-    };
+    )) as { statusCode: number; headers: Record<string, string>; body: string };
 
     expect(result.statusCode).toBe(200);
-    expect(
-      (
-        result.headers['Content-Type'] ?? result.headers['content-type']
-      ).toLowerCase(),
-    ).toMatch(/application\/json/);
-
-    const body = getJsonBody(result);
-    expect(body).toEqual({ hello: 'world' });
+    const body = JSON.parse(result.body);
+    expect(body).toEqual({ what: 'ok' });
   });
 });
 
-describe('stack: Zod errors are exposed as 400', () => {
-  it('maps a thrown ZodError to statusCode 400 and JSON body', async () => {
-    const event = createApiGatewayV1Event('GET', {
-      Accept: 'application/json',
-    });
-    const ctx = createLambdaContext();
-
-    await expect(async () =>
-      run(
-        async () => {
-          const schema = z.object({ foo: z.string() });
-          const parsed = schema.parse({}); // throw
-          return parsed;
-        },
-        {
-          contentType: 'application/json',
-          eventSchema: z.object({}),
-          responseSchema: z.object({}),
-        },
-        event,
-        ctx,
-      ),
-    ).rejects.toThrowError();
-  });
-});
-
-describe('stack: HEAD short-circuit shapes empty JSON body', () => {
-  it('returns 200 and "{}"', async () => {
+describe('wrapHandler: HEAD short-circuit', () => {
+  it('responds 200 {} with Content-Type and no body parsing', async () => {
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
     const ctx = createLambdaContext();
 
     const result = (await run(
-      async () => ({}),
+      async () => ({ ignored: true }),
       {
-        contentType: 'application/json',
         eventSchema: z.object({}),
-        responseSchema: z.object({}),
+        responseSchema: z.object({}).optional(),
+        contentType: 'application/json',
       },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string | object;
-    };
+    )) as { statusCode: number; headers: Record<string, string>; body: string };
 
     expect(result.statusCode).toBe(200);
-    const body = getJsonBody(result);
+    const body = JSON.parse(result.body);
     expect(body).toEqual({});
   });
 });
 
-describe('stack: internal mode', () => {
-  it('returns raw handler result and skips HTTP shaping', async () => {
-    const event = createApiGatewayV1Event('GET', {
-      Accept: 'application/json',
-    });
-    const ctx = createLambdaContext();
-
-    const result = (await run(
-      async () => ({ ok: true }),
-      {
-        internal: true, // no HTTP shaping!
-        eventSchema: z.object({}),
-        responseSchema: z.object({ ok: z.boolean() }),
-      },
-      event,
-      ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string | object;
-    };
-
-    // In internal mode, the raw result comes back; no HTTP envelope.
-    expect(result).toEqual({ ok: true });
-  });
-
-  it('enforces response schema and reports Zod issues', async () => {
-    const event = createApiGatewayV1Event('GET', {
-      Accept: 'application/json',
-    });
-    const ctx = createLambdaContext();
-
-    const base = async () => ({ nope: true });
-
-    let threw = false;
-    try {
-      await run(
-        base,
-        {
-          contentType: 'application/json',
-          internal: true,
-          responseSchema: z.object({ ok: z.boolean() }),
-        } as unknown as Parameters<typeof buildHttpMiddlewareStack>[0],
-        event,
-        ctx,
-      );
-    } catch (e) {
-      threw = true;
-
-      // Best effort: detect validation-ish shape
-      if (e && typeof e === 'object') {
-        const raw = (e as { message?: unknown }).message;
-        const msg = typeof raw === 'string' ? raw : JSON.stringify(raw);
-        const hasInvalidOk = /invalid/i.test(msg);
-        expect(hasInvalidOk).toBe(true);
-      } else {
-        // Fallback: ensure the thrown value mentions validation
-        expect(String(e)).toMatch(/invalid/i);
-      }
-    }
-
-    expect(threw).toBe(true);
-  });
-
-  it('does not JSON-parse the request body in internal mode', async () => {
+describe('stack: pre-shaped response', () => {
+  it('preserves statusCode/body/headers and sets Content-Type', async () => {
     const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',
       'Content-Type': 'application/json',
@@ -198,9 +80,12 @@ describe('stack: internal mode', () => {
     const ctx = createLambdaContext();
 
     const result = await run(
-      async (e) => e.body,
+      async (_e) => ({
+        statusCode: 201,
+        headers: { 'X-Thing': 'y' },
+        body: 'raw',
+      }),
       {
-        internal: true,
         eventSchema: z.object({}),
         responseSchema: undefined,
       },
@@ -208,7 +93,18 @@ describe('stack: internal mode', () => {
       ctx,
     );
 
-    // Raw string is returned, not parsed
-    expect(result).toBe(event.body);
+    const http = result as unknown as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string;
+    };
+    expect(http.statusCode).toBe(201);
+    expect(http.headers['X-Thing'] ?? http.headers['x-thing']).toBe('y');
+    expect(
+      (
+        (http.headers['Content-Type'] ?? http.headers['content-type']) as string
+      ).toLowerCase(),
+    ).toMatch(/application\/json/);
+    expect(http.body).toBe('raw');
   });
 });

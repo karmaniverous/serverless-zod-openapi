@@ -6,6 +6,7 @@
  * - Default missing fnEnvKeys to [] when consumed.
  * - Use renamed middleware: buildHttpMiddlewareStack.
  * - Do not perform HTTP shaping for internal (non-HTTP) handlers.
+ * - Accept an explicit event type argument ("http" | "internal") and select HTTP middleware accordingly.
  */
 import middy from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
@@ -30,8 +31,8 @@ export type StagesRuntime<
   StageParams extends ZodObject<ZodRawShape>,
 > = {
   globalEnvKeys: readonly (keyof z.infer<GlobalParams>)[];
-  globalParamsSchema: GlobalParams;
   stageEnvKeys: readonly (keyof z.infer<StageParams>)[];
+  globalParamsSchema: GlobalParams;
   stageParamsSchema: StageParams;
 };
 
@@ -56,6 +57,7 @@ export const makeWrapHandler =
   >(
     stages: StagesRuntime<GlobalParams, StageParams>,
   ) =>
+  <EventKind extends 'http' | 'internal'>(eventKind: EventKind) =>
   <
     EventSchema extends Z | undefined,
     ResponseSchema extends Z | undefined,
@@ -100,8 +102,8 @@ export const makeWrapHandler =
 
       const envSchema = buildEnvSchema(
         globalParamsSchema,
-        stageParamsSchema,
         globalPick,
+        stageParamsSchema,
         stagePick,
       );
 
@@ -136,12 +138,12 @@ export const makeWrapHandler =
         const result = responseSchema.safeParse(out as unknown);
         if (!result.success) {
           const e = new Error('Invalid response') as Error & {
-            expose?: boolean;
-            statusCode?: number;
+            expose: boolean;
+            statusCode: number;
             issues?: unknown[];
           };
           // Mark as exposed only for HTTP; internal callers should see a throw.
-          if (isHttpConfig(functionConfig)) {
+          if (eventKind === 'http') {
             e.expose = true;
             e.statusCode = 500;
           }
@@ -153,9 +155,8 @@ export const makeWrapHandler =
       return out;
     };
 
-    if (isHttpConfig(functionConfig)) {
+    if (eventKind === 'http') {
       const http = buildHttpMiddlewareStack({
-        internal: false,
         eventSchema: eventSchema as EventSchema,
         responseSchema: responseSchema as ResponseSchema,
         contentType: contentType ?? 'application/json',

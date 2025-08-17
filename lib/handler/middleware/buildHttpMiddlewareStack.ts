@@ -9,21 +9,17 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
  * - Wrap ONLY HTTP handlers with middy.
  * - Always validate event/response when schemas are provided.
  * - HEAD requests short‑circuit to 200 and an empty JSON object.
- * - Never reshape in internal mode (used by non-HTTP tests/calls).
  * - Do not redefine ConsoleLogger; use the shared type.
+ * - Options no longer include `internal`; middleware is HTTP-only by definition.
  */
 export type BuildHttpMiddlewareStackOptions<
   EventSchema extends z.ZodTypeAny | undefined,
   ResponseSchema extends z.ZodTypeAny | undefined,
 > = {
-  /** When true, skip HTTP shaping (used by internal tests only). */
-  internal?: boolean;
-  /** Optional schemas enforced before/after business logic. */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
   /** Content-Type for shaped HTTP responses (default: application/json). */
   contentType?: string;
-  /** Logger to use for debug output (default: console). */
   logger?: ConsoleLogger;
 };
 
@@ -33,12 +29,23 @@ type ExposedError = Error & {
   issues?: unknown[];
 };
 
-/** Narrower serialization for debug logs to avoid circular refs. */
-const safeLog = (value: unknown): string => {
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return '[unserializable]';
+const validate = <T>(
+  payload: unknown,
+  schema: z.ZodTypeAny | undefined,
+  kind: 'event' | 'response',
+): asserts payload is T => {
+  if (!schema) return;
+  const parsed = schema.safeParse(payload);
+  if (!parsed.success) {
+    const e = new Error(`Invalid ${kind}`) as Error & {
+      expose: boolean;
+      statusCode: number;
+      issues: unknown[];
+    };
+    e.expose = true;
+    e.statusCode = 400;
+    e.issues = parsed.error.issues;
+    throw e;
   }
 };
 
@@ -49,7 +56,6 @@ export const buildHttpMiddlewareStack = <
   opts: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema>,
 ): MiddlewareObj<APIGatewayProxyEvent, unknown> => {
   const {
-    internal = false,
     eventSchema,
     responseSchema,
     contentType = 'application/json',
@@ -58,38 +64,30 @@ export const buildHttpMiddlewareStack = <
 
   const shape = (payload: unknown, statusCode = 200) => {
     const headers: Record<string, string> = { 'Content-Type': contentType };
-    const body =
-      typeof payload === 'string' ? payload : JSON.stringify(payload ?? {});
-    return { statusCode, headers, body };
-  };
-
-  const validate = (
-    value: unknown,
-    schema: z.ZodTypeAny | undefined,
-    kind: 'event' | 'response',
-  ) => {
-    if (!schema) return;
-    logger.debug('validating with zod', safeLog(value));
-    const res = schema.safeParse(value);
-    if (!res.success) {
-      const err: ExposedError = new Error(
-        kind === 'event' ? 'Invalid input' : 'Invalid response',
-      );
-      err.expose = true;
-      err.statusCode = kind === 'event' ? 400 : 500;
-      err.issues = res.error.issues;
-      throw err;
+    let body = '';
+    if (typeof payload === 'string') {
+      body = payload;
+    } else {
+      try {
+        body = JSON.stringify(payload);
+      } catch (e) {
+        const msg =
+          e instanceof Error ? e.message : 'Failed to serialize response';
+        logger.error({ message: msg });
+        body = JSON.stringify({ message: msg });
+      }
     }
+    return { statusCode, headers, body };
   };
 
   const before: MiddlewareObj<APIGatewayProxyEvent, unknown>['before'] = async (
     request,
   ) => {
     const event = request.event as APIGatewayProxyEvent;
-    // Validate even in internal mode; only shaping behavior differs.
+    // Validate the event before shaping.
     validate(event, eventSchema, 'event');
 
-    if (!internal && event.httpMethod === 'HEAD') {
+    if (event.httpMethod === 'HEAD') {
       // HEAD short‑circuit with shaped 200 {} and Content‑Type header.
       request.response = shape({});
     }
@@ -98,12 +96,6 @@ export const buildHttpMiddlewareStack = <
   const after: MiddlewareObj<APIGatewayProxyEvent, unknown>['after'] = async (
     request,
   ) => {
-    if (internal) {
-      // Internal mode: never HTTP‑shape, only enforce response schema when provided.
-      validate(request.response, responseSchema, 'response');
-      return;
-    }
-
     // If base already returned an HTTP-shaped object, preserve it and ensure Content‑Type.
     const maybe = request.response as unknown as
       | { statusCode?: unknown; headers?: unknown; body?: unknown }

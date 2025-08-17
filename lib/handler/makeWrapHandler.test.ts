@@ -15,29 +15,26 @@ import {
   stageEnvKeys,
   stageParamsSchema,
 } from '@@/lib/test/serverless/config/stage';
-import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import { makeWrapHandler } from './makeWrapHandler';
 
-const runtime = <
+/* [snip lines that set up a small local helper returning a wrapped handler] */
+const wrap = <
   G extends typeof globalParamsSchema,
   S extends typeof stageParamsSchema,
->(
-  base: (event: unknown, ctx: Context) => Promise<unknown>,
-  cfg: {
-    contentType: string;
-    eventSchema?: z.ZodType | undefined;
-    responseSchema?: z.ZodType | undefined;
-    fnEnvKeys: readonly (keyof z.infer<G> | keyof z.infer<S>)[];
-    logger: ConsoleLogger;
-  },
-) => {
+>(cfg: {
+  contentType?: string;
+  eventSchema?: z.ZodType | undefined;
+  responseSchema?: z.ZodType | undefined;
+  fnEnvKeys: readonly (keyof z.infer<G> | keyof z.infer<S>)[];
+  logger: ConsoleLogger;
+}) => {
   const wrapped = makeWrapHandler({
     globalEnvKeys,
     globalParamsSchema,
     stageEnvKeys,
     stageParamsSchema,
-  })(async (_evt, _ctx, _opts) => base(_evt, _ctx), {
+  })('http')(async (_evt, _ctx, _opts) => base(_evt, _ctx), {
     contentType: cfg.contentType,
     eventSchema: cfg.eventSchema,
     responseSchema: cfg.responseSchema,
