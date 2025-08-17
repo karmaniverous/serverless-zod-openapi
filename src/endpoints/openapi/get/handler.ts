@@ -1,26 +1,17 @@
 /**
  * REQUIREMENTS ADDRESSED
- * - Use makeWrapHandler directly with local config; eliminate wrapHandler.
- * - Pass event type argument ('http') so HTTP middleware is applied.
- * - Do not use deprecated Zod 4 functions.
+ * - Call makeWrapHandler with only (functionConfig, businessHandler).
+ * - Eliminate wrapHandler shim and stage/global injection here.
+ * - Apply HTTP middleware automatically based on eventType token.
  */
 import type { z } from 'zod';
 
 import { makeWrapHandler } from '@@/lib/handler/makeWrapHandler';
-import { globalEnvKeys, globalParamsSchema } from '@@/src/config/global';
-import { stageEnvKeys, stageParamsSchema } from '@@/src/config/stage';
 import openapi from '@@/src/openapi.json';
 
 import { functionConfig, type responseSchema } from './config';
 
-const wrap = makeWrapHandler({
-  globalEnvKeys,
-  globalParamsSchema,
-  stageEnvKeys,
-  stageParamsSchema,
-});
-
-export const handler = wrap('http')(
-  async () => openapi as unknown as z.infer<typeof responseSchema>,
+export const handler = makeWrapHandler(
   functionConfig,
+  async () => openapi as unknown as z.infer<typeof responseSchema>,
 );

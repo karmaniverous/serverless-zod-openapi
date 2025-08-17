@@ -10,12 +10,13 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
  * - Always validate event/response when schemas are provided.
  * - HEAD requests short‑circuit to 200 and an empty JSON object.
  * - Do not redefine ConsoleLogger; use the shared type.
- * - Options no longer include `internal`; middleware is HTTP-only by definition.
+ * - Options MUST NOT include `internal` (HTTP-only by definition).
  */
 export type BuildHttpMiddlewareStackOptions<
   EventSchema extends z.ZodTypeAny | undefined,
   ResponseSchema extends z.ZodTypeAny | undefined,
 > = {
+  /** Optional schemas enforced before/after business logic. */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
   /** Content-Type for shaped HTTP responses (default: application/json). */
@@ -27,26 +28,6 @@ type ExposedError = Error & {
   expose?: boolean;
   statusCode?: number;
   issues?: unknown[];
-};
-
-const validate = <T>(
-  payload: unknown,
-  schema: z.ZodTypeAny | undefined,
-  kind: 'event' | 'response',
-): asserts payload is T => {
-  if (!schema) return;
-  const parsed = schema.safeParse(payload);
-  if (!parsed.success) {
-    const e = new Error(`Invalid ${kind}`) as Error & {
-      expose: boolean;
-      statusCode: number;
-      issues: unknown[];
-    };
-    e.expose = true;
-    e.statusCode = 400;
-    e.issues = parsed.error.issues;
-    throw e;
-  }
 };
 
 export const buildHttpMiddlewareStack = <
@@ -80,15 +61,32 @@ export const buildHttpMiddlewareStack = <
     return { statusCode, headers, body };
   };
 
+  const validate = (
+    payload: unknown,
+    schema: z.ZodTypeAny | undefined,
+    kind: 'event' | 'response',
+  ) => {
+    if (!schema) return;
+    const parsed = schema.safeParse(payload);
+    if (!parsed.success) {
+      const e = new Error(`Invalid ${kind}`) as Error & {
+        expose: boolean;
+        statusCode: number;
+        issues: unknown[];
+      };
+      e.expose = true;
+      e.statusCode = 400;
+      e.issues = parsed.error.issues;
+      throw e;
+    }
+  };
+
   const before: MiddlewareObj<APIGatewayProxyEvent, unknown>['before'] = async (
     request,
   ) => {
+    validate(request.event, eventSchema, 'event');
     const event = request.event as APIGatewayProxyEvent;
-    // Validate the event before shaping.
-    validate(event, eventSchema, 'event');
-
     if (event.httpMethod === 'HEAD') {
-      // HEAD short‑circuit with shaped 200 {} and Content‑Type header.
       request.response = shape({});
     }
   };
@@ -123,7 +121,6 @@ export const buildHttpMiddlewareStack = <
       return;
     }
 
-    // Validate business payload and shape to HTTP.
     validate(request.response, responseSchema, 'response');
     request.response = shape(request.response);
   };
@@ -142,7 +139,6 @@ export const buildHttpMiddlewareStack = <
       request.response = shape(payload, statusCode);
       return;
     }
-    // Re‑throw non‑exposed errors so outer infrastructure (tests / AWS) can handle.
     throw err instanceof Error ? err : new Error(String(err));
   };
 

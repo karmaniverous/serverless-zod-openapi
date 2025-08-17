@@ -15,28 +15,10 @@ type HttpEventObject = { method: string; path: string } & Record<
   string,
   unknown
 >;
-type HttpEvent = { http: string | HttpEventObject };
-type AnyEvent = HttpEvent | Record<string, unknown>;
+type HttpEvent = { http: HttpEventObject };
 
-const isHttpEvent = (e: AnyEvent): e is HttpEvent =>
-  Object.prototype.hasOwnProperty.call(e, 'http');
-
-const normalizeMethod = (m: string): string => m.trim().toLowerCase();
-const normalizePath = (p: string): string =>
-  p.replace(/\\/g, '/').replace(/^\//, '');
-const keyFor = (method: string, path: string): string =>
-  `${normalizeMethod(method)} ${path}`;
-
-const httpEventKey = (e: HttpEvent): string => {
-  if (typeof e.http === 'string') {
-    const [m, ...rest] = e.http.trim().split(/\s+/);
-    const method = normalizeMethod(m ?? '');
-    const path = normalizePath(rest.join(' ') || '/');
-    return keyFor(method, path);
-  }
-  const { method, path } = e.http;
-  return keyFor(method, normalizePath(path));
-};
+const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
+const normalizeMethod = (m: string) => m.toLowerCase();
 
 const toHttpObject = (e: HttpEvent): HttpEventObject => {
   if (typeof e.http === 'string') {
@@ -56,8 +38,19 @@ const toHttpObject = (e: HttpEvent): HttpEventObject => {
 export const buildFunctionDefinitions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
+  EventTypeMap,
+  EventType extends keyof EventTypeMap,
 >(
-  functionConfig: FunctionConfig<EventSchema, ResponseSchema>,
+  functionConfig: FunctionConfig<
+    EventSchema,
+    ResponseSchema,
+    GlobalParams,
+    StageParams,
+    EventTypeMap,
+    EventType
+  >,
   rawServerlessConfig: z.input<typeof serverlessConfigSchema>,
   callerModuleUrl: string,
 ): AWS['functions'] => {
@@ -77,29 +70,25 @@ export const buildFunctionDefinitions = <
       const httpEvent = {
         method,
         path,
-        ...(parsed.httpContextEventMap[ctx] as Record<string, unknown>),
-      };
-      generatedByKey[keyFor(method, path)] = httpEvent;
+        ...(parsed.httpContextEventMap?.[ctx] ?? {}),
+      } as HttpEventObject;
+      generatedByKey[ctx] = httpEvent;
     }
   }
 
-  const baseEvents = functionConfig.events as AnyEvent[];
+  // Merge any authored HTTP events with generated defaults (by context key)
+  const baseHttpEvents = (
+    (functionConfig.events as unknown as
+      | { http?: HttpEventObject }[]
+      | undefined) ?? []
+  ).filter((e) => e && typeof e === 'object' && 'http' in e) as HttpEvent[];
 
-  const preservedNonHttp: AnyEvent[] = [];
-  const preservedHttpNonMatching: HttpEvent[] = [];
   const baseHttpMatchingByKey: Record<string, HttpEvent> = {};
-
-  for (const ev of baseEvents) {
-    if (!isHttpEvent(ev)) {
-      preservedNonHttp.push(ev);
-      continue;
-    }
-    const key = httpEventKey(ev);
-    if (key in generatedByKey) {
-      baseHttpMatchingByKey[key] = ev;
-    } else {
-      preservedHttpNonMatching.push(ev);
-    }
+  for (const e of baseHttpEvents) {
+    const obj = toHttpObject(e);
+    const key = obj.path.split('/')[1] ?? '';
+    if (!key) continue;
+    baseHttpMatchingByKey[key] = e;
   }
 
   const mergedGenerated: HttpEvent[] = [];
@@ -118,22 +107,26 @@ export const buildFunctionDefinitions = <
     }
   }
 
-  const finalEvents = [
-    ...preservedNonHttp,
-    ...preservedHttpNonMatching,
+  const events: NonNullable<AwsFunction['events']> = [
+    ...((functionConfig.events ?? []) as NonNullable<AwsFunction['events']>),
     ...mergedGenerated,
-  ] as AwsFunction['events'];
+  ];
 
-  const environment = buildFnEnv(functionConfig.fnEnvKeys);
-
-  const handler = `${modulePathFromRoot(callerModuleUrl)}/${parsed.defaultHandlerFileName}.${parsed.defaultHandlerFileExport}`;
-
-  const fnKey = functionConfig.functionName;
-  return {
-    [fnKey]: {
-      handler,
-      environment,
-      events: finalEvents,
-    },
+  const def: AwsFunction = {
+    // Default handler path: src/*/**/handler.ts export handler
+    handler: modulePathFromRoot(
+      parsed.defaultHandlerFileName,
+      parsed.defaultHandlerFileExport,
+      callerModuleUrl,
+    ),
+    events,
+    // Environment: populated via parsed param schemas + fnEnvKeys
+    // (function-specific overrides merged in stage config utility)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    environment: buildFnEnv(functionConfig.fnEnvKeys ?? []),
   };
+
+  return {
+    [functionConfig.functionName]: def,
+  } as AWS['functions'];
 };

@@ -1,27 +1,17 @@
 /**
  * REQUIREMENTS ADDRESSED
- * - HTTP config declares APIGatewayProxyEvent as the EventType.
- * - Provide responseSchema; eventSchema intentionally undefined.
- * - No casts; thread GlobalParams & StageParams for env key typing.
+ * - HTTP config: eventType='rest' with response schema.
+ * - No generics; rely on local EventTypeMap inference.
  */
-
-import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { z } from 'zod';
 
 import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
-import type { globalParamsSchema } from '@@/src/config/global';
-import type { stageParamsSchema } from '@@/src/config/stage';
 
 export const eventSchema = undefined;
 export const responseSchema = z.object({});
 
-export const functionConfig = makeFunctionConfig<
-  APIGatewayProxyEvent,
-  typeof eventSchema,
-  typeof responseSchema,
-  typeof globalParamsSchema,
-  typeof stageParamsSchema
->({
+export const functionConfig = makeFunctionConfig({
+  eventType: 'rest',
   functionName: 'openapi_get',
   contentType: 'application/json',
   httpContexts: ['public'],

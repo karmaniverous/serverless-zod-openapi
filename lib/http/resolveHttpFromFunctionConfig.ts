@@ -20,21 +20,24 @@ const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
   'delete',
   'head',
   'options',
-  'trace',
 ]);
 
-const toPosix = (p: string) => p.replace(/\\/g, '/');
-
-type MaybeHttpEvent = { http?: string | { method?: string; path?: string } };
-
-const isMaybeHttpEvent = (e: unknown): e is MaybeHttpEvent =>
-  e !== null &&
-  typeof e === 'object' &&
-  Object.prototype.hasOwnProperty.call(e as Record<string, unknown>, 'http');
-
-/** Derive {method, basePath, contexts} from FunctionConfig and the caller module's URL. */
-export const resolveHttpFromFunctionConfig = (
-  config: FunctionConfig<z.ZodType | undefined, z.ZodType | undefined>,
+export const resolveHttpFromFunctionConfig = <
+  EventSchema extends z.ZodType | undefined,
+  ResponseSchema extends z.ZodType | undefined,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
+  EventTypeMap,
+  EventType extends keyof EventTypeMap,
+>(
+  config: FunctionConfig<
+    EventSchema,
+    ResponseSchema,
+    GlobalParams,
+    StageParams,
+    EventTypeMap,
+    EventType
+  >,
   callerModuleUrl: string,
 ):
   | {
@@ -57,33 +60,17 @@ export const resolveHttpFromFunctionConfig = (
     if (last && HTTP_METHODS.has(last as MethodKey)) method = last as MethodKey;
   }
 
-  if (!method && Array.isArray(config.events)) {
-    const anyEvents = config.events as unknown[];
-    const candidate = anyEvents.find(isMaybeHttpEvent);
-    const http = candidate?.http;
-    if (typeof http === 'string') {
-      const [m] = http.trim().split(/\s+/);
-      const mk = (m?.toLowerCase() ?? undefined) as MethodKey | undefined;
-      if (mk && HTTP_METHODS.has(mk)) method = mk;
-    } else if (http && typeof http.method === 'string') {
-      const mk = http.method.toLowerCase() as MethodKey | undefined;
-      if (mk && HTTP_METHODS.has(mk)) method = mk;
-    }
-  }
-
   if (!method) {
     throw new Error(
-      'resolveHttpFromFunctionConfig: cannot determine HTTP method; provide config.method or use a method-named folder.',
+      'resolveHttpFromFunctionConfig: could not infer method; set config.method or place under endpoints/<base>/<method>/',
     );
   }
 
-  // 2) Base path: explicit -> folder path (minus trailing method)
-  let basePath =
-    (config.basePath && sanitizeBasePath(config.basePath)) || undefined;
-
+  // 2) Base path: explicit -> parent folder(s)
+  let basePath = sanitizeBasePath(config.basePath);
   if (!basePath) {
     const absDir = dirname(fileURLToPath(callerModuleUrl));
-    const rel = toPosix(relative(ENDPOINTS_ROOT_ABS, absDir));
+    const rel = relative(ENDPOINTS_ROOT_ABS, absDir);
     const segs = rel.split('/').filter(Boolean);
     if (segs.length && segs[segs.length - 1]?.toLowerCase() === method)
       segs.pop();

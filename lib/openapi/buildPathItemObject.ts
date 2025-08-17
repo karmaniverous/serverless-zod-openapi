@@ -16,8 +16,19 @@ import type { BaseOperation } from './types';
 export const buildPathItemObject = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
+  EventTypeMap,
+  EventType extends keyof EventTypeMap,
 >(
-  config: FunctionConfig<EventSchema, ResponseSchema>,
+  config: FunctionConfig<
+    EventSchema,
+    ResponseSchema,
+    GlobalParams,
+    StageParams,
+    EventTypeMap,
+    EventType
+  >,
   rawServerlessConfig: z.input<typeof serverlessConfigSchema>,
   callerModuleUrl: string,
   baseOperation: BaseOperation,

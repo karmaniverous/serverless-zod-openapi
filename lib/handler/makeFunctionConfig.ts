@@ -1,23 +1,26 @@
 import type { z } from 'zod';
 
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
+import type { EventTypeMap as LocalEventTypeMap } from '@@/src/config/EventTypeMap';
 
 /**
- * Passthrough that *enforces* an explicit EventType for gating HTTP-only options.
+ * Passthrough that *enforces* an explicit EventType for gating HTTP-only options
+ * and binds the project's local EventTypeMap without requiring generics at call sites.
  * EventSchema/ResponseSchema are inferred from the `functionConfig` argument.
  */
 export const makeFunctionConfig = <
-  EventType = never,
-  EventSchema extends z.ZodType | undefined = undefined,
-  ResponseSchema extends z.ZodType | undefined = undefined,
-  GlobalParams extends Record<string, unknown> = Record<string, never>,
-  StageParams extends Record<string, unknown> = Record<string, never>,
+  EventType extends keyof LocalEventTypeMap,
+  EventSchema extends z.ZodType | undefined,
+  ResponseSchema extends z.ZodType | undefined,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 >(
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
     GlobalParams,
     StageParams,
+    LocalEventTypeMap,
     EventType
   >,
 ): FunctionConfig<
@@ -25,5 +28,6 @@ export const makeFunctionConfig = <
   ResponseSchema,
   GlobalParams,
   StageParams,
+  LocalEventTypeMap,
   EventType
 > => functionConfig;

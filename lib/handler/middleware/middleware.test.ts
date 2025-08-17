@@ -1,4 +1,3 @@
-lib / handler / middleware / middleware.test.ts;
 /* REQUIREMENTS ADDRESSED (TEST)
 - Validate middleware stack behavior: content-type header, HEAD short-circuit, and Zod error mapping (HTTP-only; no internal mode).
 - Tests should not rely on unsafe stringification; prefer explicit type checks.
@@ -23,32 +22,40 @@ const run = async (
   return wrapped(event, ctx);
 };
 
-describe('wrapHandler: GET happy path', () => {
-  it('returns the business payload when validation passes and env is present', async () => {
+describe('stack: response shaping & content-type header', () => {
+  it('sets Content-Type and preserves payload as JSON', async () => {
     const event = createApiGatewayV1Event('GET', {
       Accept: 'application/json',
     });
     const ctx = createLambdaContext();
 
     const result = (await run(
-      async () => ({ what: 'ok' }),
+      async () => ({ hello: 'world' }),
       {
-        eventSchema: z.object({}),
-        responseSchema: z.object({ what: z.string() }),
         contentType: 'application/json',
+        eventSchema: z.object({}),
+        responseSchema: z.object({ hello: z.string() }),
       },
       event,
       ctx,
-    )) as { statusCode: number; headers: Record<string, string>; body: string };
+    )) as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string | object;
+    };
 
     expect(result.statusCode).toBe(200);
-    const body = JSON.parse(result.body);
-    expect(body).toEqual({ what: 'ok' });
+    const contentType =
+      result.headers['Content-Type'] ?? result.headers['content-type'] ?? '';
+    expect(contentType.toLowerCase()).toMatch(/application\/json/);
+    const body =
+      typeof result.body === 'string' ? JSON.parse(result.body) : result.body;
+    expect(body).toEqual({ hello: 'world' });
   });
 });
 
-describe('wrapHandler: HEAD short-circuit', () => {
-  it('responds 200 {} with Content-Type and no body parsing', async () => {
+describe('stack: HEAD short-circuit', () => {
+  it('responds 200 {} with Content-Type', async () => {
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
@@ -57,16 +64,24 @@ describe('wrapHandler: HEAD short-circuit', () => {
     const result = (await run(
       async () => ({ ignored: true }),
       {
+        contentType: 'application/json',
         eventSchema: z.object({}),
         responseSchema: z.object({}).optional(),
-        contentType: 'application/json',
       },
       event,
       ctx,
-    )) as { statusCode: number; headers: Record<string, string>; body: string };
+    )) as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string | object;
+    };
 
     expect(result.statusCode).toBe(200);
-    const body = JSON.parse(result.body);
+    const contentType =
+      result.headers['Content-Type'] ?? result.headers['content-type'] ?? '';
+    expect(contentType.toLowerCase()).toMatch(/application\/json/);
+    const body =
+      typeof result.body === 'string' ? JSON.parse(result.body) : result.body;
     expect(body).toEqual({});
   });
 });

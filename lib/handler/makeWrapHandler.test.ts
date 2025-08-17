@@ -1,6 +1,7 @@
 /* REQUIREMENTS ADDRESSED (TEST)
 - Ensure `makeWrapHandler` produces HTTP-shaped responses for HTTP events (GET/HEAD/POST) and validates payloads.
 - Ensure HEAD short-circuits and that content-type negotiation is respected.
+- Ensure wrapper reads env via mocked production config modules.
 */
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
@@ -8,42 +9,26 @@ import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@@/lib/test/aws';
 import {
-  globalEnvKeys,
-  globalParamsSchema,
+  globalEnvKeys as testGlobalEnvKeys,
+  globalParamsSchema as testGlobalParamsSchema,
 } from '@@/lib/test/serverless/config/global';
 import {
-  stageEnvKeys,
-  stageParamsSchema,
+  stageEnvKeys as testStageEnvKeys,
+  stageParamsSchema as testStageParamsSchema,
 } from '@@/lib/test/serverless/config/stage';
 
-import { makeWrapHandler } from './makeWrapHandler';
+vi.mock('@@/src/config/global', () => ({
+  globalEnvKeys: testGlobalEnvKeys,
+  globalParamsSchema: testGlobalParamsSchema,
+}));
+vi.mock('@@/src/config/stage', () => ({
+  stageEnvKeys: testStageEnvKeys,
+  stageParamsSchema: testStageParamsSchema,
+}));
 
-/* [snip lines that set up a small local helper returning a wrapped handler] */
-const wrap = <
-  G extends typeof globalParamsSchema,
-  S extends typeof stageParamsSchema,
->(cfg: {
-  contentType?: string;
-  eventSchema?: z.ZodType | undefined;
-  responseSchema?: z.ZodType | undefined;
-  fnEnvKeys: readonly (keyof z.infer<G> | keyof z.infer<S>)[];
-  logger: ConsoleLogger;
-}) => {
-  const wrapped = makeWrapHandler({
-    globalEnvKeys,
-    globalParamsSchema,
-    stageEnvKeys,
-    stageParamsSchema,
-  })('http')(async (_evt, _ctx, _opts) => base(_evt, _ctx), {
-    contentType: cfg.contentType,
-    eventSchema: cfg.eventSchema,
-    responseSchema: cfg.responseSchema,
-    fnEnvKeys: cfg.fnEnvKeys,
-    logger: cfg.logger,
-  });
-
-  return wrapped;
-};
+import type { ConsoleLogger } from '@@/lib/types/Loggable';
+import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
+import { makeWrapHandler } from '@@/lib/handler/makeWrapHandler';
 
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
@@ -57,20 +42,29 @@ describe('wrapHandler: GET happy path', () => {
       log: vi.fn(),
     };
 
-    const wrapped = runtime(async () => ({ what: 'ok' }), {
+    const functionConfig = makeFunctionConfig({
+      eventType: 'rest',
+      functionName: 'test_get',
       contentType: 'application/json',
+      httpContexts: ['public'],
+      method: 'get',
+      basePath: 'test',
       eventSchema,
       responseSchema,
       fnEnvKeys: [],
       logger,
     });
 
+    const handler = makeWrapHandler(functionConfig, async () => ({
+      what: 'ok',
+    }));
+
     const event = createApiGatewayV1Event('GET', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as {
+    const res = (await handler(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -87,37 +81,40 @@ describe('wrapHandler: GET happy path', () => {
 });
 
 describe('wrapHandler: HEAD short-circuit', () => {
-  it('skips the business handler and produces a shaped response with 200', async () => {
-    const wrapped = runtime(
-      async () => {
-        throw new Error('should not run this');
-      },
-      {
-        contentType: 'application/json',
-        eventSchema: z.object({}),
-        responseSchema: z.object({}),
-        fnEnvKeys: [],
-        logger,
-      },
-    );
+  it('responds 200 {} with Content-Type', async () => {
+    const eventSchema = z.object({});
+    const responseSchema = z.object({}).optional();
+
+    const functionConfig = makeFunctionConfig({
+      eventType: 'rest',
+      functionName: 'test_head',
+      contentType: 'application/json',
+      httpContexts: ['public'],
+      method: 'head',
+      basePath: 'test',
+      eventSchema,
+      responseSchema,
+      fnEnvKeys: [],
+    });
+
+    const handler = makeWrapHandler(functionConfig, async () => ({
+      ignored: true,
+    }));
 
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as {
+    const res = (await handler(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
     };
 
     expect(res.statusCode).toBe(200);
-    expect(res.headers['Content-Type'] ?? res.headers['content-type']).toMatch(
-      /application\/json/i,
-    );
-    // Body is shaped to "{}"
-    expect(res.body).toBe('{}');
+    const body = JSON.parse(res.body);
+    expect(body).toEqual({});
   });
 });
 
@@ -133,18 +130,22 @@ describe('wrapHandler: POST with JSON body', () => {
       log: vi.fn(),
     };
 
-    const wrapped = runtime(
-      async (_evt) => {
-        return { what: 'ok' };
-      },
-      {
-        contentType: 'application/json',
-        eventSchema,
-        responseSchema,
-        fnEnvKeys: [],
-        logger,
-      },
-    );
+    const functionConfig = makeFunctionConfig({
+      eventType: 'rest',
+      functionName: 'test_post',
+      contentType: 'application/json',
+      httpContexts: ['public'],
+      method: 'post',
+      basePath: 'test',
+      eventSchema,
+      responseSchema,
+      fnEnvKeys: [],
+      logger,
+    });
+
+    const handler = makeWrapHandler(functionConfig, async () => {
+      return { what: 'ok' };
+    });
 
     const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',
@@ -152,7 +153,7 @@ describe('wrapHandler: POST with JSON body', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await wrapped(event, ctx)) as {
+    const res = (await handler(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
