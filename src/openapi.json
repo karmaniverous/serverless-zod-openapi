@@ -25,9 +25,7 @@
           "description": "Webhook payload.",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "string"
-              }
+              "schema": {}
             }
           }
         },
@@ -37,7 +35,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "ref": "EventActivecampaignGetResponse",
                   "type": "string"
                 }
               }
@@ -58,10 +55,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "ref": "OpenapiGetResponse",
                   "type": "object",
                   "properties": {},
-                  "additionalProperties": {}
+                  "additionalProperties": false
                 }
               }
             }

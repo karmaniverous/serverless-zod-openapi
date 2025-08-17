@@ -1,5 +1,5 @@
 import { unique } from 'radash';
-import type { z } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
@@ -17,8 +17,8 @@ import type { BaseOperation } from './types';
 export const buildPathItemObject = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
+  GlobalParams extends ZodObject<ZodRawShape>,
+  StageParams extends ZodObject<ZodRawShape>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(

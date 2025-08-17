@@ -5,17 +5,19 @@ import type { z } from 'zod';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 /**
- * File-specific: HTTP middleware for validation/shaping.
- * Cross-cutting rules: see /requirements.md (logging, HEAD semantics).
+ * REQUIREMENTS ADDRESSED
+ * - Wrap ONLY HTTP handlers with middy.
+ * - Always validate event/response when schemas are provided.
+ * - HEAD requests short‑circuit to 200 and an empty JSON object.
+ * - Do not redefine ConsoleLogger; use the shared type.
+ * - Options MUST NOT include `internal` (HTTP-only by definition).
  */
 export type BuildHttpMiddlewareStackOptions<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
 > = {
-  /** Optional schemas enforced before/after business logic. */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
-  /** Content-Type for shaped HTTP responses (default: application/json). */
   contentType?: string;
   logger?: ConsoleLogger;
 };
@@ -44,33 +46,35 @@ export const buildHttpMiddlewareStack = <
     let body = '';
     if (typeof payload === 'string') {
       body = payload;
-    } else if (payload !== undefined) {
+    } else {
       try {
         body = JSON.stringify(payload);
       } catch (e) {
-        logger.error('Failed to JSON.stringify payload', e);
-        body = '';
+        const msg =
+          e instanceof Error ? e.message : 'Failed to serialize response';
+        logger.error({ message: msg });
+        body = JSON.stringify({ message: msg });
       }
     }
     return { statusCode, headers, body };
   };
 
   const validate = (
-    value: unknown,
+    payload: unknown,
     schema: z.ZodType | undefined,
-    side: 'event' | 'response',
+    kind: 'event' | 'response',
   ) => {
     if (!schema) return;
-    const result = schema.safeParse(value);
-    if (!result.success) {
-      const e = new Error(`Invalid ${side}`) as Error & {
+    const parsed = schema.safeParse(payload);
+    if (!parsed.success) {
+      const e = new Error(`Invalid ${kind}`) as Error & {
         expose: boolean;
         statusCode: number;
         issues: unknown[];
       };
       e.expose = true;
-      e.statusCode = side === 'event' ? 400 : 500;
-      e.issues = result.error.issues;
+      e.statusCode = 400;
+      e.issues = parsed.error.issues;
       throw e;
     }
   };
@@ -79,8 +83,9 @@ export const buildHttpMiddlewareStack = <
     request,
   ) => {
     validate(request.event, eventSchema, 'event');
-    if (request.event.httpMethod === 'HEAD') {
-      // Short‑circuit immediately; after() will also ensure HEAD stays empty.
+    const event = request.event as APIGatewayProxyEvent;
+    if (event.httpMethod === 'HEAD') {
+      // Preempt handler; return empty JSON body.
       request.response = shape({});
     }
   };
@@ -88,37 +93,40 @@ export const buildHttpMiddlewareStack = <
   const after: MiddlewareObj<APIGatewayProxyEvent, unknown>['after'] = async (
     request,
   ) => {
-    // Hard override for HEAD: ignore business payloads entirely.
-    if (request.event.httpMethod === 'HEAD') {
+    // HEAD must always return {} regardless of business payload.
+    const event = request.event as APIGatewayProxyEvent;
+    if (event.httpMethod === 'HEAD') {
       request.response = shape({});
       return;
     }
 
     // If base already returned an HTTP-shaped object, preserve it and ensure Content‑Type.
-    const maybe = request.response;
+    const maybe = request.response as unknown as
+      | { statusCode?: unknown; headers?: unknown; body?: unknown }
+      | undefined;
     if (
       maybe &&
       typeof maybe === 'object' &&
-      'statusCode' in (maybe as Record<string, unknown>) &&
-      'headers' in (maybe as Record<string, unknown>) &&
-      'body' in (maybe as Record<string, unknown>)
+      'statusCode' in maybe &&
+      'headers' in maybe &&
+      'body' in maybe
     ) {
-      const hdrs =
-        (maybe as { headers?: Record<string, string> }).headers ?? {};
-      const headers: Record<string, string> = {
-        ...hdrs,
-        'Content-Type': contentType,
+      const headers = Object.assign(
+        {},
+        ((maybe as { headers?: Record<string, string> }).headers ??
+          {}) as Record<string, string>,
+      );
+      headers['Content-Type'] = contentType;
+      request.response = {
+        statusCode: Number(
+          (maybe as { statusCode?: number }).statusCode ?? 200,
+        ),
+        headers,
+        body: (maybe as { body?: string }).body ?? '',
       };
-      const statusCode =
-        typeof (maybe as { statusCode?: number }).statusCode === 'number'
-          ? (maybe as { statusCode?: number }).statusCode!
-          : 200;
-      const body = (maybe as { body?: string }).body ?? '';
-      request.response = { statusCode, headers, body };
       return;
     }
 
-    // Otherwise, shape the raw business result.
     validate(request.response, responseSchema, 'response');
     request.response = shape(request.response);
   };

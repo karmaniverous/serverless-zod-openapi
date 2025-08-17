@@ -1,41 +1,38 @@
-# Global Requirements & Cross‑Cutting Concerns
+# Global Requirements & Cross-Cutting Concerns
 
-> Source of truth for platform‑wide rules that affect multiple modules.
-> If a file-level comment repeats one of these, remove the duplication and reference this document.
+> Source of truth for policies that apply across the repo. Keep file-specific “REQUIREMENTS ADDRESSED” blocks brief and link back here.
 
 ## 1) Logging Contract
 
-- **Canonical type:** `ConsoleLogger` (see `lib/types/Loggable.ts`).
-- **Everywhere** a `logger` is passed (function configs, wrappers, middleware, handler options), it **MUST** be typed as `ConsoleLogger`.
-- Default logger is `console` (which satisfies `ConsoleLogger`).
-- Handlers receive `logger` via `HandlerOptions`.
+- **HandlerOptions.logger** **MUST** satisfy the shared `ConsoleLogger` type (see `lib/types/Loggable.ts`) everywhere it is passed around—handlers, middleware, wrappers, serializers.
+- Wrappers should default to `console` when no logger is injected.
+- Do not re-declare ad‑hoc logger shapes; import and use `ConsoleLogger`.
 
-## 2) OpenAPI Request Bodies
+## 2) OpenAPI Specs
 
-- **Never** conditionally omit the `requestBody` or its `content.schema`.
-- When a function has no specific `eventSchema`, use a neutral fallback: `z.object({})`.
-- Rationale: `zod-openapi` cannot handle `undefined` `schema` values.
+- **Do not attempt to “generate” or restructure the hand-crafted OpenAPI objects.** Treat them as authoritative.
+- When a request/response schema might be absent in code, **substitute a permissive placeholder** (e.g., `z.any()`) so types remain sound and `zod-openapi` isn’t given `undefined`.
 
-## 3) HTTP HEAD Semantics
+## 3) HTTP Semantics
 
-- For HTTP handlers:
-  - A `HEAD` request **always** returns `200` and an **empty JSON object** (`{}`).
-  - The middleware/wrapper must **ignore** any business payload produced by the handler when `HEAD`.
+- For **HEAD** requests, ALWAYS return `200 {}` with the configured `Content-Type`, ignoring any business payload returned by the handler.
+- Content negotiation: default `Content-Type` to `application/json` unless a function specifies otherwise.
 
-## 4) Environment Schema Composition
+## 4) Env Typing Pipeline
 
-- Function `env` is composed from **Global**, **Stage**, and optional **Function** keys:
-  - `deriveAllKeys` (union) → `splitKeysBySchema` (partition) → `buildEnvSchema` (compose) → `parseTypedEnv` (parse).
-- `buildEnvSchema` argument order is: `(globalPick, stagePick, globalParamsSchema, stageParamsSchema)`.
+- Use `deriveAllKeys` → `splitKeysBySchema` → `buildEnvSchema(globalPick, stagePick, globalParamsSchema, stageParamsSchema)` → `parseTypedEnv`.
+- `buildEnvSchema` **expects picks first** (arrays of keys), then schemas. Maintain this order everywhere.
 
-## 5) Typing & Style (TypeScript/Zod)
+## 5) Typing & Style
 
-- **No** `any`.
-- **No** defaulted generic type parameters.
-- Prefer `z.input<Schema>` for event typing to reflect pre-transform shapes.
-- Keep import order compatible with `eslint-plugin-simple-import-sort`.
+- **Never** use `any`; prefer `unknown` then narrow.
+- **Never** default generic type parameters; rely on inference.
+- Use `z.ZodType` (not deprecated `ZodTypeAny`).
+- Follow `eslint-plugin-simple-import-sort` and project ESLint rules.
 
-## 6) HTTP Route Derivation
+## 6) HTTP Method Typing
 
-- Valid HTTP method keys are derived from `zod-openapi` `PathItem` **excluding** the helper key `'id'`.
-- Non-HTTP functions must not expose HTTP-only options.
+- When using `ZodOpenApiPathItemObject`, exclude helper keys like `'id'` from the method key union:
+  ```ts
+  type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
+  ```

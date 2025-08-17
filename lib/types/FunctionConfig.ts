@@ -1,5 +1,5 @@
 import type { AWS } from '@serverless/typescript';
-import type { z } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
@@ -9,20 +9,20 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import type { PropFromUnion } from './PropFromUnion';
 
-/** HTTP methods supported from zod-openapi's PathItem shape (excluding helper 'id'). */
+/** HTTP methods we support from zod-openapi's PathItem shape (exclude helper keys like 'id'). */
 export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
 
 /**
- * FunctionConfig
- * - Per-function schemas, env requirements, routing metadata.
- * - EventTypeMap binds event tokens (e.g., 'rest'|'http'|'sqs') to runtime shapes.
- * - HTTP-only options are permitted only when EventType is an HTTP token.
+ * REQUIREMENTS ADDRESSED
+ * - Capture per-function schemas/env keys and HTTP metadata, strongly typed.
+ * - Gate HTTP-only options by whether EventType is one of the base HTTP tokens.
+ * - Allow an optional logger injection that satisfies ConsoleLogger.
  */
 export type FunctionConfig<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
+  GlobalParams extends ZodObject<ZodRawShape>,
+  StageParams extends ZodObject<ZodRawShape>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 > = {
@@ -42,7 +42,7 @@ export type FunctionConfig<
   /** Optional extra serverless events (e.g., SQS triggers). */
   events?: PropFromUnion<AWS['functions'], string>['events'];
 
-  /** Optional logger override; defaults to `console`. Must satisfy ConsoleLogger. */
+  /** Optional logger used by wrapper/middleware; must satisfy ConsoleLogger. */
   logger?: ConsoleLogger;
 } &
   // Gate HTTP-only options by whether EventType is one of the base HTTP tokens.

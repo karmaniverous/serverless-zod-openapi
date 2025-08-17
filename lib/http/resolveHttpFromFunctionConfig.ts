@@ -2,7 +2,7 @@ import { dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { unique } from 'radash';
-import type { z } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import { sanitizeBasePath } from '@@/lib/path/buildPath';
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
@@ -28,8 +28,8 @@ export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
 export const resolveHttpFromFunctionConfig = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
+  GlobalParams extends ZodObject<ZodRawShape>,
+  StageParams extends ZodObject<ZodRawShape>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(

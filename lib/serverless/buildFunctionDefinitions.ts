@@ -1,17 +1,21 @@
 import type { AWS } from '@serverless/typescript';
-import type { z } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
 import { modulePathFromRoot } from '@@/lib/modulePathFromRoot';
 import { buildPathElements } from '@@/lib/path/buildPath';
+import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import { serverlessConfigSchema } from '@@/src/config/serverlessConfig';
-import { buildFnEnv, type AllParamsKeys } from '@@/src/config/stages';
+import { type AllParamsKeys, buildFnEnv } from '@@/src/config/stages';
 
-type HttpEventObject = { method: string; path: string } & Record<string, unknown>;
+type HttpEventObject = { method: string; path: string } & Record<
+  string,
+  unknown
+>;
 type HttpEvent = { http: string | HttpEventObject };
 
-const normalizePath = (p: string) => `/${p.replace(/^\\/+/, '')}`;
+const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
 const normalizeMethod = (m: string) => m.toLowerCase();
 
 const toHttpObject = (e: HttpEvent): HttpEventObject => {
@@ -27,9 +31,9 @@ const toHttpObject = (e: HttpEvent): HttpEventObject => {
 export const buildFunctionDefinitions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
-  EventTypeMap,
+  GlobalParams extends ZodObject<ZodRawShape>,
+  StageParams extends ZodObject<ZodRawShape>,
+  EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
   functionConfig: FunctionConfig<
@@ -47,7 +51,10 @@ export const buildFunctionDefinitions = <
 
   // Generate HTTP events per context (if applicable)
   const generatedByKey: Record<string, HttpEventObject> = {};
-  const resolved = resolveHttpFromFunctionConfig(functionConfig, callerModuleUrl);
+  const resolved = resolveHttpFromFunctionConfig(
+    functionConfig,
+    callerModuleUrl,
+  );
   if (resolved) {
     const { method, basePath, contexts } = resolved;
 
@@ -56,7 +63,7 @@ export const buildFunctionDefinitions = <
       const httpEvent = {
         method,
         path,
-        ...(parsed.httpContextEventMap?.[ctx] ?? {}),
+        ...parsed.httpContextEventMap?.[ctx],
       } as HttpEventObject;
       generatedByKey[ctx] = httpEvent;
     }
@@ -64,7 +71,9 @@ export const buildFunctionDefinitions = <
 
   // Merge any authored HTTP events with generated defaults (by context key)
   const baseHttpEvents = (
-    (functionConfig.events as unknown as { http?: string | HttpEventObject }[]) ?? []
+    functionConfig.events as unknown as {
+      http?: string | HttpEventObject;
+    }[]
   ).filter((e) => e && typeof e === 'object' && 'http' in e) as HttpEvent[];
 
   const baseHttpMatchingByKey: Record<string, HttpEvent> = {};
@@ -103,7 +112,8 @@ export const buildFunctionDefinitions = <
     events,
     // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
-      ((functionConfig.fnEnvKeys ?? []) as readonly string[]) as readonly AllParamsKeys[],
+      (functionConfig.fnEnvKeys ??
+        []) as readonly string[] as readonly AllParamsKeys[],
     ),
   };
 

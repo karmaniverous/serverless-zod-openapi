@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import type { EventTypeMap as LocalEventTypeMap } from '@@/src/config/EventTypeMap';
@@ -12,8 +12,8 @@ export const makeFunctionConfig = <
   EventType extends keyof LocalEventTypeMap,
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
+  GlobalParams extends ZodObject<ZodRawShape>,
+  StageParams extends ZodObject<ZodRawShape>,
 >(
   functionConfig: FunctionConfig<
     EventSchema,
