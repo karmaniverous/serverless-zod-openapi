@@ -12,8 +12,8 @@ import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
 import type { globalParamsSchema } from '@@/src/config/global';
 import type { stageParamsSchema } from '@@/src/config/stage';
 
-export const eventSchema = z.object({});
-export const responseSchema = z.string(); // handler returns 'Ok'
+export const eventSchema = undefined;
+export const responseSchema = z.string();
 
 export const functionConfig = makeFunctionConfig<
   APIGatewayProxyEvent,

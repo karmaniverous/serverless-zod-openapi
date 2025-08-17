@@ -1,8 +1,8 @@
 /**
  * REQUIREMENTS ADDRESSED
- * - Carry GlobalParams & StageParams so fnEnvKeys is typed as a precise union.
- * - Add EventType as a type parameter to gate HTTP-only config keys.
- * - Keep authoring ergonomic; no casts required in config modules.
+ * - Carry GlobalParams & StageParams so fnEnvKeys is a precise union.
+ * - Add EventType to gate HTTP-only keys at compile time.
+ * - Keep authoring ergonomic (no casts), schemas optional.
  */
 
 import type { AWS } from '@serverless/typescript';
@@ -15,6 +15,7 @@ import type { HttpContext } from './HttpContext';
 export type PropFromUnion<T, K extends PropertyKey> =
   T extends Record<K, infer V> ? V : never;
 
+/** Union of supported HTTP Lambda event shapes. */
 export type HttpEvent = APIGatewayProxyEvent | APIGatewayProxyEventV2;
 
 export type FunctionConfig<
@@ -28,8 +29,8 @@ export type FunctionConfig<
   functionName: string;
 
   /**
-   * Optional list of additional env var keys required by this function.
-   * Consumers treat `undefined` as [].
+   * Additional env-var keys required by this function.
+   * When omitted, consumers treat as [].
    */
   fnEnvKeys?: readonly (
     | keyof z.output<GlobalParams>
@@ -44,14 +45,14 @@ export type FunctionConfig<
   events?: PropFromUnion<AWS['functions'], 'events'>;
 } & (EventType extends HttpEvent
   ? {
-      /** HTTP-only facet (enabled by declaring an HTTP EventType) */
+      /** HTTP-only facet (enabled by declaring an HTTP EventType). */
       httpContexts?: readonly HttpContext[];
       method?: keyof Omit<ZodOpenApiPathItemObject, 'id'>;
       basePath?: string;
       contentType?: string;
     }
   : {
-      /** For non-HTTP event types, HTTP-only keys are disallowed */
+      /** Non-HTTP functions: HTTP-only keys disallowed. */
       httpContexts?: never;
       method?: never;
       basePath?: never;

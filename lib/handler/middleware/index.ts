@@ -1,1 +1,4 @@
-export { buildHttpMiddlewareStack } from './buildHttpMiddlewareStack';
+export {
+  buildHttpMiddlewareStack,
+  type BuildHttpMiddlewareStackOptions,
+} from './buildHttpMiddlewareStack';

@@ -1,9 +1,8 @@
 /**
  * REQUIREMENTS ADDRESSED
- * - Provide a deep, structural override utility to merge z.infer<EventSchema>
- *   onto the declared AWS EventType so the handler keeps the full event surface.
- * - Arrays and non-plain objects are replaced by the schema when present.
- * - Preserve project conventions and avoid 'any'.
+ * - Deep, structural override so eventSchema refines EventType without erasing it.
+ * - Avoid unsafe 'Function' type per lint rules.
+ * - No 'any'; plain-object detection only.
  */
 
 export type Primitive =
@@ -15,12 +14,14 @@ export type Primitive =
   | symbol
   | bigint;
 
+type AnyFn = (...args: never[]) => unknown;
+
 type Builtin =
   | Primitive
   | Date
   | RegExp
   | Error
-  | Function
+  | AnyFn
   | Map<unknown, unknown>
   | Set<unknown>
   | WeakMap<object, unknown>

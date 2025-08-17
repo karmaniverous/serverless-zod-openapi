@@ -1,9 +1,8 @@
 /**
  * REQUIREMENTS ADDRESSED
- * - Keep existing Handler<E, R> for tests/back-compat.
- * - Provide TypedHandler<E, R, EventType> whose `event` param is the deep-override
- *   of EventType with z.infer<E>.
- * - Avoid 'any'; keep naming and imports consistent.
+ * - Single up-to-date Handler type: event param = DeepOverride<EventType, z.infer<eventSchema>>.
+ * - Options carry env + logger (+securityContext only for HTTP).
+ * - No back-compat types; no 'any'.
  */
 
 import type { Context } from 'aws-lambda';
@@ -16,7 +15,7 @@ import type { ShapedResponse } from '@@/lib/types/ShapedResponse';
 export type HandlerOptions = {
   env: Record<string, unknown>;
   logger: ConsoleLogger;
-  /** Present only for HTTP event types. */
+  /** Present only when the event is HTTP (populated by the wrapper). */
   securityContext?: unknown;
 };
 
@@ -27,26 +26,12 @@ export type EventParam<
   ? DeepOverride<EventType, z.infer<EventSchema>>
   : EventType;
 
-export type TypedHandler<
+export type Handler<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   EventType,
 > = (
   event: EventParam<EventType, EventSchema>,
-  context: Context,
-  options: HandlerOptions,
-) => ShapedResponse<ResponseSchema>;
-
-/**
- * Backward-compatible alias used by existing tests (no declared EventType).
- * The wrapper will still validate and pass the correct runtime event; typing here
- * remains generic.
- */
-export type Handler<
-  EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-> = (
-  event: unknown,
   context: Context,
   options: HandlerOptions,
 ) => ShapedResponse<ResponseSchema>;

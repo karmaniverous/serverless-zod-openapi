@@ -1,31 +1,35 @@
 /**
  * REQUIREMENTS ADDRESSED
- * - Non-HTTP config: omit EventType generic; HTTP-only keys are not allowed.
+ * - Non-HTTP config: declare Step Function event type; HTTP keys not allowed.
  * - Include eventSchema & responseSchema; no casts.
- * - Thread GlobalParams & StageParams for env key typing.
+ * - Use global/stage param schemas from production config and as types.
  */
 
 import { z } from 'zod';
 
 import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
+import type { LambdaEvent } from '@@/lib/types/aws/LambdaEvent';
 import { contactSchema } from '@@/services/activecampaign/src';
 import type { globalParamsSchema } from '@@/src/config/global';
 import type { stageParamsSchema } from '@@/src/config/stage';
 
 export const eventSchema = z
-  .looseObject({ Payload: { contactId: z.string() } })
+  .looseObject({
+    Payload: z.object({ contactId: z.string() }),
+  })
   .catchall(z.unknown());
 
 export const responseSchema = contactSchema.optional();
 
 export const functionConfig = makeFunctionConfig<
-  Record<PropertyKey, unknown>, // <-- is this the correct type for a generic event?
+  LambdaEvent,
   typeof eventSchema,
   typeof responseSchema,
   typeof globalParamsSchema,
   typeof stageParamsSchema
 >({
   functionName: 'getContact',
+  // no HTTP keys here
   eventSchema,
   responseSchema,
 });

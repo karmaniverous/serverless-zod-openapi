@@ -6,7 +6,7 @@
 
 import type { z } from 'zod';
 
-import type { FunctionConfig } from '../types/FunctionConfig';
+import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 
 export const makeFunctionConfig = <
   EventType,
