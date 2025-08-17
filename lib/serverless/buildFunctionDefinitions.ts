@@ -23,7 +23,7 @@ const isHttpEvent = (e: AnyEvent): e is HttpEvent =>
 
 const normalizeMethod = (m: string): string => m.trim().toLowerCase();
 const normalizePath = (p: string): string =>
-  p.replace(/\\/g, '/').replace(/^\/+/, '');
+  p.replace(/\\/g, '/').replace(/^\//, '');
 const keyFor = (method: string, path: string): string =>
   `${normalizeMethod(method)} ${path}`;
 
@@ -53,10 +53,6 @@ const toHttpObject = (e: HttpEvent): HttpEventObject => {
   };
 };
 
-/**
- * Build a complete serverless functions object for a single function.
- * The returned object is keyed by `functionConfig.functionName`.
- */
 export const buildFunctionDefinitions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
@@ -67,7 +63,6 @@ export const buildFunctionDefinitions = <
 ): AWS['functions'] => {
   const parsed = serverlessConfigSchema.parse(rawServerlessConfig);
 
-  // Precompute generated HTTP events for functions that declare httpContexts
   const resolved = resolveHttpFromFunctionConfig(
     functionConfig,
     callerModuleUrl,
@@ -88,8 +83,7 @@ export const buildFunctionDefinitions = <
     }
   }
 
-  // Author-provided events (preserved & used for overrides)
-  const baseEvents = (functionConfig.events ?? []) as AnyEvent[];
+  const baseEvents = functionConfig.events as AnyEvent[];
 
   const preservedNonHttp: AnyEvent[] = [];
   const preservedHttpNonMatching: HttpEvent[] = [];
@@ -102,13 +96,12 @@ export const buildFunctionDefinitions = <
     }
     const key = httpEventKey(ev);
     if (key in generatedByKey) {
-      baseHttpMatchingByKey[key] = ev; // last one wins if duplicates
+      baseHttpMatchingByKey[key] = ev;
     } else {
       preservedHttpNonMatching.push(ev);
     }
   }
 
-  // Merge generated with any matching authored http event (authored overrides)
   const mergedGenerated: HttpEvent[] = [];
   for (const [key, genObj] of Object.entries(generatedByKey)) {
     const match = baseHttpMatchingByKey[key];
@@ -131,21 +124,16 @@ export const buildFunctionDefinitions = <
     ...mergedGenerated,
   ] as AwsFunction['events'];
 
-  // Environment: computed from fnEnvKeys (single source of truth)
   const environment = buildFnEnv(functionConfig.fnEnvKeys);
 
-  // Default handler using serverlessConfig defaults
   const handler = `${modulePathFromRoot(callerModuleUrl)}/${parsed.defaultHandlerFileName}.${parsed.defaultHandlerFileExport}`;
 
-  // Single-entry functions object keyed by functionName
   const fnKey = functionConfig.functionName;
-  const out: AWS['functions'] = {
+  return {
     [fnKey]: {
       handler,
       environment,
       events: finalEvents,
     },
   };
-
-  return out;
 };

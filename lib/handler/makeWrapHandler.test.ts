@@ -15,116 +15,125 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import { makeWrapHandler } from './makeWrapHandler';
 
-const eventSchema = z.object({});
-const responseSchema = z.object({ what: z.string() });
+const runtime = makeWrapHandler({
+  globalEnvKeys,
+  globalParamsSchema,
+  stageEnvKeys,
+  stageParamsSchema,
+});
 
-const normalize = (res: unknown): unknown => {
-  if (res && typeof res === 'object' && 'statusCode' in res) {
-    const shaped = res as { body?: unknown };
-    const body = shaped.body;
-    if (typeof body === 'string') {
-      try {
-        return JSON.parse(body);
-      } catch {
-        return body;
-      }
-    }
-    return body;
-  }
-  return res;
+const logger: ConsoleLogger = {
+  debug: vi.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+  log: vi.fn(),
 };
 
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
-    process.env.SERVICE_NAME = 'svc';
+    // Ensure required env vars for the test fixture are present
+    process.env.SERVICE_NAME = 'svc-test';
     process.env.PROFILE = 'dev';
     process.env.STAGE = 'test';
-    process.env.DOMAIN_NAME = 'example.test';
 
-    const wrapHandler = makeWrapHandler({
-      globalParamsSchema,
-      stageParamsSchema,
-      globalEnvKeys,
-      stageEnvKeys,
-    });
+    const eventSchema = z.object({});
+    const responseSchema = z.object({ what: z.string() });
 
-    const logger: ConsoleLogger = {
-      debug: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn(),
-      log: vi.fn(),
-    };
-
-    const wrapped = wrapHandler(async () => ({ what: 'ok' }), {
+    const wrapped = runtime(async () => ({ what: 'ok' }), {
+      contentType: 'application/json',
       eventSchema,
       responseSchema,
+      fnEnvKeys: [],
       logger,
     });
 
-    const event = createApiGatewayV1Event('GET');
-    event.headers = { ...event.headers, Accept: 'application/json' };
-
+    const event = createApiGatewayV1Event('GET', {
+      Accept: 'application/json',
+    });
     const ctx: Context = createLambdaContext();
-    const res = await wrapped(event, ctx);
 
-    expect(normalize(res)).toEqual({ what: 'ok' });
+    const res = (await wrapped(event, ctx)) as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string;
+    };
+    expect(res.statusCode).toBe(200);
+    expect(
+      (
+        res.headers['Content-Type'] ?? res.headers['content-type']
+      ).toLowerCase(),
+    ).toMatch(/application\/json/);
+    expect(JSON.parse(res.body)).toEqual({ what: 'ok' });
   });
 });
 
 describe('wrapHandler: HEAD short-circuit', () => {
   it('skips the business handler and produces a shaped response with 200', async () => {
-    const wrapHandler = makeWrapHandler({
-      globalParamsSchema,
-      stageParamsSchema,
-      globalEnvKeys,
-      stageEnvKeys,
+    const wrapped = runtime(
+      async () => {
+        throw new Error('should not run this');
+      },
+      {
+        contentType: 'application/json',
+        eventSchema: z.object({}),
+        responseSchema: z.object({}),
+        fnEnvKeys: [],
+        logger,
+      },
+    );
+
+    const event = createApiGatewayV1Event('HEAD', {
+      Accept: 'application/json',
     });
-
-    const handler = vi.fn(async () => ({ what: 'nope' }));
-    const wrapped = wrapHandler(handler, { eventSchema, responseSchema });
-
-    const event = createApiGatewayV1Event('HEAD');
-    event.headers = { ...event.headers, Accept: 'application/json' };
-
     const ctx: Context = createLambdaContext();
-    const res = await wrapped(event, ctx);
+
+    const res = (await wrapped(event, ctx)) as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string;
+    };
 
     expect(res.statusCode).toBe(200);
-    expect(handler).not.toHaveBeenCalled();
+    expect(res.headers['Content-Type'] ?? res.headers['content-type']).toMatch(
+      /application\/json/i,
+    );
+    // Body is shaped to "{}"
+    expect(res.body).toBe('{}');
   });
 });
 
 describe('wrapHandler: POST with JSON body', () => {
   it('returns the business payload for application/json', async () => {
-    process.env.SERVICE_NAME = 'svc';
-    process.env.PROFILE = 'dev';
-    process.env.STAGE = 'test';
-    process.env.DOMAIN_NAME = 'example.test';
+    const eventSchema = z.object({});
+    const responseSchema = z.object({ what: z.string() });
 
-    const wrapHandler = makeWrapHandler({
-      globalParamsSchema,
-      stageParamsSchema,
-      globalEnvKeys,
-      stageEnvKeys,
-    });
-
-    const wrapped = wrapHandler(async () => ({ what: 'ok' }), {
+    const wrapped = runtime(async () => ({ what: 'ok' }), {
+      contentType: 'application/json',
       eventSchema,
       responseSchema,
-      logger: console,
+      fnEnvKeys: [],
+      logger,
     });
 
-    const event = createApiGatewayV1Event('POST');
-    event.headers = {
-      ...event.headers,
+    const event = createApiGatewayV1Event('POST', {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    };
+    });
     event.body = JSON.stringify({ hello: 'world' });
 
     const ctx: Context = createLambdaContext();
-    const res = await wrapped(event, ctx);
+    const res = (await wrapped(event, ctx)) as {
+      statusCode: number;
+      headers: Record<string, string>;
+      body: string;
+    };
 
-    expect(normalize(res)).toEqual({ what: 'ok' });
+    expect(res.statusCode).toBe(200);
+    expect(
+      (
+        res.headers['Content-Type'] ?? res.headers['content-type']
+      ).toLowerCase(),
+    ).toMatch(/application\/json/);
+    expect(JSON.parse(res.body)).toEqual({ what: 'ok' });
   });
 });

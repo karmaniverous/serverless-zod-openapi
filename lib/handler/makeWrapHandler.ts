@@ -136,7 +136,7 @@ export const makeWrapHandler = <
       if (isV1(event) || isV2(event)) {
         return httpWrapped(event as APIGatewayProxyEvent, context);
       }
-      return internalWrapped(event as APIGatewayProxyEvent, context);
+      return internalWrapped(event, context);
     };
   };
 };

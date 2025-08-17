@@ -28,9 +28,9 @@ const toPosix = (p: string) => p.replace(/\\/g, '/');
 type MaybeHttpEvent = { http?: string | { method?: string; path?: string } };
 
 const isMaybeHttpEvent = (e: unknown): e is MaybeHttpEvent =>
-  e != null &&
+  e !== null &&
   typeof e === 'object' &&
-  'http' in (e as Record<string, unknown>);
+  Object.prototype.hasOwnProperty.call(e as Record<string, unknown>, 'http');
 
 /** Derive {method, basePath, contexts} from FunctionConfig and the caller module's URL. */
 export const resolveHttpFromFunctionConfig = (
@@ -53,13 +53,12 @@ export const resolveHttpFromFunctionConfig = (
     const absDir = dirname(fileURLToPath(callerModuleUrl));
     const rel = relative(ENDPOINTS_ROOT_ABS, absDir);
     const segments = rel.split(sep).filter(Boolean);
-    const last = segments.at(-1)?.toLowerCase();
-    const candidate = last as MethodKey | undefined;
-    if (candidate && HTTP_METHODS.has(candidate)) method = candidate;
+    const last = segments[segments.length - 1]?.toLowerCase();
+    if (last && HTTP_METHODS.has(last as MethodKey)) method = last as MethodKey;
   }
 
   if (!method && Array.isArray(config.events)) {
-    const anyEvents: unknown[] = config.events as unknown[];
+    const anyEvents = config.events as unknown[];
     const candidate = anyEvents.find(isMaybeHttpEvent);
     const http = candidate?.http;
     if (typeof http === 'string') {
@@ -86,7 +85,8 @@ export const resolveHttpFromFunctionConfig = (
     const absDir = dirname(fileURLToPath(callerModuleUrl));
     const rel = toPosix(relative(ENDPOINTS_ROOT_ABS, absDir));
     const segs = rel.split('/').filter(Boolean);
-    if (segs.length && segs.at(-1)?.toLowerCase() === method) segs.pop();
+    if (segs.length && segs[segs.length - 1]?.toLowerCase() === method)
+      segs.pop();
     basePath = segs.join('/');
   }
 

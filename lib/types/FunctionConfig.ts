@@ -18,17 +18,19 @@ export type FunctionConfig<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
 > = {
-  /** Key for the function in the serverless functions map */
+  /** Serverless key for the function */
   functionName: string;
 
-  /** Env keys to expose to the function */
+  /** Keys to expose from the test/runtime env (drives typed env schema) */
   fnEnvKeys: readonly AllParamsKeys[];
 
-  /** Author any set of events; builder will add/modify matching http events */
-  events?: PropFromUnion<AWS['functions'], string>['events'];
+  /** Direct authored events (preserved and used for overrides) */
+  events?: PropFromUnion<AWS['functions'], 'events'>;
 
-  /** Wrapper-related options */
+  /** Content type used for response shaping & negotiation */
   contentType?: string;
+
+  /** Optional schemas (undefined disables validation for that phase) */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
 

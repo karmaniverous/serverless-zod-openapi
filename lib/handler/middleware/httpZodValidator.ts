@@ -14,10 +14,10 @@ const assertWithZod = (
   const result = schema.safeParse(value);
   if (result.success) {
     logger.debug('zod validation succeeded', pojofy(result));
-  } else {
-    logger.error('zod validation failed', pojofy(result));
-    throw result.error; // throw raw ZodError
+    return;
   }
+  logger.error('zod validation failed', pojofy(result));
+  throw result.error; // throw raw ZodError
 };
 
 export type HttpZodValidatorOptions<
@@ -46,14 +46,19 @@ export const httpZodValidator = <
     assertWithZod(request.event, eventSchema, logger);
   },
   after: (request) => {
-    const res = request.response as { body?: unknown } | undefined;
-    assertWithZod(res?.body, responseSchema, logger);
-  },
-  onError: (request) => {
-    const res = (request.error ??
-      (request as { response?: unknown }).response) as
-      | { body?: unknown }
-      | undefined;
-    assertWithZod(res?.body, responseSchema, logger);
+    const res = request.response as unknown;
+
+    // Skip if the handler already returned a shaped HTTP response...
+    const looksShaped =
+      typeof res === 'object' &&
+      res !== null &&
+      'statusCode' in (res as Record<string, unknown>) &&
+      'headers' in (res as Record<string, unknown>) &&
+      'body' in (res as Record<string, unknown>);
+
+    // ...or a raw string (serializer will pass it through).
+    if (looksShaped || typeof res === 'string') return;
+
+    assertWithZod(res, responseSchema, logger);
   },
 });

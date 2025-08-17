@@ -14,7 +14,6 @@ export type HandlerOptions = {
   securityContext?: HttpContext;
 };
 
-/** Business handler signature used by wrapHandler (2 generics to match tests). */
 export type Handler<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
