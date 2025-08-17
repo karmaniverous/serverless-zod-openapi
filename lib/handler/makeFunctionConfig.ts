@@ -1,19 +1,17 @@
-/**
- * REQUIREMENTS ADDRESSED
- * - Keep this helper a strict pass-through with explicit EventType generic.
- * - Do not add defaults or shaping here.
- */
-
 import type { z } from 'zod';
 
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 
+/**
+ * Passthrough that *enforces* an explicit EventType for gating HTTP-only options.
+ * EventSchema/ResponseSchema are inferred from the `functionConfig` argument.
+ */
 export const makeFunctionConfig = <
-  EventType,
-  EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends z.ZodType,
-  StageParams extends z.ZodType,
+  EventType = never,
+  EventSchema extends z.ZodType | undefined = undefined,
+  ResponseSchema extends z.ZodType | undefined = undefined,
+  GlobalParams extends Record<string, unknown> = Record<string, never>,
+  StageParams extends Record<string, unknown> = Record<string, never>,
 >(
   functionConfig: FunctionConfig<
     EventSchema,

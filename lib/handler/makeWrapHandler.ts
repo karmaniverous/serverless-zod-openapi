@@ -2,38 +2,29 @@
  * REQUIREMENTS ADDRESSED
  * - Always validate event/response (throw on failure).
  * - Apply HTTP middy stack ONLY when the authored EventType is HTTP.
- * - Thread GlobalParams & StageParams for precise env key typing.
- * - Default missing fnEnvKeys to [] at consumption time; authoring stays optional.
- * - Honor renamed middleware: buildHttpMiddlewareStack.
+ * - Thread GlobalParams & StageParams everywhere so fnEnvKeys type narrows correctly.
+ * - Default missing fnEnvKeys to [] when consumed.
+ * - Use renamed middleware: buildHttpMiddlewareStack.
+ * - Do not perform HTTP shaping for internal (non-HTTP) handlers.
  */
-
 import middy from '@middy/core';
-import type {
-  APIGatewayProxyEvent,
-  APIGatewayProxyEventV2,
-  Context,
-} from 'aws-lambda';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
-import {
-  detectSecurityContext,
-  isV1,
-  isV2,
-} from '@@/lib/handler/detectSecurityContext';
 import {
   buildEnvSchema,
   deriveAllKeys,
   parseTypedEnv,
   splitKeysBySchema,
 } from '@@/lib/handler/envBuilder';
-import type { Handler } from '@@/lib/handler/Handler';
 import { buildHttpMiddlewareStack } from '@@/lib/handler/middleware/buildHttpMiddlewareStack';
-import { pojofy } from '@@/lib/pojofy';
-import type { FunctionConfig, HttpEvent } from '@@/lib/types/FunctionConfig';
-import type { ConsoleLogger, Loggable } from '@@/lib/types/Loggable';
+import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
+import type { Handler } from '@@/lib/types/Handler';
+import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 type Z = z.ZodType;
 
+/** Stages runtime needed by the wrapper. */
 export type StagesRuntime<
   GlobalParams extends ZodObject<ZodRawShape>,
   StageParams extends ZodObject<ZodRawShape>,
@@ -44,75 +35,44 @@ export type StagesRuntime<
   stageParamsSchema: StageParams;
 };
 
-const assertWithZod = (
-  value: unknown,
-  schema: Z | undefined,
-  logger: ConsoleLogger,
-  kind: 'event' | 'response',
-): void => {
-  if (!schema) return;
-  logger.debug('validating with zod', pojofy(value));
-  const result = schema.safeParse(value);
-  if (result.success) {
-    logger.debug('zod validation succeeded', pojofy(result));
-    return;
-  }
-  const err = Object.assign(
-    new Error(kind === 'event' ? 'Invalid event' : 'Invalid response'),
-    {
-      name: 'ZodError',
-      issues: result.error.issues,
-      expose: true,
-      statusCode: 400,
-    },
-  );
-  throw err;
-};
-
-const isHttpConfig = <E>(
-  cfg: FunctionConfig<Z | undefined, Z | undefined, Z, Z, E>,
-): cfg is FunctionConfig<Z | undefined, Z | undefined, Z, Z, HttpEvent> => {
-  // Type-gated in authoring; this is a runtime convenience.
-  return !!(
-    (cfg as { method?: unknown }).method ||
-    (cfg as { httpContexts?: unknown }).httpContexts ||
-    (cfg as { basePath?: unknown }).basePath
-  );
-};
-
-export const makeWrapHandler = <
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
+const isHttpConfig = <
+  E,
+  G extends ZodObject<ZodRawShape>,
+  S extends ZodObject<ZodRawShape>,
 >(
-  stages: StagesRuntime<GlobalParams, StageParams>,
-) => {
-  return <
+  cfg: FunctionConfig<Z | undefined, Z | undefined, G, S, E>,
+): boolean => {
+  return Boolean(
+    (cfg as { method?: unknown }).method ||
+      (cfg as { httpContexts?: unknown }).httpContexts ||
+      (cfg as { basePath?: unknown }).basePath,
+  );
+};
+
+export const makeWrapHandler =
+  <
+    GlobalParams extends ZodObject<ZodRawShape>,
+    StageParams extends ZodObject<ZodRawShape>,
+  >(
+    stages: StagesRuntime<GlobalParams, StageParams>,
+  ) =>
+  <
     EventSchema extends Z | undefined,
     ResponseSchema extends Z | undefined,
-    Logger extends ConsoleLogger,
     EventType,
   >(
-    handler: Handler<EventSchema, ResponseSchema, EventType>,
+    business: Handler<EventSchema, ResponseSchema, EventType>,
     functionConfig: FunctionConfig<
       EventSchema,
       ResponseSchema,
       GlobalParams,
       StageParams,
       EventType
-    > &
-      Partial<Loggable<Logger>>,
-  ): ((event: EventType, context: Context) => Promise<unknown>) => {
-    const {
-      eventSchema,
-      responseSchema,
-      fnEnvKeys,
-      contentType = 'application/json',
-      logger = console as unknown as Logger,
-    } = functionConfig;
+    >,
+  ) => {
+    const { eventSchema, responseSchema, fnEnvKeys, contentType } =
+      functionConfig;
 
-    //
-    // Base wrapper: env + validate event/response (throw on failure)
-    //
     const base = async (event: EventType, context: Context) => {
       const {
         globalEnvKeys,
@@ -139,71 +99,84 @@ export const makeWrapHandler = <
       );
 
       const envSchema = buildEnvSchema(
-        globalPick,
-        stagePick,
         globalParamsSchema,
         stageParamsSchema,
+        globalPick,
+        stagePick,
       );
 
       const env = parseTypedEnv(envSchema, process.env);
-
-      // Validate incoming *event* first (after HTTP parsing if applicable).
-      assertWithZod(event, eventSchema, logger, 'event');
-
-      // Detect HTTP security context only for actual HTTP events.
-      const httpLike = (isV1(event) || isV2(event));
-      const extras = httpLike
-        ? {
-            env,
-            logger,
-            securityContext: detectSecurityContext(
-              event as unknown as APIGatewayProxyEvent,
-            ),
+      const logger: ConsoleLogger =
+        (
+          functionConfig as unknown as {
+            logger?: ConsoleLogger;
           }
-        : { env, logger };
+        ).logger ?? console;
 
-      const result = await handler(
-        event as unknown as Parameters<typeof handler>[0],
-        context,
-        extras,
-      );
+      // Validate the incoming event; thrown Zod errors will be mapped by HTTP middleware.
+      if (eventSchema) {
+        const result = eventSchema.safeParse(event as unknown);
+        if (!result.success) {
+          const e = new Error('Invalid input') as Error & {
+            expose: boolean;
+            statusCode: number;
+            issues: unknown[];
+          };
+          e.expose = true;
+          e.statusCode = 400;
+          e.issues = result.error.issues;
+          throw e;
+        }
+      }
 
-      // Validate outgoing *response* next.
-      assertWithZod(result, responseSchema, logger, 'response');
+      const out = await business(event as any, context, { env, logger });
 
-      // Internal path returns raw; HTTP shaping happens in the HTTP stack.
-      return result;
+      // Validate the business response.
+      if (responseSchema) {
+        const result = responseSchema.safeParse(out as unknown);
+        if (!result.success) {
+          const e = new Error('Invalid response') as Error & {
+            expose?: boolean;
+            statusCode?: number;
+            issues?: unknown[];
+          };
+          // Mark as exposed only for HTTP; internal callers should see a throw.
+          if (isHttpConfig(functionConfig)) {
+            e.expose = true;
+            e.statusCode = 500;
+          }
+          e.issues = result.error.issues;
+          throw e;
+        }
+      }
+
+      return out;
     };
 
-    //
-    // HTTP: wrap the base under the HTTP stack
-    //
-    if (isHttpConfig<EventType>(functionConfig)) {
-      const httpStack = buildHttpMiddlewareStack<undefined, undefined, Logger>({
-        // We skip Zod in the stack (base throws). Don’t pass explicit `undefined`.
+    if (isHttpConfig(functionConfig)) {
+      const http = buildHttpMiddlewareStack({
         internal: false,
-        logger,
-        contentType,
+        eventSchema: eventSchema as EventSchema,
+        responseSchema: responseSchema as ResponseSchema,
+        contentType: contentType ?? 'application/json',
+        logger:
+          (functionConfig as unknown as { logger?: ConsoleLogger }).logger ??
+          console,
       });
 
-      const httpWrapped = middy(
+      const wrapped = middy(
         base as unknown as (
-          e: APIGatewayProxyEvent | APIGatewayProxyEventV2,
+          e: APIGatewayProxyEvent,
           c: Context,
         ) => Promise<unknown>,
-      ).use(httpStack);
+      ).use(http);
 
-      return async (event: EventType, context: Context) => {
-        return httpWrapped(
-          event as unknown as APIGatewayProxyEvent | APIGatewayProxyEventV2,
-          context,
-        );
-      };
+      return wrapped as unknown as (
+        e: EventType,
+        c: Context,
+      ) => Promise<unknown>;
     }
 
-    //
-    // Non-HTTP: just use base (no middy)
-    //
-    return async (event: EventType, context: Context) => base(event, context);
+    // Non‑HTTP: no middy, no shaping.
+    return base;
   };
-};

@@ -1,4 +1,4 @@
-import { wrapHandler } from '@@/lib/handler/wrapHandler';
+import { wrapHandler } from '@@/src/config/wrapHandler';
 
 import { functionConfig } from './config';
 

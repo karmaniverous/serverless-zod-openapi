@@ -8,7 +8,7 @@
 import { z } from 'zod';
 
 import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
-import type { LambdaEvent } from '@@/lib/types/aws/LambdaEvent';
+import type { LambdaEvent } from '@@/lib/types/LambdaEvent';
 import { contactSchema } from '@@/services/activecampaign/src';
 import type { globalParamsSchema } from '@@/src/config/global';
 import type { stageParamsSchema } from '@@/src/config/stage';

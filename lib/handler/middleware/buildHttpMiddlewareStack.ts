@@ -1,191 +1,158 @@
-/**
- * REQUIREMENTS ADDRESSED
- * - HTTP-only middleware stack for middy.
- * - In HTTP mode: shape to {statusCode, headers, body}, set Content-Type, catch Zod -> 400.
- * - In internal mode: do NOT shape; validate event/response and throw on failure ("Invalid response").
- * - Provide verbose zod debug logs via logger to match test expectations.
- */
-
 import type { MiddlewareObj } from '@middy/core';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 import type { z } from 'zod';
 
-import { pojofy } from '@@/lib/pojofy';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
+/**
+ * REQUIREMENTS ADDRESSED
+ * - Wrap ONLY HTTP handlers with middy.
+ * - Always validate event/response when schemas are provided.
+ * - HEAD requests short‑circuit to 200 and an empty JSON object.
+ * - Never reshape in internal mode (used by non-HTTP tests/calls).
+ * - Do not redefine ConsoleLogger; use the shared type.
+ */
 export type BuildHttpMiddlewareStackOptions<
-  EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-  Logger extends ConsoleLogger,
+  EventSchema extends z.ZodTypeAny | undefined,
+  ResponseSchema extends z.ZodTypeAny | undefined,
 > = {
-  /** content type for HTTP responses (default is provided by wrapper) */
-  contentType?: string;
-
-  /** event/response schemas (optional) */
+  /** When true, skip HTTP shaping (used by internal tests only). */
+  internal?: boolean;
+  /** Optional schemas enforced before/after business logic. */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
-
-  /** test hook: when true, skip shaping and throw on invalids */
-  internal: boolean;
-
-  /** logger */
-  logger: Logger;
+  /** Content-Type for shaped HTTP responses (default: application/json). */
+  contentType?: string;
+  /** Logger to use for debug output (default: console). */
+  logger?: ConsoleLogger;
 };
 
-const shapeHttp = (
-  payload: unknown,
-  contentType: string,
-  headers: Record<string, string> = {},
-) => ({
-  statusCode: 200,
-  headers: { 'Content-Type': contentType, ...headers },
-  body: JSON.stringify(payload ?? {}),
-});
+type ExposedError = Error & {
+  expose?: boolean;
+  statusCode?: number;
+  issues?: unknown[];
+};
 
-const isZodError = (
-  e: unknown,
-): e is Error & { issues?: unknown[]; expose?: boolean; statusCode?: number } =>
-  !!e && typeof e === 'object' && (e as { name?: string }).name === 'ZodError';
+/** Narrower serialization for debug logs to avoid circular refs. */
+const safeLog = (value: unknown): string => {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '[unserializable]';
+  }
+};
 
 export const buildHttpMiddlewareStack = <
-  EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-  Logger extends ConsoleLogger,
+  EventSchema extends z.ZodTypeAny | undefined,
+  ResponseSchema extends z.ZodTypeAny | undefined,
 >(
-  opts: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema, Logger>,
-): MiddlewareObj => {
+  opts: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema>,
+): MiddlewareObj<APIGatewayProxyEvent, unknown> => {
   const {
-    contentType = 'application/json',
+    internal = false,
     eventSchema,
     responseSchema,
-    internal,
-    logger,
+    contentType = 'application/json',
+    logger = console,
   } = opts;
 
-  const validateEvent = (value: unknown) => {
-    if (!eventSchema) return;
-    logger.debug('validating with zod', pojofy(value));
-    const r = eventSchema.safeParse(value);
-    if (r.success) {
-      logger.debug('zod validation succeeded', pojofy(r));
-      return;
-    }
-    const err = Object.assign(new Error('Invalid input'), {
-      name: 'ZodError',
-      issues: r.error.issues,
-      expose: true,
-      statusCode: 400,
-    });
-    if (internal) throw err;
-    // HTTP mode: handled in onError below
-    throw err;
+  const shape = (payload: unknown, statusCode = 200) => {
+    const headers: Record<string, string> = { 'Content-Type': contentType };
+    const body =
+      typeof payload === 'string' ? payload : JSON.stringify(payload ?? {});
+    return { statusCode, headers, body };
   };
 
-  const validateResponse = (value: unknown) => {
-    if (!responseSchema) return;
-    logger.debug('validating with zod', pojofy(value));
-    const r = responseSchema.safeParse(value);
-    if (r.success) {
-      logger.debug('zod validation succeeded', pojofy(r));
-      return;
+  const validate = (
+    value: unknown,
+    schema: z.ZodTypeAny | undefined,
+    kind: 'event' | 'response',
+  ) => {
+    if (!schema) return;
+    logger.debug('validating with zod', safeLog(value));
+    const res = schema.safeParse(value);
+    if (!res.success) {
+      const err: ExposedError = new Error(
+        kind === 'event' ? 'Invalid input' : 'Invalid response',
+      );
+      err.expose = true;
+      err.statusCode = kind === 'event' ? 400 : 500;
+      err.issues = res.error.issues;
+      throw err;
     }
-    // Internal mode throws with message expected by tests
-    const err = Object.assign(new Error('Invalid response'), {
-      name: 'ZodError',
-      issues: r.error.issues,
-      expose: true,
-      statusCode: 400,
-    });
-    throw err;
   };
 
-  return {
-    before: async (request) => {
-      // HEAD short-circuit in HTTP mode only
-      if (!internal) {
-        const evt = request.event as {
-          httpMethod?: string;
-          requestContext?: { http?: { method?: string } };
-        };
-        const method =
-          evt?.httpMethod ?? evt?.requestContext?.http?.method ?? undefined;
+  const before: MiddlewareObj<APIGatewayProxyEvent, unknown>['before'] = async (
+    request,
+  ) => {
+    const event = request.event as APIGatewayProxyEvent;
+    // Validate even in internal mode; only shaping behavior differs.
+    validate(event, eventSchema, 'event');
 
-        // Validate event in HTTP mode before handler
-        validateEvent(request.event);
+    if (!internal && event.httpMethod === 'HEAD') {
+      // HEAD short‑circuit with shaped 200 {} and Content‑Type header.
+      request.response = shape({});
+    }
+  };
 
-        if (method === 'HEAD') {
-          // Produce shaped empty result and *skip* handler
-          request.response = shapeHttp({}, contentType);
-        }
-      } else {
-        // Internal mode: validate event but do NOT shape
-        validateEvent(request.event);
-      }
-    },
+  const after: MiddlewareObj<APIGatewayProxyEvent, unknown>['after'] = async (
+    request,
+  ) => {
+    if (internal) {
+      // Internal mode: never HTTP‑shape, only enforce response schema when provided.
+      validate(request.response, responseSchema, 'response');
+      return;
+    }
 
-    after: async (request) => {
-      if (internal) {
-        // Internal: do NOT shape; validate response and leave it as-is
-        validateResponse(request.response);
-        return;
-      }
-
-      // HTTP: if something already set a response (e.g., HEAD), preserve it but ensure Content-Type
-      if (request.response) {
-        const r = request.response as {
-          statusCode?: number;
-          headers?: Record<string, string>;
-          body?: unknown;
-        };
-        const headers: Record<string, string> = { ...(r.headers ?? {}) };
-        // Ensure Content-Type is set
-        if (!headers['Content-Type'] && !headers['content-type']) {
-          headers['Content-Type'] = contentType;
-        }
-        request.response = {
-          statusCode: r.statusCode ?? 200,
-          headers,
-          body:
-            typeof r.body === 'string' ? r.body : JSON.stringify(r.body ?? {}),
-        };
-        return;
-      }
-
-      // Shape the handler's raw result
-      const shaped = shapeHttp(request.response, contentType);
-      request.response = shaped;
-    },
-
-    onError: async (request) => {
-      const err = request.error;
-
-      if (internal) {
-        // Internal: rethrow (tests assert throw)
-        throw err;
-      }
-
-      // HTTP: Map ZodError to 400, else 500
-      if (isZodError(err)) {
-        request.response = {
-          statusCode: err.statusCode ?? 400,
-          headers: {
-            'Content-Type': contentType,
-            'Access-Control-Allow-Credentials': 'true',
-          },
-          body: JSON.stringify(err.issues ?? []),
-        };
-        return;
-      }
-
+    // If base already returned an HTTP-shaped object, preserve it and ensure Content‑Type.
+    const maybe = request.response as unknown as
+      | { statusCode?: unknown; headers?: unknown; body?: unknown }
+      | undefined;
+    if (
+      maybe &&
+      typeof maybe === 'object' &&
+      'statusCode' in maybe &&
+      'headers' in maybe &&
+      'body' in maybe
+    ) {
+      const headers = Object.assign(
+        {},
+        ((maybe as { headers?: Record<string, string> }).headers ??
+          {}) as Record<string, string>,
+      );
+      headers['Content-Type'] = contentType;
       request.response = {
-        statusCode: 500,
-        headers: {
-          'Content-Type': contentType,
-          'Access-Control-Allow-Credentials': 'true',
-        },
-        body: JSON.stringify({
-          message: (err as { message?: unknown })?.message ?? 'Internal error',
-        }),
+        statusCode: Number(
+          (maybe as { statusCode?: number }).statusCode ?? 200,
+        ),
+        headers,
+        body: (maybe as { body?: string }).body ?? '',
       };
-    },
+      return;
+    }
+
+    // Validate business payload and shape to HTTP.
+    validate(request.response, responseSchema, 'response');
+    request.response = shape(request.response);
   };
+
+  const onError: MiddlewareObj<
+    APIGatewayProxyEvent,
+    unknown
+  >['onError'] = async (request) => {
+    const err = request.error;
+    if (err && typeof err === 'object' && (err as ExposedError).expose) {
+      const exposed = err as ExposedError;
+      const statusCode = exposed.statusCode ?? 400;
+      const payload = exposed.issues
+        ? { issues: exposed.issues }
+        : { message: exposed.message };
+      request.response = shape(payload, statusCode);
+      return;
+    }
+    // Re‑throw non‑exposed errors so outer infrastructure (tests / AWS) can handle.
+    throw err instanceof Error ? err : new Error(String(err));
+  };
+
+  return { before, after, onError };
 };

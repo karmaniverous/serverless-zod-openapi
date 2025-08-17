@@ -1,56 +1,53 @@
-/**
- * REQUIREMENTS ADDRESSED
- * - Deep, structural override so eventSchema refines EventType without erasing it.
- * - Avoid unsafe 'Function' type per lint rules.
- * - No 'any'; plain-object detection only.
- */
-
-export type Primitive =
-  | null
-  | undefined
-  | string
-  | number
-  | boolean
-  | symbol
-  | bigint;
-
-type AnyFn = (...args: never[]) => unknown;
-
-type Builtin =
-  | Primitive
-  | Date
-  | RegExp
-  | Error
-  | AnyFn
-  | Map<unknown, unknown>
-  | Set<unknown>
-  | WeakMap<object, unknown>
-  | WeakSet<object>
-  | Array<unknown>;
-
-type IsPlainObject<T> = T extends Builtin
-  ? false
-  : T extends object
-    ? true
-    : false;
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 
 /**
- * DeepOverride<T, U>
- * - For keys present in U, replace T[K] with a recursive override using U[K].
- * - For keys not present in U, keep T[K].
- * - If U is not a plain object, U replaces T at that node.
+ * DeepOverride
+ * -----------
+ * For two object types T (base) and U (override), produce a new type where keys present in U
+ * replace those in T; nested objects are recursed. Arrays and primitives are replaced wholesale.
+ *
+ * - If T is `never`, we fall back to U (used when no explicit EventType is provided).
+ * - If U is `never`, we keep T.
  */
-export type DeepOverride<T, U> =
-  IsPlainObject<T> extends true
-    ? IsPlainObject<U> extends true
-      ? {
-          [K in keyof T | keyof U]: K extends keyof U
-            ? K extends keyof T
-              ? DeepOverride<T[K], U[K]>
-              : U[K]
-            : K extends keyof T
-              ? T[K]
-              : never;
-        }
-      : U
-    : U;
+export type DeepOverride<T, U> = [T] extends [never]
+  ? U
+  : [U] extends [never]
+    ? T
+    : T extends
+          | Array<unknown>
+          | Date
+          | RegExp
+          | bigint
+          | string
+          | number
+          | boolean
+          | symbol
+          | null
+          | undefined
+      ? U
+      : U extends
+            | Array<unknown>
+            | Date
+            | RegExp
+            | bigint
+            | string
+            | number
+            | boolean
+            | symbol
+            | null
+            | undefined
+        ? U
+        : T extends object
+          ? U extends object
+            ? {
+                [K in keyof (T & U)]: K extends keyof U
+                  ? DeepOverride<
+                      K extends keyof T ? T[K] : never,
+                      U[K & keyof U]
+                    >
+                  : K extends keyof T
+                    ? T[K]
+                    : never;
+              }
+            : T
+          : U;

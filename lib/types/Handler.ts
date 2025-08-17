@@ -1,0 +1,37 @@
+import type { Context } from 'aws-lambda';
+import type { z } from 'zod';
+
+import type { DeepOverride } from '@@/lib/types/DeepOverride';
+
+/** Event type after applying deep schema overrides. */
+export type ShapedEvent<
+  EventSchema extends z.ZodType | undefined,
+  EventType,
+> = EventSchema extends z.ZodType
+  ? DeepOverride<EventType, z.infer<EventSchema>>
+  : EventType;
+
+/** Handler options shared across invocation modes. */
+export type HandlerOptions = {
+  env: Record<string, unknown>;
+  /** Present only for HTTP calls; omitted for SQS/Step/etc. */
+  securityContext?: unknown;
+  /** Optional, but most stacks will provide one. */
+  logger?: {
+    debug: (...args: unknown[]) => void;
+    error: (...args: unknown[]) => void;
+  };
+};
+
+/** Business handler: returns raw payloads; wrapping layers handle HTTP shaping when applicable. */
+export type Handler<
+  EventSchema extends z.ZodType | undefined,
+  ResponseSchema extends z.ZodType | undefined,
+  EventType,
+> = (
+  event: ShapedEvent<EventSchema, EventType>,
+  context: Context,
+  options: HandlerOptions,
+) => Promise<
+  ResponseSchema extends z.ZodType ? z.infer<ResponseSchema> : unknown
+>;

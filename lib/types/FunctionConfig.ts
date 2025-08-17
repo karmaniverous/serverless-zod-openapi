@@ -1,58 +1,45 @@
-/**
- * REQUIREMENTS ADDRESSED
- * - Carry GlobalParams & StageParams so fnEnvKeys is a precise union.
- * - Add EventType to gate HTTP-only keys at compile time.
- * - Keep authoring ergonomic (no casts), schemas optional.
- */
-
 import type { AWS } from '@serverless/typescript';
 import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 import type { z } from 'zod';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
-import type { HttpContext } from './HttpContext';
+import type { HttpContext } from '@@/lib/types/HttpContext';
 
-export type PropFromUnion<T, K extends PropertyKey> =
-  T extends Record<K, infer V> ? V : never;
+import type { PropFromUnion } from './PropFromUnion';
 
-/** Union of supported HTTP Lambda event shapes. */
 export type HttpEvent = APIGatewayProxyEvent | APIGatewayProxyEventV2;
+
+export type MethodKey = keyof ZodOpenApiPathItemObject;
 
 export type FunctionConfig<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends z.ZodType,
-  StageParams extends z.ZodType,
-  EventType,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
+  EventType = never,
 > = {
-  /** Unique function name within the Serverless service. */
+  /** Unique function name; used across serverless/OpenAPI outputs. */
   functionName: string;
 
-  /**
-   * Additional env-var keys required by this function.
-   * When omitted, consumers treat as [].
-   */
-  fnEnvKeys?: readonly (
-    | keyof z.output<GlobalParams>
-    | keyof z.output<StageParams>
-  )[];
+  /** Optional; defaults to [] wherever consumed. */
+  fnEnvKeys?: readonly (keyof GlobalParams | keyof StageParams)[];
 
-  /** Optional Zod schemas (undefined disables validation for that phase). */
+  /** Optional Zod schemas applied uniformly across all handlers. */
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
 
-  /** Raw Serverless `functions[].events` (optional). */
-  events?: PropFromUnion<AWS['functions'], 'events'>;
+  /** Optional extra serverless events (e.g., SQS triggers). */
+  events?: PropFromUnion<AWS['functions'], string>['events'];
 } & (EventType extends HttpEvent
   ? {
-      /** HTTP-only facet (enabled by declaring an HTTP EventType). */
+      /** HTTP-only options (permitted when EventType is an HttpEvent). */
       httpContexts?: readonly HttpContext[];
-      method?: keyof Omit<ZodOpenApiPathItemObject, 'id'>;
+      method?: MethodKey;
       basePath?: string;
       contentType?: string;
     }
   : {
-      /** Non-HTTP functions: HTTP-only keys disallowed. */
+      /** Internal-only: deny HTTP-only options via type system. */
       httpContexts?: never;
       method?: never;
       basePath?: never;
