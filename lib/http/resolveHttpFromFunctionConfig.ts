@@ -1,33 +1,36 @@
-import { dirname, relative, sep } from 'node:path';
+import { dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { unique } from 'radash';
 import type { z } from 'zod';
-import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
 import { sanitizeBasePath } from '@@/lib/path/buildPath';
-import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
+import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
+import type { FunctionConfig, MethodKey } from '@@/lib/types/FunctionConfig';
 import type { HttpContext } from '@@/lib/types/HttpContext';
 import { ENDPOINTS_ROOT_ABS } from '@@/src/endpoints/_root';
 
-type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
-
-const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
+export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
   'get',
-  'post',
   'put',
-  'patch',
+  'post',
   'delete',
-  'head',
   'options',
+  'head',
+  'patch',
+  'trace',
 ]);
 
+/**
+ * Resolve HTTP routing info from a function config + caller module URL.
+ * - Returns undefined for non-HTTP functions (no httpContexts present).
+ */
 export const resolveHttpFromFunctionConfig = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
-  EventTypeMap,
+  EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
   config: FunctionConfig<
@@ -46,20 +49,19 @@ export const resolveHttpFromFunctionConfig = <
       contexts: readonly HttpContext[];
     }
   | undefined => {
-  const contexts = config.httpContexts ? unique([...config.httpContexts]) : [];
-  if (contexts.length === 0) return undefined;
+  const { httpContexts } = config as {
+    httpContexts?: readonly HttpContext[];
+  };
+  if (!httpContexts || httpContexts.length === 0) return undefined;
 
-  // 1) Method: explicit -> folder name -> authored http event
-  let method: MethodKey | undefined = config.method;
-
+  // 1) Method: explicit -> folder name
+  let method: MethodKey | undefined = (config as { method?: MethodKey }).method;
   if (!method) {
     const absDir = dirname(fileURLToPath(callerModuleUrl));
-    const rel = relative(ENDPOINTS_ROOT_ABS, absDir);
-    const segments = rel.split(sep).filter(Boolean);
-    const last = segments[segments.length - 1]?.toLowerCase();
-    if (last && HTTP_METHODS.has(last as MethodKey)) method = last as MethodKey;
+    const lastSeg = absDir.split('/').filter(Boolean).pop();
+    const candidate = (lastSeg ?? '').toLowerCase() as MethodKey;
+    if (HTTP_METHODS.has(candidate)) method = candidate;
   }
-
   if (!method) {
     throw new Error(
       'resolveHttpFromFunctionConfig: could not infer method; set config.method or place under endpoints/<base>/<method>/',
@@ -67,7 +69,9 @@ export const resolveHttpFromFunctionConfig = <
   }
 
   // 2) Base path: explicit -> parent folder(s)
-  let basePath = sanitizeBasePath(config.basePath);
+  let basePath = sanitizeBasePath(
+    (config as { basePath?: string }).basePath ?? '',
+  );
   if (!basePath) {
     const absDir = dirname(fileURLToPath(callerModuleUrl));
     const rel = relative(ENDPOINTS_ROOT_ABS, absDir);
@@ -83,5 +87,6 @@ export const resolveHttpFromFunctionConfig = <
     );
   }
 
+  const contexts = unique(httpContexts);
   return { method, basePath, contexts };
 };

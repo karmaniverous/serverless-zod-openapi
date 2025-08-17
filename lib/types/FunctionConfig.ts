@@ -5,11 +5,12 @@ import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { HttpContext } from '@@/lib/types/HttpContext';
 import type { HTTP_EVENT_TOKENS } from '@@/lib/types/HttpEventTokens';
+import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import type { PropFromUnion } from './PropFromUnion';
 
-/** HTTP methods we support from zod-openapi's PathItem shape. */
-export type MethodKey = keyof ZodOpenApiPathItemObject;
+/** HTTP methods we support from zod-openapi's PathItem shape (excluding the 'id' helper key). */
+export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
 
 /**
  * FunctionConfig
@@ -42,6 +43,9 @@ export type FunctionConfig<
 
   /** Optional extra serverless events (e.g., SQS triggers). */
   events?: PropFromUnion<AWS['functions'], string>['events'];
+
+  /** Optional logger override (primarily for tests); console is the default. */
+  logger?: ConsoleLogger;
 } &
   // Gate HTTP-only options by whether EventType is one of the base HTTP tokens.
   (EventType extends (typeof HTTP_EVENT_TOKENS)[number]

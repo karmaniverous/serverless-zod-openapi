@@ -1,3 +1,9 @@
+/**
+ * REQUIREMENTS ADDRESSED
+ * - Derive an environment schema from Global & Stage Zod schemas and an allowlist of keys.
+ * - Provide utilities to merge env key sets and to parse process.env into a typed object.
+ * - No dynamic imports; no defaults for generic parameters.
+ */
 import type { ZodObject, ZodRawShape } from 'zod';
 import { z } from 'zod';
 
@@ -14,15 +20,7 @@ export const deriveAllKeys = (
   return out;
 };
 
-/** HEAD helper preserved for tests that import it. */
-export const isHead = (method: string | undefined): boolean =>
-  typeof method === 'string' && method.toUpperCase() === 'HEAD';
-
-/**
- * Split a combined key set into the portions belonging to each schema.
- * NOTE: Stage pick excludes keys that are also global, so global required keys
- * are never shadowed by stage.partial().
- */
+/** Split the unioned keys by which Zod schema defines them. */
 export const splitKeysBySchema = <
   G extends ZodObject<ZodRawShape>,
   S extends ZodObject<ZodRawShape>,
@@ -31,12 +29,11 @@ export const splitKeysBySchema = <
   globalParamsSchema: G,
   stageParamsSchema: S,
 ): {
-  globalPick: (keyof z.infer<G>)[];
-  stagePick: (keyof z.infer<S>)[];
+  globalPick: readonly (keyof z.infer<G>)[];
+  stagePick: readonly (keyof z.infer<S>)[];
 } => {
   const gKeySet = new Set(Object.keys(globalParamsSchema.shape));
   const sKeySet = new Set(Object.keys(stageParamsSchema.shape));
-
   const globalPick = [...allKeys].filter((k): k is keyof z.infer<G> =>
     gKeySet.has(String(k)),
   );
@@ -72,6 +69,7 @@ export const buildEnvSchema = <
   return z.object({}).extend(gPicked.shape).extend(sPicked.shape);
 };
 
+/** Parse an arbitrary source (e.g., process.env) with a provided env schema. */
 export const parseTypedEnv = <T extends z.ZodType>(
   envSchema: T,
   envSource: Record<string, unknown>,

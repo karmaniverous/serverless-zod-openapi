@@ -7,6 +7,8 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
+import { makeWrapHandler } from '@@/lib/handler/makeWrapHandler';
 import { createApiGatewayV1Event, createLambdaContext } from '@@/lib/test/aws';
 import {
   globalEnvKeys as testGlobalEnvKeys,
@@ -16,6 +18,7 @@ import {
   stageEnvKeys as testStageEnvKeys,
   stageParamsSchema as testStageParamsSchema,
 } from '@@/lib/test/serverless/config/stage';
+import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 vi.mock('@@/src/config/global', () => ({
   globalEnvKeys: testGlobalEnvKeys,
@@ -25,10 +28,6 @@ vi.mock('@@/src/config/stage', () => ({
   stageEnvKeys: testStageEnvKeys,
   stageParamsSchema: testStageParamsSchema,
 }));
-
-import type { ConsoleLogger } from '@@/lib/types/Loggable';
-import { makeFunctionConfig } from '@@/lib/handler/makeFunctionConfig';
-import { makeWrapHandler } from '@@/lib/handler/makeWrapHandler';
 
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
@@ -73,7 +72,9 @@ describe('wrapHandler: GET happy path', () => {
     expect(res.statusCode).toBe(200);
     expect(
       (
-        res.headers['Content-Type'] ?? res.headers['content-type']
+        res.headers['Content-Type'] ??
+        res.headers['content-type'] ??
+        ''
       ).toLowerCase(),
     ).toMatch(/application\/json/);
     expect(JSON.parse(res.body)).toEqual({ what: 'ok' });
@@ -113,13 +114,15 @@ describe('wrapHandler: HEAD short-circuit', () => {
     };
 
     expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.body);
-    expect(body).toEqual({});
+    const contentType =
+      res.headers['Content-Type'] ?? res.headers['content-type'] ?? '';
+    expect(contentType.toLowerCase()).toMatch(/application\/json/);
+    expect(JSON.parse(res.body)).toEqual({});
   });
 });
 
-describe('wrapHandler: POST with JSON body', () => {
-  it('returns the business payload for application/json', async () => {
+describe('wrapHandler: POST payload', () => {
+  it('JSON shapes response and validates body', async () => {
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
 
@@ -162,7 +165,9 @@ describe('wrapHandler: POST with JSON body', () => {
     expect(res.statusCode).toBe(200);
     expect(
       (
-        res.headers['Content-Type'] ?? res.headers['content-type']
+        res.headers['Content-Type'] ??
+        res.headers['content-type'] ??
+        ''
       ).toLowerCase(),
     ).toMatch(/application\/json/);
     expect(JSON.parse(res.body)).toEqual({ what: 'ok' });

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * DeepOverride
@@ -13,29 +13,9 @@ export type DeepOverride<T, U> = [T] extends [never]
   ? U
   : [U] extends [never]
     ? T
-    : T extends
-          | Array<unknown>
-          | Date
-          | RegExp
-          | bigint
-          | string
-          | number
-          | boolean
-          | symbol
-          | null
-          | undefined
+    : T extends any[]
       ? U
-      : U extends
-            | Array<unknown>
-            | Date
-            | RegExp
-            | bigint
-            | string
-            | number
-            | boolean
-            | symbol
-            | null
-            | undefined
+      : U extends any[]
         ? U
         : T extends object
           ? U extends object

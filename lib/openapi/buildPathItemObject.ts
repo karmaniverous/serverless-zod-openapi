@@ -4,6 +4,7 @@ import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
 import { buildPathElements } from '@@/lib/path/buildPath';
+import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import { serverlessConfigSchema } from '@@/src/config/serverlessConfig';
 
@@ -18,7 +19,7 @@ export const buildPathItemObject = <
   ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
-  EventTypeMap,
+  EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
   config: FunctionConfig<
@@ -41,6 +42,7 @@ export const buildPathItemObject = <
 
   const { method, basePath, contexts } = resolved;
 
+  // Build a path item per context, tagging operations properly.
   return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
     const pathElements = buildPathElements(basePath, context);
 

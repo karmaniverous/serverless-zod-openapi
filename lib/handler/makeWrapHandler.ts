@@ -9,8 +9,8 @@
  * - NEVER default type parameters; rely on inference from inputs.
  */
 import middy from '@middy/core';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type { z, ZodObject, ZodRawShape } from 'zod';
+import type { Context } from 'aws-lambda';
+import type { z } from 'zod';
 
 import {
   buildEnvSchema,
@@ -19,8 +19,9 @@ import {
   splitKeysBySchema,
 } from '@@/lib/handler/envBuilder';
 import { buildHttpMiddlewareStack } from '@@/lib/handler/middleware/buildHttpMiddlewareStack';
+import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
-import type { Handler } from '@@/lib/types/Handler';
+import type { Handler, ShapedEvent } from '@@/lib/types/Handler';
 import { isHttpEventTypeToken } from '@@/lib/types/HttpEventTokens';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
 import { globalEnvKeys, globalParamsSchema } from '@@/src/config/global';
@@ -31,55 +32,53 @@ type Z = z.ZodType;
 export const makeWrapHandler = <
   EventSchema extends Z | undefined,
   ResponseSchema extends Z | undefined,
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
-  EventTypeMap,
+  EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
-    GlobalParams,
-    StageParams,
-    EventTypeMap & Record<string, unknown>,
+    // We intentionally keep these generic in FunctionConfig and
+    // rely on the concrete project schemas below.
+    Record<string, unknown>,
+    Record<string, unknown>,
+    EventTypeMap,
     EventType
   >,
-  business: Handler<EventSchema, ResponseSchema, EventTypeMap[EventType]>,
+  business: Handler<EventSchema, ResponseSchema>,
 ) => {
-  const { eventSchema, responseSchema, fnEnvKeys, contentType } =
-    functionConfig;
-
   const base = async (event: unknown, context: Context) => {
-    const normalizedFnEnvKeys = (fnEnvKeys ?? []) as readonly (
-      | keyof z.infer<GlobalParams>
-      | keyof z.infer<StageParams>
-    )[];
+    const { eventSchema, responseSchema } = functionConfig;
+
+    // --- Build typed env from project schemas & config -----------------------
+    const normalizedFnEnvKeys = (functionConfig.fnEnvKeys ?? []).map((k) =>
+      String(k),
+    ) as readonly string[];
 
     const allKeys = deriveAllKeys(
-      globalEnvKeys as unknown as readonly (keyof z.infer<GlobalParams>)[],
-      stageEnvKeys as unknown as readonly (keyof z.infer<StageParams>)[],
+      globalEnvKeys as unknown as readonly string[],
+      stageEnvKeys as unknown as readonly string[],
       normalizedFnEnvKeys,
     );
 
     const { globalPick, stagePick } = splitKeysBySchema(
       allKeys,
-      globalParamsSchema as unknown as GlobalParams,
-      stageParamsSchema as unknown as StageParams,
+      globalParamsSchema,
+      stageParamsSchema,
     );
 
     const envSchema = buildEnvSchema(
-      globalParamsSchema as unknown as GlobalParams,
       globalPick,
-      stageParamsSchema as unknown as StageParams,
       stagePick,
+      globalParamsSchema,
+      stageParamsSchema,
     );
 
     const env = parseTypedEnv(envSchema, process.env);
     const logger: ConsoleLogger =
-      (functionConfig as unknown as { logger?: ConsoleLogger }).logger ??
-      console;
+      (functionConfig.logger as ConsoleLogger | undefined) ?? console;
 
-    // Validate the incoming event; thrown Zod errors will be mapped by HTTP middleware.
+    // --- Validate incoming event (Zod) --------------------------------------
     if (eventSchema) {
       const result = eventSchema.safeParse(event as unknown);
       if (!result.success) {
@@ -88,20 +87,27 @@ export const makeWrapHandler = <
           statusCode: number;
           issues: unknown[];
         };
-        e.expose = true;
-        e.statusCode = 400;
+        // Mark as exposed only for HTTP; internal callers should see a throw.
+        if (
+          isHttpEventTypeToken(
+            functionConfig.eventType as keyof BaseEventTypeMap,
+          )
+        ) {
+          e.expose = true;
+          e.statusCode = 400;
+        }
         e.issues = result.error.issues;
         throw e;
       }
     }
 
     const out = await business(
-      event as unknown as EventTypeMap[EventType],
+      event as unknown as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
       context,
       { env, logger },
     );
 
-    // Validate the business response.
+    // --- Validate business response (Zod) -----------------------------------
     if (responseSchema) {
       const result = responseSchema.safeParse(out as unknown);
       if (!result.success) {
@@ -111,7 +117,11 @@ export const makeWrapHandler = <
           issues?: unknown[];
         };
         // Mark as exposed only for HTTP; internal callers should see a throw.
-        if (isHttpEventTypeToken(functionConfig.eventType as string)) {
+        if (
+          isHttpEventTypeToken(
+            functionConfig.eventType as keyof BaseEventTypeMap,
+          )
+        ) {
           e.expose = true;
           e.statusCode = 500;
         }
@@ -123,23 +133,20 @@ export const makeWrapHandler = <
     return out;
   };
 
-  if (isHttpEventTypeToken(functionConfig.eventType as string)) {
+  // HTTP: wrap in middy + http stack.
+  if (
+    isHttpEventTypeToken(functionConfig.eventType as keyof BaseEventTypeMap)
+  ) {
     const http = buildHttpMiddlewareStack({
-      eventSchema: eventSchema as EventSchema,
-      responseSchema: responseSchema as ResponseSchema,
-      contentType: contentType ?? 'application/json',
-      logger:
-        (functionConfig as unknown as { logger?: ConsoleLogger }).logger ??
-        console,
+      eventSchema: functionConfig.eventSchema,
+      responseSchema: functionConfig.responseSchema,
+      contentType:
+        (functionConfig as { contentType?: string }).contentType ??
+        'application/json',
+      logger: (functionConfig.logger as ConsoleLogger | undefined) ?? console,
     });
 
-    const wrapped = middy(
-      base as unknown as (
-        e: APIGatewayProxyEvent,
-        c: Context,
-      ) => Promise<unknown>,
-    ).use(http);
-
+    const wrapped = middy(async (e, c) => base(e, c)).use(http);
     return wrapped as unknown as (e: unknown, c: Context) => Promise<unknown>;
   }
 

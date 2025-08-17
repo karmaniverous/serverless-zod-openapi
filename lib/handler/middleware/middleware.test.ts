@@ -11,15 +11,17 @@ import { createApiGatewayV1Event, createLambdaContext } from '@@/lib/test/aws';
 
 import { buildHttpMiddlewareStack } from './buildHttpMiddlewareStack';
 
-const run = async (
-  base: (e: APIGatewayProxyEvent, c: Context) => Promise<unknown>,
+const run = async <R>(
+  base: (e: APIGatewayProxyEvent, c: Context) => Promise<R>,
   opts: Parameters<typeof buildHttpMiddlewareStack>[0],
   event: APIGatewayProxyEvent,
   ctx: Context,
-): Promise<unknown> => {
+): Promise<R> => {
   const stack = buildHttpMiddlewareStack(opts);
-  const wrapped = middy(async (e, c) => base(e, c)).use(stack);
-  return wrapped(event, ctx);
+  const wrapped = middy(async (e: APIGatewayProxyEvent, c: Context) =>
+    base(e, c),
+  ).use(stack);
+  return wrapped(event, ctx) as Promise<R>;
 };
 
 describe('stack: response shaping & content-type header', () => {
@@ -29,20 +31,15 @@ describe('stack: response shaping & content-type header', () => {
     });
     const ctx = createLambdaContext();
 
-    const result = (await run(
-      async () => ({ hello: 'world' }),
+    const result = await run(
+      async () => ({ hello: 'world' }) as const,
       {
-        contentType: 'application/json',
         eventSchema: z.object({}),
-        responseSchema: z.object({ hello: z.string() }),
+        responseSchema: undefined,
       },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string | object;
-    };
+    );
 
     expect(result.statusCode).toBe(200);
     const contentType =
@@ -56,25 +53,23 @@ describe('stack: response shaping & content-type header', () => {
 
 describe('stack: HEAD short-circuit', () => {
   it('responds 200 {} with Content-Type', async () => {
+    const eventSchema = z.object({});
+    const responseSchema = z.object({ what: z.string() });
+
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
     const ctx = createLambdaContext();
 
-    const result = (await run(
-      async () => ({ ignored: true }),
+    const result = await run(
+      async () => ({ ignored: true }) as const,
       {
-        contentType: 'application/json',
-        eventSchema: z.object({}),
-        responseSchema: z.object({}).optional(),
+        eventSchema,
+        responseSchema,
       },
       event,
       ctx,
-    )) as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string | object;
-    };
+    );
 
     expect(result.statusCode).toBe(200);
     const contentType =
@@ -95,7 +90,7 @@ describe('stack: pre-shaped response', () => {
     const ctx = createLambdaContext();
 
     const result = await run(
-      async (_e) => ({
+      async () => ({
         statusCode: 201,
         headers: { 'X-Thing': 'y' },
         body: 'raw',
@@ -108,18 +103,13 @@ describe('stack: pre-shaped response', () => {
       ctx,
     );
 
-    const http = result as unknown as {
-      statusCode: number;
-      headers: Record<string, string>;
-      body: string;
-    };
-    expect(http.statusCode).toBe(201);
-    expect(http.headers['X-Thing'] ?? http.headers['x-thing']).toBe('y');
+    expect(result.statusCode).toBe(201);
+    expect(result.headers['X-Thing'] ?? result.headers['x-thing']).toBe('y');
     expect(
-      (
-        (http.headers['Content-Type'] ?? http.headers['content-type']) as string
-      ).toLowerCase(),
-    ).toMatch(/application\/json/);
-    expect(http.body).toBe('raw');
+      (result.headers['Content-Type'] ?? result.headers['content-type'] ?? '')
+        .toLowerCase()
+        .includes('application/json'),
+    ).toBe(true);
+    expect(result.body).toBe('raw');
   });
 });
