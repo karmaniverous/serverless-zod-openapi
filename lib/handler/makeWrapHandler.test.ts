@@ -31,6 +31,11 @@ vi.mock('@@/src/config/stage', () => ({
 
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
+    // Ensure required env vars are set for validation
+    process.env.SERVICE_NAME = 'testService';
+    process.env.PROFILE = 'testProfile';
+    process.env.STAGE = 'testStage';
+
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
 
@@ -63,7 +68,7 @@ describe('wrapHandler: GET happy path', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as {
+    const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -107,7 +112,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as {
+    const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -156,7 +161,7 @@ describe('wrapHandler: POST payload', () => {
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as {
+    const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
