@@ -2,6 +2,6 @@
 *.local
 *.tsbuildinfo
 **/.tsbuild/
-/context/
 local/
 node_modules/
+stan/

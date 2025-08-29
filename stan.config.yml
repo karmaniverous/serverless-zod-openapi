@@ -1,0 +1,12 @@
+outputPath: stan
+includes: []
+excludes: ['**/generated/**', '**/.tsbuild/**']
+scripts:
+  knip: npm run knip
+  lint: npm run lint
+  openapi: npm run openapi
+  package: npm run package
+  test: npm run test
+  typecheck: npm run typecheck
+defaultPatchFile: /stan.patch
+
