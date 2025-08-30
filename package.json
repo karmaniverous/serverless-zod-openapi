@@ -4,6 +4,7 @@
     "url": "https://github.com/karmaniverous/api.johngalt.id/issues"
   },
   "dependencies": {
+    "@karmaniverous/cached-axios": "^0.1.0",
     "@middy/core": "^6.4.1",
     "@middy/http-content-negotiation": "^6.4.1",
     "@middy/http-cors": "^6.4.1",

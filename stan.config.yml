@@ -1,12 +1,16 @@
-outputPath: stan
-includes: []
-excludes: ['**/generated/**', '**/.tsbuild/**']
+excludes:
+  - "**/generated/**"
+  - "**/.tsbuild/**"
+  - package-lock.json
+includes:
+  - services/**
+outputPath: .stan
+patchOpenCommand: code -g {file}
 scripts:
   knip: npm run knip
+  typecheck: npm run typecheck
   lint: npm run lint
   openapi: npm run openapi
-  package: npm run package
   test: npm run test
-  typecheck: npm run typecheck
-defaultPatchFile: /stan.patch
-
+  package: npm run package
+stanPath: .stan

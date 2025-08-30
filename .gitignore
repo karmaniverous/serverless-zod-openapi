@@ -5,3 +5,7 @@
 local/
 node_modules/
 stan/
+.stan/output/
+.stan/diff/
+.stan/dist/
+.stan/patch/

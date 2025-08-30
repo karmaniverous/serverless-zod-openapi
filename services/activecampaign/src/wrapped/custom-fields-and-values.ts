@@ -1,4 +1,7 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type {
+  AxiosRequestConfig,
+  AxiosResponse,
+} from '@karmaniverous/cached-axios';
 
 import type { AddCustomFieldRequest } from '@/generated/api.schemas';
 import { getCustomFieldsAndValues } from '@/generated/custom-fields-and-values/custom-fields-and-values';

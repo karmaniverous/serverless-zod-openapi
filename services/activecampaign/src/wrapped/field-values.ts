@@ -1,4 +1,7 @@
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type {
+  AxiosRequestConfig,
+  AxiosResponse,
+} from '@karmaniverous/cached-axios';
 
 import { getFieldValues } from '@/generated/field-values/field-values';
 import * as FieldValuesZ from '@/generated/field-values/field-values.zod';
