@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-08-31T00:55:00Z
+When updated: 2025-08-31T01:20:00Z
 
 ## Next up
 
@@ -10,6 +10,11 @@ When updated: 2025-08-31T00:55:00Z
 
 ## Completed (recent)
 
+- ESLint CLI: restore TypeScript parser and set explicit parserOptions.project
+  (root + services/activecampaign) so type-aware rules (e.g., no-unsafe-return)
+  surface in npm run lint the same as in VS Code.
+- Knip: ignore dynamically referenced serverless handlers and non-packaged step
+  functions; ignore specific AC helpers kept intentionally to reduce false positives.
 - Lint: fix no-unsafe-assignment in lib/handler/middleware/middleware.test.ts
   by typing JSON-parsed bodies as unknown.
 - Knip: convert to workspace-scoped config; add root entries (serverless.ts,
@@ -21,14 +26,16 @@ When updated: 2025-08-31T00:55:00Z
   - Align custom-fields-and-values wrappers to generated arities and make
     unused opts explicit with `void opts;`.
 - Wrappers: make unused requestFn options explicit with `void opts;` and
-  align to generated client arities (remove unsupported options args).- stagesFactory: keep GlobalParams/StageParams nomenclature as value types;
+  align to generated client arities (remove unsupported options args).
+- stagesFactory: keep GlobalParams/StageParams nomenclature as value types;
   schemas remain separate inputs for validation. No behavior change; fixes
   key-of-ZodObject typing drift.
 - Implement explicit `orvalMutator` forwarder function in local wrapper to satisfy Orval export check.
 
 ## Completed (recent)
 
-- Fix TS parse/build failure in makeWrapHandler by moving destructuring off the comment line.- Orval mutator path: point override.mutator.path to '../src/orval.mutator.ts'
+- Fix TS parse/build failure in makeWrapHandler by moving destructuring off the comment line.
+- Orval mutator path: point override.mutator.path to '../src/orval.mutator.ts'
   (relative to the generated workspace) so Orval resolves the local wrapper and
   stops searching under 'generated/src'. This unblocks client regeneration.
 - Orval mutator fix: add local wrapper (src/orval.mutator.ts) re-exporting the

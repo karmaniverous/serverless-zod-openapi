@@ -23,8 +23,12 @@ export default tseslint.config(
   prettierConfig,
   {
     languageOptions: {
+      // Important: set the TS parser here, otherwise this block replaces the
+      // parser from strictTypeChecked and the CLI falls back to espree.
+      parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        // Be explicit so the CLI loads type info for all workspaces.
+        project: ['./tsconfig.json', './services/activecampaign/tsconfig.json'],
         tsconfigRootDir,
       },
     },
