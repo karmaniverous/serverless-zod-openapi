@@ -2,34 +2,31 @@
  * Public entry point for the toolkit. Stack code must import only from '@@/src'.
  * Exposes runtime wrappers, middleware, builders, and commonly used types.
  */
+export { detectSecurityContext } from './handler/detectSecurityContext';
+export { makeFunctionConfig } from './handler/makeFunctionConfig';
 export { makeWrapHandler } from './handler/makeWrapHandler';
+export { asApiMiddleware } from './handler/middleware/asApiMiddleware';
 export { buildHttpMiddlewareStack } from './handler/middleware/buildHttpMiddlewareStack';
+export { combine } from './handler/middleware/combine';
 export { httpZodValidator } from './handler/middleware/httpZodValidator';
 export { shortCircuitHead } from './handler/middleware/shortCircuitHead';
-export { combine } from './handler/middleware/combine';
-export { asApiMiddleware } from './handler/middleware/asApiMiddleware';
-
-export { detectSecurityContext } from './handler/detectSecurityContext';
-
-export { buildFunctionDefinitions } from './serverless/buildFunctionDefinitions';
 export { buildPathItemObject } from './openapi/buildPathItemObject';
 
-export { makeFunctionConfig } from './handler/makeFunctionConfig';
-
 // Types
-export type { FunctionConfig } from './types/FunctionConfig';
 export type { BaseEventTypeMap } from './types/BaseEventTypeMap';
+export type { FunctionConfig } from './types/FunctionConfig';
+export type { Handler } from './types/Handler';
 export type { HttpContext } from './types/HttpContext';
+export type { LambdaEvent } from './types/LambdaEvent';
 export type { ConsoleLogger } from './types/Loggable';
 export type { SecurityContextHttpEventMap } from './types/SecurityContextHttpEventMap';
-export type { Handler } from './types/Handler';
-export type { LambdaEvent } from './types/LambdaEvent';
 
 // Optional helper exports
 export {
   buildEnvSchema,
   deriveAllKeys,
-  splitKeysBySchema,
   parseTypedEnv,
+  splitKeysBySchema,
 } from './handler/envBuilder';
+export { buildPathItemObject as _keepExportOrderHint } from './openapi/buildPathItemObject';
 export { stagesFactory } from './serverless/stagesFactory';
