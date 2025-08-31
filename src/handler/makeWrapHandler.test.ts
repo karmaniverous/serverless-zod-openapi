@@ -7,8 +7,11 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { makeFunctionConfig } from '@@/src/handler/makeFunctionConfig';
-import { makeWrapHandler } from '@@/src/handler/makeWrapHandler';
+import {
+  type LoadEnvConfig,
+  makeFunctionConfig,
+  makeWrapHandler,
+} from '@@/src';
 import { createApiGatewayV1Event, createLambdaContext } from '@@/src/test/aws';
 import {
   globalEnvKeys as testGlobalEnvKeys,
@@ -28,6 +31,18 @@ vi.mock('@@/stack/config/stage', () => ({
   stageEnvKeys: testStageEnvKeys,
   stageParamsSchema: testStageParamsSchema,
 }));
+
+const testLoadEnvConfig: LoadEnvConfig<
+  z.ZodObject<z.ZodRawShape>,
+  z.ZodObject<z.ZodRawShape>
+> = async () => ({
+  globalEnvKeys: testGlobalEnvKeys,
+  globalParamsSchema:
+    testGlobalParamsSchema as unknown as z.ZodObject<z.ZodRawShape>,
+  stageEnvKeys: testStageEnvKeys,
+  stageParamsSchema:
+    testStageParamsSchema as unknown as z.ZodObject<z.ZodRawShape>,
+});
 
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
@@ -57,9 +72,13 @@ describe('wrapHandler: GET happy path', () => {
       responseSchema,
       logger,
     });
-    const handler = makeWrapHandler(functionConfig, async () => ({
-      what: 'ok',
-    }));
+    const handler = makeWrapHandler(
+      functionConfig,
+      async () => ({
+        what: 'ok',
+      }),
+      testLoadEnvConfig,
+    );
 
     const event = createApiGatewayV1Event('GET', {
       Accept: 'application/json',
@@ -104,9 +123,13 @@ describe('wrapHandler: HEAD short-circuit', () => {
       eventSchema,
       responseSchema,
     });
-    const handler = makeWrapHandler(functionConfig, async () => {
-      return {};
-    });
+    const handler = makeWrapHandler(
+      functionConfig,
+      async () => {
+        return {};
+      },
+      testLoadEnvConfig,
+    );
 
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
@@ -155,9 +178,13 @@ describe('wrapHandler: POST payload', () => {
       responseSchema,
       logger,
     });
-    const handler = makeWrapHandler(functionConfig, async () => {
-      return { what: 'ok' };
-    });
+    const handler = makeWrapHandler(
+      functionConfig,
+      async () => {
+        return { what: 'ok' };
+      },
+      testLoadEnvConfig,
+    );
 
     const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',

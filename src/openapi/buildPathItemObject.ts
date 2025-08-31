@@ -6,16 +6,18 @@ import { resolveHttpFromFunctionConfig } from '@@/src/http/resolveHttpFromFuncti
 import { buildPathElements } from '@@/src/path/buildPath';
 import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/src/types/FunctionConfig';
-import { serverlessConfigSchema } from '@@/stack/config/serverlessConfig';
+import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
 
 import type { BaseOperation } from './types';
 
+type ServerlessConfigLike = {
+  httpContextEventMap: SecurityContextHttpEventMap;
+};
 /**
  * Build OpenAPI path items for a single function config.
  * If no httpContexts are present, returns an empty object.
  */
-export const buildPathItemObject = <
-  EventSchema extends z.ZodType | undefined,
+export const buildPathItemObject = <  EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
@@ -30,18 +32,16 @@ export const buildPathItemObject = <
     EventTypeMap,
     EventType
   >,
-  rawServerlessConfig: z.input<typeof serverlessConfigSchema>,
+  _appConfig: ServerlessConfigLike,
   callerModuleUrl: string,
   baseOperation: BaseOperation,
+  endpointsRootAbs: string,
 ): ZodOpenApiPathsObject => {
-  // Keep Serverless & OpenAPI aligned (and validated)
-  serverlessConfigSchema.parse(rawServerlessConfig);
-
-  const resolved = resolveHttpFromFunctionConfig(config, callerModuleUrl);
+  // Resolve HTTP route details via injected endpoints root
+  const resolved = resolveHttpFromFunctionConfig(config, callerModuleUrl, endpointsRootAbs);
   const { method, basePath, contexts } = resolved;
 
-  // Build a path item per context, tagging operations properly.
-  return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
+  // Build a path item per context, tagging operations properly.  return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
     const pathElements = buildPathElements(basePath, context);
 
     return {

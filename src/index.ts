@@ -4,6 +4,7 @@
  */
 export { detectSecurityContext } from './handler/detectSecurityContext';
 export { makeFunctionConfig } from './handler/makeFunctionConfig';
+export type { LoadEnvConfig } from './handler/makeWrapHandler';
 export { makeWrapHandler } from './handler/makeWrapHandler';
 export { asApiMiddleware } from './handler/middleware/asApiMiddleware';
 export { buildHttpMiddlewareStack } from './handler/middleware/buildHttpMiddlewareStack';

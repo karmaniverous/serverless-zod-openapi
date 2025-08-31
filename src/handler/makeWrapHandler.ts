@@ -32,32 +32,9 @@ export type LoadEnvConfig<
   stageParamsSchema: SP;
 }>;
 
-/** Default runtime loader — allows tests to vi.mock the imported modules cleanly. */
-const defaultLoadEnvConfig = async (): Promise<{
-  globalEnvKeys: readonly PropertyKey[];
-  globalParamsSchema: ZodObject<ZodRawShape>;
-  stageEnvKeys: readonly PropertyKey[];
-  stageParamsSchema: ZodObject<ZodRawShape>;
-}> => {
-  const [g, s] = await Promise.all([
-    import('@@/stack/config/global'),
-    import('@@/stack/config/stage'),
-  ]);
-  return {
-    globalEnvKeys: (g as Record<string, unknown>)
-      .globalEnvKeys as readonly PropertyKey[],
-    globalParamsSchema: (g as Record<string, unknown>)
-      .globalParamsSchema as ZodObject<ZodRawShape>,
-    stageEnvKeys: (s as Record<string, unknown>)
-      .stageEnvKeys as readonly PropertyKey[],
-    stageParamsSchema: (s as Record<string, unknown>)
-      .stageParamsSchema as ZodObject<ZodRawShape>,
-  };
-};
 export const makeWrapHandler = <
   EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
+  ResponseSchema extends z.ZodType | undefined,  GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
@@ -74,15 +51,13 @@ export const makeWrapHandler = <
   loadEnvConfig: LoadEnvConfig<
     ZodObject<ZodRawShape>,
     ZodObject<ZodRawShape>
-  > = defaultLoadEnvConfig,
+  >,
 ) => {
   const base = async (event: unknown, context: Context) => {
-    // Load env config at runtime (mock-friendly).
     const {
       globalEnvKeys,
       globalParamsSchema,
-      stageEnvKeys,
-      stageParamsSchema,
+      stageEnvKeys,      stageParamsSchema,
     } = await loadEnvConfig();
 
     // Union allowlists and split by schema ownership.

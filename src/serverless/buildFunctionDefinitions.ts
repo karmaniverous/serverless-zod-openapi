@@ -3,12 +3,11 @@ import { fileURLToPath } from 'node:url';
 
 import type { AWS } from '@serverless/typescript';
 import { packageDirectorySync } from 'package-directory';
-import type z from 'zod';
 
 import { resolveHttpFromFunctionConfig } from '@@/src/http/resolveHttpFromFunctionConfig';
 import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/src/types/FunctionConfig';
-import { serverlessConfigSchema } from '@@/stack/config/serverlessConfig';
+import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
 import { type AllParamsKeys, buildFnEnv } from '@@/stack/config/stages';
 
 type HttpEventObject = { method: string; path: string } & Record<
@@ -16,10 +15,10 @@ type HttpEventObject = { method: string; path: string } & Record<
   unknown
 >;
 type HttpEvent = { http: string | HttpEventObject };
+type ServerlessConfigLike = { httpContextEventMap: SecurityContextHttpEventMap; defaultHandlerFileName: string; defaultHandlerFileExport: string };
 
 const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
 const normalizeMethod = (m: string) => m.toLowerCase();
-
 export const buildFunctionDefinitions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
@@ -36,16 +35,15 @@ export const buildFunctionDefinitions = <
     EventTypeMap,
     EventType
   >,
-  rawServerlessConfig: z.input<typeof serverlessConfigSchema>,
+  appConfig: ServerlessConfigLike,
   callerModuleUrl: string,
+  endpointsRootAbs: string,
 ): AWS['functions'] => {
-  const parsed = serverlessConfigSchema.parse(rawServerlessConfig);
-
+  const parsed = appConfig;
   // Compute "file.export" handler string relative to repo root
   const repoRoot = packageDirectorySync()!;
   const callerDir = dirname(fileURLToPath(callerModuleUrl));
-  const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);
-  const handlerFileRel = relative(repoRoot, handlerFileAbs)
+  const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);  const handlerFileRel = relative(repoRoot, handlerFileAbs)
     .split(sep)
     .join('/');
   const handler = `${handlerFileRel}.${parsed.defaultHandlerFileExport}`;
@@ -57,10 +55,10 @@ export const buildFunctionDefinitions = <
     const { method, basePath, contexts } = resolveHttpFromFunctionConfig(
       functionConfig,
       callerModuleUrl,
+      endpointsRootAbs,
     );
     const path = normalizePath(basePath);
-    const httpEvents: HttpEvent[] = (
-      contexts.length ? contexts : ['public']
+    const httpEvents: HttpEvent[] = (      contexts.length ? contexts : ['public']
     ).map(() => ({
       http: {
         method: normalizeMethod(method),

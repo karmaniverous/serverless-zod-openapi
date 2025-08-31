@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-08-31T02:30:00Z
+When updated: 2025-08-31T02:50:00Z
 
 ## Next up
 
@@ -8,9 +8,11 @@ When updated: 2025-08-31T02:30:00Z
 - Review Knip output after config changes; further refine entries/ignores if
   any remaining false positives (consider ignoring unused experimental helpers).
 - Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@@/src").
+- Sweep tests to import toolkit API from '@@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@@/\*' in all suites.
 - Design: toolkit packaging plan (publish lib/). Define initial public API:
   - wrapper (makeWrapHandler), middleware stack, serverless/OpenAPI builders,
-  - config typing utilities (FunctionConfig, AppConfig zod schema helpers).- Design: simplified config model
+  - config typing utilities (FunctionConfig, AppConfig zod schema helpers).
+- Design: simplified config model
   - Single per-function config object (inline event/response schemas).
   - Collapse stack config to EventTypeMap + AppConfig (zod-typed).
   - Identify which src/config helpers move into lib and how builders consume
@@ -19,9 +21,14 @@ When updated: 2025-08-31T02:30:00Z
 
 ## Completed (recent)
 
+- DI inversions to unwrap toolkit→stack circular deps:
+  - makeWrapHandler now requires a loadEnvConfig adapter; stack provides stack/config/loadEnvConfig.
+  - resolveHttpFromFunctionConfig no longer imports stack; endpointsRootAbs is injected.
+  - buildFunctionDefinitions and OpenAPI builder accept appConfig value and injected endpointsRootAbs; no stack schema imports.
+- Stack imports from toolkit index only; updated serverless/openAPI call sites accordingly.
 - Toolkit public index (src/index.ts) added; stack now imports solely from the
   toolkit index (@@/src). Updated all stack deep imports accordingly.
-- Tests: makeWrapHandler test suite now vi.mock's '@@/stack/config/*' and sets
+- Tests: makeWrapHandler test suite now vi.mock's '@@/stack/config/\*' and sets
   required env vars across GET/HEAD/POST tests to satisfy the env schema.
 - OpenAPI: moved generator to stack/config/openapi.ts and updated package.json
   "openapi" script. Generator now writes to stack/openapi.json to match runtime
@@ -33,7 +40,8 @@ When updated: 2025-08-31T02:30:00Z
 
 - HTTP middleware: fixed HEAD short-circuit to skip response validation by
   adding mHeadFinalize (after) before Zod-after; conditional Zod options to
-  satisfy exactOptionalPropertyTypes; removed unused import, avoided  unnecessary assertions/conversions, and replaced ??= with guarded
+  satisfy exactOptionalPropertyTypes; removed unused import, avoided
+  unnecessary assertions/conversions, and replaced ??= with guarded
   assignments to satisfy ESLint.
 - HTTP middleware: restore rich pipeline (header/event normalization, content
   negotiation, conditional JSON body parsing, Zod validator, error exposure +

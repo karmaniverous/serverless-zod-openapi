@@ -5,13 +5,13 @@
 */
 import { buildPathItemObject } from '@@/src';
 import { serverlessConfig } from '@@/stack/config/serverlessConfig';
+import { ENDPOINTS_ROOT_ABS } from '@@/stack/endpoints/_root';
 
 import { eventSchema, functionConfig, responseSchema } from './config';
 export default buildPathItemObject(
   functionConfig,
   serverlessConfig,
-  import.meta.url,
-  {
+  import.meta.url,  {
     summary: 'ActiveCampaign events',
     description: 'Receive ActiveCampaign event webhooks.',
     requestBody: {
@@ -26,4 +26,5 @@ export default buildPathItemObject(
     },
     tags: [],
   },
+  ENDPOINTS_ROOT_ABS,
 );

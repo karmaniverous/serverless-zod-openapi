@@ -4,14 +4,20 @@
  * - Call makeWrapHandler with only (functionConfig, businessHandler).
  */
 import { getContact } from '@@/services/activecampaign/src';
-import { makeWrapHandler } from '@@/src';
 import type { LambdaEvent } from '@@/src';
+import { makeWrapHandler } from '@@/src';
+import { loadEnvConfig } from '@@/stack/config/loadEnvConfig';
 
 import { functionConfig } from './config';
-export const handler = makeWrapHandler(functionConfig, (event) => {  // Narrow to the LambdaEvent shape established by eventSchema.transform
-  type EventWithPayload = LambdaEvent & { Payload: { contactId: string } };
-  const lambdaEvent = event as unknown as EventWithPayload;
-  return getContact({
-    contactId: lambdaEvent.Payload.contactId,
-  });
-});
+export const handler = makeWrapHandler(
+  functionConfig,
+  (event) => {
+    // Narrow to the LambdaEvent shape established by eventSchema.transform
+    type EventWithPayload = LambdaEvent & { Payload: { contactId: string } };
+    const lambdaEvent = event as unknown as EventWithPayload;
+    return getContact({
+      contactId: lambdaEvent.Payload.contactId,
+    });
+  },
+  loadEnvConfig,
+);
