@@ -1,8 +1,8 @@
 import type { AWS } from '@serverless/typescript';
 
-import { environment, stages } from '@@/src/config/stages';
-import endpointEventActivecampaignPost from '@@/src/endpoints/event/activecampaign/post/serverless';
-import endpointOpenapiGet from '@@/src/endpoints/openapi/get/serverless';
+import { environment, stages } from '@@/stack/config/stages';
+import endpointEventActivecampaignPost from '@@/stack/endpoints/event/activecampaign/post/serverless';
+import endpointOpenapiGet from '@@/stack/endpoints/openapi/get/serverless';
 
 const config: AWS = {
   service: '${param:SERVICE_NAME}',
