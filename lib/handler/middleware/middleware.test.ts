@@ -45,12 +45,11 @@ describe('stack: response shaping & content-type header', () => {
     const contentType =
       result.headers['Content-Type'] ?? result.headers['content-type'] ?? '';
     expect(contentType.toLowerCase()).toMatch(/application\/json/);
-    const body =
+    const body: unknown =
       typeof result.body === 'string' ? JSON.parse(result.body) : result.body;
     expect(body).toEqual({ hello: 'world' });
   });
 });
-
 describe('stack: HEAD short-circuit', () => {
   it('responds 200 {} with Content-Type', async () => {
     const eventSchema = z.object({});
@@ -75,12 +74,11 @@ describe('stack: HEAD short-circuit', () => {
     const contentType =
       result.headers['Content-Type'] ?? result.headers['content-type'] ?? '';
     expect(contentType.toLowerCase()).toMatch(/application\/json/);
-    const body =
+    const body: unknown =
       typeof result.body === 'string' ? JSON.parse(result.body) : result.body;
     expect(body).toEqual({});
   });
 });
-
 describe('stack: pre-shaped response', () => {
   it('preserves statusCode/body/headers and sets Content-Type', async () => {
     const event = createApiGatewayV1Event('POST', {

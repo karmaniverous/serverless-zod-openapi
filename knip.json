@@ -1,12 +1,16 @@
 {
-  "entry": ["src/**/index.ts"],
+  "workspaces": {
+    ".": {
+      "entry": ["serverless.ts", "lib/openapi/generate.ts"],
+      "project": ["lib/**", "src/**", "!docs/**"],
+      "ignore": ["**/generated/**", "lib/test/**"]
+    },
+    "services/activecampaign": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**", "!**/generated/**"],
+      "ignore": ["**/generated/**", "src/openapi.json"]
+    }
+  },
   "ignoreDependencies": [],
-  "ignore": [
-    "**/generated/**"
-  ],
-  "project": ["*/**", "!docs/**"],
-  "rules": {
-    "exports": "off",
-    "types": "off"
-  }
+  "rules": { "exports": "off", "types": "off" }
 }
