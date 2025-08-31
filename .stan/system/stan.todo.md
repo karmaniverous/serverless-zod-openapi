@@ -1,11 +1,21 @@
 # Development Plan
 
-When updated: 2025-08-31T02:00:00Z
+When updated: 2025-08-31T02:10:00Z
 
 ## Next up
+
 - Re-run: generate, typecheck, lint, test, package; paste outputs and report deltas.
 - Review Knip output after config changes; further refine entries/ignores if
   any remaining false positives (consider ignoring unused experimental helpers).
+- Design: toolkit packaging plan (publish lib/). Define initial public API:
+  - wrapper (makeWrapHandler), middleware stack, serverless/OpenAPI builders,
+  - config typing utilities (FunctionConfig, AppConfig zod schema helpers).
+- Design: simplified config model
+  - Single per-function config object (inline event/response schemas).
+  - Collapse stack config to EventTypeMap + AppConfig (zod-typed).
+  - Identify which src/config helpers move into lib and how builders consume
+    (FunctionConfig, AppConfig) only.
+- Draft a minimal migration outline and acceptance criteria; then implement.
 
 ## Completed (recent)
 
@@ -16,7 +26,10 @@ When updated: 2025-08-31T02:00:00Z
   assignments to satisfy ESLint.
 - HTTP middleware: restore rich pipeline (header/event normalization, content
   negotiation, conditional JSON body parsing, Zod validator, error exposure +
-  http-error-handler, CORS, response shaping, serializer) in buildHttpMiddlewareStack.- ESLint CLI: restore TypeScript parser and set explicit parserOptions.project
+  http-error-handler, CORS, response shaping, serializer) in buildHttpMiddlewareStack.
+- Project prompt: codified middleware preservation policy; documented toolkit
+  direction and simplified config model (function-level object + AppConfig).
+- ESLint CLI: restore TypeScript parser and set explicit parserOptions.project
   (root + services/activecampaign) so type-aware rules (e.g., no-unsafe-return)
   surface in npm run lint the same as in VS Code.
 - Knip: ignore dynamically referenced serverless handlers and non-packaged step
