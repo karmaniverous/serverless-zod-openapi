@@ -6,48 +6,34 @@
  */
 import type { CreateSchemaRequest, UpdateSchemaRequest } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getSchemas = () => {
   /**
    * @summary List all schemas
    */
-  const listallschemas = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>(
-      { url: `/customObjects/schemas`, method: 'GET' },
-      options,
-    );
+  const listallschemas = () => {
+    return orvalMutator<null>({ url: `/customObjects/schemas`, method: 'GET' });
   };
   /**
    * @summary Create Schema
    */
-  const createSchema = (
-    createSchemaRequest: CreateSchemaRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/schemas`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createSchemaRequest,
-      },
-      options,
-    );
+  const createSchema = (createSchemaRequest: CreateSchemaRequest) => {
+    return orvalMutator<null>({
+      url: `/customObjects/schemas`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createSchemaRequest,
+    });
   };
   /**
    * @summary Listing records for a Schema
    */
-  const listingrecordsforaSchema = (
-    schemaID: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<unknown>(
-      { url: `/customObjects/records/${schemaID}`, method: 'GET' },
-      options,
-    );
+  const listingrecordsforaSchema = (schemaID: string) => {
+    return orvalMutator<unknown>({
+      url: `/customObjects/records/${schemaID}`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Update Schema
@@ -55,41 +41,31 @@ export const getSchemas = () => {
   const updateSchema = (
     schemaId: string,
     updateSchemaRequest: UpdateSchemaRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/schemas/${schemaId}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateSchemaRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/customObjects/schemas/${schemaId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateSchemaRequest,
+    });
   };
   /**
    * @summary Get Schema by ID
    */
-  const getSchemabyID = (
-    schemaId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/customObjects/schemas/${schemaId}`, method: 'GET' },
-      options,
-    );
+  const getSchemabyID = (schemaId: string) => {
+    return orvalMutator<null>({
+      url: `/customObjects/schemas/${schemaId}`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Delete Schema
    */
-  const deleteSchema = (
-    schemaId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/customObjects/schemas/${schemaId}`, method: 'DELETE' },
-      options,
-    );
+  const deleteSchema = (schemaId: string) => {
+    return orvalMutator<null>({
+      url: `/customObjects/schemas/${schemaId}`,
+      method: 'DELETE',
+    });
   };
   return {
     listallschemas,

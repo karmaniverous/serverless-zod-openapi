@@ -6,9 +6,7 @@
  */
 import type { AddFieldRelationshipRequest } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getFieldRelationships = () => {
   /**
@@ -16,29 +14,22 @@ export const getFieldRelationships = () => {
    */
   const addFieldRelationship = (
     addFieldRelationshipRequest: AddFieldRelationshipRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/fieldRels`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: addFieldRelationshipRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/fieldRels`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: addFieldRelationshipRequest,
+    });
   };
   /**
    * @summary Delete Field Relationship
    */
-  const deleteFieldRelationship = (
-    fieldRelId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/fieldRels/${fieldRelId}`, method: 'DELETE' },
-      options,
-    );
+  const deleteFieldRelationship = (fieldRelId: string) => {
+    return orvalMutator<null>({
+      url: `/fieldRels/${fieldRelId}`,
+      method: 'DELETE',
+    });
   };
   return { addFieldRelationship, deleteFieldRelationship };
 };

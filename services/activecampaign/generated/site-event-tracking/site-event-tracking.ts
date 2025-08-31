@@ -9,9 +9,7 @@ import type {
   TrackEventBody,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getSiteEventTracking = () => {
   /**
@@ -19,36 +17,24 @@ export const getSiteEventTracking = () => {
    */
   const createanewEventNameOnly = (
     createanewEventNameOnlyRequest: CreateanewEventNameOnlyRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/eventTrackingEvents`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createanewEventNameOnlyRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/eventTrackingEvents`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createanewEventNameOnlyRequest,
+    });
   };
   /**
    * @summary List All Events (Name Only)
    */
-  const listAllEventsNameOnly = (
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/eventTrackingEvents`, method: 'GET' },
-      options,
-    );
+  const listAllEventsNameOnly = () => {
+    return orvalMutator<null>({ url: `/eventTrackingEvents`, method: 'GET' });
   };
   /**
    * @summary Track Event
    */
-  const trackEvent = (
-    trackEventBody?: TrackEventBody,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
+  const trackEvent = (trackEventBody?: TrackEventBody) => {
     const formUrlEncoded = new URLSearchParams();
     if (trackEventBody?.actid !== undefined) {
       formUrlEncoded.append(`actid`, trackEventBody.actid.toString());
@@ -66,15 +52,12 @@ export const getSiteEventTracking = () => {
       formUrlEncoded.append(`visit`, JSON.stringify(trackEventBody.visit));
     }
 
-    return orvalMutator<null>(
-      {
-        url: `/event`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        data: formUrlEncoded,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/event`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: formUrlEncoded,
+    });
   };
   return { createanewEventNameOnly, listAllEventsNameOnly, trackEvent };
 };

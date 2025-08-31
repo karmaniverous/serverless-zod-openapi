@@ -6,63 +6,46 @@
  */
 import type { CreateGroupRequest } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getGroups = () => {
   /**
    * @summary Get Groups
    */
-  const getGroups = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/groups`, method: 'GET' }, options);
+  const getGroups = () => {
+    return orvalMutator<null>({ url: `/groups`, method: 'GET' });
   };
   /**
    * @summary Create Group
    */
-  const createGroup = (
-    createGroupRequest: CreateGroupRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/groups`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createGroupRequest,
-      },
-      options,
-    );
+  const createGroup = (createGroupRequest: CreateGroupRequest) => {
+    return orvalMutator<null>({
+      url: `/groups`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createGroupRequest,
+    });
   };
   /**
    * @summary Get Group Limits
    */
-  const getGroupLimits = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/groupLimits`, method: 'GET' }, options);
+  const getGroupLimits = () => {
+    return orvalMutator<null>({ url: `/groupLimits`, method: 'GET' });
   };
   /**
    * @summary Get Group By ID
    */
-  const getGroupByID = (
-    groupId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/groups/${groupId}`, method: 'GET' },
-      options,
-    );
+  const getGroupByID = (groupId: number) => {
+    return orvalMutator<null>({ url: `/groups/${groupId}`, method: 'GET' });
   };
   /**
    * @summary Get Users By Group
    */
-  const getUsersByGroup = (
-    groupId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/groups/${groupId}/userGroups`, method: 'GET' },
-      options,
-    );
+  const getUsersByGroup = (groupId: number) => {
+    return orvalMutator<null>({
+      url: `/groups/${groupId}/userGroups`,
+      method: 'GET',
+    });
   };
   return {
     getGroups,

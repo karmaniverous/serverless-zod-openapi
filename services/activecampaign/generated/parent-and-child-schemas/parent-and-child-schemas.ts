@@ -6,9 +6,7 @@
  */
 import type { CreateapublicschemaRequest } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getParentAndChildSchemas = () => {
   /**
@@ -16,29 +14,22 @@ export const getParentAndChildSchemas = () => {
    */
   const createapublicschema = (
     createapublicschemaRequest: CreateapublicschemaRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/schemas/public`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createapublicschemaRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/customObjects/schemas/public`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createapublicschemaRequest,
+    });
   };
   /**
    * @summary Create a child schema
    */
-  const createachildschema = (
-    parentSchemaId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/customObjects/schemas/${parentSchemaId}/child`, method: 'POST' },
-      options,
-    );
+  const createachildschema = (parentSchemaId: string) => {
+    return orvalMutator<null>({
+      url: `/customObjects/schemas/${parentSchemaId}/child`,
+      method: 'POST',
+    });
   };
   return { createapublicschema, createachildschema };
 };

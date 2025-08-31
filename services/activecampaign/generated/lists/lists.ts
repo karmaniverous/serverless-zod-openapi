@@ -6,39 +6,25 @@
  */
 import type { CreateListRequest, GetListsParams } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getLists = () => {
   /**
    * @summary Get Lists
    */
-  const getLists = (
-    params: GetListsParams,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/lists`, method: 'GET', params },
-      options,
-    );
+  const getLists = (params: GetListsParams) => {
+    return orvalMutator<null>({ url: `/lists`, method: 'GET', params });
   };
   /**
    * @summary Create List
    */
-  const createList = (
-    createListRequest: CreateListRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/lists`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createListRequest,
-      },
-      options,
-    );
+  const createList = (createListRequest: CreateListRequest) => {
+    return orvalMutator<null>({
+      url: `/lists`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createListRequest,
+    });
   };
   return { getLists, createList };
 };

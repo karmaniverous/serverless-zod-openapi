@@ -12,33 +12,25 @@ import type {
   UpdateadealnoteRequest,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getDeals = () => {
   /**
    * @summary Create a deal
    */
-  const createadeal = (
-    createadealRequest: CreateadealRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/deals`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createadealRequest,
-      },
-      options,
-    );
+  const createadeal = (createadealRequest: CreateadealRequest) => {
+    return orvalMutator<null>({
+      url: `/deals`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createadealRequest,
+    });
   };
   /**
    * @summary Retrieve all deals
    */
-  const retrievealldeals = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/deals`, method: 'GET' }, options);
+  const retrievealldeals = () => {
+    return orvalMutator<null>({ url: `/deals`, method: 'GET' });
   };
   /**
    * @summary Create a deal note
@@ -46,56 +38,36 @@ export const getDeals = () => {
   const createadealnote = (
     id: string,
     createadealnoteRequest: CreateadealnoteRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/deals/${id}/notes`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createadealnoteRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/deals/${id}/notes`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createadealnoteRequest,
+    });
   };
   /**
    * @summary Retrieve a deal
    */
-  const retrieveadeal = (
-    id: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>({ url: `/deals/${id}`, method: 'GET' }, options);
+  const retrieveadeal = (id: string) => {
+    return orvalMutator<null>({ url: `/deals/${id}`, method: 'GET' });
   };
   /**
    * @summary Delete a deal
    */
-  const deleteadeal = (
-    id: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/deals/${id}`, method: 'DELETE' },
-      options,
-    );
+  const deleteadeal = (id: string) => {
+    return orvalMutator<null>({ url: `/deals/${id}`, method: 'DELETE' });
   };
   /**
    * @summary Update a deal
    */
-  const updateadeal = (
-    id: string,
-    updateadealRequest: UpdateadealRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/deals/${id}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateadealRequest,
-      },
-      options,
-    );
+  const updateadeal = (id: string, updateadealRequest: UpdateadealRequest) => {
+    return orvalMutator<null>({
+      url: `/deals/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateadealRequest,
+    });
   };
   /**
    * @summary Update a deal note
@@ -104,34 +76,26 @@ export const getDeals = () => {
     dealId: string,
     noteId: string,
     updateadealnoteRequest: UpdateadealnoteRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/deals/${dealId}/notes/${noteId}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateadealnoteRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/deals/${dealId}/notes/${noteId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateadealnoteRequest,
+    });
   };
   /**
    * @summary Bulk update deal owners
    */
   const bulkupdatedealowners = (
     bulkupdatedealownersRequest: BulkupdatedealownersRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/deals/bulkUpdate`,
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        data: bulkupdatedealownersRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/deals/bulkUpdate`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: bulkupdatedealownersRequest,
+    });
   };
   return {
     createadeal,

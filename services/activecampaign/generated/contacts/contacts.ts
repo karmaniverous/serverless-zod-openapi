@@ -12,323 +12,231 @@ import type {
   SyncContactDataRequest,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getContacts = () => {
   /**
    * @summary Get Contacts
    */
-  const getContacts = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/contacts`, method: 'GET' }, options);
+  const getContacts = () => {
+    return orvalMutator<null>({ url: `/contacts`, method: 'GET' });
   };
   /**
    * @summary Create Contact
    */
-  const createContact = (
-    createContactRequest: CreateContactRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/contacts`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createContactRequest,
-      },
-      options,
-    );
+  const createContact = (createContactRequest: CreateContactRequest) => {
+    return orvalMutator<null>({
+      url: `/contacts`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createContactRequest,
+    });
   };
   /**
    * @summary Get Contact by ID
    */
-  const getContactbyID = (
-    contactId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}`, method: 'GET' },
-      options,
-    );
+  const getContactbyID = (contactId: string) => {
+    return orvalMutator<null>({ url: `/contacts/${contactId}`, method: 'GET' });
   };
   /**
    * @summary Delete Contact
    */
-  const deleteContact = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}`, method: 'DELETE' },
-      options,
-    );
+  const deleteContact = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}`,
+      method: 'DELETE',
+    });
   };
   /**
    * @summary Get Contact Data
    */
-  const getContactData = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/contactData`, method: 'GET' },
-      options,
-    );
+  const getContactData = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/contactData`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Tags
    */
-  const getContactTags = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/contactTags`, method: 'GET' },
-      options,
-    );
+  const getContactTags = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/contactTags`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Bounce Logs
    */
-  const getContactBounceLogs = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/bounceLogs`, method: 'GET' },
-      options,
-    );
+  const getContactBounceLogs = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/bounceLogs`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Data Goals
    */
-  const getContactDataGoals = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/contactGoals`, method: 'GET' },
-      options,
-    );
+  const getContactDataGoals = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/contactGoals`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Lists
    */
-  const getContactLists = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/contactLists`, method: 'GET' },
-      options,
-    );
+  const getContactLists = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/contactLists`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Logs
    */
-  const getContactLogs = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/contactLogs`, method: 'GET' },
-      options,
-    );
+  const getContactLogs = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/contactLogs`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Deal List
    */
-  const getContactDealList = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/contactDeals`, method: 'GET' },
-      options,
-    );
+  const getContactDealList = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/contactDeals`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Deals
    */
-  const getContactDeals = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/deals`, method: 'GET' },
-      options,
-    );
+  const getContactDeals = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/deals`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Field Values
    */
-  const getContactFieldValues = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/fieldValues`, method: 'GET' },
-      options,
-    );
+  const getContactFieldValues = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/fieldValues`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Geo Ips
    */
-  const getContactGeoIps = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/geoIps`, method: 'GET' },
-      options,
-    );
+  const getContactGeoIps = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/geoIps`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Notes
    */
-  const getContactNotes = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/notes`, method: 'GET' },
-      options,
-    );
+  const getContactNotes = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/notes`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Organization
    */
-  const getContactOrganization = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/organization`, method: 'GET' },
-      options,
-    );
+  const getContactOrganization = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/organization`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Account Contacts
    */
-  const getContactAccountContacts = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/accountContacts`, method: 'GET' },
-      options,
-    );
+  const getContactAccountContacts = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/accountContacts`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Automation Entry Counts
    */
-  const getContactAutomationEntryCounts = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/automationEntryCounts`, method: 'GET' },
-      options,
-    );
+  const getContactAutomationEntryCounts = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/automationEntryCounts`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Plus Append
    */
-  const getContactPlusAppend = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/plusAppend`, method: 'GET' },
-      options,
-    );
+  const getContactPlusAppend = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/plusAppend`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Get Contact Tracking Logs
    */
-  const getContactTrackingLogs = (
-    contactId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/contacts/${contactId}/trackingLogs`, method: 'GET' },
-      options,
-    );
+  const getContactTrackingLogs = (contactId: number) => {
+    return orvalMutator<null>({
+      url: `/contacts/${contactId}/trackingLogs`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Sync Contact Data
    */
-  const syncContactData = (
-    syncContactDataRequest: SyncContactDataRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/contact/sync`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: syncContactDataRequest,
-      },
-      options,
-    );
+  const syncContactData = (syncContactDataRequest: SyncContactDataRequest) => {
+    return orvalMutator<null>({
+      url: `/contact/sync`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: syncContactDataRequest,
+    });
   };
   /**
    * @summary Add contact to list
    */
   const addcontacttolist = (
     addcontacttolistRequest: AddcontacttolistRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/contactLists`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: addcontacttolistRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/contactLists`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: addcontacttolistRequest,
+    });
   };
   /**
    * @summary Bulk Import
    */
-  const bulkImport = (
-    bulkImportRequest: BulkImportRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/import/bulk_import`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: bulkImportRequest,
-      },
-      options,
-    );
+  const bulkImport = (bulkImportRequest: BulkImportRequest) => {
+    return orvalMutator<null>({
+      url: `/import/bulk_import`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: bulkImportRequest,
+    });
   };
   /**
    * @summary Bulk Import Status List
    */
-  const bulkImportStatusList = (
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/import/bulk_import`, method: 'GET' },
-      options,
-    );
+  const bulkImportStatusList = () => {
+    return orvalMutator<null>({ url: `/import/bulk_import`, method: 'GET' });
   };
   /**
    * @summary Bulk Import Status Info
    */
-  const bulkImportStatusInfo = (
-    params: BulkImportStatusInfoParams,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/import/info`, method: 'GET', params },
-      options,
-    );
+  const bulkImportStatusInfo = (params: BulkImportStatusInfoParams) => {
+    return orvalMutator<null>({ url: `/import/info`, method: 'GET', params });
   };
   return {
     getContacts,

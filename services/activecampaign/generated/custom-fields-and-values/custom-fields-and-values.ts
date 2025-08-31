@@ -9,47 +9,31 @@ import type {
   UpdateCustomFieldRequest,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getCustomFieldsAndValues = () => {
   /**
    * @summary List All Custom Fields
    */
-  const listAllCustomFields = (
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>({ url: `/fields`, method: 'GET' }, options);
+  const listAllCustomFields = () => {
+    return orvalMutator<null>({ url: `/fields`, method: 'GET' });
   };
   /**
    * @summary Add Custom Field
    */
-  const addCustomField = (
-    addCustomFieldRequest: AddCustomFieldRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<unknown>(
-      {
-        url: `/fields`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: addCustomFieldRequest,
-      },
-      options,
-    );
+  const addCustomField = (addCustomFieldRequest: AddCustomFieldRequest) => {
+    return orvalMutator<unknown>({
+      url: `/fields`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: addCustomFieldRequest,
+    });
   };
   /**
    * @summary Delete Custom Field
    */
-  const deleteCustomField = (
-    fieldID: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/fields/${fieldID}`, method: 'DELETE' },
-      options,
-    );
+  const deleteCustomField = (fieldID: string) => {
+    return orvalMutator<null>({ url: `/fields/${fieldID}`, method: 'DELETE' });
   };
   /**
    * @summary Update Custom Field
@@ -57,17 +41,13 @@ export const getCustomFieldsAndValues = () => {
   const updateCustomField = (
     fieldID: string,
     updateCustomFieldRequest: UpdateCustomFieldRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/fields/${fieldID}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateCustomFieldRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/fields/${fieldID}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateCustomFieldRequest,
+    });
   };
   return {
     listAllCustomFields,

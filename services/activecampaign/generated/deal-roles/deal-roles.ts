@@ -6,27 +6,19 @@
  */
 import type { CreateadealroleRequest } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getDealRoles = () => {
   /**
    * @summary Create a deal role
    */
-  const createadealrole = (
-    createadealroleRequest: CreateadealroleRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/dealRoles`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createadealroleRequest,
-      },
-      options,
-    );
+  const createadealrole = (createadealroleRequest: CreateadealroleRequest) => {
+    return orvalMutator<null>({
+      url: `/dealRoles`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createadealroleRequest,
+    });
   };
   return { createadealrole };
 };

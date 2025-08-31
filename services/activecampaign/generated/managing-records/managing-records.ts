@@ -9,9 +9,7 @@ import type {
   GetalistofrecordsParams,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getManagingRecords = () => {
   /**
@@ -20,12 +18,12 @@ export const getManagingRecords = () => {
   const getalistofrecords = (
     schemaId: string,
     params: GetalistofrecordsParams,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      { url: `/customObjects/records/${schemaId}`, method: 'GET', params },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/customObjects/records/${schemaId}`,
+      method: 'GET',
+      params,
+    });
   };
   /**
    * @summary Create a record
@@ -33,81 +31,49 @@ export const getManagingRecords = () => {
   const createarecord = (
     schemaId: string,
     createarecordRequest: CreatearecordRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/records/${schemaId}`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createarecordRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/customObjects/records/${schemaId}`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createarecordRequest,
+    });
   };
   /**
    * @summary Get record by id
    */
-  const getrecordbyid = (
-    schemaId: string,
-    recordId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/.activehosted.com/api/3/customObjects/records/${schemaId}/${recordId}`,
-        method: 'GET',
-      },
-      options,
-    );
+  const getrecordbyid = (schemaId: string, recordId: string) => {
+    return orvalMutator<null>({
+      url: `/.activehosted.com/api/3/customObjects/records/${schemaId}/${recordId}`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Delete record by id
    */
-  const deleterecordbyid = (
-    schemaId: string,
-    recordId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/records/${schemaId}/${recordId}`,
-        method: 'DELETE',
-      },
-      options,
-    );
+  const deleterecordbyid = (schemaId: string, recordId: string) => {
+    return orvalMutator<null>({
+      url: `/customObjects/records/${schemaId}/${recordId}`,
+      method: 'DELETE',
+    });
   };
   /**
    * @summary Get record by external id
    */
-  const getrecordbyexternalid = (
-    schemaId: string,
-    externalId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/records/${schemaId}/external/${externalId}`,
-        method: 'GET',
-      },
-      options,
-    );
+  const getrecordbyexternalid = (schemaId: string, externalId: string) => {
+    return orvalMutator<null>({
+      url: `/customObjects/records/${schemaId}/external/${externalId}`,
+      method: 'GET',
+    });
   };
   /**
    * @summary Delete record by external id
    */
-  const deleterecordbyexternalid = (
-    schemaId: string,
-    externalId: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/customObjects/records/${schemaId}/external/${externalId}`,
-        method: 'DELETE',
-      },
-      options,
-    );
+  const deleterecordbyexternalid = (schemaId: string, externalId: string) => {
+    return orvalMutator<null>({
+      url: `/customObjects/records/${schemaId}/external/${externalId}`,
+      method: 'DELETE',
+    });
   };
   return {
     getalistofrecords,

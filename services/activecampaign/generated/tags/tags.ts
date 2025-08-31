@@ -10,80 +10,55 @@ import type {
   UpdateatagRequest,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getTags = () => {
   /**
    * @summary List all tags
    */
-  const listalltags = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/tags`, method: 'GET' }, options);
+  const listalltags = () => {
+    return orvalMutator<null>({ url: `/tags`, method: 'GET' });
   };
   /**
    * @summary Create a tag
    */
-  const createatag = (
-    createatagRequest: CreateatagRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/tags`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createatagRequest,
-      },
-      options,
-    );
+  const createatag = (createatagRequest: CreateatagRequest) => {
+    return orvalMutator<null>({
+      url: `/tags`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createatagRequest,
+    });
   };
   /**
    * @summary Update a tag
    */
-  const updateatag = (
-    tagId: number,
-    updateatagRequest: UpdateatagRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/tags/${tagId}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateatagRequest,
-      },
-      options,
-    );
+  const updateatag = (tagId: number, updateatagRequest: UpdateatagRequest) => {
+    return orvalMutator<null>({
+      url: `/tags/${tagId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateatagRequest,
+    });
   };
   /**
    * @summary Delete a tag
    */
-  const deleteatag = (
-    tagId: number,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/tags/${tagId}`, method: 'DELETE' },
-      options,
-    );
+  const deleteatag = (tagId: number) => {
+    return orvalMutator<null>({ url: `/tags/${tagId}`, method: 'DELETE' });
   };
   /**
    * @summary Add a tag to a contact
    */
   const addatagtoacontact = (
     addatagtoacontactRequest: AddatagtoacontactRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/contactTags`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: addatagtoacontactRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/contactTags`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: addatagtoacontactRequest,
+    });
   };
   return { listalltags, createatag, updateatag, deleteatag, addatagtoacontact };
 };

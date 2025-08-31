@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-08-31T00:25:00Z
+When updated: 2025-08-31T00:35:00Z
 
 ## Next up
-
 - Run: npm run generate in services/activecampaign and confirm generated
   clients import the local wrapper (src/orval.mutator.ts) and build cleanly.
 - Re-run: typecheck, lint, test; fix any residual issues from generated code.
@@ -17,8 +16,10 @@ When updated: 2025-08-31T00:25:00Z
   function `orvalMutator` that forwards to the upstream export, then re-run generate.
 
 ## Completed (recent)
-- Fix TS parse/build failure in makeWrapHandler by moving destructuring off the
-  comment line.
+- Implement explicit `orvalMutator` forwarder function in local wrapper to satisfy Orval export check.
+
+## Completed (recent)
+- Fix TS parse/build failure in makeWrapHandler by moving destructuring off the  comment line.
 - Orval mutator path: point override.mutator.path to '../src/orval.mutator.ts'
   (relative to the generated workspace) so Orval resolves the local wrapper and
   stops searching under 'generated/src'. This unblocks client regeneration.

@@ -6,33 +6,25 @@
  */
 import type { CreateUserRequest } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getUsers = () => {
   /**
    * @summary Get Users
    */
-  const getUsers = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/users`, method: 'GET' }, options);
+  const getUsers = () => {
+    return orvalMutator<null>({ url: `/users`, method: 'GET' });
   };
   /**
    * @summary Create User
    */
-  const createUser = (
-    createUserRequest: CreateUserRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/users`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createUserRequest,
-      },
-      options,
-    );
+  const createUser = (createUserRequest: CreateUserRequest) => {
+    return orvalMutator<null>({
+      url: `/users`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createUserRequest,
+    });
   };
   return { getUsers, createUser };
 };

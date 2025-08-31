@@ -6,22 +6,18 @@
  */
 import type { GetContactParams } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getV1 = () => {
   /**
    * @summary Get Contact
    */
-  const getContact = (
-    params: GetContactParams,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/.api-us1.com/admin/api.php`, method: 'GET', params },
-      options,
-    );
+  const getContact = (params: GetContactParams) => {
+    return orvalMutator<null>({
+      url: `/.api-us1.com/admin/api.php`,
+      method: 'GET',
+      params,
+    });
   };
   return { getContact };
 };

@@ -9,9 +9,7 @@ import type {
   UpdateCustomFieldValueForContactRequest,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getFieldValues = () => {
   /**
@@ -19,42 +17,32 @@ export const getFieldValues = () => {
    */
   const bulkAddFieldValues = (
     bulkAddFieldValuesRequest: BulkAddFieldValuesRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/fieldOption/bulk`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: bulkAddFieldValuesRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/fieldOption/bulk`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: bulkAddFieldValuesRequest,
+    });
   };
   /**
    * @summary Update Custom Field Value For Contact
    */
   const updateCustomFieldValueForContact = (
     updateCustomFieldValueForContactRequest: UpdateCustomFieldValueForContactRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/fieldValues`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateCustomFieldValueForContactRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/fieldValues`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateCustomFieldValueForContactRequest,
+    });
   };
   /**
    * @summary List All Custom Field Values
    */
-  const listAllCustomFieldValues = (
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>({ url: `/fieldValues`, method: 'GET' }, options);
+  const listAllCustomFieldValues = () => {
+    return orvalMutator<null>({ url: `/fieldValues`, method: 'GET' });
   };
   return {
     bulkAddFieldValues,

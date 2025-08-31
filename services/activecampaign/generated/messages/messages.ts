@@ -4,16 +4,14 @@
  * ActiveCampaign API v3
  * OpenAPI spec version: 1.0
  */
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getMessages = () => {
   /**
    * @summary Get Messages
    */
-  const getMessages = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/messages`, method: 'GET' }, options);
+  const getMessages = () => {
+    return orvalMutator<null>({ url: `/messages`, method: 'GET' });
   };
   return { getMessages };
 };

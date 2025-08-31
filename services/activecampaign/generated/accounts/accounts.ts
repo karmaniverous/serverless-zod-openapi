@@ -11,34 +11,20 @@ import type {
   UpdateanaccountnoteRequest,
 } from '../api.schemas';
 
-import { orvalMutator } from '../../../../packages/cached-axios/src/mutator';
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+import { orvalMutator } from '../../src/orval.mutator';
 
 export const getAccounts = () => {
   /**
    * @summary Retrieve an account
    */
-  const retrieveanaccount = (
-    id: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/accounts/${id}`, method: 'GET' },
-      options,
-    );
+  const retrieveanaccount = (id: string) => {
+    return orvalMutator<null>({ url: `/accounts/${id}`, method: 'GET' });
   };
   /**
    * @summary Delete an account
    */
-  const deleteanaccount = (
-    id: string,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/accounts/${id}`, method: 'DELETE' },
-      options,
-    );
+  const deleteanaccount = (id: string) => {
+    return orvalMutator<null>({ url: `/accounts/${id}`, method: 'DELETE' });
   };
   /**
    * @summary Update an account
@@ -46,51 +32,39 @@ export const getAccounts = () => {
   const updateanaccount = (
     id: string,
     updateanaccountRequest: UpdateanaccountRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/accounts/${id}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateanaccountRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/accounts/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateanaccountRequest,
+    });
   };
   /**
    * @summary Create an account
    */
-  const createanaccount = (
-    createanaccountRequest: CreateanaccountRequest,
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      {
-        url: `/accounts`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createanaccountRequest,
-      },
-      options,
-    );
+  const createanaccount = (createanaccountRequest: CreateanaccountRequest) => {
+    return orvalMutator<null>({
+      url: `/accounts`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createanaccountRequest,
+    });
   };
   /**
    * @summary List all accounts
    */
-  const listallaccounts = (options?: SecondParameter<typeof orvalMutator>) => {
-    return orvalMutator<null>({ url: `/accounts`, method: 'GET' }, options);
+  const listallaccounts = () => {
+    return orvalMutator<null>({ url: `/accounts`, method: 'GET' });
   };
   /**
    * @summary Bulk delete accounts
    */
-  const bulkdeleteaccounts = (
-    options?: SecondParameter<typeof orvalMutator>,
-  ) => {
-    return orvalMutator<null>(
-      { url: `/accounts/bulk_delete`, method: 'DELETE' },
-      options,
-    );
+  const bulkdeleteaccounts = () => {
+    return orvalMutator<null>({
+      url: `/accounts/bulk_delete`,
+      method: 'DELETE',
+    });
   };
   /**
    * @summary Create an account note
@@ -98,17 +72,13 @@ export const getAccounts = () => {
   const createanaccountnote = (
     id: string,
     createanaccountnoteRequest: CreateanaccountnoteRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/accounts/${id}/notes`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createanaccountnoteRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/accounts/${id}/notes`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createanaccountnoteRequest,
+    });
   };
   /**
    * @summary Update an account note
@@ -117,17 +87,13 @@ export const getAccounts = () => {
     id: string,
     noteId: string,
     updateanaccountnoteRequest: UpdateanaccountnoteRequest,
-    options?: SecondParameter<typeof orvalMutator>,
   ) => {
-    return orvalMutator<null>(
-      {
-        url: `/accounts/${id}/notes/${noteId}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: updateanaccountnoteRequest,
-      },
-      options,
-    );
+    return orvalMutator<null>({
+      url: `/accounts/${id}/notes/${noteId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateanaccountnoteRequest,
+    });
   };
   return {
     retrieveanaccount,
