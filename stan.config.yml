@@ -13,6 +13,7 @@ outputPath: .stan
 patchOpenCommand: code -g {file}
 scripts:
   knip: npm run knip
+  generate: npm run generate
   typecheck: npm run typecheck
   lint: npm run lint
   openapi: npm run openapi
