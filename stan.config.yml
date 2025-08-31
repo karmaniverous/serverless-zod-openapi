@@ -2,9 +2,9 @@ cliDefaults:
   run:
     sequential: true
 excludes:
-  - '**/.tsbuild/**'
-  - '**/generated/**'
-  - '**/node_modules/**'
+  - "**/.tsbuild/**"
+  - "**/generated/**"
+  - "**/node_modules/**"
   - package-lock.json
   - services/activecampaign/src/openapi.json
 includes:
@@ -20,4 +20,3 @@ scripts:
   test: npm run test
   package: npm run package
 stanPath: .stan
-

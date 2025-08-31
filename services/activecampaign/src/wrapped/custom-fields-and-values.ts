@@ -29,7 +29,7 @@ export const fetchAllFields = async (
     id,
     tags,
     options,
-  );
+  ) as Promise<AxiosResponse<{ fields: ACField[] }>>;
 };
 
 /** Create a new custom field */
@@ -42,9 +42,8 @@ export const createCustomField = async (
     (opts) => fields.addCustomField(body, opts),
     [cacheConfig.contacts.tag(['fields', 'catalog'])],
     options,
-  );
+  ) as Promise<AxiosResponse<{ field: ACField }>>;
 };
-
 /** Find a field by perstag (e.g., %MY_TAG%) */
 export const findFieldByPerstag = async (
   perstag: string,

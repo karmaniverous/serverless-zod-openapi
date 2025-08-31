@@ -1,9 +1,11 @@
-import type { AWS } from '@serverless/typescript';
+// File: lib/serverless/buildFunctionDefinitions.ts
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import type { AWS } from '@serverless/typescript';
+import { packageDirectorySync } from 'package-directory';
 import type z from 'zod';
 import type { ZodObject, ZodRawShape } from 'zod';
-import { packageDirectorySync } from 'package-directory';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
@@ -67,13 +69,13 @@ export const buildFunctionDefinitions = <
       http: {
         method: normalizeMethod(method),
         path: path,
-        'x-context': ctx,
       } as HttpEventObject,
     }));
     events = [...httpEvents] as unknown as AwsFunction['events'];
   } catch {
     // Non-HTTP functions simply do not get http events; other triggers may be present in config.
-    events = (functionConfig as { events?: AwsFunction['events'] }).events ?? [];
+    events =
+      (functionConfig as { events?: AwsFunction['events'] }).events ?? [];
   }
 
   const def: AwsFunction = {

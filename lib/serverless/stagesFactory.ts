@@ -73,14 +73,15 @@ export const stagesFactory = <
   );
 
   // Build provider.environment mapping for globally exposed keys
-  const globallyExposed = unique([
-    ...(globalEnvKeys as readonly string[]),
-    ...(stageEnvKeys as readonly string[]),
-  ]);
+  const globallyExposed = unique(
+    ([] as readonly string[]).concat(
+      globalEnvKeys as readonly string[],
+      stageEnvKeys as readonly string[],
+    ),
+  );
   const environment = Object.fromEntries(
     globallyExposed.map((k) => [k, `\${param:${k}}`]),
   );
-
   // Helper for function-level environment: include only non-globally-exposed
   const buildFnEnv = (
     fnEnvKeys: readonly (keyof (GlobalParams & StageParams))[] | undefined = [],

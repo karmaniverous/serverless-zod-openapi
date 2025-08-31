@@ -38,13 +38,10 @@ export const buildPathItemObject = <
   serverlessConfigSchema.parse(rawServerlessConfig);
 
   const resolved = resolveHttpFromFunctionConfig(config, callerModuleUrl);
-  if (!resolved) return {};
-
   const { method, basePath, contexts } = resolved;
 
   // Build a path item per context, tagging operations properly.
-  return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
-    const pathElements = buildPathElements(basePath, context);
+  return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {    const pathElements = buildPathElements(basePath, context);
 
     return {
       ...acc,

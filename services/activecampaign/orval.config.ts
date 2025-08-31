@@ -1,3 +1,4 @@
+// File: services/activecampaign/orval.config.ts
 import { defineConfig } from 'orval';
 
 export default defineConfig({
@@ -11,11 +12,12 @@ export default defineConfig({
       mock: true,
       override: {
         mutator: {
-          path: '@karmaniverous/cached-axios/mutators/orval',
+          path: 'src/orval.mutator.ts',
           name: 'orvalMutator',
         },
       },
-    },    hooks: { afterAllFilesWrite: ['prettier -w'] },
+    },
+    hooks: { afterAllFilesWrite: ['prettier -w'] },
   },
   zod: {
     input: 'src/openapi.json',

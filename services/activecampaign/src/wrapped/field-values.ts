@@ -43,7 +43,7 @@ export const listFieldValues = async (
     id,
     tags,
     options,
-  );
+  ) as Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>>;
 };
 
 /** Create or update a single field value for a contact */
@@ -71,9 +71,8 @@ export const upsertFieldValue = async (
     (opts) => fvs.updateCustomFieldValueForContact(payload as never, opts),
     [cacheConfig.contacts.detail.tag(cid), cacheConfig.contacts.list.any.tag()],
     options,
-  );
+  ) as Promise<AxiosResponse<{ fieldValue: ACFieldValue }>>;
 };
-
 /** Convenience: upsert a field value using a field perstag */
 export const upsertFieldValueByPerstag = async (
   contactId: number,
