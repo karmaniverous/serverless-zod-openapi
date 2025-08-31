@@ -2,9 +2,10 @@ import { dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { unique } from 'radash';
-import type { z, ZodObject, ZodRawShape } from 'zod';
+import type { z } from 'zod';
 
 import { sanitizeBasePath } from '@@/lib/path/buildPath';
+import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { MethodKey } from '@@/lib/types/FunctionConfig';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import type { HttpContext } from '@@/lib/types/HttpContext';

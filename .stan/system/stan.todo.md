@@ -18,6 +18,11 @@ When updated: 2025-08-31T00:35:00Z
 
 ## Completed (recent)
 
+- Resolve TS/lint issues:
+  - Add BaseEventTypeMap import and drop unused Zod\* types in
+    resolveHttpFromFunctionConfig; tidy imports in OpenAPI & Serverless builders.
+  - Align custom-fields-and-values wrappers to generated arities and make
+    unused opts explicit with `void opts;`.
 - Wrappers: make unused requestFn options explicit with `void opts;` and
   align to generated client arities (remove unsupported options args).
 - stagesFactory: keep GlobalParams/StageParams nomenclature as value types;

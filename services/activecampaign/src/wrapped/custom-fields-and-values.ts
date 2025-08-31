@@ -25,13 +25,15 @@ export const fetchAllFields = async (
   const tags = [cacheConfig.contacts.tag(['fields', 'catalog'])];
 
   return cache.query<{ fields: ACField[] }>(
-    (opts) => fields.listAllCustomFields(opts),
+    (opts) => {
+      void opts; // unused by generated client
+      return fields.listAllCustomFields();
+    },
     id,
     tags,
     options,
   ) as Promise<AxiosResponse<{ fields: ACField[] }>>;
 };
-
 /** Create a new custom field */
 export const createCustomField = async (
   body: AddCustomFieldRequest,
@@ -39,12 +41,14 @@ export const createCustomField = async (
 ): Promise<AxiosResponse<{ field: ACField }>> => {
   CFZ.addCustomFieldBody.parse(body);
   return cache.mutation<{ field: ACField }>(
-    (opts) => fields.addCustomField(body, opts),
+    (opts) => {
+      void opts; // unused by generated client
+      return fields.addCustomField(body);
+    },
     [cacheConfig.contacts.tag(['fields', 'catalog'])],
     options,
   ) as Promise<AxiosResponse<{ field: ACField }>>;
-};
-/** Find a field by perstag (e.g., %MY_TAG%) */
+};/** Find a field by perstag (e.g., %MY_TAG%) */
 export const findFieldByPerstag = async (
   perstag: string,
   options?: AxiosRequestConfig,

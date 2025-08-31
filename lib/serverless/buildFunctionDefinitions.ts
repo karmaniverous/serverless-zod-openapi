@@ -4,16 +4,12 @@ import { fileURLToPath } from 'node:url';
 import type { AWS } from '@serverless/typescript';
 import { packageDirectorySync } from 'package-directory';
 import type z from 'zod';
-import type { ZodObject, ZodRawShape } from 'zod';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import { serverlessConfigSchema } from '@@/src/config/serverlessConfig';
 import { type AllParamsKeys, buildFnEnv } from '@@/src/config/stages';
-
-type AwsFunctions = AWS['functions'];
-type AwsFunction = AwsFunctions extends Record<string, infer FT> ? FT : never;
 
 type HttpEventObject = { method: string; path: string } & Record<
   string,
