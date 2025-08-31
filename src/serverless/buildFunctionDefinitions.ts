@@ -44,12 +44,9 @@ export const buildFunctionDefinitions = <
   appConfig: ServerlessConfigLike,
   callerModuleUrl: string,
   endpointsRootAbs: string,
-  buildFnEnv: (
-    fnEnvKeys?: readonly (keyof (GlobalParams & StageParams))[],
-  ) => Record<string, string>,
+  buildFnEnv: (fnEnvKeys?: readonly never[]) => Record<string, string>,
 ): AWS['functions'] => {
   const parsed = appConfig;
-
   // Compute "file.export" handler string relative to repo root
   const repoRoot = packageDirectorySync()!;
   const callerDir = dirname(fileURLToPath(callerModuleUrl));
@@ -88,10 +85,11 @@ export const buildFunctionDefinitions = <
     handler,
     events,
     // Environment populated via parsed param schemas + fnEnvKeys
-    environment: buildFnEnv(functionConfig.fnEnvKeys),
+    environment: buildFnEnv(
+      functionConfig.fnEnvKeys as unknown as readonly never[],
+    ),
   };
 
-  return {
-    [functionConfig.functionName]: def as unknown,
+  return {    [functionConfig.functionName]: def as unknown,
   } as unknown as AWS['functions'];
 };

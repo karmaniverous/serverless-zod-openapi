@@ -63,11 +63,10 @@ const makePlugins = (tsconfigPath?: string): Plugin[] => [
     // Do not write transpiled output to disk; let Rollup handle bundling.
     outputToFilesystem: false,
     // Allow a custom tsconfig for specialized builds (e.g., stan:build).
-    tsconfig: tsconfigPath,
+    tsconfig: tsconfigPath ?? false,
     // Override conflicting tsconfig flags for bundling. Declarations are produced by rollup-plugin-dts.
     compilerOptions: {
-      declaration: false,
-      emitDeclarationOnly: false,
+      declaration: false,      emitDeclarationOnly: false,
       noEmit: false,
       sourceMap: false,
       // outDir intentionally not set here; provided by custom tsconfig when needed.

@@ -3,10 +3,10 @@
   "compilerOptions": {
     "composite": false,
     "declaration": false,
+    "declarationMap": false,
     "emitDeclarationOnly": false,
     "noEmit": false,
-    "outDir": ".stan/dist/.tsout",
-    "declarationDir": ".stan/dist/.tsout",
+    "outDir": ".stan/dist/mjs",
     "sourceMap": false
   },
   "include": [
@@ -14,8 +14,7 @@
     "services/activecampaign/src/**/*.ts",
     "stack/**/*.ts",
     "stack/**/*.json"
-  ],
-  "exclude": [
+  ],  "exclude": [
     "node_modules/**",
     ".tsbuild/**"
   ]
