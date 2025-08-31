@@ -5,11 +5,10 @@
  */
 import { z } from 'zod';
 
-import { makeFunctionConfig } from '@@/src/handler/makeFunctionConfig';
+import { makeFunctionConfig } from '@@/src';
 
 export const eventSchema = undefined;
 export const responseSchema = z.object({});
-
 export const functionConfig = makeFunctionConfig({
   eventType: 'rest',
   functionName: 'openapi_get',

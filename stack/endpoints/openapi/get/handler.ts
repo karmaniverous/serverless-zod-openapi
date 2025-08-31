@@ -6,11 +6,10 @@
  */
 import type { z } from 'zod';
 
-import { makeWrapHandler } from '@@/src/handler/makeWrapHandler';
+import { makeWrapHandler } from '@@/src';
 import openapi from '@@/stack/openapi.json';
 
 import { functionConfig, type responseSchema } from './config';
-
 export const handler = makeWrapHandler(
   functionConfig,
   async () => openapi as unknown as z.infer<typeof responseSchema>,

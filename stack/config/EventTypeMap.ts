@@ -1,9 +1,8 @@
-import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
+import type { BaseEventTypeMap } from '@@/src';
 
 export interface EventTypeMap extends BaseEventTypeMap {
   step: Record<string, unknown>;
 }
-
 /** Tokens that should be treated as HTTP at runtime by the wrapper. */
 export const HTTP_EVENT_TOKENS = ['rest'] as const;
 

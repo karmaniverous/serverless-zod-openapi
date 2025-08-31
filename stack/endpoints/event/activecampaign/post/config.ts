@@ -6,11 +6,10 @@
  */
 import { z } from 'zod';
 
-import { makeFunctionConfig } from '@@/src/handler/makeFunctionConfig';
+import { makeFunctionConfig } from '@@/src';
 
 export const eventSchema = z.any();
 export const responseSchema = z.string();
-
 export const functionConfig = makeFunctionConfig({
   eventType: 'rest',
   functionName: 'activecampaign_post',

@@ -6,12 +6,11 @@
 import { z } from 'zod';
 
 import { contactSchema } from '@@/services/activecampaign/src';
-import { makeFunctionConfig } from '@@/src/handler/makeFunctionConfig';
-import type { LambdaEvent } from '@@/src/types/LambdaEvent';
+import { makeFunctionConfig } from '@@/src';
+import type { LambdaEvent } from '@@/src';
 
 export const eventSchema = z
-  .object({
-    Payload: z.object({
+  .object({    Payload: z.object({
       contactId: z.string(),
     }),
   })

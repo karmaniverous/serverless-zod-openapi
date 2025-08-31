@@ -1,8 +1,7 @@
-import { buildFunctionDefinitions } from '@@/src/serverless/buildFunctionDefinitions';
+import { buildFunctionDefinitions } from '@@/src';
 import { serverlessConfig } from '@@/stack/config/serverlessConfig';
 
 import { functionConfig } from './config';
-
 export default buildFunctionDefinitions(
   functionConfig,
   serverlessConfig,

@@ -4,8 +4,7 @@
  * It uses the `zod-openapi` library to create the document from JSDoc-annotated
  * Zod schemas. The generated document is written to `src/openapi/openapi.json`.
  *
- * @see https://github.com/johngalt/zod-openapi
- */
+ * @see https://github.com/johngalt/zod-openapi */
 import fs from 'fs-extra';
 import path from 'path';
 import { packageDirectorySync } from 'pkg-dir';
@@ -43,9 +42,9 @@ const doc = createDocument({
  */
 const pkgDir = packageDirectorySync();
 
-// Write the generated OpenAPI document to `src/openapi/openapi.json`.
+// Write the generated OpenAPI document to `stack/openapi.json`.
 fs.writeFileSync(
-  path.join(pkgDir!, 'src/openapi.json'),
+  path.join(pkgDir!, 'stack/openapi.json'),
   JSON.stringify(doc, null, 2),
 );
 

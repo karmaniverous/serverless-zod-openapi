@@ -1,8 +1,7 @@
-import { buildPathItemObject } from '@@/src/openapi/buildPathItemObject';
+import { buildPathItemObject } from '@@/src';
 import { serverlessConfig } from '@@/stack/config/serverlessConfig';
 
 import { functionConfig, responseSchema } from './config';
-
 /** OpenAPI for `GET /openapi` */
 export default buildPathItemObject(
   functionConfig,

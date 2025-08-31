@@ -3,11 +3,10 @@
 - The request body schema is the provided `eventSchema` (omit if undefined).
 - The 200 response schema is the provided `responseSchema`.
 */
-import { buildPathItemObject } from '@@/src/openapi/buildPathItemObject';
+import { buildPathItemObject } from '@@/src';
 import { serverlessConfig } from '@@/stack/config/serverlessConfig';
 
 import { eventSchema, functionConfig, responseSchema } from './config';
-
 export default buildPathItemObject(
   functionConfig,
   serverlessConfig,

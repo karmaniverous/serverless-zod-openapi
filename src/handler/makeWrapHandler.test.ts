@@ -20,11 +20,11 @@ import {
 } from '@@/src/test/serverless/config/stage';
 import type { ConsoleLogger } from '@@/src/types/Loggable';
 
-vi.mock('@@/src/config/global', () => ({
+vi.mock('@@/stack/config/global', () => ({
   globalEnvKeys: testGlobalEnvKeys,
   globalParamsSchema: testGlobalParamsSchema,
 }));
-vi.mock('@@/src/config/stage', () => ({
+vi.mock('@@/stack/config/stage', () => ({
   stageEnvKeys: testStageEnvKeys,
   stageParamsSchema: testStageParamsSchema,
 }));
@@ -89,6 +89,11 @@ describe('wrapHandler: HEAD short-circuit', () => {
     const eventSchema = z.object({});
     const responseSchema = z.object({}).optional();
 
+    // Ensure required env vars are set for validation
+    process.env.SERVICE_NAME = 'testService';
+    process.env.PROFILE = 'testProfile';
+    process.env.STAGE = 'testStage';
+
     const functionConfig = makeFunctionConfig({
       eventType: 'rest',
       functionName: 'test_head',
@@ -126,6 +131,11 @@ describe('wrapHandler: POST payload', () => {
   it('JSON shapes response and validates body', async () => {
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
+
+    // Ensure required env vars are set for validation
+    process.env.SERVICE_NAME = 'testService';
+    process.env.PROFILE = 'testProfile';
+    process.env.STAGE = 'testStage';
 
     const logger: ConsoleLogger = {
       debug: vi.fn(),
