@@ -7,14 +7,13 @@ import type { z } from 'zod';
 
 import { resolveHttpFromFunctionConfig } from '@@/src/http/resolveHttpFromFunctionConfig';
 import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
-import type { FunctionConfig } from '@@/src/types/FunctionConfig';import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
-import { type AllParamsKeys, buildFnEnv } from '@@/stack/config/stages';
+import type { FunctionConfig } from '@@/src/types/FunctionConfig';
+import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
 
 type HttpEventObject = { method: string; path: string } & Record<
   string,
   unknown
->;
-type HttpEvent = { http: string | HttpEventObject };
+>;type HttpEvent = { http: string | HttpEventObject };
 type ServerlessConfigLike = { httpContextEventMap: SecurityContextHttpEventMap; defaultHandlerFileName: string; defaultHandlerFileExport: string };
 
 const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
@@ -38,10 +37,10 @@ export const buildFunctionDefinitions = <
   appConfig: ServerlessConfigLike,
   callerModuleUrl: string,
   endpointsRootAbs: string,
+  buildFnEnv: (fnEnvKeys?: readonly PropertyKey[]) => Record<string, string>,
 ): AWS['functions'] => {
   const parsed = appConfig;
-  // Compute "file.export" handler string relative to repo root
-  const repoRoot = packageDirectorySync()!;
+  // Compute "file.export" handler string relative to repo root  const repoRoot = packageDirectorySync()!;
   const callerDir = dirname(fileURLToPath(callerModuleUrl));
   const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);
   const handlerFileRel = relative(repoRoot, handlerFileAbs)
@@ -65,23 +64,22 @@ export const buildFunctionDefinitions = <
         method: normalizeMethod(method),
         path: path,
       } as HttpEventObject,
-    }));    events = [...httpEvents];
+    }));
+    events = [...httpEvents];
   } catch {
     // Non-HTTP functions simply do not get http events; other triggers may be present in config.
     const nonHttp = (functionConfig as { events?: unknown }).events;
     events = nonHttp ?? [];
   }
-
   const def: Record<string, unknown> = {
     handler,
     events,
     // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
-      functionConfig.fnEnvKeys as readonly AllParamsKeys[] | undefined,
+      functionConfig.fnEnvKeys as readonly PropertyKey[] | undefined,
     ),
   };
 
   return {
-    [functionConfig.functionName]: def as unknown,
-  } as unknown as AWS['functions'];
+    [functionConfig.functionName]: def as unknown,  } as unknown as AWS['functions'];
 };

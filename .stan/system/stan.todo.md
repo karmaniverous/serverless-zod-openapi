@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-08-31T03:00:00Z
+When updated: 2025-08-31T03:10:00Z
 
 ## Next up
-- Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package; paste outputs and report deltas.
-- Review Knip output after config changes; further refine entries/ignores if
+- Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package; paste outputs and report deltas.- Review Knip output after config changes; further refine entries/ignores if
   any remaining false positives (consider ignoring unused experimental helpers).
 - Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@@/src").
 - Sweep tests to import toolkit API from '@@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@@/\*' in all suites.
@@ -22,15 +21,16 @@ When updated: 2025-08-31T03:00:00Z
 
 - Fix compile/lint fallout from DI inversions:
   - Repaired OpenAPI builder reduce body and variable names.
-  - Exported buildFunctionDefinitions from toolkit index.
-  - Added z import to serverless builder and updated step serverless to inject endpointsRootAbs.
+  - Exported buildFunctionDefinitions from toolkit index and sorted exports/imports to satisfy ESLint.
+  - Added z import to serverless builder, updated signature to inject endpointsRootAbs and buildFnEnv, and updated all stack serverless call sites.
 - DI inversions to unwrap toolkit→stack circular deps:
   - makeWrapHandler now requires a loadEnvConfig adapter; stack provides stack/config/loadEnvConfig.
   - resolveHttpFromFunctionConfig no longer imports stack; endpointsRootAbs is injected.
-  - buildFunctionDefinitions and OpenAPI builder accept appConfig value and injected endpointsRootAbs; no stack schema imports.- Stack imports from toolkit index only; updated serverless/openAPI call sites accordingly.
+  - buildFunctionDefinitions and OpenAPI builder accept appConfig value and injected endpointsRootAbs; no stack schema imports.
+  - buildFunctionDefinitions no longer imports buildFnEnv from the stack; buildFnEnv is injected by the stack to avoid circular imports.
+  - Stack imports from toolkit index only; updated serverless/openAPI call sites accordingly.
 - Toolkit public index (src/index.ts) added; stack now imports solely from the
-  toolkit index (@@/src). Updated all stack deep imports accordingly.
-- Tests: makeWrapHandler test suite now vi.mock's '@@/stack/config/\*' and sets
+  toolkit index (@@/src). Updated all stack deep imports accordingly.- Tests: makeWrapHandler test suite now vi.mock's '@@/stack/config/\*' and sets
   required env vars across GET/HEAD/POST tests to satisfy the env schema.
 - OpenAPI: moved generator to stack/config/openapi.ts and updated package.json
   "openapi" script. Generator now writes to stack/openapi.json to match runtime
