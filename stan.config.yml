@@ -6,6 +6,7 @@ excludes:
   - '**/generated/**'
   - '**/node_modules/**'
   - package-lock.json
+  - services/activecampaign/src/openapi.json
 includes:
   - services/**
 outputPath: .stan

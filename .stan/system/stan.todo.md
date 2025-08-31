@@ -1,16 +1,19 @@
 # Development Plan
+
 When updated: 2025-08-30T00:00:00Z
 
 ## Next up
+
 - Regenerate ActiveCampaign client with Orval to propagate the new mutator
   path (@karmaniverous/cached-axios/mutators/orval). Verify no generated
   files retain the old relative import.
 - Consider removing legacy references to packages/cached-axios from the
   monorepo (paths/workspaces) if no longer needed.
-- Follow up on ESLint “no-unsafe-*” items in wrapped ActiveCampaign helpers
+- Follow up on ESLint “no-unsafe-\*” items in wrapped ActiveCampaign helpers
   (may require tightening return types from cached-axios helpers).
 
 ## Completed (recent)
+
 - Fix typecheck by:
   - Providing default generic for Handler’s EventType.
   - Annotating parameters in makeWrapHandler’s middy wrapper.
