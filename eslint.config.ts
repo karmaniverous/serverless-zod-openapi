@@ -12,10 +12,13 @@ export default tseslint.config(
   {
     ignores: [
       '.serverless/**',
+      '.stan/**',
       '**/.tsbuild/**',
       '**/generated/**',
+      'coverage/**',
+      'dist/**',
+      'docs/**',
       'node_modules/**',
-      'stan/**',
     ],
   },
   eslint.configs.recommended,

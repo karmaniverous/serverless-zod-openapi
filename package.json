@@ -1,7 +1,7 @@
 {
   "author": "Jason Williscroft",
   "bugs": {
-    "url": "https://github.com/karmaniverous/api.johngalt.id/issues"
+    "url": "https://github.com/karmaniverous/serverless-zod-openapi/issues"
   },
   "dependencies": {
     "@karmaniverous/cached-axios": "^0.2.0",
@@ -21,6 +21,7 @@
   "description": "John Galt Services back end.",
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@serverless/typescript": "^4.18.0",
     "@types/aws-lambda": "^8.10.152",
     "@types/fs-extra": "^11.0.4",
@@ -39,6 +40,7 @@
     "pkg-dir": "^9.0.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
+    "rollup-plugin-dts": "^6.2.3",
     "serverless": "^4.18.2",
     "serverless-apigateway-log-retention": "^1.1.0",
     "serverless-deployment-bucket": "^1.6.0",
@@ -52,22 +54,77 @@
     "vitest": "^3.2.4",
     "zod-openapi": "^5.4.0"
   },
-  "homepage": "https://github.com/karmaniverous/api.johngalt.id#readme",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/mjs/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/karmaniverous/serverless-zod-openapi#readme",
   "keywords": [],
-  "license": "ISC",
-  "main": "index.js",
-  "name": "api.johngalt.id",
+  "license": "BSD-3-Clause",
+  "main": "dist/cjs/index.js",
+  "module": "dist/mjs/index.js",
+  "name": "serverless-zod-openapi",
+  "publishConfig": {
+    "access": "public"
+  },
+  "release-it": {
+    "git": {
+      "changelog": "npx auto-changelog --unreleased-only --stdout --template https://raw.githubusercontent.com/release-it/release-it/main/templates/changelog-compact.hbs",
+      "commitMessage": "chore: release v${version}",
+      "requireBranch": "main"
+    },
+    "github": {
+      "release": true
+    },
+    "hooks": {
+      "after:init": [
+        "npm run lint",
+        "npm run test",
+        "npm run knip",
+        "npm run build"
+      ],
+      "before:npm:release": [
+        "npx auto-changelog -p",
+        "npm run docs",
+        "git add -A"
+      ],
+      "after:release": [
+        "git switch -c release/${version}",
+        "git push -u origin release/${version}",
+        "git switch ${branchName}"
+      ]
+    },
+    "npm": {
+      "publish": true
+    }
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/karmaniverous/api.johngalt.id.git"
+    "url": "git+https://github.com/karmaniverous/serverless-zod-openapi.git"
   },
   "scripts": {
+    "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "changelog": "auto-changelog",
     "context": "concurrently -n archive,lint,test,typecheck -c auto \"npm:context:archive\" \"npm:context:lint\" \"npm:context:test\" \"npm:context:typecheck\"",
     "context:archive": "tsx lib/context/archive.ts",
     "context:lint": "npm run lint > context/lint.txt 2>&1",
     "context:test": "npm run test > context/test.txt 2>&1",
     "context:typecheck": "npm run typecheck > context/typecheck.txt 2>&1",
     "deploy": "serverless deploy",
+    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
+    "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
     "generate": "cd services/activecampaign && npm run generate",
@@ -76,12 +133,16 @@
     "lint:fix": "eslint --fix .",
     "openapi": "tsx lib/openapi/generate && prettier -w src/openapi.json",
     "package": "serverless package",
+    "release": "dotenvx run -f .env.local -- release-it",
+    "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
     "remove": "serverless remove",
+    "stan:build": "rimraf stan.dist && rollup --config stan.rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf stan.dist",
+    "stan:docs": "typedoc --emit none",
     "test": "vitest run",
     "typecheck": "tsc -b tsconfig.build.json"
   },
   "type": "module",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "workspaces": [
     "services/*"
   ]
