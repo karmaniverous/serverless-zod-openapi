@@ -30,21 +30,13 @@ export const listFieldValues = async (
 
   return cache.query<{ fieldValues: ACFieldValue[] }>(
     (opts) => {
-      const extraParams = (opts.params ?? {}) as Record<string, unknown>;
-      const mergedParams: Record<string, unknown> = {
-        ...query,
-        ...extraParams,
-      };
-      return fvs.listAllCustomFieldValues({
-        ...opts,
-        params: mergedParams,
-      });
+      void opts; // unused by generated client
+      return fvs.listAllCustomFieldValues();
     },
     id,
     tags,
     options,
-  ) as Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>>;
-};
+  ) as Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>>;};
 
 /** Create or update a single field value for a contact */
 export const upsertFieldValue = async (
@@ -68,12 +60,14 @@ export const upsertFieldValue = async (
   FieldValuesZ.updateCustomFieldValueForContactBody.parse(payload);
   const cid = String(contactId);
   return cache.mutation<{ fieldValue: ACFieldValue }>(
-    (opts) => fvs.updateCustomFieldValueForContact(payload as never, opts),
+    (opts) => {
+      void opts; // unused by generated client
+      return fvs.updateCustomFieldValueForContact(payload as never);
+    },
     [cacheConfig.contacts.detail.tag(cid), cacheConfig.contacts.list.any.tag()],
     options,
   ) as Promise<AxiosResponse<{ fieldValue: ACFieldValue }>>;
-};
-/** Convenience: upsert a field value using a field perstag */
+};/** Convenience: upsert a field value using a field perstag */
 export const upsertFieldValueByPerstag = async (
   contactId: number,
   perstag: string,

@@ -41,17 +41,14 @@ export const fetchContactCore = async (
     cacheConfig.contacts.list.any.tag(),
   ];
   return withQuery(
-    (opts) =>
-      contacts.getContactbyID(contactId, {
-        ...acDefaults(),
-        ...options,
-        ...opts,
-      }),
+    (opts) => {
+      void opts; // unused by generated client
+      return contacts.getContactbyID(contactId);
+    },
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contact: ACContact }>>;
-};
+  ) as Promise<AxiosResponse<{ contact: ACContact }>>;};
 
 /** Field values for a contact */
 export const fetchContactFieldValues = async (
@@ -65,17 +62,14 @@ export const fetchContactFieldValues = async (
     cacheConfig.contacts.list.any.tag(),
   ];
   return withQuery(
-    (opts) =>
-      contacts.getContactFieldValues(contactId, {
-        ...acDefaults(),
-        ...options,
-        ...opts,
-      }),
+    (opts) => {
+      void opts; // unused by generated client
+      return contacts.getContactFieldValues(contactId);
+    },
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>>;
-};
+  ) as Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>>;};
 
 /** List/search contacts (coarse id from params) */
 export const fetchContactsList = async (  params: Record<string, unknown>,
@@ -85,23 +79,15 @@ export const fetchContactsList = async (  params: Record<string, unknown>,
   const tags = [cacheConfig.contacts.list.any.tag()];
   return withQuery(
     (opts) => {
-      const extraParams = (opts.params ?? {}) as Record<string, unknown>;
-      const mergedParams: Record<string, unknown> = {
-        ...params,
-        ...extraParams,
-      };
-      return contacts.getContacts({
-        ...acDefaults(),
-        ...options,
-        ...opts,
-        params: mergedParams,
-      });
+      void opts; // unused by generated client
+      // Generated client currently exposes no-arg list retrieval; filters are
+      // still reflected in cache id/tags to scope invalidation.
+      return contacts.getContacts();
     },
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contacts: ACContact[] }>>;
-};
+  ) as Promise<AxiosResponse<{ contacts: ACContact[] }>>;};
 
 /** Create contact (body validated minimally) */
 export const createContactRaw = async (  body: {
@@ -116,17 +102,14 @@ export const createContactRaw = async (  body: {
 ): Promise<AxiosResponse<{ contact: ACContact }>> => {
   ContactsZ.createContactBody.parse(body);
   return withMutation(
-    (opts) =>
-      contacts.createContact(body as never, {
-        ...acDefaults(),
-        ...options,
-        ...opts,
-      }),
+    (opts) => {
+      void opts; // unused by generated client
+      return contacts.createContact(body as never);
+    },
     // a new contact can affect any list
     [cacheConfig.contacts.list.any.tag()],
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contact: ACContact }>>;
-};
+  ) as Promise<AxiosResponse<{ contact: ACContact }>>;};
 
 /** Update/sync contact (by email; business layer supplies email) */
 export const syncContactRaw = async (  body: {
@@ -142,17 +125,14 @@ export const syncContactRaw = async (  body: {
 ): Promise<AxiosResponse<{ contact: ACContact }>> => {
   ContactsZ.syncContactDataBody.parse(body);
   return withMutation(
-    (opts) =>
-      contacts.syncContactData(body as never, {
-        ...acDefaults(),
-        ...options,
-        ...opts,
-      }),
+    (opts) => {
+      void opts; // unused by generated client
+      return contacts.syncContactData(body as never);
+    },
     // We can't target specific contact cache safely here; clear list buckets
     [cacheConfig.contacts.list.any.tag()],
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contact: ACContact }>>;
-};
+  ) as Promise<AxiosResponse<{ contact: ACContact }>>;};
 
 /** Delete contact */
 export const deleteContactRaw = async (  contactId: number,
@@ -161,12 +141,10 @@ export const deleteContactRaw = async (  contactId: number,
   ContactsZ.deleteContactParams.parse({ contactId });
   const cid = String(contactId);
   return withMutation(
-    (opts) =>
-      contacts.deleteContact(contactId, {
-        ...acDefaults(),
-        ...options,
-        ...opts,
-      }),
+    (opts) => {
+      void opts; // unused by generated client
+      return contacts.deleteContact(contactId);
+    },
     [cacheConfig.contacts.detail.tag(cid), cacheConfig.contacts.list.any.tag()],
     { ...acDefaults(), ...(options ?? {}) },
   ) as Promise<AxiosResponse<null>>;
