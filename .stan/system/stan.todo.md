@@ -1,19 +1,22 @@
 # Development Plan
 
-When updated: 2025-08-31T01:45:00Z
+When updated: 2025-08-31T02:00:00Z
 
 ## Next up
-
 - Re-run: generate, typecheck, lint, test, package; paste outputs and report deltas.
 - Review Knip output after config changes; further refine entries/ignores if
   any remaining false positives (consider ignoring unused experimental helpers).
 
 ## Completed (recent)
 
+- HTTP middleware: fixed HEAD short-circuit to skip response validation by
+  adding mHeadFinalize (after) before Zod-after; conditional Zod options to
+  satisfy exactOptionalPropertyTypes; removed unused import, avoided
+  unnecessary assertions/conversions, and replaced ??= with guarded
+  assignments to satisfy ESLint.
 - HTTP middleware: restore rich pipeline (header/event normalization, content
   negotiation, conditional JSON body parsing, Zod validator, error exposure +
-  http-error-handler, CORS, response shaping, serializer) in buildHttpMiddlewareStack.
-- ESLint CLI: restore TypeScript parser and set explicit parserOptions.project
+  http-error-handler, CORS, response shaping, serializer) in buildHttpMiddlewareStack.- ESLint CLI: restore TypeScript parser and set explicit parserOptions.project
   (root + services/activecampaign) so type-aware rules (e.g., no-unsafe-return)
   surface in npm run lint the same as in VS Code.
 - Knip: ignore dynamically referenced serverless handlers and non-packaged step

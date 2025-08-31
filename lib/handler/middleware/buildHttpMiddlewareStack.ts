@@ -23,15 +23,11 @@ import type { ConsoleLogger } from '@@/lib/types/Loggable';
 
 import { asApiMiddleware } from './asApiMiddleware';
 import { combine } from './combine';
-import {
-  httpZodValidator,
-  type HttpZodValidatorOptions,
-} from './httpZodValidator';
+import { httpZodValidator } from './httpZodValidator';
 import { shortCircuitHead } from './shortCircuitHead';
 
 type HttpEnvelope = {
-  statusCode: number;
-  headers?: Record<string, string>;
+  statusCode: number;  headers?: Record<string, string>;
   body?: unknown;
 };
 
@@ -62,10 +58,9 @@ export const buildHttpMiddlewareStack = <
   options: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema>,
 ): MiddlewareObj<APIGatewayProxyEvent, Context> => {
   const contentType = options.contentType ?? 'application/json';
-  const logger = (options.logger ?? console) as ConsoleLogger;
+  const logger: ConsoleLogger = options.logger ?? console;
   const eventSchema = options.eventSchema;
   const responseSchema = options.responseSchema;
-
   // HEAD short-circuit — before everything else
   const mHead = shortCircuitHead;
 
@@ -82,19 +77,18 @@ export const buildHttpMiddlewareStack = <
         .event;
       if (!event) return;
 
-      const method = String(
-        event.httpMethod ??
-          (
-            event as unknown as {
-              requestContext?: { http?: { method?: string } };
-            }
-          ).requestContext?.http?.method ??
-          '',
+      const method = (
+        event.httpMethod ||
+        (
+          event as unknown as {
+            requestContext?: { http?: { method?: string } };
+          }
+        ).requestContext?.http?.method ||
+        ''
       ).toUpperCase();
 
       // Only parse when it makes sense
-      if (method === 'GET' || method === 'HEAD') return;
-      if (!event.body) return;
+      if (method === 'GET' || method === 'HEAD') return;      if (!event.body) return;
 
       // Don’t 415 on missing/mismatched content-type
       const inner = asApiMiddleware(
@@ -115,45 +109,76 @@ export const buildHttpMiddlewareStack = <
   );
 
   // Validate request BEFORE any content-type logic so Zod errors surface first.
+  const zodOptions: {
+    logger: ConsoleLogger;
+    eventSchema?: EventSchema;
+    responseSchema?: ResponseSchema;
+  } = {
+    logger,
+    ...(eventSchema ? { eventSchema } : {}),
+    ...(responseSchema ? { responseSchema } : {}),
+  };
   const mZodValidator = asApiMiddleware(
-    httpZodValidator<EventSchema, ResponseSchema, ConsoleLogger>({
-      eventSchema,
-      responseSchema,
-      logger,
-    }),
+    httpZodValidator<EventSchema, ResponseSchema, ConsoleLogger>(zodOptions),
   );
 
   /**
-   * Provide a sane default for preferred media types in ALL phases.
-   * This prevents 415s when tests only run `.after()` or `.onError()` and when
+   * Provide a sane default for preferred media types in ALL phases.   * This prevents 415s when tests only run `.after()` or `.onError()` and when
    * no Accept header is present. Harmless if something else already set it.
    */
   const mPreferredMediaTypes: MiddlewareObj<APIGatewayProxyEvent, Context> = {
     before: (request) => {
-      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
-        contentType,
-      ];
-      const r = request as { internal?: Record<string, unknown> };
-      r.internal ??= {};
-      (r.internal as { preferredMediaTypes?: string[] }).preferredMediaTypes ??=
-        [contentType];
+      const req = request as { preferredMediaTypes?: string[] };
+      if (!Array.isArray(req.preferredMediaTypes)) {
+        req.preferredMediaTypes = [contentType];
+      }
+      const ri = request as { internal?: Record<string, unknown> };
+      if (!ri.internal) ri.internal = {};
+      const internal = ri.internal as { preferredMediaTypes?: string[] };
+      if (!Array.isArray(internal.preferredMediaTypes)) {
+        internal.preferredMediaTypes = [contentType];
+      }
     },
     after: (request) => {
-      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
-        contentType,
-      ];
+      const req = request as { preferredMediaTypes?: string[] };
+      if (!Array.isArray(req.preferredMediaTypes)) {
+        req.preferredMediaTypes = [contentType];
+      }
     },
     onError: (request) => {
-      (request as { preferredMediaTypes?: string[] }).preferredMediaTypes ??= [
-        contentType,
-      ];
+      const req = request as { preferredMediaTypes?: string[] };
+      if (!Array.isArray(req.preferredMediaTypes)) {
+        req.preferredMediaTypes = [contentType];
+      }
+    },
+  };
+
+  /**
+   * For HEAD, force a shaped 200 {} response BEFORE Zod-after runs
+   * so response validation is skipped for HEAD only.
+   */
+  const mHeadFinalize: MiddlewareObj<APIGatewayProxyEvent, Context> = {
+    after: (request) => {
+      const evt = (request as unknown as { event?: APIGatewayProxyEvent }).event;
+      if (!evt) return;
+      const method =
+        (evt.httpMethod ||
+          (evt as unknown as { requestContext?: { http?: { method?: string } } })
+            .requestContext?.http?.method ||
+          ''
+        ).toUpperCase();
+      if (method !== 'HEAD') return;
+      (request as unknown as { response: HttpEnvelope }).response = {
+        statusCode: 200,
+        headers: { 'Content-Type': contentType },
+        body: {},
+      };
     },
   };
 
   // AFTER: normalize ANY response (shaped or not) to a normalized HTTP response and
   // force the configured content type.
-  const mShapeAndContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {
-    after: (request) => {
+  const mShapeAndContentType: MiddlewareObj<APIGatewayProxyEvent, Context> = {    after: (request) => {
       const container = request as unknown as { response?: unknown };
       const current = container.response;
       if (current === undefined) return;
@@ -253,6 +278,8 @@ export const buildHttpMiddlewareStack = <
     // BEFORE phases
     mContentNegotiation,
     mJsonBodyParser,
+    // HEAD-specific finalize to ensure envelope before Zod-after
+    mHeadFinalize,
     mZodValidator,
     // AFTER / ERROR phases
     mErrorExpose,
