@@ -122,11 +122,6 @@
   "scripts": {
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "changelog": "auto-changelog",
-    "context": "concurrently -n archive,lint,test,typecheck -c auto \"npm:context:archive\" \"npm:context:lint\" \"npm:context:test\" \"npm:context:typecheck\"",
-    "context:archive": "tsx lib/context/archive.ts",
-    "context:lint": "npm run lint > context/lint.txt 2>&1",
-    "context:test": "npm run test > context/test.txt 2>&1",
-    "context:typecheck": "npm run typecheck > context/typecheck.txt 2>&1",
     "deploy": "serverless deploy",
     "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
     "docs": "typedoc",

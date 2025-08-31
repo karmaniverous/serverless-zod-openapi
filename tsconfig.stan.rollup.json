@@ -6,11 +6,15 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     "noEmit": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"],
+      "@@/*": ["services/activecampaign/*"]
+    }
   },
   "include": [
     "src/**/*.ts",
-    "services/activecampaign/src/**/*.ts",
     "stack/**/*.ts",
     "stack/**/*.json"
   ],  "exclude": [

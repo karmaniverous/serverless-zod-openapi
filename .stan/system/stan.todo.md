@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-08-31T05:05:00Z
+When updated: 2025-08-31T05:20:00Z
 
 ## Next up
-
 - All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:
   - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
   - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
@@ -18,9 +17,12 @@ When updated: 2025-08-31T05:05:00Z
 
 ## Completed (recent)
 
+- stan:build noise reduction
+  - Added baseUrl/paths to tsconfig.stan.rollup.json and restricted include set
+    to avoid service wrappers; fixed EventTypeMap type predicate to silence TS2677.
+
 - stan:build fix & DX
-  - Removed outDir from tsconfig.stan.rollup.json to satisfy @rollup/plugin-typescript when emitting multiple outputs.
-  - Marked /^@\/.*/ and /^@@\/.*/ as external in rollup.config.ts to reduce alias warnings in stan builds.
+  - Removed outDir from tsconfig.stan.rollup.json to satisfy @rollup/plugin-typescript when emitting multiple outputs.  - Marked /^@\/.*/ and /^@@\/.*/ as external in rollup.config.ts to reduce alias warnings in stan builds.
 
 - Tests/build/config hardening
   - Vitest: restored default excludes via configDefaults; added cache excludes; removed deprecated deps.inline so node_modules tests are not picked up.

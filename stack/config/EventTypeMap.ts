@@ -8,7 +8,7 @@ export const HTTP_EVENT_TOKENS = ['rest'] as const;
 
 /** Narrow helper used by the wrapper to decide whether to apply HTTP middleware. */
 export const isHttpEventTypeToken = (
-  token: keyof EventTypeMap,
+  token: keyof BaseEventTypeMap,
 ): token is (typeof HTTP_EVENT_TOKENS)[number] => {
   return (HTTP_EVENT_TOKENS as readonly string[]).includes(token as string);
 };
