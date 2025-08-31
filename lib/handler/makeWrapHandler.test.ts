@@ -99,13 +99,12 @@ describe('wrapHandler: HEAD short-circuit', () => {
       eventSchema,
       responseSchema,
     });
-    const handler = makeWrapHandler(functionConfig, async () => ({
-      ignored: true,
-    }));
+    const handler = makeWrapHandler(functionConfig, async () => {
+      return {};
+    });
 
     const event = createApiGatewayV1Event('HEAD', {
-      Accept: 'application/json',
-    });
+      Accept: 'application/json',    });
     const ctx: Context = createLambdaContext();
 
     const res = (await handler(event, ctx)) as unknown as {

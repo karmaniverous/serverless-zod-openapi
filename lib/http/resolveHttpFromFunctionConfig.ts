@@ -11,7 +11,8 @@ import type { HttpContext } from '@@/lib/types/HttpContext';
 import { ENDPOINTS_ROOT_ABS } from '@@/src/endpoints/_root';
 
 export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
-  'get',  'put',
+  'get',
+  'put',
   'post',
   'delete',
   'options',
@@ -26,11 +27,13 @@ export const resolveHttpFromFunctionConfig = <
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
-  EventType extends keyof EventTypeMap,>(
+  EventType extends keyof EventTypeMap,
+>(
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
-    GlobalParams,    StageParams,
+    GlobalParams,
+    StageParams,
     EventTypeMap,
     EventType
   >,

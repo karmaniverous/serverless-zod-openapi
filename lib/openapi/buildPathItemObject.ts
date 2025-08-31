@@ -1,10 +1,9 @@
 import { unique } from 'radash';
-import type { z, ZodObject, ZodRawShape } from 'zod';
+import type { z } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
-import { buildPathElements } from '@@/lib/path/buildPath';
-import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
+import { buildPathElements } from '@@/lib/path/buildPath';import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import { serverlessConfigSchema } from '@@/src/config/serverlessConfig';
 

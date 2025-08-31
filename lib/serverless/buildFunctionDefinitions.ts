@@ -80,7 +80,7 @@ export const buildFunctionDefinitions = <
 
   const def: Record<string, unknown> = {
     handler,
-    events: events as unknown,
+    events,
     // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
       functionConfig.fnEnvKeys as readonly AllParamsKeys[] | undefined,
