@@ -23,15 +23,14 @@ export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
 export const resolveHttpFromFunctionConfig = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
-  EventTypeMap,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
+  EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,>(
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
-    GlobalParams,
-    StageParams,
+    GlobalParams,    StageParams,
     EventTypeMap,
     EventType
   >,

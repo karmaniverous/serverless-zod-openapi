@@ -17,14 +17,13 @@ import type { BaseOperation } from './types';
 export const buildPathItemObject = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
   config: FunctionConfig<
-    EventSchema,
-    ResponseSchema,
+    EventSchema,    ResponseSchema,
     GlobalParams,
     StageParams,
     EventTypeMap,

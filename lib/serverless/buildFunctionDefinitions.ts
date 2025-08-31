@@ -1,4 +1,3 @@
-// File: lib/serverless/buildFunctionDefinitions.ts
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +7,7 @@ import type z from 'zod';
 import type { ZodObject, ZodRawShape } from 'zod';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
+import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import { serverlessConfigSchema } from '@@/src/config/serverlessConfig';
 import { type AllParamsKeys, buildFnEnv } from '@@/src/config/stages';
@@ -27,9 +27,9 @@ const normalizeMethod = (m: string) => m.toLowerCase();
 export const buildFunctionDefinitions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
-  EventTypeMap,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
+  EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
   functionConfig: FunctionConfig<
@@ -54,7 +54,7 @@ export const buildFunctionDefinitions = <
     .join('/');
   const handler = `${handlerFileRel}.${parsed.defaultHandlerFileExport}`;
 
-  let events: AwsFunction['events'] = [];
+  let events: unknown = [];
 
   // If this is an HTTP function, add the http events
   try {
@@ -65,30 +65,29 @@ export const buildFunctionDefinitions = <
     const path = normalizePath(basePath);
     const httpEvents: HttpEvent[] = (
       contexts.length ? contexts : ['public']
-    ).map((ctx) => ({
+    ).map(() => ({
       http: {
         method: normalizeMethod(method),
         path: path,
       } as HttpEventObject,
     }));
-    events = [...httpEvents] as unknown as AwsFunction['events'];
+    events = [...httpEvents];
   } catch {
     // Non-HTTP functions simply do not get http events; other triggers may be present in config.
-    events =
-      (functionConfig as { events?: AwsFunction['events'] }).events ?? [];
+    const nonHttp = (functionConfig as { events?: unknown }).events;
+    events = nonHttp ?? [];
   }
 
-  const def: AwsFunction = {
+  const def: Record<string, unknown> = {
     handler,
-    events,
+    events: events as unknown,
     // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
-      (functionConfig.fnEnvKeys ??
-        []) as readonly string[] as readonly AllParamsKeys[],
+      functionConfig.fnEnvKeys as readonly AllParamsKeys[] | undefined,
     ),
-  } as unknown as AwsFunction;
+  };
 
   return {
-    [functionConfig.functionName]: def,
-  } as AWS['functions'];
+    [functionConfig.functionName]: def as unknown,
+  } as unknown as AWS['functions'];
 };

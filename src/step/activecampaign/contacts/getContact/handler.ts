@@ -11,7 +11,8 @@ import { functionConfig } from './config';
 
 export const handler = makeWrapHandler(functionConfig, (event) => {
   // Narrow to the LambdaEvent shape established by eventSchema.transform
-  const lambdaEvent = event as unknown as LambdaEvent;
+  type EventWithPayload = LambdaEvent & { Payload: { contactId: string } };
+  const lambdaEvent = event as unknown as EventWithPayload;
   return getContact({
     contactId: lambdaEvent.Payload.contactId,
   });

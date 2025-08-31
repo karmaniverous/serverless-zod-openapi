@@ -55,10 +55,8 @@ describe('wrapHandler: GET happy path', () => {
       basePath: 'test',
       eventSchema,
       responseSchema,
-      fnEnvKeys: [],
       logger,
     });
-
     const handler = makeWrapHandler(functionConfig, async () => ({
       what: 'ok',
     }));
@@ -100,9 +98,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
       basePath: 'test',
       eventSchema,
       responseSchema,
-      fnEnvKeys: [],
     });
-
     const handler = makeWrapHandler(functionConfig, async () => ({
       ignored: true,
     }));
@@ -147,10 +143,8 @@ describe('wrapHandler: POST payload', () => {
       basePath: 'test',
       eventSchema,
       responseSchema,
-      fnEnvKeys: [],
       logger,
     });
-
     const handler = makeWrapHandler(functionConfig, async () => {
       return { what: 'ok' };
     });

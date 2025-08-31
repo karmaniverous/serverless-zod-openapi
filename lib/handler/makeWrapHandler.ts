@@ -12,8 +12,7 @@ import type { z, ZodObject, ZodRawShape } from 'zod';
 import {
   buildEnvSchema,
   deriveAllKeys,
-  parseTypedEnv,
-  splitKeysBySchema,
+  parseTypedEnv,  splitKeysBySchema,
 } from '@@/lib/handler/envBuilder';
 import { buildHttpMiddlewareStack } from '@@/lib/handler/middleware/buildHttpMiddlewareStack';
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
@@ -38,8 +37,7 @@ const defaultLoadEnvConfig = async (): Promise<{
   globalParamsSchema: ZodObject<ZodRawShape>;
   stageEnvKeys: readonly PropertyKey[];
   stageParamsSchema: ZodObject<ZodRawShape>;
-}> => {
-  const [g, s] = await Promise.all([
+}> => {  const [g, s] = await Promise.all([
     import('@@/src/config/global'),
     import('@@/src/config/stage'),
   ]);
@@ -57,8 +55,8 @@ const defaultLoadEnvConfig = async (): Promise<{
 export const makeWrapHandler = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
 >(
@@ -72,17 +70,14 @@ export const makeWrapHandler = <
   >,
   business: Handler<EventSchema, ResponseSchema, EventTypeMap[EventType]>,
   loadEnvConfig: LoadEnvConfig<
-    GlobalParams,
-    StageParams
-  > = defaultLoadEnvConfig as unknown as LoadEnvConfig<
-    GlobalParams, StageParams
-  >,
+    ZodObject<ZodRawShape>,
+    ZodObject<ZodRawShape>
+  > = defaultLoadEnvConfig,
 ) => {
   const base = async (event: unknown, context: Context) => {
     // Load env config at runtime (mock-friendly).
     const {
-      globalEnvKeys,
-      globalParamsSchema,
+      globalEnvKeys,      globalParamsSchema,
       stageEnvKeys,
       stageParamsSchema,
     } = await loadEnvConfig();
