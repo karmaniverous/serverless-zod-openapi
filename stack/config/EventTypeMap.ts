@@ -1,4 +1,4 @@
-import type { BaseEventTypeMap } from '@@/src';
+import type { BaseEventTypeMap } from '@/src';
 
 export interface EventTypeMap extends BaseEventTypeMap {
   step: Record<string, unknown>;

@@ -3,11 +3,11 @@ import type {
   AxiosResponse,
 } from '@karmaniverous/cached-axios';
 
-import type { AddCustomFieldRequest } from '@/generated/api.schemas';
-import { getCustomFieldsAndValues } from '@/generated/custom-fields-and-values/custom-fields-and-values';
-import * as CFZ from '@/generated/custom-fields-and-values/custom-fields-and-values.zod';
-import { cacheConfig } from '@/src/api/config';
-import { cache } from '@/src/http';
+import type { AddCustomFieldRequest } from '@@/generated/api.schemas';
+import { getCustomFieldsAndValues } from '@@/generated/custom-fields-and-values/custom-fields-and-values';
+import * as CFZ from '@@/generated/custom-fields-and-values/custom-fields-and-values.zod';
+import { cacheConfig } from '@@/src/api/config';
+import { cache } from '@@/src/http';
 
 const fields = getCustomFieldsAndValues();
 
@@ -48,7 +48,7 @@ export const createCustomField = async (
     [cacheConfig.contacts.tag(['fields', 'catalog'])],
     options,
   ) as Promise<AxiosResponse<{ field: ACField }>>;
-};/** Find a field by perstag (e.g., %MY_TAG%) */
+}; /** Find a field by perstag (e.g., %MY_TAG%) */
 export const findFieldByPerstag = async (
   perstag: string,
   options?: AxiosRequestConfig,

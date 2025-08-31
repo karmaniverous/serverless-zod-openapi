@@ -7,27 +7,23 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import {
-  type LoadEnvConfig,
-  makeFunctionConfig,
-  makeWrapHandler,
-} from '@@/src';
-import { createApiGatewayV1Event, createLambdaContext } from '@@/src/test/aws';
+import { type LoadEnvConfig, makeFunctionConfig, makeWrapHandler } from '@/src';
+import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
 import {
   globalEnvKeys as testGlobalEnvKeys,
   globalParamsSchema as testGlobalParamsSchema,
-} from '@@/src/test/serverless/config/global';
+} from '@/src/test/serverless/config/global';
 import {
   stageEnvKeys as testStageEnvKeys,
   stageParamsSchema as testStageParamsSchema,
-} from '@@/src/test/serverless/config/stage';
-import type { ConsoleLogger } from '@@/src/types/Loggable';
+} from '@/src/test/serverless/config/stage';
+import type { ConsoleLogger } from '@/src/types/Loggable';
 
-vi.mock('@@/stack/config/global', () => ({
+vi.mock('@/stack/config/global', () => ({
   globalEnvKeys: testGlobalEnvKeys,
   globalParamsSchema: testGlobalParamsSchema,
 }));
-vi.mock('@@/stack/config/stage', () => ({
+vi.mock('@/stack/config/stage', () => ({
   stageEnvKeys: testStageEnvKeys,
   stageParamsSchema: testStageParamsSchema,
 }));

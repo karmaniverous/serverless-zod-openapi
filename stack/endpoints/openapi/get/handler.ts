@@ -6,12 +6,13 @@
  */
 import type { z } from 'zod';
 
-import { makeWrapHandler } from '@@/src';
-import { loadEnvConfig } from '@@/stack/config/loadEnvConfig';
-import openapi from '@@/stack/openapi.json';
+import { makeWrapHandler } from '@/src';
+import { loadEnvConfig } from '@/stack/config/loadEnvConfig';
+import openapi from '@/stack/openapi.json';
 
 import { functionConfig, type responseSchema } from './config';
 export const handler = makeWrapHandler(
   functionConfig,
-  async () => openapi as unknown as z.infer<typeof responseSchema>,  loadEnvConfig,
+  async () => openapi as unknown as z.infer<typeof responseSchema>,
+  loadEnvConfig,
 );

@@ -1,8 +1,8 @@
 import type { Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-import type { DeepOverride } from '@@/src/types/DeepOverride';
-import type { ConsoleLogger } from '@@/src/types/Loggable';
+import type { DeepOverride } from '@/src/types/DeepOverride';
+import type { ConsoleLogger } from '@/src/types/Loggable';
 
 /** Event type after applying deep schema overrides. */
 export type ShapedEvent<

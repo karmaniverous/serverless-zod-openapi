@@ -1,4 +1,4 @@
-import type { ACField } from '@/src/wrapped/custom-fields-and-values';
+import type { ACField } from '@@/src/wrapped/custom-fields-and-values';
 
 /**
  * Determine whether a custom field accepts multiple selections whose value

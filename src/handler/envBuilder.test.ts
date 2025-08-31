@@ -5,13 +5,13 @@ import { z } from 'zod';
 import {
   globalEnvKeys,
   globalParamsSchema,
-} from '@@/src/test/serverless/config/global';
+} from '@/src/test/serverless/config/global';
 import {
   stageEnvKeys,
   stageParamsSchema,
-} from '@@/src/test/serverless/config/stage';
+} from '@/src/test/serverless/config/stage';
 // If you want a strict union for function-level keys in this test file:
-import type { AllParamsKeys } from '@@/src/test/serverless/config/stages';
+import type { AllParamsKeys } from '@/src/test/serverless/config/stages';
 
 import {
   buildEnvSchema,

@@ -5,9 +5,9 @@
  */
 import { z } from 'zod';
 
-import { contactSchema } from '@@/services/activecampaign/src';
-import type { LambdaEvent } from '@@/src';
-import { makeFunctionConfig } from '@@/src';
+import { contactSchema } from '@/services/activecampaign/src';
+import type { LambdaEvent } from '@/src';
+import { makeFunctionConfig } from '@/src';
 
 export const eventSchema = z
   .object({

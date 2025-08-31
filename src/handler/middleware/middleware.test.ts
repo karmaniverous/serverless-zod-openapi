@@ -7,8 +7,8 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createApiGatewayV1Event, createLambdaContext } from '@@/src/test/aws';
-import type { HttpResponse } from '@@/src/test/http';
+import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
+import type { HttpResponse } from '@/src/test/http';
 
 import { buildHttpMiddlewareStack } from './buildHttpMiddlewareStack';
 

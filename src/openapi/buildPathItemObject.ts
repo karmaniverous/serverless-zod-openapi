@@ -2,11 +2,11 @@ import { unique } from 'radash';
 import type { z } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
-import { resolveHttpFromFunctionConfig } from '@@/src/http/resolveHttpFromFunctionConfig';
-import { buildPathElements } from '@@/src/path/buildPath';
-import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
-import type { FunctionConfig } from '@@/src/types/FunctionConfig';
-import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
+import { resolveHttpFromFunctionConfig } from '@/src/http/resolveHttpFromFunctionConfig';
+import { buildPathElements } from '@/src/path/buildPath';
+import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
+import type { FunctionConfig } from '@/src/types/FunctionConfig';
+import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
 
 import type { BaseOperation } from './types';
 
@@ -23,7 +23,8 @@ export const buildPathItemObject = <
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
-  EventType extends keyof EventTypeMap,>(
+  EventType extends keyof EventTypeMap,
+>(
   config: FunctionConfig<
     EventSchema,
     ResponseSchema,

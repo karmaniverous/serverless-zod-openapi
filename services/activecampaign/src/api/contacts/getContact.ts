@@ -1,12 +1,12 @@
 import type { AxiosRequestConfig } from '@karmaniverous/cached-axios';
 import { z } from 'zod';
 
-import type { Optionalize } from '@/src/types/Optionalize';
-import type { ACContact } from '@/src/wrapped/contacts';
+import type { Optionalize } from '@@/src/types/Optionalize';
+import type { ACContact } from '@@/src/wrapped/contacts';
 import {
   fetchContactCore,
   fetchContactFieldValues,
-} from '@/src/wrapped/contacts';
+} from '@@/src/wrapped/contacts';
 
 import { getFieldMaps, materialize } from './helpers';
 import { contactSchema } from './schemas';

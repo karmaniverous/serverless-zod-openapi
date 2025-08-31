@@ -2,9 +2,9 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { createApiGatewayV1Event, createLambdaContext } from '@@/src/test/aws';
-import type { ConsoleLogger } from '@@/src/types/Loggable';
-import type { ShapedEvent } from '@@/src/types/ShapedEvent';
+import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
+import type { ConsoleLogger } from '@/src/types/Loggable';
+import type { ShapedEvent } from '@/src/types/ShapedEvent';
 
 import type { Handler, HandlerOptions } from '../types/Handler';
 

@@ -4,16 +4,17 @@ import { fileURLToPath } from 'node:url';
 import { unique } from 'radash';
 import type { z } from 'zod';
 
-import { sanitizeBasePath } from '@@/src/path/buildPath';
-import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
-import type { MethodKey } from '@@/src/types/FunctionConfig';
-import type { FunctionConfig } from '@@/src/types/FunctionConfig';
-import type { HttpContext } from '@@/src/types/HttpContext';
+import { sanitizeBasePath } from '@/src/path/buildPath';
+import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
+import type { MethodKey } from '@/src/types/FunctionConfig';
+import type { FunctionConfig } from '@/src/types/FunctionConfig';
+import type { HttpContext } from '@/src/types/HttpContext';
 
 export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
   'get',
   'put',
-  'post',  'delete',
+  'post',
+  'delete',
   'options',
   'head',
   'patch',
@@ -40,7 +41,8 @@ export const resolveHttpFromFunctionConfig = <
   endpointsRootAbs: string,
 ): {
   method: MethodKey;
-  basePath: string;  contexts: readonly HttpContext[];
+  basePath: string;
+  contexts: readonly HttpContext[];
 } => {
   const {
     method: maybeMethod,
@@ -61,7 +63,8 @@ export const resolveHttpFromFunctionConfig = <
       endpointsRootAbs,
       dirname(fileURLToPath(callerModuleUrl)),
     )
-      .split(sep)      .join('/');
+      .split(sep)
+      .join('/');
     const segs = rel.split('/').filter(Boolean);
     const tail = segs[segs.length - 1]?.toLowerCase();
     method = HTTP_METHODS.has(tail as MethodKey) ? (tail as MethodKey) : 'get';
@@ -73,7 +76,8 @@ export const resolveHttpFromFunctionConfig = <
       endpointsRootAbs,
       dirname(fileURLToPath(callerModuleUrl)),
     )
-      .split(sep)      .join('/');
+      .split(sep)
+      .join('/');
     const segs = rel.split('/').filter(Boolean);
     if (segs.length && segs[segs.length - 1]?.toLowerCase() === method)
       segs.pop();

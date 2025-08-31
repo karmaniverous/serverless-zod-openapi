@@ -4,7 +4,7 @@
  * - Provide a type guard usable by runtime to detect HTTP handlers.
  * - Only base event types are treated as HTTP; local maps can extend freely.
  */
-import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
+import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 
 /** Base tokens that are treated as HTTP by the runtime. */
 export const HTTP_EVENT_TOKENS = [

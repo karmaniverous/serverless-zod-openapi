@@ -3,10 +3,10 @@
  * - Non-HTTP step function: no HTTP middleware should be applied.
  * - Call makeWrapHandler with only (functionConfig, businessHandler).
  */
-import { getContact } from '@@/services/activecampaign/src';
-import type { LambdaEvent } from '@@/src';
-import { makeWrapHandler } from '@@/src';
-import { loadEnvConfig } from '@@/stack/config/loadEnvConfig';
+import { getContact } from '@/services/activecampaign/src';
+import type { LambdaEvent } from '@/src';
+import { makeWrapHandler } from '@/src';
+import { loadEnvConfig } from '@/stack/config/loadEnvConfig';
 
 import { functionConfig } from './config';
 export const handler = makeWrapHandler(

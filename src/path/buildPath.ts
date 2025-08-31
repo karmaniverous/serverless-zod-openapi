@@ -1,4 +1,4 @@
-import type { HttpContext } from '@@/src/types/HttpContext';
+import type { HttpContext } from '@/src/types/HttpContext';
 
 export const splitPath = (basePath: string): string[] =>
   basePath.split('/').filter(Boolean);

@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 
-import { makeFunctionConfig } from '@@/src';
+import { makeFunctionConfig } from '@/src';
 
 export const eventSchema = undefined;
 export const responseSchema = z.object({});

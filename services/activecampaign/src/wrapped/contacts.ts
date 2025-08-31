@@ -5,10 +5,10 @@ import {
   withQuery,
 } from '@karmaniverous/cached-axios';
 
-import { getContacts } from '@/generated/contacts/contacts';
-import * as ContactsZ from '@/generated/contacts/contacts.zod';
-import { cacheConfig } from '@/src/api/config';
-import { acDefaults } from '@/src/http';
+import { getContacts } from '@@/generated/contacts/contacts';
+import * as ContactsZ from '@@/generated/contacts/contacts.zod';
+import { cacheConfig } from '@@/src/api/config';
+import { acDefaults } from '@@/src/http';
 
 const contacts = getContacts();
 

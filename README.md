@@ -15,5 +15,5 @@
 
 ## 3) Mock‑friendly env configuration
 
-- **Rule:** Code that depends on `@@/src/config/global` or `@@/src/config/stage` **MUST NOT** import those modules at the top level. Vitest hoists `vi.mock`, and top‑level imports defeat those mocks.
+- **Rule:** Code that depends on `@/src/config/global` or `@/src/config/stage` **MUST NOT** import those modules at the top level. Vitest hoists `vi.mock`, and top‑level imports defeat those mocks.
 - **Pattern:** Perform **runtime‑only** imports _inside_ functions (e.g., inside the wrapper) so tests can replace these modules. Do **not** use dynamic **type** imports (`typeof import('...')` in type positions) anywhere.

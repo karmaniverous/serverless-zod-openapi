@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createApiGatewayV1Event,
   createApiGatewayV2Event,
-} from '@@/src/test/aws';
+} from '@/src/test/aws';
 
 import { detectSecurityContext, isV1 } from './detectSecurityContext';
 

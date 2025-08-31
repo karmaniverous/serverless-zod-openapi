@@ -15,7 +15,7 @@
 
 ## 3) Testability of environment config
 
-- Requirement: Files that depend on `@@/src/config/*` must be mock‑friendly with Vitest.
+- Requirement: Files that depend on `@/src/config/*` must be mock‑friendly with Vitest.
 - Pattern: Avoid top‑level ESM imports that get evaluated before `vi.mock()` can apply. Instead, lazily import at runtime inside functions (no dynamic type imports), so test mocks are honored.
 
 ## 4) @karmaniverous/cached-axios — project‑relevant summary and rules
@@ -83,10 +83,9 @@ This section documents how we use it in this repo and the rules to follow.
     a named function `orvalMutator`. A direct `export { orvalMutator } from
 '@karmaniverous/cached-axios/mutators/orval'` may not satisfy Orval’s
     export checker. If Orval reports “Your mutator file doesn't have the
-    orvalMutator exported function”, implement an explicit forwarder:
-    - Import the upstream function as a local name, then export a named
-      function that forwards its arguments. This keeps behavior identical and
-      satisfies Orval’s static check.
+    orvalMutator exported function”, implement an explicit forwarder: - Import the upstream function as a local name, then export a named
+    function that forwards its arguments. This keeps behavior identical and
+    satisfies Orval’s static check.
   - After fixing the export, re‑run `npm run generate` in the
     `services/activecampaign` workspace. The generated clients should import
     the local mutator and eliminate any stale “packages/cached-axios” paths.

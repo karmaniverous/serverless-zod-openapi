@@ -2,7 +2,7 @@
  * Tiny helper to decorate http-response-serializer functions so we can add
  * structured logging around the actual serialization step.
  */
-import type { ConsoleLogger } from '@@/src/types/Loggable';
+import type { ConsoleLogger } from '@/src/types/Loggable';
 
 export const wrapSerializer = <T extends (args: { body: unknown }) => string>(
   fn: T,

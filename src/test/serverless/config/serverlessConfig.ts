@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
+import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
 
 /** Zod schema for implementation-wide Serverless config. */
 export const serverlessConfigSchema = z.object({

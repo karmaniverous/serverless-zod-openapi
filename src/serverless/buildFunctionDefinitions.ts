@@ -5,10 +5,10 @@ import type { AWS } from '@serverless/typescript';
 import { packageDirectorySync } from 'package-directory';
 import type { z } from 'zod';
 
-import { resolveHttpFromFunctionConfig } from '@@/src/http/resolveHttpFromFunctionConfig';
-import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
-import type { FunctionConfig } from '@@/src/types/FunctionConfig';
-import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
+import { resolveHttpFromFunctionConfig } from '@/src/http/resolveHttpFromFunctionConfig';
+import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
+import type { FunctionConfig } from '@/src/types/FunctionConfig';
+import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
 
 type HttpEventObject = { method: string; path: string } & Record<
   string,

@@ -5,15 +5,15 @@ import {
   buildEnvSchema,
   deriveAllKeys,
   splitKeysBySchema,
-} from '@@/src/handler/envBuilder';
+} from '@/src/handler/envBuilder';
 import {
   globalEnvKeys,
   globalParamsSchema,
-} from '@@/src/test/serverless/config/global';
+} from '@/src/test/serverless/config/global';
 import {
   stageEnvKeys,
   stageParamsSchema,
-} from '@@/src/test/serverless/config/stage';
+} from '@/src/test/serverless/config/stage';
 
 /**
  * Temporarily set env vars for the duration of a test.

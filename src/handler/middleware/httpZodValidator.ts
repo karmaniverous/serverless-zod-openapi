@@ -8,8 +8,8 @@ import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-import { pojofy } from '@@/src/pojofy';
-import type { ConsoleLogger, Loggable } from '@@/src/types/Loggable';
+import { pojofy } from '@/src/pojofy';
+import type { ConsoleLogger, Loggable } from '@/src/types/Loggable';
 
 export type HttpZodValidatorOptions<
   EventSchema extends z.ZodType | undefined,

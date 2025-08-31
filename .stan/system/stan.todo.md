@@ -3,10 +3,11 @@
 When updated: 2025-08-31T03:10:00Z
 
 ## Next up
+
 - Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package; paste outputs and report deltas.- Review Knip output after config changes; further refine entries/ignores if
   any remaining false positives (consider ignoring unused experimental helpers).
-- Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@@/src").
-- Sweep tests to import toolkit API from '@@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@@/\*' in all suites.
+- Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@/src").
+- Sweep tests to import toolkit API from '@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@/\*' in all suites.
 - Design: toolkit packaging plan (publish lib/). Define initial public API:
   - wrapper (makeWrapHandler), middleware stack, serverless/OpenAPI builders,
   - config typing utilities (FunctionConfig, AppConfig zod schema helpers).
@@ -30,7 +31,7 @@ When updated: 2025-08-31T03:10:00Z
   - buildFunctionDefinitions no longer imports buildFnEnv from the stack; buildFnEnv is injected by the stack to avoid circular imports.
   - Stack imports from toolkit index only; updated serverless/openAPI call sites accordingly.
 - Toolkit public index (src/index.ts) added; stack now imports solely from the
-  toolkit index (@@/src). Updated all stack deep imports accordingly.- Tests: makeWrapHandler test suite now vi.mock's '@@/stack/config/\*' and sets
+  toolkit index (@/src). Updated all stack deep imports accordingly.- Tests: makeWrapHandler test suite now vi.mock's '@/stack/config/\*' and sets
   required env vars across GET/HEAD/POST tests to satisfy the env schema.
 - OpenAPI: moved generator to stack/config/openapi.ts and updated package.json
   "openapi" script. Generator now writes to stack/openapi.json to match runtime

@@ -4,8 +4,8 @@
     "declarationDir": ".tsbuild",
     "outDir": ".tsbuild",
     "paths": {
-      "@@/*": ["../../*"],
-      "@/*": ["*"]
+      "@/*": ["../../*"],
+      "@@/*": ["*"]
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },

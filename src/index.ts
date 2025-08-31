@@ -1,5 +1,5 @@
 /**
- * Public entry point for the toolkit. Stack code must import only from '@@/src'.
+ * Public entry point for the toolkit. Stack code must import only from '@/src'.
  * Exposes runtime wrappers, middleware, builders, and commonly used types.
  */
 export { detectSecurityContext } from './handler/detectSecurityContext';

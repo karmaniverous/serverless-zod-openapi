@@ -19,7 +19,7 @@ import httpResponseSerializer from '@middy/http-response-serializer';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-import type { ConsoleLogger } from '@@/src/types/Loggable';
+import type { ConsoleLogger } from '@/src/types/Loggable';
 
 import { asApiMiddleware } from './asApiMiddleware';
 import { combine } from './combine';

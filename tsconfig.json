@@ -4,11 +4,12 @@
     "declarationDir": ".tsbuild",
     "outDir": ".tsbuild",
     "paths": {
-      "@@/*": ["*"],
-      "@/*": ["services/activecampaign/*"]
+      "@/*": ["*"],
+      "@@/*": ["services/activecampaign/*"]
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
-  },  "exclude": [".serverless/**", "node_modules/**"],
+  },
+  "exclude": [".serverless/**", "node_modules/**"],
   "extends": "./tsconfig.base.json",
   "include": ["**/*", "**/*.json"]
 }

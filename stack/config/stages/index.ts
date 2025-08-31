@@ -1,9 +1,10 @@
-import { stagesFactory } from '@@/src';
+import { stagesFactory } from '@/src';
 
 import {
   globalEnvKeys,
   type GlobalParams,
-  globalParams,  globalParamsSchema,
+  globalParams,
+  globalParamsSchema,
 } from '../global';
 import { stageEnvKeys, type StageParams, stageParamsSchema } from '../stage';
 import * as dev from './dev';
