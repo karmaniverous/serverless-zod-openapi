@@ -2,7 +2,7 @@ import { dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { unique } from 'radash';
-import type { ZodObject, ZodRawShape } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 
 import { sanitizeBasePath } from '@@/lib/path/buildPath';
 import type { MethodKey } from '@@/lib/types/FunctionConfig';
@@ -11,8 +11,7 @@ import type { HttpContext } from '@@/lib/types/HttpContext';
 import { ENDPOINTS_ROOT_ABS } from '@@/src/endpoints/_root';
 
 export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
-  'get',
-  'put',
+  'get',  'put',
   'post',
   'delete',
   'options',
@@ -22,13 +21,12 @@ export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
 ]);
 
 export const resolveHttpFromFunctionConfig = <
-  EventSchema,
-  ResponseSchema,
+  EventSchema extends z.ZodType | undefined,
+  ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends ZodObject<ZodRawShape>,
   StageParams extends ZodObject<ZodRawShape>,
   EventTypeMap,
-  EventType extends keyof EventTypeMap,
->(
+  EventType extends keyof EventTypeMap,>(
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,

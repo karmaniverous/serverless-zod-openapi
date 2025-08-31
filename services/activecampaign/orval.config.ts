@@ -11,12 +11,11 @@ export default defineConfig({
       mock: true,
       override: {
         mutator: {
-          path: '../../../packages/cached-axios/src/mutator.ts',
+          path: '@karmaniverous/cached-axios/mutators/orval',
           name: 'orvalMutator',
         },
       },
-    },
-    hooks: { afterAllFilesWrite: ['prettier -w'] },
+    },    hooks: { afterAllFilesWrite: ['prettier -w'] },
   },
   zod: {
     input: 'src/openapi.json',

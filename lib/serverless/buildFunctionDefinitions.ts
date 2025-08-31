@@ -1,8 +1,11 @@
 import type { AWS } from '@serverless/typescript';
+import { dirname, join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type z from 'zod';
 import type { ZodObject, ZodRawShape } from 'zod';
+import { packageDirectorySync } from 'package-directory';
 
 import { resolveHttpFromFunctionConfig } from '@@/lib/http/resolveHttpFromFunctionConfig';
-import { modulePathFromRoot } from '@@/lib/modulePathFromRoot';
 import type { FunctionConfig } from '@@/lib/types/FunctionConfig';
 import { serverlessConfigSchema } from '@@/src/config/serverlessConfig';
 import { type AllParamsKeys, buildFnEnv } from '@@/src/config/stages';
@@ -20,8 +23,8 @@ const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
 const normalizeMethod = (m: string) => m.toLowerCase();
 
 export const buildFunctionDefinitions = <
-  EventSchema,
-  ResponseSchema,
+  EventSchema extends z.ZodType | undefined,
+  ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends ZodObject<ZodRawShape>,
   StageParams extends ZodObject<ZodRawShape>,
   EventTypeMap,
@@ -35,17 +38,19 @@ export const buildFunctionDefinitions = <
     EventTypeMap,
     EventType
   >,
+  rawServerlessConfig: z.input<typeof serverlessConfigSchema>,
   callerModuleUrl: string,
 ): AWS['functions'] => {
-  const parsed = serverlessConfigSchema.parse({
-    defaultHandlerFileExport: 'handler',
-  });
+  const parsed = serverlessConfigSchema.parse(rawServerlessConfig);
 
-  const handler = modulePathFromRoot({
-    from: callerModuleUrl,
-    to: `@@/src/endpoints/${functionConfig.functionName}/handler`,
-    exportName: parsed.defaultHandlerFileExport,
-  });
+  // Compute "file.export" handler string relative to repo root
+  const repoRoot = packageDirectorySync()!;
+  const callerDir = dirname(fileURLToPath(callerModuleUrl));
+  const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);
+  const handlerFileRel = relative(repoRoot, handlerFileAbs)
+    .split(sep)
+    .join('/');
+  const handler = `${handlerFileRel}.${parsed.defaultHandlerFileExport}`;
 
   let events: AwsFunction['events'] = [];
 
@@ -65,12 +70,10 @@ export const buildFunctionDefinitions = <
         'x-context': ctx,
       } as HttpEventObject,
     }));
-    events = [...httpEvents] as AwsFunction['events'];
+    events = [...httpEvents] as unknown as AwsFunction['events'];
   } catch {
     // Non-HTTP functions simply do not get http events; other triggers may be present in config.
-    events = [
-      ...((functionConfig as { events?: AwsFunction['events'] }).events ?? []),
-    ];
+    events = (functionConfig as { events?: AwsFunction['events'] }).events ?? [];
   }
 
   const def: AwsFunction = {

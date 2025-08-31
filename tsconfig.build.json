@@ -2,7 +2,6 @@
   "files": [],
   "references": [
     { "path": "." },
-    { "path": "packages/cached-axios" },
     { "path": "services/activecampaign" }
   ]
 }

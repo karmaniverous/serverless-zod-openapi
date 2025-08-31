@@ -5,9 +5,12 @@
  */
 import { makeWrapHandler } from '@@/lib/handler/makeWrapHandler';
 import { getContact } from '@@/services/activecampaign/src';
+import type { LambdaEvent } from '@@/lib/types/LambdaEvent';
 
 import { functionConfig } from './config';
 
 export const handler = makeWrapHandler(functionConfig, (event) =>
-  getContact({ contactId: event.Payload.contactId }),
+  getContact({
+    contactId: (event as unknown as LambdaEvent).Payload.contactId,
+  }),
 );

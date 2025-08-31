@@ -1,3 +1,6 @@
+cliDefaults:
+  run:
+    sequential: true
 excludes:
   - '**/.tsbuild/**'
   - '**/generated/**'

@@ -11,9 +11,5 @@
   },
   "extends": "../../tsconfig.base.json",
   "include": ["**/*", "**/*.json"],
-  "references": [
-    {
-      "path": "../../packages/cached-axios"
-    }
-  ]
+  "references": []
 }

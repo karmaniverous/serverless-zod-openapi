@@ -140,15 +140,15 @@ export const makeWrapHandler = <
     });
 
     // Wrap the business handler with the HTTP middleware stack.
-    const wrapped = middy(async (e, c) =>
-      business(e as ShapedEvent<EventSchema, EventTypeMap[EventType]>, c, {
-        env,
-        logger,
-      }),
+    const wrapped = middy(async (e: unknown, c: Context) =>
+      business(
+        e as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
+        c,
+        { env, logger },
+      ),
     ).use(http);
 
-    return wrapped(event as never, context);
-  };
+    return wrapped(event as never, context);  };
 
   return base;
 };

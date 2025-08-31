@@ -8,22 +8,22 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@@/lib/test/aws';
+import type { HttpResponse } from '@@/lib/test/http';
 
 import { buildHttpMiddlewareStack } from './buildHttpMiddlewareStack';
 
-const run = async <R>(
-  base: (e: APIGatewayProxyEvent, c: Context) => Promise<R>,
+const run = async (
+  base: (e: APIGatewayProxyEvent, c: Context) => Promise<unknown>,
   opts: Parameters<typeof buildHttpMiddlewareStack>[0],
   event: APIGatewayProxyEvent,
   ctx: Context,
-): Promise<R> => {
+): Promise<HttpResponse> => {
   const stack = buildHttpMiddlewareStack(opts);
-  const wrapped = middy(async (e: APIGatewayProxyEvent, c: Context) =>
-    base(e, c),
+  const wrapped = middy(
+    async (e: APIGatewayProxyEvent, c: Context) => base(e, c),
   ).use(stack);
-  return wrapped(event, ctx);
+  return (await wrapped(event, ctx)) as unknown as HttpResponse;
 };
-
 describe('stack: response shaping & content-type header', () => {
   it('sets Content-Type and preserves payload as JSON', async () => {
     const event = createApiGatewayV1Event('GET', {
