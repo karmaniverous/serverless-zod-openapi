@@ -17,13 +17,13 @@ type ServerlessConfigLike = {
  * Build OpenAPI path items for a single function config.
  * If no httpContexts are present, returns an empty object.
  */
-export const buildPathItemObject = <  EventSchema extends z.ZodType | undefined,
+export const buildPathItemObject = <
+  EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
-  EventType extends keyof EventTypeMap,
->(
+  EventType extends keyof EventTypeMap,>(
   config: FunctionConfig<
     EventSchema,
     ResponseSchema,
@@ -37,13 +37,17 @@ export const buildPathItemObject = <  EventSchema extends z.ZodType | undefined,
   baseOperation: BaseOperation,
   endpointsRootAbs: string,
 ): ZodOpenApiPathsObject => {
-  // Resolve HTTP route details via injected endpoints root
-  const resolved = resolveHttpFromFunctionConfig(config, callerModuleUrl, endpointsRootAbs);
+  // Resolve HTTP route details via injected endpoints root.
+  const resolved = resolveHttpFromFunctionConfig(
+    config,
+    callerModuleUrl,
+    endpointsRootAbs,
+  );
   const { method, basePath, contexts } = resolved;
 
-  // Build a path item per context, tagging operations properly.  return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
+  // Build a path item per context, tagging operations properly.
+  return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
     const pathElements = buildPathElements(basePath, context);
-
     return {
       ...acc,
       [`/${pathElements.join('/')}`]: {

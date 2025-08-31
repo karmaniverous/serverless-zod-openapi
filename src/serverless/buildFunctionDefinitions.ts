@@ -3,11 +3,11 @@ import { fileURLToPath } from 'node:url';
 
 import type { AWS } from '@serverless/typescript';
 import { packageDirectorySync } from 'package-directory';
+import type { z } from 'zod';
 
 import { resolveHttpFromFunctionConfig } from '@@/src/http/resolveHttpFromFunctionConfig';
 import type { BaseEventTypeMap } from '@@/src/types/BaseEventTypeMap';
-import type { FunctionConfig } from '@@/src/types/FunctionConfig';
-import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
+import type { FunctionConfig } from '@@/src/types/FunctionConfig';import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHttpEventMap';
 import { type AllParamsKeys, buildFnEnv } from '@@/stack/config/stages';
 
 type HttpEventObject = { method: string; path: string } & Record<
@@ -43,11 +43,11 @@ export const buildFunctionDefinitions = <
   // Compute "file.export" handler string relative to repo root
   const repoRoot = packageDirectorySync()!;
   const callerDir = dirname(fileURLToPath(callerModuleUrl));
-  const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);  const handlerFileRel = relative(repoRoot, handlerFileAbs)
+  const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);
+  const handlerFileRel = relative(repoRoot, handlerFileAbs)
     .split(sep)
     .join('/');
   const handler = `${handlerFileRel}.${parsed.defaultHandlerFileExport}`;
-
   let events: unknown = [];
 
   // If this is an HTTP function, add the http events
@@ -58,14 +58,14 @@ export const buildFunctionDefinitions = <
       endpointsRootAbs,
     );
     const path = normalizePath(basePath);
-    const httpEvents: HttpEvent[] = (      contexts.length ? contexts : ['public']
+    const httpEvents: HttpEvent[] = (
+      contexts.length ? contexts : ['public']
     ).map(() => ({
       http: {
         method: normalizeMethod(method),
         path: path,
       } as HttpEventObject,
-    }));
-    events = [...httpEvents];
+    }));    events = [...httpEvents];
   } catch {
     // Non-HTTP functions simply do not get http events; other triggers may be present in config.
     const nonHttp = (functionConfig as { events?: unknown }).events;

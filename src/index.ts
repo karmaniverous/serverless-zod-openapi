@@ -12,6 +12,7 @@ export { combine } from './handler/middleware/combine';
 export { httpZodValidator } from './handler/middleware/httpZodValidator';
 export { shortCircuitHead } from './handler/middleware/shortCircuitHead';
 export { buildPathItemObject } from './openapi/buildPathItemObject';
+export { buildFunctionDefinitions } from './serverless/buildFunctionDefinitions';
 
 // Types
 export type { BaseEventTypeMap } from './types/BaseEventTypeMap';
