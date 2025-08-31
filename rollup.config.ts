@@ -66,7 +66,8 @@ const makePlugins = (tsconfigPath?: string): Plugin[] => [
     tsconfig: tsconfigPath ?? false,
     // Override conflicting tsconfig flags for bundling. Declarations are produced by rollup-plugin-dts.
     compilerOptions: {
-      declaration: false,      emitDeclarationOnly: false,
+      declaration: false,
+      emitDeclarationOnly: false,
       noEmit: false,
       sourceMap: false,
       // outDir intentionally not set here; provided by custom tsconfig when needed.
@@ -112,4 +113,4 @@ export const buildTypes = (dest: string): RollupOptions => ({
   plugins: [dtsPlugin()],
 });
 
-export default [buildLibrary(outputPath), buildTypes(outputPath)];
+export default [buildLibrary(outputPath, 'tsconfig.rollup.json'), buildTypes(outputPath)];
