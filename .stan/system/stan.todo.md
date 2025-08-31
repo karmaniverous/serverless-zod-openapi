@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-08-31T01:20:00Z
+When updated: 2025-08-31T01:45:00Z
 
 ## Next up
 
@@ -10,6 +10,9 @@ When updated: 2025-08-31T01:20:00Z
 
 ## Completed (recent)
 
+- HTTP middleware: restore rich pipeline (header/event normalization, content
+  negotiation, conditional JSON body parsing, Zod validator, error exposure +
+  http-error-handler, CORS, response shaping, serializer) in buildHttpMiddlewareStack.
 - ESLint CLI: restore TypeScript parser and set explicit parserOptions.project
   (root + services/activecampaign) so type-aware rules (e.g., no-unsafe-return)
   surface in npm run lint the same as in VS Code.
