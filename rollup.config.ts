@@ -80,12 +80,14 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
     defaultHandler(warning);
   },
   external: (id) =>
+    // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.
+    id.startsWith('@/') ||
+    id.startsWith('@@/') ||
     nodeExternals.has(id) ||
     Array.from(runtimeExternalPkgs).some(
       (p) => id === p || id.startsWith(`${p}/`),
     ),
 });
-
 const outCommon = (dest: string): OutputOptions[] => [
   { dir: `${dest}/mjs`, format: 'esm', sourcemap: false },
   { dir: `${dest}/cjs`, format: 'cjs', sourcemap: false },

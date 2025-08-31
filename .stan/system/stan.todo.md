@@ -1,16 +1,15 @@
 # Development Plan
 
-When updated: 2025-08-31T04:05:00Z
+When updated: 2025-08-31T04:30:00Z
 
 ## Next up
 
-- Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package; paste outputs and report deltas.
+- Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package, stan:build; paste outputs and report deltas.
   - Verify vitest now ignores .tsbuild/.rollup.cache and resolves @ / @@ aliases consistently.
-  - Re-run stan:build; confirm outDir/rollup-dir error resolved with tsconfig.stan.rollup.json.
+  - Confirm stan:build passes; unresolved alias warnings should be quiet after explicit externals.
 - If rollup still warns on declaration settings, ensure no declarationDir/declarationMap bleed from base tsconfig during stan builds.
 - Review Knip output after config changes; further refine entries/ignores if
-  any remaining false positives (consider ignoring unused experimental helpers).
-- Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@/src").
+  any remaining false positives (consider ignoring unused experimental helpers).- Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@/src").
 - Sweep tests to import toolkit API from '@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@/\*' in all suites.
 - Design: toolkit packaging plan (publish lib/). Define initial public API:
   - wrapper (makeWrapHandler), middleware stack, serverless/OpenAPI builders,
@@ -32,9 +31,14 @@ When updated: 2025-08-31T04:05:00Z
 
 ## Completed (recent)
 
+- stan:build fix & DX:
+  - Removed outDir from tsconfig.stan.rollup.json to satisfy @rollup/plugin-typescript
+    when emitting multiple outputs.
+  - Marked /^@\/.*/ and /^@@\/.*/ as external in rollup.config.ts to reduce
+    unresolved alias warnings during stan builds.
+
 - Typecheck/docs/stan:build fixes:
-  - Serverless builder: adjusted buildFnEnv parameter type to accept the stack’s
-    typed key union without using `any`; removed unnecessary cast at call site.
+  - Serverless builder: adjusted buildFnEnv parameter type to accept the stack’s    typed key union without using `any`; removed unnecessary cast at call site.
   - Vitest config: exclude **/.tsbuild/** and **/.rollup.cache/**; inline @ and @@
     alias imports to avoid prebundling/resolution issues in transformed cache.
   - Rollup (stan): allow specifying a dedicated tsconfig; added tsconfig.stan.rollup.json

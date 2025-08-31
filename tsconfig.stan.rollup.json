@@ -6,7 +6,6 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     "noEmit": false,
-    "outDir": ".stan/dist/mjs",
     "sourceMap": false
   },
   "include": [
