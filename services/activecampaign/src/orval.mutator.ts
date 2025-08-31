@@ -6,8 +6,5 @@ import {
   orvalMutator as upstreamOrvalMutator,
 } from '@karmaniverous/cached-axios/mutators/orval';
 
-export function orvalMutator(
-  ...args: Parameters<typeof upstreamOrvalMutator>
-): ReturnType<typeof upstreamOrvalMutator> {
-  return upstreamOrvalMutator(...args);
-}
+export const orvalMutator: typeof upstreamOrvalMutator = (...args) =>
+  upstreamOrvalMutator(...args);

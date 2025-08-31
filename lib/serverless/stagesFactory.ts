@@ -4,8 +4,8 @@ import type { ZodObject, ZodRawShape } from 'zod';
 type Dict<T> = Record<string, T>;
 
 export type StagesFactoryInput<
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 > = {
   globalParamsSchema: ZodObject<ZodRawShape>;
   stageParamsSchema: ZodObject<ZodRawShape>;
@@ -16,8 +16,8 @@ export type StagesFactoryInput<
 };
 
 export type StagesFactoryOutput<
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 > = {
   /** Serverless 'params' object: { default: { params: GlobalParams }, <stage>: { params: StageParams } } */
   stages: { default: { params: GlobalParams } } & {
@@ -36,8 +36,8 @@ export type StagesFactoryOutput<
  * be used by both production and tests.
  */
 export const stagesFactory = <
-  GlobalParams extends ZodObject<ZodRawShape>,
-  StageParams extends ZodObject<ZodRawShape>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 >(
   input: StagesFactoryInput<GlobalParams, StageParams>,
 ): StagesFactoryOutput<GlobalParams, StageParams> => {
