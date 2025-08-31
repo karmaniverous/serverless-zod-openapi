@@ -13,11 +13,18 @@ import type { SecurityContextHttpEventMap } from '@@/src/types/SecurityContextHt
 type HttpEventObject = { method: string; path: string } & Record<
   string,
   unknown
->;type HttpEvent = { http: string | HttpEventObject };
-type ServerlessConfigLike = { httpContextEventMap: SecurityContextHttpEventMap; defaultHandlerFileName: string; defaultHandlerFileExport: string };
+>;
+type HttpEvent = { http: string | HttpEventObject };
+
+type ServerlessConfigLike = {
+  httpContextEventMap: SecurityContextHttpEventMap;
+  defaultHandlerFileName: string;
+  defaultHandlerFileExport: string;
+};
 
 const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
 const normalizeMethod = (m: string) => m.toLowerCase();
+
 export const buildFunctionDefinitions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
@@ -37,16 +44,19 @@ export const buildFunctionDefinitions = <
   appConfig: ServerlessConfigLike,
   callerModuleUrl: string,
   endpointsRootAbs: string,
-  buildFnEnv: (fnEnvKeys?: readonly PropertyKey[]) => Record<string, string>,
+  buildFnEnv: (fnEnvKeys?: readonly unknown[]) => Record<string, string>,
 ): AWS['functions'] => {
   const parsed = appConfig;
-  // Compute "file.export" handler string relative to repo root  const repoRoot = packageDirectorySync()!;
+
+  // Compute "file.export" handler string relative to repo root
+  const repoRoot = packageDirectorySync()!;
   const callerDir = dirname(fileURLToPath(callerModuleUrl));
   const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);
   const handlerFileRel = relative(repoRoot, handlerFileAbs)
     .split(sep)
     .join('/');
   const handler = `${handlerFileRel}.${parsed.defaultHandlerFileExport}`;
+
   let events: unknown = [];
 
   // If this is an HTTP function, add the http events
@@ -71,15 +81,17 @@ export const buildFunctionDefinitions = <
     const nonHttp = (functionConfig as { events?: unknown }).events;
     events = nonHttp ?? [];
   }
+
   const def: Record<string, unknown> = {
     handler,
     events,
     // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
-      functionConfig.fnEnvKeys as readonly PropertyKey[] | undefined,
+      functionConfig.fnEnvKeys as readonly unknown[] | undefined,
     ),
   };
 
   return {
-    [functionConfig.functionName]: def as unknown,  } as unknown as AWS['functions'];
+    [functionConfig.functionName]: def as unknown,
+  } as unknown as AWS['functions'];
 };
