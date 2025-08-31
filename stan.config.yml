@@ -1,6 +1,7 @@
 excludes:
-  - "**/generated/**"
-  - "**/.tsbuild/**"
+  - '**/.tsbuild/**'
+  - '**/generated/**'
+  - '**/node_modules/**'
   - package-lock.json
 includes:
   - services/**
@@ -14,3 +15,4 @@ scripts:
   test: npm run test
   package: npm run package
 stanPath: .stan
+
