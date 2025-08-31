@@ -44,7 +44,9 @@ export const buildFunctionDefinitions = <
   appConfig: ServerlessConfigLike,
   callerModuleUrl: string,
   endpointsRootAbs: string,
-  buildFnEnv: (fnEnvKeys?: readonly unknown[]) => Record<string, string>,
+  buildFnEnv: (
+    fnEnvKeys?: readonly (keyof (GlobalParams & StageParams))[],
+  ) => Record<string, string>,
 ): AWS['functions'] => {
   const parsed = appConfig;
 
@@ -86,9 +88,7 @@ export const buildFunctionDefinitions = <
     handler,
     events,
     // Environment populated via parsed param schemas + fnEnvKeys
-    environment: buildFnEnv(
-      functionConfig.fnEnvKeys as readonly unknown[] | undefined,
-    ),
+    environment: buildFnEnv(functionConfig.fnEnvKeys),
   };
 
   return {

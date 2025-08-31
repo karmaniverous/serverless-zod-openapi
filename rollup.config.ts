@@ -58,22 +58,25 @@ const nodeExternals = new Set([
   ...builtinModules.map((m) => `node:${m}`),
 ]);
 
-const makePlugins = (): Plugin[] => [
+const makePlugins = (tsconfigPath?: string): Plugin[] => [
   typescriptPlugin({
     // Do not write transpiled output to disk; let Rollup handle bundling.
     outputToFilesystem: false,
+    // Allow a custom tsconfig for specialized builds (e.g., stan:build).
+    tsconfig: tsconfigPath,
     // Override conflicting tsconfig flags for bundling. Declarations are produced by rollup-plugin-dts.
     compilerOptions: {
       declaration: false,
       emitDeclarationOnly: false,
       noEmit: false,
       sourceMap: false,
+      // outDir intentionally not set here; provided by custom tsconfig when needed.
     },
   }),
 ];
 
-const commonInputOptions = (): InputOptions => ({
-  plugins: makePlugins(),
+const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
+  plugins: makePlugins(tsconfigPath),
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
     defaultHandler(warning);
   },
@@ -89,10 +92,13 @@ const outCommon = (dest: string): OutputOptions[] => [
   { dir: `${dest}/cjs`, format: 'cjs', sourcemap: false },
 ];
 
-export const buildLibrary = (dest: string): RollupOptions => ({
+export const buildLibrary = (
+  dest: string,
+  tsconfigPath?: string,
+): RollupOptions => ({
   input: entryPoints,
   output: outCommon(dest),
-  ...commonInputOptions(),
+  ...commonInputOptions(tsconfigPath),
 });
 
 export const buildTypes = (dest: string): RollupOptions => ({

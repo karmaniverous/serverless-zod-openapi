@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "outDir": ".stan/dist/.tsout",
+    "declarationDir": ".stan/dist/.tsout",
+    "sourceMap": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "services/activecampaign/src/**/*.ts",
+    "stack/**/*.ts",
+    "stack/**/*.json"
+  ],
+  "exclude": [
+    "node_modules/**",
+    ".tsbuild/**"
+  ]
+}

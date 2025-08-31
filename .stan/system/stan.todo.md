@@ -1,14 +1,16 @@
 # Development Plan
 
-When updated: 2025-08-31T03:10:00Z
+When updated: 2025-08-31T03:45:00Z
 
 ## Next up
 
-- Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package; paste outputs and report deltas.- Review Knip output after config changes; further refine entries/ignores if
+- Re-run: openapi (now stack/config/openapi), generate, typecheck, lint, test, package; paste outputs and report deltas.
+  - Verify vitest now ignores .tsbuild/.rollup.cache and resolves @ / @@ aliases consistently.
+  - Re-run stan:build; confirm outDir/rollup-dir error resolved with tsconfig.stan.rollup.json.
+- Review Knip output after config changes; further refine entries/ignores if
   any remaining false positives (consider ignoring unused experimental helpers).
 - Add ESLint guard in stack to forbid deep imports from toolkit (restrict to "@/src").
-- Sweep tests to import toolkit API from '@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@/\*' in all suites.
-- Design: toolkit packaging plan (publish lib/). Define initial public API:
+- Sweep tests to import toolkit API from '@/src' (no deep paths); ensure vite-tsconfig-paths resolves '@/\*' in all suites.- Design: toolkit packaging plan (publish lib/). Define initial public API:
   - wrapper (makeWrapHandler), middleware stack, serverless/OpenAPI builders,
   - config typing utilities (FunctionConfig, AppConfig zod schema helpers).
 - Design: simplified config model
@@ -20,13 +22,23 @@ When updated: 2025-08-31T03:10:00Z
 
 ## Completed (recent)
 
+- Typecheck/docs/stan:build fixes:
+  - Serverless builder: adjusted buildFnEnv parameter type to accept the stack’s
+    typed key union without using `any`; removed unnecessary cast at call site.
+  - Vitest config: exclude **/.tsbuild/** and **/.rollup.cache/**; inline @ and @@
+    alias imports to avoid prebundling/resolution issues in transformed cache.
+  - Rollup (stan): allow specifying a dedicated tsconfig; added tsconfig.stan.rollup.json
+    with outDir under .stan/dist and composite/declaration settings compatible
+    with @rollup/plugin-typescript. Updated stan.rollup.config.ts to use it.
+
+## Completed (recent)
+
 - Fix compile/lint fallout from DI inversions:
   - Repaired OpenAPI builder reduce body and variable names.
   - Exported buildFunctionDefinitions from toolkit index and sorted exports/imports to satisfy ESLint.
   - Added z import to serverless builder, updated signature to inject endpointsRootAbs and buildFnEnv, and updated all stack serverless call sites.
 - DI inversions to unwrap toolkit→stack circular deps:
-  - makeWrapHandler now requires a loadEnvConfig adapter; stack provides stack/config/loadEnvConfig.
-  - resolveHttpFromFunctionConfig no longer imports stack; endpointsRootAbs is injected.
+  - makeWrapHandler now requires a loadEnvConfig adapter; stack provides stack/config/loadEnvConfig.  - resolveHttpFromFunctionConfig no longer imports stack; endpointsRootAbs is injected.
   - buildFunctionDefinitions and OpenAPI builder accept appConfig value and injected endpointsRootAbs; no stack schema imports.
   - buildFunctionDefinitions no longer imports buildFnEnv from the stack; buildFnEnv is injected by the stack to avoid circular imports.
   - Stack imports from toolkit index only; updated serverless/openAPI call sites accordingly.
