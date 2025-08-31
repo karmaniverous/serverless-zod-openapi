@@ -79,7 +79,8 @@ export const makeWrapHandler = <
   >,
 ) => {
   const base = async (event: unknown, context: Context) => {
-    // Load env config at runtime (mock-friendly).    const {
+    // Load env config at runtime (mock-friendly).
+    const {
       globalEnvKeys,
       globalParamsSchema,
       stageEnvKeys,
@@ -89,8 +90,7 @@ export const makeWrapHandler = <
     // Union allowlists and split by schema ownership.
     const all = deriveAllKeys(
       globalEnvKeys,
-      stageEnvKeys,
-      (functionConfig.fnEnvKeys ?? []) as readonly PropertyKey[],
+      stageEnvKeys,      (functionConfig.fnEnvKeys ?? []) as readonly PropertyKey[],
     );
     const { globalPick, stagePick } = splitKeysBySchema(
       all,
@@ -147,7 +147,8 @@ export const makeWrapHandler = <
       ),
     ).use(http);
 
-    return wrapped(event as never, context);  };
+    return wrapped(event as never, context);
+  };
 
   return base;
 };

@@ -12,11 +12,10 @@ export default defineConfig({
       mock: true,
       override: {
         mutator: {
-          path: 'src/orval.mutator.ts',
+          path: '../src/orval.mutator.ts',
           name: 'orvalMutator',
         },
-      },
-    },
+      },    },
     hooks: { afterAllFilesWrite: ['prettier -w'] },
   },
   zod: {

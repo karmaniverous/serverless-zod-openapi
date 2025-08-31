@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-08-31T00:00:00Z
+When updated: 2025-08-31T00:25:00Z
 
 ## Next up
 
@@ -9,9 +9,19 @@ When updated: 2025-08-31T00:00:00Z
 - Re-run: typecheck, lint, test; fix any residual issues from generated code.
 - Review Knip output again and refine configuration (entry/project) to quiet
   false positives now that generation succeeds.
+- If any ESLint “no-unsafe-*” remain in services/activecampaign wrappers,
+  narrow return types or switch to cache.query/cache.mutation helpers where
+  appropriate; tidy import order.
+- Orval mutator export check: if Orval reports the mutator function is missing,
+  change services/activecampaign/src/orval.mutator.ts to export a named
+  function `orvalMutator` that forwards to the upstream export, then re-run generate.
 
 ## Completed (recent)
-
+- Fix TS parse/build failure in makeWrapHandler by moving destructuring off the
+  comment line.
+- Orval mutator path: point override.mutator.path to '../src/orval.mutator.ts'
+  (relative to the generated workspace) so Orval resolves the local wrapper and
+  stops searching under 'generated/src'. This unblocks client regeneration.
 - Orval mutator fix: add local wrapper (src/orval.mutator.ts) re-exporting the
   published mutator subpath and point override.mutator.path to it. Resolves
   ENOENT during generation on Windows and fulfills the “use published subpath”
