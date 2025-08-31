@@ -22,7 +22,7 @@ const run = async (
   const wrapped = middy(
     async (e: APIGatewayProxyEvent, c: Context) => base(e, c),
   ).use(stack);
-  return (await wrapped(event, ctx)) as unknown as HttpResponse;
+  return (await wrapped(event, ctx)) as HttpResponse;
 };
 describe('stack: response shaping & content-type header', () => {
   it('sets Content-Type and preserves payload as JSON', async () => {

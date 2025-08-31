@@ -48,11 +48,13 @@ export const fetchContactCore = async (
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contact: ACContact }>>;};
+  );
+};
 
 /** Field values for a contact */
 export const fetchContactFieldValues = async (
-  contactId: number,  options?: AxiosRequestConfig,
+  contactId: number,
+  options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>> => {
   ContactsZ.getContactFieldValuesParams.parse({ contactId });
   const cid = String(contactId);
@@ -69,10 +71,12 @@ export const fetchContactFieldValues = async (
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ fieldValues: ACFieldValue[] }>>;};
+  );
+};
 
 /** List/search contacts (coarse id from params) */
-export const fetchContactsList = async (  params: Record<string, unknown>,
+export const fetchContactsList = async (
+  params: Record<string, unknown>,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<{ contacts: ACContact[] }>> => {
   const id = cacheConfig.contacts.list.any.id(JSON.stringify(params));
@@ -87,10 +91,12 @@ export const fetchContactsList = async (  params: Record<string, unknown>,
     id,
     tags,
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contacts: ACContact[] }>>;};
+  );
+};
 
 /** Create contact (body validated minimally) */
-export const createContactRaw = async (  body: {
+export const createContactRaw = async (
+  body: {
     contact: {
       email: string;
       firstName?: string;
@@ -109,10 +115,12 @@ export const createContactRaw = async (  body: {
     // a new contact can affect any list
     [cacheConfig.contacts.list.any.tag()],
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contact: ACContact }>>;};
+  );
+};
 
 /** Update/sync contact (by email; business layer supplies email) */
-export const syncContactRaw = async (  body: {
+export const syncContactRaw = async (
+  body: {
     contact: {
       email: string;
       firstName?: string;
@@ -132,10 +140,12 @@ export const syncContactRaw = async (  body: {
     // We can't target specific contact cache safely here; clear list buckets
     [cacheConfig.contacts.list.any.tag()],
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<{ contact: ACContact }>>;};
+  );
+};
 
 /** Delete contact */
-export const deleteContactRaw = async (  contactId: number,
+export const deleteContactRaw = async (
+  contactId: number,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<null>> => {
   ContactsZ.deleteContactParams.parse({ contactId });
@@ -147,5 +157,5 @@ export const deleteContactRaw = async (  contactId: number,
     },
     [cacheConfig.contacts.detail.tag(cid), cacheConfig.contacts.list.any.tag()],
     { ...acDefaults(), ...(options ?? {}) },
-  ) as Promise<AxiosResponse<null>>;
+  );
 };

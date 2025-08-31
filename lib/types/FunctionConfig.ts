@@ -5,6 +5,7 @@ import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 import type { BaseEventTypeMap } from '@@/lib/types/BaseEventTypeMap';
 import type { HttpContext } from '@@/lib/types/HttpContext';
 import type { ConsoleLogger } from '@@/lib/types/Loggable';
+
 import type { PropFromUnion } from './PropFromUnion';
 
 /** HTTP methods supported from zod-openapi's PathItem shape (excluding helper 'id'). */
