@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-01T01:58:00Z
+When updated: 2025-09-01T02:04:00Z
 
 ## Next up
-- Knip cleanup and configuration
-  - Suppress known false-positives:
+- Knip cleanup and configuration  - Suppress known false-positives:
     - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
       Add an ignore pattern so Knip does not flag these as “Unused files”.
     - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
@@ -69,3 +68,17 @@ When updated: 2025-09-01T01:58:00Z
     - Removed redundant entry (app/config/openapi.ts).
     - Ignored Serverless handler files (app/**/handler.ts).
     - Added ignoreDependencies for CLI/serverless-only and cross-folder deps to quiet false positives.
+
+16. Unused modules triage — phase 1 (delete)
+    - Removed unused files:
+      - src/modulePathFromRoot.ts
+      - src/handler/wrapSerializer.ts
+      - src/app/slug.ts
+      - src/config/serverlessConfig.ts
+      - src/openapi/buildOpenApiPath.ts
+      - src/serverless/buildServerlessFunctions.ts
+      - src/serverless/intrinsic.ts
+      - src/test/env.ts, src/test/middyLifecycle.ts
+      - src/types/HttpEvent.ts, src/types/MakeOptional.ts, src/types/ShapedResponse.ts
+      - src/handler/middleware/index.ts, src/handler/middleware/noop.ts
+    - Expect Knip “Unused files” list to shrink accordingly; all scripts remain green.
