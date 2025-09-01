@@ -13,9 +13,9 @@
     "@middy/http-header-normalizer": "^6.4.4",
     "@middy/http-json-body-parser": "^6.4.4",
     "@middy/http-response-serializer": "^6.4.4",
-    "package-directory": "^8.1.0",
     "aws-lambda": "^1.0.7",
     "http-errors": "^2.0.0",
+    "package-directory": "^8.1.0",
     "radash": "^12.1.1",
     "zod": "^4.1.5"
   },
@@ -48,7 +48,6 @@
     "serverless-deployment-bucket": "^1.6.0",
     "serverless-domain-manager": "^8.0.0",
     "serverless-plugin-common-excludes": "^4.0.0",
-    "tar": "^7.4.3",
     "tsx": "^4.20.5",
     "typedoc": "^0.28.11",
     "typedoc-plugin-mdn-links": "^5.0.9",

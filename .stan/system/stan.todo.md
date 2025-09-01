@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-01T01:50:00Z
+When updated: 2025-09-01T01:58:00Z
 
 ## Next up
-
 - Knip cleanup and configuration
   - Suppress known false-positives:
     - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
@@ -65,3 +64,8 @@ When updated: 2025-09-01T01:50:00Z
 
 14. Baseline green across scripts
     - openapi, generate, typecheck, lint, test, stan:build, package all succeeded in latest run.
+
+15. Knip config phase 1
+    - Removed redundant entry (app/config/openapi.ts).
+    - Ignored Serverless handler files (app/**/handler.ts).
+    - Added ignoreDependencies for CLI/serverless-only and cross-folder deps to quiet false positives.

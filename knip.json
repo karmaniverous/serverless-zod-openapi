@@ -1,9 +1,9 @@
 {
   "workspaces": {
     ".": {
-      "entry": ["serverless.ts", "app/config/openapi.ts"],
+      "entry": ["serverless.ts"],
       "project": ["src/**", "app/**", "!docs/**"],
-      "ignore": ["lib/test/**"]
+      "ignore": ["lib/test/**", "app/**/handler.ts"]
     },
     "services/activecampaign": {
       "entry": ["src/index.ts"],
@@ -11,6 +11,16 @@
       "ignore": ["**/generated/**", "src/openapi.json"]
     }
   },
-  "ignoreDependencies": [],
+  "ignoreDependencies": [
+    "@karmaniverous/cached-axios",
+    "http-errors",
+    "@types/http-errors",
+    "@types/serverless",
+    "@vitest/coverage-v8",
+    "serverless-apigateway-log-retention",
+    "serverless-deployment-bucket",
+    "serverless-domain-manager",
+    "serverless-plugin-common-excludes"
+  ],
   "rules": { "exports": "off", "types": "off" }
 }

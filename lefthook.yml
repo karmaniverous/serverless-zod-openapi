@@ -6,8 +6,3 @@ prepare-commit-msg:
   scripts:
     add-issue:
       runner: bash
-post-commit:
-  scripts:
-    update-archive:
-      env:
-        ARCHIVE_NAME: 'gpt/archive.tar'
