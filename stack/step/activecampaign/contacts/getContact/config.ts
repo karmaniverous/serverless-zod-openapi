@@ -8,9 +8,11 @@ import { z } from 'zod';
 import { contactSchema } from '@/services/activecampaign/src';
 import type { LambdaEvent } from '@/src';
 import { defineFunctionConfig } from '@/src';
+import { envConfig } from '@/stack/config/app.config';
 
 export const eventSchema = z
-  .object({    Payload: z.object({
+  .object({
+    Payload: z.object({
       contactId: z.string(),
     }),
   })
@@ -18,8 +20,10 @@ export const eventSchema = z
 
 export const responseSchema = contactSchema.optional();
 
-export const functionConfig = defineFunctionConfig({
+const defineFn = defineFunctionConfig(envConfig);
+export const functionConfig = defineFn({
   eventType: 'step',
   functionName: 'getContact',
-  eventSchema,  responseSchema,
+  eventSchema,
+  responseSchema,
 });

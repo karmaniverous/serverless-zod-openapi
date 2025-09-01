@@ -7,12 +7,10 @@
 import type { z } from 'zod';
 
 import { wrapHandler } from '@/src';
-import { envConfig } from '@/stack/config/app.config';
 import openapi from '@/stack/openapi.json';
 
 import { functionConfig, type responseSchema } from './config';
 export const handler = wrapHandler(
-  envConfig,
   functionConfig,
   async () => openapi as unknown as z.infer<typeof responseSchema>,
 );

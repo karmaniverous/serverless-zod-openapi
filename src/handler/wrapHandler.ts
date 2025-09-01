@@ -1,14 +1,15 @@
 /**
  * wrapHandler
- * - No glue: accepts envConfig (schemas + envKeys), functionConfig, and business handler.
+ * - No glue: accepts a branded functionConfig and a business handler.
+ *   Env (schemas + envKeys) is read from the branded config.
  * - Preserves HTTP/Non-HTTP split and middleware pipeline.
  */
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import type { z} from 'zod';
-import { type ZodObject, type ZodRawShape } from 'zod';
+import type { z, ZodObject, ZodRawShape } from 'zod';
 
-import type { GlobalEnvConfig } from '@/src/config/defineAppConfig';
+import type { EnvAttached } from '@/src/handler/defineFunctionConfig';
+import { getEnvFromFunctionConfig } from '@/src/handler/defineFunctionConfig';
 import {
   buildEnvSchema,
   deriveAllKeys,
@@ -29,7 +30,6 @@ export function wrapHandler<
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
 >(
-  envConfig: GlobalEnvConfig<GlobalParamsSchema, StageParamsSchema>,
   functionConfig: FunctionConfig<
     EventSchema,
     ResponseSchema,
@@ -37,7 +37,8 @@ export function wrapHandler<
     z.infer<StageParamsSchema>,
     EventTypeMap,
     EventType
-  >,
+  > &
+    EnvAttached<GlobalParamsSchema, StageParamsSchema>,
   business: Handler<EventSchema, ResponseSchema, EventTypeMap[EventType]>,
 ) {
   const assertKeysSubset = (
@@ -47,10 +48,23 @@ export function wrapHandler<
   ): void => {
     const allowed = new Set(Object.keys(schema.shape));
     const bad = keys.filter((k) => !allowed.has(k));
-    if (bad.length) throw new Error(`${label} contains unknown keys: ${bad.join(', ')}`);
+    if (bad.length)
+      throw new Error(`${label} contains unknown keys: ${bad.join(', ')}`);
   };
-  assertKeysSubset(envConfig.global.paramsSchema, envConfig.global.envKeys as readonly string[], 'global.envKeys');
-  assertKeysSubset(envConfig.stage.paramsSchema, envConfig.stage.envKeys as readonly string[], 'stage.envKeys');
+  const envConfig = getEnvFromFunctionConfig<
+    GlobalParamsSchema,
+    StageParamsSchema
+  >(functionConfig);
+  assertKeysSubset(
+    envConfig.global.paramsSchema,
+    envConfig.global.envKeys as readonly string[],
+    'global.envKeys',
+  );
+  assertKeysSubset(
+    envConfig.stage.paramsSchema,
+    envConfig.stage.envKeys as readonly string[],
+    'stage.envKeys',
+  );
 
   return async (event: unknown, context: Context) => {
     // Compose typed env schema and parse process.env
@@ -70,11 +84,16 @@ export function wrapHandler<
       envConfig.global.paramsSchema,
       envConfig.stage.paramsSchema,
     );
-    const env = parseTypedEnv(envSchema, process.env as Record<string, unknown>);
+    const env = parseTypedEnv(
+      envSchema,
+      process.env as Record<string, unknown>,
+    );
     const logger = console;
 
     // Non-HTTP: call business directly
-    if (!isHttpEventTypeToken(functionConfig.eventType as keyof BaseEventTypeMap)) {
+    if (
+      !isHttpEventTypeToken(functionConfig.eventType as keyof BaseEventTypeMap)
+    ) {
       return business(
         event as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
         context,
@@ -84,14 +103,23 @@ export function wrapHandler<
 
     // HTTP: build middleware stack
     const http = buildHttpMiddlewareStack({
-      ...(functionConfig.eventSchema ? { eventSchema: functionConfig.eventSchema } : {}),
-      ...(functionConfig.responseSchema ? { responseSchema: functionConfig.responseSchema } : {}),
-      contentType: (functionConfig as { contentType?: string }).contentType ?? 'application/json',
+      ...(functionConfig.eventSchema
+        ? { eventSchema: functionConfig.eventSchema }
+        : {}),
+      ...(functionConfig.responseSchema
+        ? { responseSchema: functionConfig.responseSchema }
+        : {}),
+      contentType:
+        (functionConfig as { contentType?: string }).contentType ??
+        'application/json',
       logger,
     });
 
     const wrapped = middy(async (e: unknown, c: Context) =>
-      business(e as ShapedEvent<EventSchema, EventTypeMap[EventType]>, c, { env, logger }),
+      business(e as ShapedEvent<EventSchema, EventTypeMap[EventType]>, c, {
+        env,
+        logger,
+      }),
     ).use(http);
 
     return wrapped(event as never, context);

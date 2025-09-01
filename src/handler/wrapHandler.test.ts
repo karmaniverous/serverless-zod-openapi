@@ -13,7 +13,6 @@ import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
 import { globalParamsSchema as testGlobalParamsSchema } from '@/src/test/serverless/config/global';
 import { stageParamsSchema as testStageParamsSchema } from '@/src/test/serverless/config/stage';
 import type { ConsoleLogger } from '@/src/types/Loggable';
-
 const envConfig: GlobalEnvConfig<
   typeof testGlobalParamsSchema,
   typeof testStageParamsSchema
@@ -27,10 +26,11 @@ const envConfig: GlobalEnvConfig<
     envKeys: ['STAGE'] as const,
   },
 };
+// Bind env types to per-function configs
+const defineFn = defineFunctionConfig(envConfig);
 
 describe('wrapHandler: GET happy path', () => {
-  it('returns the business payload when validation passes and env is present', async () => {
-    // Ensure required env vars are set for validation
+  it('returns the business payload when validation passes and env is present', async () => {    // Ensure required env vars are set for validation
     process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
@@ -45,18 +45,17 @@ describe('wrapHandler: GET happy path', () => {
       log: vi.fn(),
     };
 
-    const functionConfig = defineFunctionConfig({
+    const functionConfig = defineFn({
       eventType: 'rest',
       functionName: 'test_get',
-      contentType: 'application/json',
-      httpContexts: ['public'],
+      contentType: 'application/json',      httpContexts: ['public'],
       method: 'get',
       basePath: 'test',
       eventSchema,
       responseSchema,
       logger,
     });
-    const handler = wrapHandler(envConfig, functionConfig, async () => ({
+    const handler = wrapHandler(functionConfig, async () => ({
       what: 'ok',
     }));
 
@@ -64,7 +63,6 @@ describe('wrapHandler: GET happy path', () => {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
-
     const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
@@ -93,13 +91,7 @@ describe('wrapHandler: HEAD short-circuit', () => {
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
 
-    const logger: ConsoleLogger = {
-      debug: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn(),
-      log: vi.fn(),
-    };
-    const functionConfig = defineFunctionConfig({
+    const functionConfig = defineFn({
       eventType: 'rest',
       functionName: 'test_head',
       contentType: 'application/json',
@@ -109,10 +101,9 @@ describe('wrapHandler: HEAD short-circuit', () => {
       eventSchema,
       responseSchema,
     });
-    const handler = wrapHandler(envConfig, functionConfig, async () => {
+    const handler = wrapHandler(functionConfig, async () => {
       return {};
     });
-
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
@@ -149,21 +140,19 @@ describe('wrapHandler: POST payload', () => {
       log: vi.fn(),
     };
 
-    const functionConfig = defineFunctionConfig({
+    const functionConfig = defineFn({
       eventType: 'rest',
       functionName: 'test_post',
-      contentType: 'application/json',
-      httpContexts: ['public'],
+      contentType: 'application/json',      httpContexts: ['public'],
       method: 'post',
       basePath: 'test',
       eventSchema,
       responseSchema,
       logger,
     });
-    const handler = wrapHandler(envConfig, functionConfig, async () => {
+    const handler = wrapHandler(functionConfig, async () => {
       return { what: 'ok' };
     });
-
     const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',
       'Content-Type': 'application/json',

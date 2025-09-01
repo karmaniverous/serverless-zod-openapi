@@ -7,15 +7,18 @@
 import { z } from 'zod';
 
 import { defineFunctionConfig } from '@/src';
+import { envConfig } from '@/stack/config/app.config';
 
 export const eventSchema = z.any();
 export const responseSchema = z.string();
-export const functionConfig = defineFunctionConfig({
+const defineFn = defineFunctionConfig(envConfig);
+export const functionConfig = defineFn({
   eventType: 'rest',
   functionName: 'activecampaign_post',
   contentType: 'application/json',
   httpContexts: ['public'],
-  method: 'post',  basePath: 'event/activecampaign',
+  method: 'post',
+  basePath: 'event/activecampaign',
   eventSchema,
   responseSchema,
 });

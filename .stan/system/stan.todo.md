@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-01T11:40:00Z
+When updated: 2025-09-01T15:20:00Z
 
 ## Next up
-- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:  - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
-  - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
+- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:  - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.  - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
   - Design: toolkit packaging plan (publishable API surface):
     - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
     - config typing utilities (FunctionConfig, AppConfig helpers).
@@ -56,11 +55,22 @@ When updated: 2025-09-01T11:40:00Z
   - Added runtime guards to enforce “no unspecified *EnvKeys” during config/wrapper usage.
   - Tests updated to use `wrapHandler` and direct envConfig.
 
+- Env typing bound to function configs; wrapper signature simplified
+  - `defineFunctionConfig` is now curried: `defineFunctionConfig(env)(config)`
+    and brands returned configs with env (schemas + envKeys) via a private
+    Symbol. This preserves strong `fnEnvKeys` typing without any `any`s.
+  - `wrapHandler` now accepts only `(functionConfig, business)` and reads env
+    from the branded config. Runtime subset guards remain in place.
+  - Updated stack configs to the curried pattern and handlers to the new
+    wrapper signature. Unit tests updated likewise.
+  - Lint: removed an unused logger in the HEAD test.
+  - Outcome: typecheck/docs/rollup stop complaining about widened string[] for
+    `fnEnvKeys`; DX remains “dev specifies values, it just works.”
+
 - Demo package cleanup
   - Removed services/activecampaign/package.json and tsconfig.json; the demo
     remains a plain folder driven by `orval` from the root.  - Updated ESLint parserOptions.project to drop the child tsconfig path.
   - (Optional follow-up) Prune services workspace section in knip.json later.
-
 - Single published package (simplify workspaces)
   - Removed root `workspaces` (only the root package is published).
   - Updated `generate` script to run Orval directly:    `cd services/activecampaign && orval`.
