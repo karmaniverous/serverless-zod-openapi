@@ -18,6 +18,7 @@ import type { ConsoleLogger } from '@/src/types/Loggable';
 
 // Minimal App instance for tests (schema-first)
 const app = App.create({
+  appRootAbs: process.cwd().replace(/\\/g, '/'),
   globalParamsSchema: testGlobalParamsSchema,
   stageParamsSchema: testStageParamsSchema,
   eventTypeMapSchema: baseEventTypeMapSchema,
@@ -66,7 +67,6 @@ describe('wrapHandler: GET happy path', () => {
       responseSchema,
       callerModuleUrl: import.meta.url,
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
-      slug: 'wrap-get',
     });
     const handler = fn.handler(async () => {
       logger.debug('business invoked');
@@ -114,7 +114,6 @@ describe('wrapHandler: HEAD short-circuit', () => {
       responseSchema,
       callerModuleUrl: import.meta.url,
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
-      slug: 'wrap-head',
     });
     const handler = fn.handler(async () => ({}));
     const event = createApiGatewayV1Event('HEAD', {
@@ -156,7 +155,6 @@ describe('wrapHandler: POST payload', () => {
       responseSchema,
       callerModuleUrl: import.meta.url,
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
-      slug: 'wrap-post',
     });
     const handler = fn.handler(async () => ({ what: 'ok' }));
     const event = createApiGatewayV1Event('POST', {

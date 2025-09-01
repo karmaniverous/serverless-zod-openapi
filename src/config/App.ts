@@ -44,7 +44,8 @@ export interface AppInit<
   appRootAbs: string;
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
-  eventTypeMapSchema?: EventTypeMapSchema /** Accept raw serverless config; App will parse it internally. */;
+  eventTypeMapSchema?: EventTypeMapSchema;
+  /** Accept raw serverless config; App will parse it internally. */
   serverless: z.input<typeof serverlessConfigSchema>;
   global: {
     params: z.infer<GlobalParamsSchema>;
@@ -57,7 +58,8 @@ export interface AppInit<
   };
   /**
    * HTTP tokens to treat as HTTP at runtime (widenable).
-   * Defaults to ['rest', 'http'].   */
+   * Defaults to ['rest', 'http'].
+   */
   httpEventTypeTokens?: readonly (keyof z.infer<EventTypeMapSchema>)[];
 }
 
@@ -66,8 +68,8 @@ export class App<
   StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,
 > {
-  // Schemas
   public readonly appRootAbs: string;
+  // Schemas
   public readonly globalParamsSchema: GlobalParamsSchema;
   public readonly stageParamsSchema: StageParamsSchema;
   public readonly eventTypeMapSchema: EventTypeMapSchema;
@@ -131,13 +133,23 @@ export class App<
           .shape as Record<string, z.ZodType>,
       );
 
+    // Parse raw stage params into the effective schema so types align
+    const typedStages = Object.fromEntries(
+      Object.entries(init.stage.params).map(([name, params]) => {
+        const parsed = (
+          effectiveStageParamsSchema as unknown as z.ZodType
+        ).parse(params) as z.infer<typeof effectiveStageParamsSchema>;
+        return [name, parsed];
+      }),
+    ) as Record<string, z.infer<typeof effectiveStageParamsSchema>>;
+
     const sf = stagesFactory({
       globalParamsSchema: this.globalParamsSchema,
       stageParamsSchema: effectiveStageParamsSchema,
       globalParams: init.global.params,
       globalEnvKeys: init.global.envKeys,
       stageEnvKeys: init.stage.envKeys,
-      stages: init.stage.params,
+      stages: typedStages,
     });
     this.stages = sf.stages;
     this.environment = sf.environment;
@@ -201,6 +213,8 @@ export class App<
         const callerDir = dirname(fileURLToPath(options.callerModuleUrl));
         const rel = relative(this.appRootAbs, callerDir).split(sep).join('/');
         const parts = rel.split('/').filter(Boolean);
+        // Drop leading 'app' segment if present, per repo convention
+        if (parts[0] === 'app') parts.shift();
         return parts.join('_'); // underscore formatting
       })();
 
@@ -222,6 +236,7 @@ export class App<
       },
     );
   }
+
   /** Aggregate Serverless function definitions across the registry. */
   buildAllServerlessFunctions(): AWS['functions'] {
     return buildFns(this.registry.values(), this.serverless, this.buildFnEnv);
