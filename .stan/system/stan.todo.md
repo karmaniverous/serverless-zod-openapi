@@ -1,14 +1,14 @@
 # Development Plan
 
-When updated: 2025-09-01T18:40:00Z
+When updated: 2025-09-01T18:55:00Z
 
 ## Next up
 - Split App.ts into SRP modules (phase 2)
   - Done: extract slug, HTTP tokens/guard, ZodObj alias.
   - Implemented: handlerFactory, buildServerless, buildOpenApi modules; App delegates to them.
-  - Next:
-    - Extract remaining registry logic into src/app/registry.ts (typed FunctionHandle).
-    - Thin orchestrator: reduce src/config/App.ts to ≤200 LOC.
+  - Implemented: registry extraction (src/app/registry.ts) with typed FunctionHandle; App delegates defineFunction and iterators.
+  - Next (finalize phase 2):
+    - Thin orchestrator: reduce src/config/App.ts to ≤200 LOC by moving any remaining glue/types into src/app/types or local modules if needed.
   - Acceptance:
     - App.ts ≤ 200 LOC; extracted modules compile with strict TS.
     - No import() type annotations; consistent-type-imports passes.
@@ -22,10 +22,12 @@ When updated: 2025-09-01T18:40:00Z
 4. Lint & export hygiene
    - buildOpenApi: replaced “|| {}” with explicit in-operator check to satisfy no-unnecessary-condition.
    - slug: removed default export to avoid duplicate export; keep named export (deriveSlug) only.
+5. Registry extraction
+   - Introduced src/app/registry.ts encapsulating function registration and storage.
+   - App delegates registration to registry; builders iterate via registry.values().
 1. Lint/types cleanup & OpenAPI handler
    - Removed import() type annotation in App.defineFunction handler signature; added top-level type import for Handler.
-   - Constrained EventType to string keys; simplified httpEventTypeTokens init.
-   - OpenAPI GET responseSchema -> z.any; handler uses top-level type import and Response alias.
+   - Constrained EventType to string keys; simplified httpEventTypeTokens init.   - OpenAPI GET responseSchema -> z.any; handler uses top-level type import and Response alias.
    - Tests: adjusted wrapHandler tests to cast via unknown for shaped HTTP envelopes.
 
 2. App SRP (phase 1)
