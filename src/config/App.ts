@@ -12,26 +12,20 @@ import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { buildAllOpenApiPaths as buildPaths } from '@/src/app/buildOpenApi';
 import { buildAllServerlessFunctions as buildFns } from '@/src/app/buildServerless';
-import { handlerFactory } from '@/src/app/handlerFactory';
 import {
   defaultHttpEventTypeTokens,
   validateEventTypeMapSchemaIncludesBase,
 } from '@/src/app/httpTokens';
+import { createRegistry } from '@/src/app/registry';
 import { deriveSlug } from '@/src/app/slug';
 import type { ZodObj } from '@/src/app/types';
 import { baseEventTypeMapSchema } from '@/src/config/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
-import type { EnvAttached } from '@/src/handler/defineFunctionConfig';
-import { ENV_CONFIG } from '@/src/handler/defineFunctionConfig';
 import type { BaseOperation } from '@/src/openapi/types';
 import { stagesFactory } from '@/src/serverless/stagesFactory';
-import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
-import type { FunctionConfig } from '@/src/types/FunctionConfig';
-import type { Handler } from '@/src/types/Handler';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
-
 export interface AppServerlessConfig {
   defaultHandlerFileName: string;
   defaultHandlerFileExport: string;
@@ -62,33 +56,8 @@ export interface AppInit<
   httpEventTypeTokens?: readonly (keyof z.infer<EventTypeMapSchema>)[];
 }
 
-type FunctionRegistration = {
-  slug: string;
-  functionName: string;
-  eventType: string; // token
-  // Optional HTTP-only fields (only present when provided)
-  method?: MethodKey;
-  basePath?: string;
-  httpContexts?: readonly HttpContext[];
-  contentType?: string;
-  // Env keys at function level
-  fnEnvKeys?: readonly PropertyKey[];
-  // Schemas (present only when provided)
-  eventSchema?: z.ZodType | undefined;
-  responseSchema?: z.ZodType | undefined;
-  // Attachments
-  openapiBaseOperation?: BaseOperation;
-  serverlessExtras?: unknown;
-  // For path/handler derivations
-  callerModuleUrl: string;
-  endpointsRootAbs: string;
-  // Branded config (for runtime env parsing)
-  brandedConfig: Record<string, unknown>;
-};
-
 export class App<
-  GlobalParamsSchema extends ZodObj,
-  StageParamsSchema extends ZodObj,
+  GlobalParamsSchema extends ZodObj,  StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,
 > {
   // Schemas
@@ -111,12 +80,13 @@ export class App<
   // HTTP tokens for runtime decision
   public readonly httpEventTypeTokens: readonly string[];
 
-  // Registry
-  private readonly registry = new Map<string, FunctionRegistration>();
+  // Registry (delegated to src/app/registry)
+  private readonly registry: ReturnType<
+    typeof createRegistry<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>
+  >;
 
   private constructor(
-    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,
-  ) {
+    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,  ) {
     this.globalParamsSchema = init.globalParamsSchema;
     this.stageParamsSchema = init.stageParamsSchema;
     // Default to base schema when omitted (apply default INSIDE the function)
@@ -155,10 +125,17 @@ export class App<
     // HTTP tokens (runtime decision)
     this.httpEventTypeTokens = (init.httpEventTypeTokens ??
       defaultHttpEventTypeTokens) as readonly string[];
+
+    // Initialize function registry
+    this.registry = createRegistry<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>(
+      {
+        httpEventTypeTokens: this.httpEventTypeTokens,
+        env: { global: this.global, stage: this.stage },
+      },
+    );
   }
 
-  /** Ergonomic constructor for schema-first inference. */
-  static create<
+  /** Ergonomic constructor for schema-first inference. */  static create<
     GlobalParamsSchema extends ZodObj,
     StageParamsSchema extends ZodObj,
     EventTypeMapSchema extends ZodObj,
@@ -195,104 +172,27 @@ export class App<
     const slug =
       options.slug ??
       deriveSlug(options.endpointsRootAbs, options.callerModuleUrl);
-    if (this.registry.has(slug)) {
-      const other = this.registry.get(slug)!;
-      throw new Error(
-        `Duplicate function slug "${slug}". Existing: ${other.callerModuleUrl}. New: ${options.callerModuleUrl}. Provide a custom slug to disambiguate.`,
-      );
-    }
 
-    // Brand a minimal config with env so wrapHandler can parse process.env at runtime.
-    const brandedConfig = {
-      functionName: options.functionName,
-      eventType: options.eventType as string,
-      ...(options.method ? { method: options.method } : {}),
-      ...(options.basePath ? { basePath: options.basePath } : {}),
-      ...(options.httpContexts ? { httpContexts: options.httpContexts } : {}),
-      ...(options.contentType ? { contentType: options.contentType } : {}),
-      ...(options.fnEnvKeys
-        ? { fnEnvKeys: options.fnEnvKeys as readonly PropertyKey[] }
-        : {}),
-      ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
-      ...(options.responseSchema
-        ? { responseSchema: options.responseSchema }
-        : {}),
-      [ENV_CONFIG]: {
-        global: this.global,
-        stage: this.stage,
-      } as {
-        global: EnvSchemaNode<GlobalParamsSchema>;
-        stage: EnvSchemaNode<StageParamsSchema>;
-      },
-    } as Record<string, unknown>;
-
-    const reg: FunctionRegistration = {
+    return this.registry.defineFunction<
+      EventType,
+      EventSchema,
+      ResponseSchema
+    >({
       slug,
       functionName: options.functionName,
-      eventType: options.eventType as string,
+      eventType: options.eventType,
       ...(options.method ? { method: options.method } : {}),
       ...(options.basePath ? { basePath: options.basePath } : {}),
       ...(options.httpContexts ? { httpContexts: options.httpContexts } : {}),
       ...(options.contentType ? { contentType: options.contentType } : {}),
-      ...(options.fnEnvKeys
-        ? { fnEnvKeys: options.fnEnvKeys as readonly PropertyKey[] }
-        : {}),
       ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
       ...(options.responseSchema
         ? { responseSchema: options.responseSchema }
         : {}),
+      ...(options.fnEnvKeys ? { fnEnvKeys: options.fnEnvKeys } : {}),
       callerModuleUrl: options.callerModuleUrl,
       endpointsRootAbs: options.endpointsRootAbs,
-      brandedConfig,
-    };
-    this.registry.set(slug, reg);
-
-    return {
-      /** Wrapped AWS Lambda handler (HTTP or non-HTTP) */
-      handler: (
-        business: Handler<
-          EventSchema,
-          ResponseSchema,
-          (z.infer<EventTypeMapSchema> & BaseEventTypeMap)[EventType]
-        >,
-      ) => {
-        type GlobalParams = z.infer<GlobalParamsSchema>;
-        type StageParams = z.infer<StageParamsSchema>;
-        type EventTypeMapResolved = z.infer<EventTypeMapSchema> &
-          BaseEventTypeMap;
-        type FC = FunctionConfig<
-          EventSchema,
-          ResponseSchema,
-          GlobalParams,
-          StageParams,
-          EventTypeMapResolved,
-          EventType
-        > &
-          EnvAttached<GlobalParamsSchema, StageParamsSchema>;
-
-        const functionConfig = brandedConfig as unknown as FC;
-
-        const make = handlerFactory<
-          GlobalParamsSchema,
-          StageParamsSchema,
-          EventTypeMapResolved,
-          EventType,
-          EventSchema,
-          ResponseSchema
-        >(this.httpEventTypeTokens);
-        return make(functionConfig, business);
-      },
-      /** Attach OpenAPI base operation info for this function */
-      openapi: (baseOperation: BaseOperation) => {
-        const r = this.registry.get(slug)!;
-        r.openapiBaseOperation = baseOperation;
-      },
-      /** Attach non-HTTP serverless extras (e.g., SQS triggers) */
-      serverless: (extras: unknown) => {
-        const r = this.registry.get(slug)!;
-        r.serverlessExtras = extras;
-      },
-    };
+    });
   }
 
   /** Aggregate Serverless function definitions across the registry. */
