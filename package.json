@@ -139,7 +139,7 @@
     "stan:build": "rimraf stan.dist && rollup --config stan.rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf stan.dist",
     "stan:docs": "typedoc --emit none",
     "test": "vitest run",
-    "typecheck": "tsc -b tsconfig.build.json"
+    "typecheck": "tsc -b tsconfig.rollup.json"
   },
   "type": "module",
   "version": "0.0.0",

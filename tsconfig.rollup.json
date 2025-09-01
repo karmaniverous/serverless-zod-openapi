@@ -1,12 +1,17 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": [],
   "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
       "@@/*": ["services/activecampaign/*"]
     }
   },
-  "references": [{ "path": "." }, { "path": "services/activecampaign" }]
+  "include": [
+    "src/**/*.ts"
+  ]
 }
