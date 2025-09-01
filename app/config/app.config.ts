@@ -2,40 +2,68 @@ import { z } from 'zod';
 
 import { App, baseEventTypeMapSchema } from '@/src';
 
-import {
-  globalEnvKeys,
-  type GlobalParams,
-  globalParams,
-  globalParamsSchema,
-} from './global';
-import { serverlessConfig } from './serverlessConfig';
-import { stageEnvKeys, type StageParams, stageParamsSchema } from './stage';
-import * as dev from './stages/dev';
-import * as prod from './stages/prod';
-
-// Event type map schema — extend base with project-local tokens (e.g., 'step')
-export const eventTypeMapSchema = baseEventTypeMapSchema.extend({
-  step: z.custom<Record<string, unknown>>(),
-});
+import { serverlessConfigSchema } from './serverlessConfig';
 
 export const app = App.create({
-  globalParamsSchema,
-  stageParamsSchema,
-  eventTypeMapSchema,
-  serverless: serverlessConfig,
+  globalParamsSchema: z.object({
+    ESB_MINIFY: z.boolean(),
+    ESB_SOURCEMAP: z.boolean(),
+    PROFILE: z.string(),
+    REGION: z.string(),
+    SERVICE_NAME: z.string(),
+  }),
+  stageParamsSchema: z.object({
+    DOMAIN_CERTIFICATE_ARN: z.string(),
+    DOMAIN_NAME: z.string(),
+    STAGE: z.string(),
+  }),
+  eventTypeMapSchema: baseEventTypeMapSchema.extend({
+    step: z.custom<Record<string, unknown>>(),
+  }),
+  serverless: serverlessConfigSchema.parse({
+    httpContextEventMap: {
+      my: {
+        authorizer: {
+          arn: '${param:COGNITO_USER_POOL_ARN}',
+          name: 'UserPoolAuthorizer',
+          type: 'COGNITO_USER_POOLS',
+        },
+      },
+      private: { private: true },
+      public: {},
+    },
+    defaultHandlerFileName: 'handler',
+    defaultHandlerFileExport: 'handler',
+  }),
   global: {
-    params: globalParams,
-    envKeys: globalEnvKeys as readonly (keyof GlobalParams)[],
+    params: {
+      ESB_MINIFY: false,
+      ESB_SOURCEMAP: true,
+      PROFILE: 'JGS-SSO',
+      REGION: 'ap-southeast-1',
+      SERVICE_NAME: 'api-johngalt-id',
+    },
+    envKeys: ['REGION', 'SERVICE_NAME'],
   },
   stage: {
     params: {
-      dev: dev.stageParams,
-      prod: prod.stageParams,
-    } as Record<string, StageParams>,
-    envKeys: stageEnvKeys as readonly (keyof StageParams)[],
+      dev: {
+        DOMAIN_CERTIFICATE_ARN:
+          'arn:aws:acm:us-east-1:343218212471:certificate/8a668260-e9ec-4fde-9b48-d2be8aedb489',
+        DOMAIN_NAME: 'api.dev.johngalt.id',
+        STAGE: 'dev',
+      },
+      prod: {
+        DOMAIN_CERTIFICATE_ARN:
+          'arn:aws:acm:us-east-1:343218212471:certificate/6505cd50-6d57-43f7-a199-02f3e4a08683',
+        DOMAIN_NAME: 'api.johngalt.id',
+        STAGE: 'prod',
+        ESB_MINIFY: true,
+        ESB_SOURCEMAP: false,
+      },
+    },
+    envKeys: ['STAGE'],
   },
-  // HTTP tokens (runtime decision). Default is ['rest','http']; override if desired.
-  // httpEventTypeTokens: ['rest', 'http'],
 });
 
 export const { stages, environment, buildFnEnv } = app;

@@ -10,20 +10,3 @@ export const serverlessConfigSchema = z.object({
   defaultHandlerFileName: z.string().min(1),
   defaultHandlerFileExport: z.string().min(1),
 });
-
-/** Implementation-wide Serverless configuration. */
-export const serverlessConfig = serverlessConfigSchema.parse({
-  httpContextEventMap: {
-    my: {
-      authorizer: {
-        arn: '${param:COGNITO_USER_POOL_ARN}',
-        name: 'UserPoolAuthorizer',
-        type: 'COGNITO_USER_POOLS',
-      },
-    },
-    private: { private: true },
-    public: {},
-  },
-  defaultHandlerFileName: 'handler',
-  defaultHandlerFileExport: 'handler',
-});
