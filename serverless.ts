@@ -92,11 +92,10 @@ const config: AWS = {
     },
     versionFunctions: false,
   },
-  functions: app.buildAllServerlessFunctions(),
+  functions: app.buildAllServerlessFunctions() as NonNullable<AWS['functions']>,
   build: {
     esbuild: {
-      bundle: true,
-      minify: '${param:ESB_MINIFY}' as unknown as boolean,
+      bundle: true,      minify: '${param:ESB_MINIFY}' as unknown as boolean,
       sourcemap: '${param:ESB_SOURCEMAP}' as unknown as boolean,
       exclude: ['@aws-sdk/*'],
       target: 'node22',

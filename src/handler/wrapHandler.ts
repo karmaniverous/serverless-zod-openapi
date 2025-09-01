@@ -40,11 +40,10 @@ export function wrapHandler<
   > &
     EnvAttached<GlobalParamsSchema, StageParamsSchema>,
   business: Handler<EventSchema, ResponseSchema, EventTypeMap[EventType]>,
-  opts?: { httpEventTypeTokens?: readonly (keyof BaseEventTypeMap | string)[] },
+  opts?: { httpEventTypeTokens?: readonly string[] },
 ) {
   const assertKeysSubset = (
-    schema: ZodObject<ZodRawShape>,
-    keys: readonly string[],
+    schema: ZodObject<ZodRawShape>,    keys: readonly string[],
     label: string,
   ): void => {    const allowed = new Set(Object.keys(schema.shape));
     const bad = keys.filter((k) => !allowed.has(k));
@@ -94,16 +93,14 @@ export function wrapHandler<
     const httpTokens =
       (opts?.httpEventTypeTokens) ??
       (HTTP_EVENT_TOKENS as readonly string[]);
-    const isHttp =
-      httpTokens.includes(
-        (functionConfig.eventType as unknown as string) ?? '',
-      );
+    const isHttp = httpTokens.includes(
+      functionConfig.eventType as unknown as string,
+    );
     if (!isHttp) {
       return business(
         event as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
         context,
-        { env, logger },
-      );
+        { env, logger },      );
     }
     // HTTP: build middleware stack
     const http = buildHttpMiddlewareStack({

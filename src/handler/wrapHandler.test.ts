@@ -40,10 +40,11 @@ const app = App.create({
 });
 
 describe('wrapHandler: GET happy path', () => {
-  it('returns the business payload when validation passes and env is present', async () => {    // Ensure required env vars are set for validation    process.env.SERVICE_NAME = 'testService';
+  it('returns the business payload when validation passes and env is present', async () => {
+    // Ensure required env vars are set for validation
+    process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
-
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
 
@@ -65,10 +66,10 @@ describe('wrapHandler: GET happy path', () => {
       responseSchema,
       callerModuleUrl: import.meta.url,
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
+      slug: 'wrap-get',
     });
     const handler = fn.handler(async () => {
-      logger.debug('business invoked');
-      return { what: 'ok' };
+      logger.debug('business invoked');      return { what: 'ok' };
     });
 
     const event = createApiGatewayV1Event('GET', {
@@ -101,7 +102,6 @@ describe('wrapHandler: HEAD short-circuit', () => {
     process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
-
     const fn = app.defineFunction({
       functionName: 'test_head',
       eventType: 'rest',
@@ -113,9 +113,9 @@ describe('wrapHandler: HEAD short-circuit', () => {
       responseSchema,
       callerModuleUrl: import.meta.url,
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
+      slug: 'wrap-head',
     });
-    const handler = fn.handler(async () => ({}));
-    const event = createApiGatewayV1Event('HEAD', {
+    const handler = fn.handler(async () => ({}));    const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
@@ -143,13 +143,6 @@ describe('wrapHandler: POST payload', () => {
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
 
-    const logger: ConsoleLogger = {
-      debug: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn(),
-      log: vi.fn(),
-    };
-
     const fn = app.defineFunction({
       functionName: 'test_post',
       eventType: 'rest',
@@ -161,9 +154,9 @@ describe('wrapHandler: POST payload', () => {
       responseSchema,
       callerModuleUrl: import.meta.url,
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
+      slug: 'wrap-post',
     });
-    const handler = fn.handler(async () => ({ what: 'ok' }));
-    const event = createApiGatewayV1Event('POST', {
+    const handler = fn.handler(async () => ({ what: 'ok' }));    const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     });

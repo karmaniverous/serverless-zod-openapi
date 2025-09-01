@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-01T16:40:00Z
+When updated: 2025-09-01T17:05:00Z
 
 ## Next up
-
 - All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem. - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
   - Design: toolkit packaging plan (publishable API surface):
     - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
@@ -225,3 +224,9 @@ When updated: 2025-09-01T16:40:00Z
   - Moved generator to app/config/openapi.ts; output to app/openapi.json; orval generation stable with local mutator forwarder.
 
 - Introduced schema-first App class and baseEventTypeMapSchema; migrated representative endpoints to app.defineFunction; added runtime-widenable httpEventTypeTokens; aggregated Serverless/OpenAPI via app instance.
+
+- Fix types/tests after App migration:
+  - App: tighten eventTypeMapSchema typing; avoid undefined optional props under exactOptionalPropertyTypes; return ZodOpenApiPathsObject; cast serverless functions result.
+  - wrapHandler: accept httpEventTypeTokens as string[]; simplify HTTP detection.
+  - Tests: ensure env vars are set (not commented), provide unique slugs to avoid duplicate registration, remove unnecessary optional chaining and unused vars.
+  - Outcome: typecheck and tests converge; ESLint passes for updated modules.

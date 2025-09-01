@@ -9,6 +9,6 @@ import { fn } from './lambda';
 
 export const handler = fn.handler(async (event) => {
   const e = event as { Payload: { contactId: string } };
-  const id = e?.Payload?.contactId;
+  const id = e.Payload.contactId;
   return getContact({ contactId: id });
 });
