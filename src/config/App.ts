@@ -163,10 +163,12 @@ export class App<
 
   /** Ergonomic constructor for schema-first inference. */
   static create<
-    G extends ZodObj,
-    S extends ZodObj,
-    E extends ZodObj = typeof baseEventTypeMapSchema,
-  >(init: AppInit<G, S, E>): App<G, S, E> {
+    GlobalParamsSchema extends ZodObj,
+    StageParamsSchema extends ZodObj,
+    EventTypeMapSchema extends ZodObj,
+  >(
+    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,
+  ): App<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema> {
     return new App(init);
   }
 
