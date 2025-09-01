@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-01T17:05:00Z
+When updated: 2025-09-01T17:20:00Z
 
 ## Next up
-- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem. - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
-  - Design: toolkit packaging plan (publishable API surface):
+- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem. - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.  - Design: toolkit packaging plan (publishable API surface):
     - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
     - config typing utilities (FunctionConfig, AppConfig helpers).
   - Design: simplified config model
@@ -230,3 +229,8 @@ When updated: 2025-09-01T17:05:00Z
   - wrapHandler: accept httpEventTypeTokens as string[]; simplify HTTP detection.
   - Tests: ensure env vars are set (not commented), provide unique slugs to avoid duplicate registration, remove unnecessary optional chaining and unused vars.
   - Outcome: typecheck and tests converge; ESLint passes for updated modules.
+
+- DX polish (no any, internal casts):
+  - App.defineFunction: remove all `any` by explicitly typing FunctionConfig and wrapHandler generics.
+  - App.buildAllServerlessFunctions: return NonNullable<AWS['functions']> internally (downstream no cast).
+  - OpenAPI get handler: simplify return typing; no unsafe assertions.

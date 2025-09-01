@@ -16,6 +16,7 @@ import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { baseEventTypeMapSchema } from '@/src/config/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
+import type { EnvAttached } from '@/src/handler/defineFunctionConfig';
 import { ENV_CONFIG } from '@/src/handler/defineFunctionConfig';
 import { wrapHandler } from '@/src/handler/wrapHandler';
 import { resolveHttpFromFunctionConfig } from '@/src/http/resolveHttpFromFunctionConfig';
@@ -24,6 +25,7 @@ import { buildPathElements } from '@/src/path/buildPath';
 import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
+import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
 
@@ -284,19 +286,38 @@ export class App<
     return {
       /** Wrapped AWS Lambda handler (HTTP or non-HTTP) */
       handler: (
-        business: (
-          event: unknown,
-          context: unknown,
-          options: {
-            env: Record<string, unknown>;
-            securityContext?: unknown;
-            logger: Console;
-          },
-        ) => Promise<unknown>,
+        business: import('@/src/types/Handler').Handler<
+          EventSchema,
+          ResponseSchema,
+          (z.infer<EventTypeMapSchema> & BaseEventTypeMap)[EventType]
+        >,
       ) => {
-        return wrapHandler(brandedConfig as any, business as any, {
+        type GlobalParams = z.infer<GlobalParamsSchema>;
+        type StageParams = z.infer<StageParamsSchema>;
+        type EventTypeMapResolved = z.infer<EventTypeMapSchema> &
+          BaseEventTypeMap;
+        type FC = FunctionConfig<
+          EventSchema,
+          ResponseSchema,
+          GlobalParams,
+          StageParams,
+          EventTypeMapResolved,
+          EventType
+        > &
+          EnvAttached<GlobalParamsSchema, StageParamsSchema>;
+
+        const functionConfig = brandedConfig as unknown as FC;
+
+        return wrapHandler<
+          GlobalParamsSchema,
+          StageParamsSchema,
+          EventTypeMapResolved,
+          EventType,
+          EventSchema,
+          ResponseSchema
+        >(functionConfig, business, {
           httpEventTypeTokens: this.httpEventTypeTokens,
-        }) as any;
+        });
       },
       /** Attach OpenAPI base operation info for this function */
       openapi: (baseOperation: BaseOperation) => {
