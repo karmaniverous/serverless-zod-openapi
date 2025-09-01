@@ -1,20 +1,45 @@
 # Development Plan
 
-When updated: 2025-09-01T19:45:00Z
+When updated: 2025-09-01T01:50:00Z
 
 ## Next up
 
-- Split App.ts into SRP modules (phase 2) - Done: extract slug, HTTP tokens/guard, ZodObj alias.
-  - Implemented: handlerFactory, buildServerless, buildOpenApi modules; App delegates to them.
-  - Implemented: registry extraction (src/app/registry.ts) with typed FunctionHandle.
-  - App now delegates defineFunction and iterators to registry; proceed to thin orchestrator goal.
-  - Next (finalize phase 2): reduce src/config/App.ts to ≤200 LOC by moving any remaining glue/types into src/app/types or local modules if needed.
+- Knip cleanup and configuration
+  - Suppress known false-positives:
+    - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
+      Add an ignore pattern so Knip does not flag these as “Unused files”.
+    - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
+      cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
+      Add them to ignoreDependencies to reduce noise.
+    - Keep http-errors under review; do not remove until confirmed unused at runtime.
+  - Consider removing the redundant knip “entry” for app/config/openapi.ts per the hint.
   - Acceptance:
-    - App.ts ≤ 200 LOC; extracted modules compile with strict TS.
-    - No import() type annotations; consistent-type-imports passes. - Handler type derived from FunctionConfig + app eventTypeMapSchema.
-    - exactOptionalPropertyTypes respected; no undefined materialized.
-    - serverless.ts uses app.buildAllServerlessFunctions() without casts; OpenAPI generator uses app.buildAllOpenApiPaths().
-    - All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build).
+    - knip shows no “Unused files” for handler.ts paths and no “Unused dependencies” for the
+      acknowledged plugin/tooling packages; overall knip passes cleanly.
+
+- Unused modules triage (delete or justify)
+  - Review and delete if truly unused (or add targeted tests/usages):
+    - src/serverless/buildServerlessFunctions.ts
+    - src/openapi/buildOpenApiPath.ts
+    - src/modulePathFromRoot.ts
+    - src/handler/wrapSerializer.ts
+    - src/test/env.ts
+    - src/test/middyLifecycle.ts
+    - src/types/HttpEvent.ts
+    - src/types/MakeOptional.ts
+    - src/types/ShapedResponse.ts
+    - src/handler/middleware/index.ts
+    - src/handler/middleware/noop.ts
+  - Acceptance: typecheck, lint, test, build (stan:build, package) all green with files removed.
+
+- Dependencies and binaries housekeeping
+  - If http-errors is not used, remove it from dependencies; otherwise, leave and ignore in Knip.
+  - Either add release-it as a devDependency or ignore the “Unlisted binaries” warning in Knip.
+  - Acceptance: scripts continue to work (release, diagrams), no new Knip warnings for these items.
+
+- App.ts orchestration slimming (follow-through)
+  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
+  - Acceptance: App.ts ~≤200 LOC; strict TS and lint clean.
 
 ## Completed (recent)
 
@@ -36,5 +61,7 @@ When updated: 2025-09-01T19:45:00Z
     - Removed unresolved app-local import from src/handler/defineFunctionConfig.ts; bound to BaseEventTypeMap.
 
 13. Remove obsolete app stages aggregator
-    - Deleted app/config/stages/index.ts (unused; superseded by
-      app/config/app.config.ts).
+    - Deleted app/config/stages/index.ts (unused; superseded by app/config/app.config.ts).
+
+14. Baseline green across scripts
+    - openapi, generate, typecheck, lint, test, stan:build, package all succeeded in latest run.
