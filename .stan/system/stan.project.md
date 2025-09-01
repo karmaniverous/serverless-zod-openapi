@@ -293,7 +293,7 @@ Function registration (single options argument; no intermediate env config)
 - Functions are registered on the app singleton with a single options object.
   - options include:
     - callerModuleUrl: string (import.meta.url),
-    - endpointsRootAbs: string (ENDPOINTS_ROOT_ABS),
+    - endpointsRootAbs: string (ENDPOINTS_ROOT),
     - slug?: string (optional; if omitted, derived using slugGenerator),
     - functionName: string,
     - eventType: keyof z.infer<typeof app.eventTypeMapSchema> (e.g., 'rest',
