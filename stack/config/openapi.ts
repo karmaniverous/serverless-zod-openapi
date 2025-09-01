@@ -14,7 +14,6 @@ import eventActiveCampaignPost from '@/stack/endpoints/event/activecampaign/post
 import openapiGet from '@/stack/endpoints/openapi/get/openapi';
 
 console.log('Generating OpenAPI document...');
-
 /**
  * The OpenAPI document object.
  *

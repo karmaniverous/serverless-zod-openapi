@@ -6,7 +6,7 @@ import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 import type { ShapedEvent } from '@/src/types/ShapedEvent';
 
-import type { Handler, HandlerOptions } from '../types/Handler';
+import type { Handler, HandlerOptions } from './Handler';
 
 const eventSchema = z.object({
   id: z.string(),

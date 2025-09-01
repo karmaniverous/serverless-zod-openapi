@@ -13,11 +13,12 @@ import type { BaseOperation } from './types';
 type ServerlessConfigLike = {
   httpContextEventMap: SecurityContextHttpEventMap;
 };
+
 /**
  * Build OpenAPI path items for a single function config.
  * If no httpContexts are present, returns an empty object.
  */
-export const buildPathItemObject = <
+export const buildOpenApiPath = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
@@ -38,7 +39,6 @@ export const buildPathItemObject = <
   baseOperation: BaseOperation,
   endpointsRootAbs: string,
 ): ZodOpenApiPathsObject => {
-  // Resolve HTTP route details via injected endpoints root.
   const resolved = resolveHttpFromFunctionConfig(
     config,
     callerModuleUrl,
@@ -46,7 +46,6 @@ export const buildPathItemObject = <
   );
   const { method, basePath, contexts } = resolved;
 
-  // Build a path item per context, tagging operations properly.
   return contexts.reduce<ZodOpenApiPathsObject>((acc, context) => {
     const pathElements = buildPathElements(basePath, context);
     return {

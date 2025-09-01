@@ -5,17 +5,16 @@
  */
 import { z } from 'zod';
 
-import { makeFunctionConfig } from '@/src';
+import { defineFunctionConfig } from '@/src';
 
 export const eventSchema = undefined;
 export const responseSchema = z.object({});
-export const functionConfig = makeFunctionConfig({
+export const functionConfig = defineFunctionConfig({
   eventType: 'rest',
   functionName: 'openapi_get',
   contentType: 'application/json',
   httpContexts: ['public'],
-  method: 'get',
-  basePath: 'openapi',
+  method: 'get',  basePath: 'openapi',
   eventSchema,
   responseSchema,
 });

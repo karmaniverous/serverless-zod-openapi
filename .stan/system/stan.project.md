@@ -1,7 +1,6 @@
 # Global Requirements & Cross‑Cutting Concerns
 
 > Source of truth for non-file-specific requirements. Keep business logic comments lean; record the intent here.
-
 ## 1) Logger shape
 
 - Requirement: Anywhere a `logger` is accepted or passed, it MUST extend `ConsoleLogger` (i.e., be compatible with the standard `console` interface).
@@ -118,10 +117,35 @@ This section documents how we use it in this repo and the rules to follow.
 These rules ensure consistent caching/invalidation, robust generation with
 Orval, and predictable Axios defaults across all ActiveCampaign calls.
 
+## 5.5) Toolkit naming & API clarity (v0, breaking)
+
+- Interface-first public shapes. Prefer `interface` over `type` where practical; compose small interfaces for reuse.
+  - Introduce:
+    - EnvKeysNode<Schema>, EnvSchemaNode<Schema>,
+    - GlobalEnvConfig<GlobalParamsSchema, StageParamsSchema>,
+    - GlobalParamsNode<GlobalParamsSchema>, StageParamsNode<StageParamsSchema>,
+    - DefineAppConfigInput/Output.
+  - Provide defineAppConfig(globalParamsSchema, stageParamsSchema, { serverless, global, stage }) returning:
+    - serverless (unchanged semantics),
+    - stages/environment/buildFnEnv (from stagesFactory),
+    - envConfig (schemas + envKeys) for wrapper.
+
+- No glue wrapper. Rename and simplify:
+  - makeWrapHandler → wrapHandler(envConfig, functionConfig, business).
+  - envConfig carries schemas and envKeys; wrapper composes env schema and parses process.env internally.
+
+- Function/builder naming:
+  - makeFunctionConfig → defineFunctionConfig (same semantics).
+  - buildFunctionDefinitions → buildServerlessFunctions (same semantics).
+  - buildPathItemObject → buildOpenApiPath (same semantics).
+
+- DX: envKeys are typed as `readonly (keyof z.infer<Schema>)[]` so IntelliSense suggests only valid keys and invalid literals squiggle individually.
+- Runtime guard:
+  - When building config or invoking the wrapper, assert every envKeys entry is present in the corresponding Zod schema shape (“no unspecified *EnvKeys”).
+
 ## 5) HTTP middleware stack policy (durable; do not remove)
 
-We maintain a rich HTTP middleware pipeline that MUST remain intact for all
-HTTP handlers. This stack is HTTP‑only; non‑HTTP (“internal”) paths bypass
+We maintain a rich HTTP middleware pipeline that MUST remain intact for allHTTP handlers. This stack is HTTP‑only; non‑HTTP (“internal”) paths bypass
 Middy entirely in `makeWrapHandler`. Do not add an “internal” toggle here.
 
 Required middlewares (order matters):
@@ -173,7 +197,6 @@ Process rule:
 ## 7) Config model simplification (direction)
 
 Goal: simplify authoring while keeping strong types.
-
 - Per‑function config: a single object in each `config.ts` that inlines
   `eventSchema` and `responseSchema`; consumers read them from
   `functionConfig.eventSchema`/`responseSchema` (no external pairing needed).

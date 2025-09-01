@@ -6,17 +6,16 @@
  */
 import { z } from 'zod';
 
-import { makeFunctionConfig } from '@/src';
+import { defineFunctionConfig } from '@/src';
 
 export const eventSchema = z.any();
 export const responseSchema = z.string();
-export const functionConfig = makeFunctionConfig({
+export const functionConfig = defineFunctionConfig({
   eventType: 'rest',
   functionName: 'activecampaign_post',
   contentType: 'application/json',
   httpContexts: ['public'],
-  method: 'post',
-  basePath: 'event/activecampaign',
+  method: 'post',  basePath: 'event/activecampaign',
   eventSchema,
   responseSchema,
 });

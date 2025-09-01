@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-01T11:12:00Z
+When updated: 2025-09-01T11:40:00Z
 
 ## Next up
-- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:
-  - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
+- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:  - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
   - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
   - Design: toolkit packaging plan (publishable API surface):
     - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
@@ -23,9 +22,13 @@ When updated: 2025-09-01T11:12:00Z
     - Once child package.json is removed, update ESLint to drop the child
       tsconfig path and, if desired, prune the services workspace from knip.json
       (optional; currently not blocking).
+  - Follow-ups (post-refactor polish):
+    - Consider renaming builders in docs/comments for clarity (OpenAPI/Serverless).
+    - Prune deprecated references in internal docs to old names (makeWrapHandler/makeFunctionConfig/etc.).
+    - Optional: expose a small keysOf<T>() helper if teams prefer arg-per-key authoring ergonomics.
+
 
 ## Completed (recent)
-
 - Base TS config simplification (fix TS6304 across tools)
   - Removed composite/declaration emit flags from tsconfig.base.json to match
     the simpler “working” pattern. This resolves “Composite projects may not
@@ -39,10 +42,23 @@ When updated: 2025-09-01T11:12:00Z
   - Set `declarationMap: false` in tsconfig.rollup.json to silence outDir
     requirements from the TS plugin. Library bundling remains dts-driven.
 
+- Unified config and naming clarity (v0, breaking)
+  - Added interface-first config helpers (EnvKeysNode, EnvSchemaNode, GlobalEnvConfig,
+    GlobalParamsNode, StageParamsNode, DefineAppConfigInput/Output) and `defineAppConfig`.
+  - Wrapper: `wrapHandler(envConfig, functionConfig, business)` (replaces makeWrapHandler).
+  - Builders/functions renamed:
+    - `makeFunctionConfig` → `defineFunctionConfig`,
+    - `buildFunctionDefinitions` → `buildServerlessFunctions`,
+    - `buildPathItemObject` → `buildOpenApiPath`.
+  - Created `stack/config/app.config.ts` (serverless + env unifier); removed
+    `stack/config/loadEnvConfig.ts`.
+  - Migrated handlers and endpoint builders to new names; updated exports in src/index.ts.
+  - Added runtime guards to enforce “no unspecified *EnvKeys” during config/wrapper usage.
+  - Tests updated to use `wrapHandler` and direct envConfig.
+
 - Demo package cleanup
   - Removed services/activecampaign/package.json and tsconfig.json; the demo
-    remains a plain folder driven by `orval` from the root.
-  - Updated ESLint parserOptions.project to drop the child tsconfig path.
+    remains a plain folder driven by `orval` from the root.  - Updated ESLint parserOptions.project to drop the child tsconfig path.
   - (Optional follow-up) Prune services workspace section in knip.json later.
 
 - Single published package (simplify workspaces)

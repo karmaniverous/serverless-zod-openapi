@@ -25,7 +25,7 @@ type ServerlessConfigLike = {
 const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
 const normalizeMethod = (m: string) => m.toLowerCase();
 
-export const buildFunctionDefinitions = <
+export const buildServerlessFunctions = <
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
@@ -47,7 +47,6 @@ export const buildFunctionDefinitions = <
   buildFnEnv: (fnEnvKeys?: readonly never[]) => Record<string, string>,
 ): AWS['functions'] => {
   const parsed = appConfig;
-  // Compute "file.export" handler string relative to repo root
   const repoRoot = packageDirectorySync()!;
   const callerDir = dirname(fileURLToPath(callerModuleUrl));
   const handlerFileAbs = join(callerDir, parsed.defaultHandlerFileName);
@@ -58,7 +57,6 @@ export const buildFunctionDefinitions = <
 
   let events: unknown = [];
 
-  // If this is an HTTP function, add the http events
   try {
     const { method, basePath, contexts } = resolveHttpFromFunctionConfig(
       functionConfig,
@@ -76,7 +74,6 @@ export const buildFunctionDefinitions = <
     }));
     events = [...httpEvents];
   } catch {
-    // Non-HTTP functions simply do not get http events; other triggers may be present in config.
     const nonHttp = (functionConfig as { events?: unknown }).events;
     events = nonHttp ?? [];
   }
@@ -84,12 +81,12 @@ export const buildFunctionDefinitions = <
   const def: Record<string, unknown> = {
     handler,
     events,
-    // Environment populated via parsed param schemas + fnEnvKeys
     environment: buildFnEnv(
       functionConfig.fnEnvKeys as unknown as readonly never[],
     ),
   };
 
-  return {    [functionConfig.functionName]: def as unknown,
+  return {
+    [functionConfig.functionName]: def as unknown,
   } as unknown as AWS['functions'];
 };
