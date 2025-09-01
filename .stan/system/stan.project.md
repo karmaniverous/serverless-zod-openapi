@@ -224,3 +224,146 @@ Migration notes:
 
 This direction is durable. Adjustments to the config shapes and migration plan
 should be recorded here and reflected in the dev plan.
+
+## 8) App singleton & function registry (v0, breaking)
+
+Purpose
+- Establish a single source of truth for function definitions, env typing, and
+  event-type unions (including app-local extensions like “step”). Eliminate
+  intermediate glue (e.g., exported envConfig) and enable clean separation of
+  concerns across modules (function definition, handler, OpenAPI, Serverless).
+
+Architecture overview
+- App singleton:
+  - The application is represented by a single instance (the “app”) created
+    from schemas and configuration:
+    - global params schema + envKeys,
+    - stage params schema + envKeys,
+    - serverless defaults (defaultHandlerFileName/export, httpContextEventMap),
+    - eventTypeMapSchema (must extend the base event-type schema).
+  - The instance captures:
+    - env metadata (schemas + envKeys),
+    - stage artifacts (stages, environment, buildFnEnv) via stagesFactory,
+    - event-type map schema (for compile-time EventType inference).
+    - an in-memory function registry keyed by a “slug”.
+
+- Event-type schema (schema-first typing):
+  - Provide baseEventTypeMapSchema (rest, http, sqs) using z.custom<…> to
+    carry shapes at compile time. Example:
+    - rest: APIGatewayProxyEvent,
+    - http: APIGatewayProxyEventV2,
+    - sqs: SQSEvent.
+  - The app must supply eventTypeMapSchema that “extends” the base (compile-time
+    bound + runtime guard). This preserves extension (e.g., “step”) without
+    polluting the base map type. EventType inference flows from the app schema.
+  - Compile-time guarantee: eventTypeMapSchema’s output type must include the
+    base schema keys with compatible types.
+  - Runtime guard: assert that base keys exist in eventTypeMapSchema.shape.
+
+Slug policy
+- Define:
+  - type SlugGenerator = (rootPath: string, functionPath: string) => string
+  - A rational defaultSlugGenerator(root, fileDir) that derives a stable slug
+    from file layout (POSIX-normalized, lowercased, safe characters only).
+  - The app configuration accepts an optional slugGenerator?: SlugGenerator.
+    If absent, defaultSlugGenerator is used.
+
+- Slug derivation (default) :
+  - functionPath = POSIX(relative(endpointsRootAbs, dirname(callerModuleUrl)))
+  - slug = sanitize(functionPath) where sanitize:
+    - lowercases,
+    - replaces disallowed characters with “-”,
+    - collapses duplicate separators/dashes.
+  - Slugs are reused for:
+    - Serverless function identifiers (functions[slug]),
+    - OpenAPI operationIds (slug + method and context suffixes when applicable).
+
+- Duplicate detection:
+  - Registration MUST throw if a slug already exists in the registry.
+  - Error message MUST include both registering module paths and instruct to
+    disambiguate by providing an explicit options.slug or modifying file layout.
+
+Function registration (single options argument; no intermediate env config)
+- Functions are registered on the app singleton with a single options object.
+  - options include:
+    - callerModuleUrl: string (import.meta.url),
+    - endpointsRootAbs: string (ENDPOINTS_ROOT_ABS),
+    - slug?: string (optional; if omitted, derived using slugGenerator),
+    - functionName: string,
+    - eventType: keyof z.infer<typeof app.eventTypeMapSchema> (e.g., 'rest',
+      'http', 'sqs', plus app-local tokens like 'step'),
+    - eventSchema?: ZodType,
+    - responseSchema?: ZodType,
+    - fnEnvKeys?: readonly (keyof GlobalParams | keyof StageParams)[],
+    - HTTP-only: method?: MethodKey, basePath?: string, httpContexts?: readonly HttpContext[], contentType?: string,
+    - Non-HTTP: events?: unknown (AWS event objects as needed).
+  - The app brands the stored FunctionConfig with env via a private Symbol
+    (no exported envConfig), preserving fnEnvKeys typing and testability.
+
+Returned per-function API (no slug reuse required by consumers)
+- defineFunction(options) returns a typed object for that function:
+  - handler(business): exports a runtime handler by wrapping the stored config
+    (env read from the brand). No extra glue required.
+  - openapi(baseOperation): attaches per-function OpenAPI base operation.
+  - serverless(extras): attaches non-HTTP serverless events for this function.
+  - None of these require consumers to know or pass the slug explicitly.
+
+Separation of concerns (modules per function)
+- Hygiene goal: large concerns may be split into distinct modules; they must
+  remain small and focused, and only import what they need.
+  - func.ts: the source of truth, calls app.defineFunction({...}) and exports
+    the per-function API object returned by registration (e.g., export const fn).
+  - handler.ts: import { fn } from './func' and export const handler = fn.handler(business).
+  - openapi.ts: import { fn } from './func' and call fn.openapi(baseOperation).
+  - serverless.ts (non-HTTP only): import { fn } from './func' and call
+    fn.serverless(extras). HTTP endpoints typically don’t need a separate file
+    if method/basePath/httpContexts suffice.
+
+Aggregation (explicit loaders; no hidden imports)
+- To generate global artifacts without per-function imports, use small loaders:
+  - register.functions.ts: imports all func.ts (ensures every function is
+    registered before builds).
+  - register.openapi.ts: imports all openapi.ts (ensures per-function OpenAPI
+    base operations are attached).
+  - register.serverless.ts: imports all non-HTTP serverless.ts (ensures extras
+    are attached).
+  - These are imported by:
+    - serverless.ts: import app, register.functions, register.serverless, then
+      call app.buildAllServerlessFunctions() to produce AWS['functions'].
+    - stack/config/openapi.ts: import app, register.functions, register.openapi,
+      then call app.buildAllOpenApiPaths() and compose the document.
+  - Optionally, loader files can be generated by a script from a glob scan.
+
+OpenAPI and Serverless generation
+- OpenAPI:
+  - Per-function baseOperation is attached via fn.openapi(baseOperation).
+  - OperationId defaults:
+    - HTTP with contexts: `${slug}_${method}_${context}`,
+    - HTTP without contexts: `${slug}_${method}`,
+    - Non-HTTP: slug (or slug + “_internal” if configured).
+  - app.buildAllOpenApiPaths() merges per-function paths.
+
+- Serverless:
+  - app.buildAllServerlessFunctions():
+    - For HTTP: derive handler, method/path via resolveHttpFromFunctionConfig
+      using stored { callerModuleUrl, endpointsRootAbs } and per-function HTTP
+      fields; functions[slug] is created.
+    - For non-HTTP: include per-function events attached via fn.serverless().
+    - Provider-level environment is taken from app.environment. Per-function
+      buildFnEnv merges fnEnvKeys excluding globally exposed keys.
+
+Breaking changes (no shims; v0)
+- Remove exported envConfig and any “loadEnvConfig” helpers.
+- Remove free-function defineFunctionConfig/defineFunctionConfigFromApp; the
+  only authoring surface is app.defineFunction(options), which returns a typed
+  per-function API object ({ handler, openapi, serverless }).
+- Remove free-function builders buildServerlessFunctions/buildOpenApiPath from
+  the public API; these are now app instance methods used internally by the
+  registry aggregations (or exposed as app.buildAllServerlessFunctions/
+  app.buildAllOpenApiPaths only).
+
+Testing and DX
+- Tests can import the app singleton or a test factory; a reset API can be
+  exposed under test-only builds to clear the registry, or a createTestApp
+  helper can be provided. Handlers are wrapped through fn.handler(business),
+  preserving testability and avoiding config duplication.

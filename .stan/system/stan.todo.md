@@ -1,9 +1,10 @@
 # Development Plan
 
-When updated: 2025-09-01T15:20:00Z
+When updated: 2025-09-01T15:55:00Z
 
 ## Next up
-- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:  - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.  - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
+
+- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem. - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
   - Design: toolkit packaging plan (publishable API surface):
     - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
     - config typing utilities (FunctionConfig, AppConfig helpers).
@@ -18,16 +19,103 @@ When updated: 2025-09-01T15:20:00Z
       root (e.g., `cd services/activecampaign && npx orval`), eliminating the
       need for a child package.json.
     - Update ESLint parserOptions.project accordingly when removing the child tsconfig.
-    - Once child package.json is removed, update ESLint to drop the child
-      tsconfig path and, if desired, prune the services workspace from knip.json
+    - Once child tsconfig path and, if desired, prune the services workspace from knip.json
       (optional; currently not blocking).
   - Follow-ups (post-refactor polish):
     - Consider renaming builders in docs/comments for clarity (OpenAPI/Serverless).
     - Prune deprecated references in internal docs to old names (makeWrapHandler/makeFunctionConfig/etc.).
     - Optional: expose a small keysOf<T>() helper if teams prefer arg-per-key authoring ergonomics.
 
+## Next up (App singleton & registry implementation; v0, breaking)
+
+1. Event-type schema & app construction (schema-first)
+
+- Add baseEventTypeMapSchema (rest/http/sqs) with z.custom<…> types.
+- Extend DefineAppConfig to accept eventTypeMapSchema and runtime-assert it
+  contains all base keys.
+- Construct the singleton app instance in stack/config/app.config.ts with:
+  - global params schema + envKeys,
+  - stage params schema + envKeys,
+  - serverless defaults,
+  - eventTypeMapSchema (extend base to add 'step').
+
+2. Slug generator (configurable; default provided)
+
+- Introduce type SlugGenerator = (rootPath: string, functionPath: string) => string.
+- Implement defaultSlugGenerator(root, path): derive a POSIX, lowercase,
+  safe slug from the relative path (no spaces, compress dashes).
+- App config accepts slugGenerator?: SlugGenerator; default if omitted.
+
+3. Registry + per-function API
+
+- Implement app.defineFunction(options) with a single options object:
+  - options.slug?: string (optional; default derived),
+  - callerModuleUrl, endpointsRootAbs (for derivations/identity),
+  - functionName, eventType, (event|response)Schema?, fnEnvKeys?,
+  - HTTP-only: method?, basePath?, httpContexts?, contentType?,
+  - Non-HTTP: events?.
+- On registration:
+  - Throw on duplicate slug (clear error with both module paths).
+  - Brand the stored FunctionConfig with env via private Symbol.
+- Return per-function API:
+  - handler(business): wrap & return the runtime handler,
+  - openapi(baseOperation): attach OpenAPI base op,
+  - serverless(extras?): attach non-HTTP events.
+
+4. Module hygiene & loaders
+
+- Per function, split large concerns freely:
+  - func.ts (registration; exports fn),
+  - handler.ts (exports handler via fn.handler),
+  - openapi.ts (calls fn.openapi),
+  - serverless.ts (non-HTTP; calls fn.serverless).
+- Add explicit loaders:
+  - register.functions.ts → import all func.ts,
+  - register.openapi.ts → import all openapi.ts,
+  - register.serverless.ts → import all serverless.ts.
+- Update entrypoints:
+  - serverless.ts: import app + register.functions + register.serverless;
+    functions = app.buildAllServerlessFunctions().
+  - stack/config/openapi.ts: import app + register.functions + register.openapi;
+    paths = app.buildAllOpenApiPaths().
+
+5. OpenAPI & Serverless generation
+
+- Serverless function id = slug.
+- OpenAPI operationId defaults:
+  - HTTP: `${slug}_${method}` or `${slug}_${method}_${context}` for each context,
+  - Non-HTTP: slug (or configurable suffix if desired later).
+- Provider environment from app.environment; per-function env via buildFnEnv
+  merging fnEnvKeys and excluding globally exposed keys.
+
+6. BREAKING removals (no shims; no backward-compat)
+
+- Remove exported envConfig and any “loadEnvConfig” helper.
+- Remove free-function defineFunctionConfig/defineFunctionConfigFromApp exports;
+  app.defineFunction(options) is the authoring surface.
+- Remove free-function builders (buildServerlessFunctions/buildOpenApiPath);
+  replace with app.buildAllServerlessFunctions/app.buildAllOpenApiPaths.
+- Handlers switch to `export const handler = fn.handler(business)`.
+
+7. Migration (initial endpoints)
+
+- Convert openapi/get to func.ts + handler.ts + openapi.ts.
+- Convert step/activecampaign/contacts/getContact to func.ts + handler.ts (+ serverless.ts if needed).
+- Create loaders (register.functions.ts, register.openapi.ts, register.serverless.ts).
+- Update serverless.ts and stack/config/openapi.ts to import loaders and call
+  app build methods.
+
+8. Acceptance criteria
+
+- Typecheck/lint/test/openapi/package/stan:build PASS.
+- No envConfig exports; no old free-function surfaces present/exported.
+- HTTP detection remains limited to 'rest'|'http'; app-local event types
+  (e.g., 'step') only affect typing and non-HTTP registration.
+- Duplicate slug throws with clear error.
+- Knip configuration updated (optional after refactor) to reflect loader files.
 
 ## Completed (recent)
+
 - Base TS config simplification (fix TS6304 across tools)
   - Removed composite/declaration emit flags from tsconfig.base.json to match
     the simpler “working” pattern. This resolves “Composite projects may not
@@ -52,7 +140,7 @@ When updated: 2025-09-01T15:20:00Z
   - Created `stack/config/app.config.ts` (serverless + env unifier); removed
     `stack/config/loadEnvConfig.ts`.
   - Migrated handlers and endpoint builders to new names; updated exports in src/index.ts.
-  - Added runtime guards to enforce “no unspecified *EnvKeys” during config/wrapper usage.
+  - Added runtime guards to enforce “no unspecified \*EnvKeys” during config/wrapper usage.
   - Tests updated to use `wrapHandler` and direct envConfig.
 
 - Env typing bound to function configs; wrapper signature simplified
@@ -69,11 +157,12 @@ When updated: 2025-09-01T15:20:00Z
 
 - Demo package cleanup
   - Removed services/activecampaign/package.json and tsconfig.json; the demo
-    remains a plain folder driven by `orval` from the root.  - Updated ESLint parserOptions.project to drop the child tsconfig path.
+    remains a plain folder driven by `orval` from the root. - Updated ESLint parserOptions.project to drop the child tsconfig path.
   - (Optional follow-up) Prune services workspace section in knip.json later.
+
 - Single published package (simplify workspaces)
   - Removed root `workspaces` (only the root package is published).
-  - Updated `generate` script to run Orval directly:    `cd services/activecampaign && orval`.
+  - Updated `generate` script to run Orval directly: `cd services/activecampaign && orval`.
 
 - Rollup tsconfig hard‑pin
   - Both rollup.config.ts and stan.rollup.config.ts now explicitly pass
