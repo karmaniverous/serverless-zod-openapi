@@ -1,12 +1,13 @@
 {
   "workspaces": {
     ".": {
-      "entry": ["serverless.ts", "stack/config/openapi.ts"],
-      "project": ["src/**", "stack/**", "!docs/**"],
+      "entry": ["serverless.ts", "app/config/openapi.ts"],
+      "project": ["src/**", "app/**", "!docs/**"],
       "ignore": ["lib/test/**"]
     },
     "services/activecampaign": {
-      "entry": ["src/index.ts"],      "project": ["src/**", "!**/generated/**"],
+      "entry": ["src/index.ts"],
+      "project": ["src/**", "!**/generated/**"],
       "ignore": ["**/generated/**", "src/openapi.json"]
     }
   },

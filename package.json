@@ -131,7 +131,7 @@
     "knip": "knip",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "openapi": "tsx stack/config/openapi && prettier -w stack/openapi.json",
+    "openapi": "tsx app/config/openapi && prettier -w app/openapi.json",
     "package": "serverless package",
     "release": "dotenvx run -f .env.local -- release-it",
     "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",

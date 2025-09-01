@@ -33,7 +33,7 @@ When updated: 2025-09-01T15:55:00Z
 - Add baseEventTypeMapSchema (rest/http/sqs) with z.custom<…> types.
 - Extend DefineAppConfig to accept eventTypeMapSchema and runtime-assert it
   contains all base keys.
-- Construct the singleton app instance in stack/config/app.config.ts with:
+- Construct the singleton app instance in app/config/app.config.ts with:
   - global params schema + envKeys,
   - stage params schema + envKeys,
   - serverless defaults,
@@ -65,18 +65,18 @@ When updated: 2025-09-01T15:55:00Z
 4. Module hygiene & loaders
 
 - Per function, split large concerns freely:
-  - func.ts (registration; exports fn),
+  - lambda.ts (registration; exports fn),
   - handler.ts (exports handler via fn.handler),
   - openapi.ts (calls fn.openapi),
   - serverless.ts (non-HTTP; calls fn.serverless).
 - Add explicit loaders:
-  - register.functions.ts → import all func.ts,
+  - register.functions.ts → import all lambda.ts,
   - register.openapi.ts → import all openapi.ts,
   - register.serverless.ts → import all serverless.ts.
 - Update entrypoints:
   - serverless.ts: import app + register.functions + register.serverless;
     functions = app.buildAllServerlessFunctions().
-  - stack/config/openapi.ts: import app + register.functions + register.openapi;
+  - app/config/openapi.ts: import app + register.functions + register.openapi;
     paths = app.buildAllOpenApiPaths().
 
 5. OpenAPI & Serverless generation
@@ -99,10 +99,10 @@ When updated: 2025-09-01T15:55:00Z
 
 7. Migration (initial endpoints)
 
-- Convert openapi/get to func.ts + handler.ts + openapi.ts.
-- Convert step/activecampaign/contacts/getContact to func.ts + handler.ts (+ serverless.ts if needed).
+- Convert openapi/get to lambda.ts + handler.ts + openapi.ts.
+- Convert step/activecampaign/contacts/getContact to lambda.ts + handler.ts (+ serverless.ts if needed).
 - Create loaders (register.functions.ts, register.openapi.ts, register.serverless.ts).
-- Update serverless.ts and stack/config/openapi.ts to import loaders and call
+- Update serverless.ts and app/config/openapi.ts to import loaders and call
   app build methods.
 
 8. Acceptance criteria
@@ -137,8 +137,8 @@ When updated: 2025-09-01T15:55:00Z
     - `makeFunctionConfig` → `defineFunctionConfig`,
     - `buildFunctionDefinitions` → `buildServerlessFunctions`,
     - `buildPathItemObject` → `buildOpenApiPath`.
-  - Created `stack/config/app.config.ts` (serverless + env unifier); removed
-    `stack/config/loadEnvConfig.ts`.
+  - Created `app/config/app.config.ts` (serverless + env unifier); removed
+    `app/config/loadEnvConfig.ts`.
   - Migrated handlers and endpoint builders to new names; updated exports in src/index.ts.
   - Added runtime guards to enforce “no unspecified \*EnvKeys” during config/wrapper usage.
   - Tests updated to use `wrapHandler` and direct envConfig.
@@ -190,4 +190,4 @@ When updated: 2025-09-01T15:55:00Z
   - Mapped validation errors to 400; ensured consistent Content-Type and serialization.
 
 - OpenAPI and generation
-  - Moved generator to stack/config/openapi.ts; output to stack/openapi.json; orval generation stable with local mutator forwarder.
+  - Moved generator to app/config/openapi.ts; output to app/openapi.json; orval generation stable with local mutator forwarder.

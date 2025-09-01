@@ -41,9 +41,9 @@ const doc = createDocument({
  */
 const pkgDir = packageDirectorySync();
 
-// Write the generated OpenAPI document to `stack/openapi.json`.
+// Write the generated OpenAPI document to `app/openapi.json`.
 fs.writeFileSync(
-  path.join(pkgDir!, 'stack/openapi.json'),
+  path.join(pkgDir!, 'app/openapi.json'),
   JSON.stringify(doc, null, 2),
 );
 

@@ -1,6 +1,7 @@
 # Global Requirements & Cross‑Cutting Concerns
 
 > Source of truth for non-file-specific requirements. Keep business logic comments lean; record the intent here.
+
 ## 1) Logger shape
 
 - Requirement: Anywhere a `logger` is accepted or passed, it MUST extend `ConsoleLogger` (i.e., be compatible with the standard `console` interface).
@@ -141,7 +142,7 @@ Orval, and predictable Axios defaults across all ActiveCampaign calls.
 
 - DX: envKeys are typed as `readonly (keyof z.infer<Schema>)[]` so IntelliSense suggests only valid keys and invalid literals squiggle individually.
 - Runtime guard:
-  - When building config or invoking the wrapper, assert every envKeys entry is present in the corresponding Zod schema shape (“no unspecified *EnvKeys”).
+  - When building config or invoking the wrapper, assert every envKeys entry is present in the corresponding Zod schema shape (“no unspecified \*EnvKeys”).
 
 ## 5) HTTP middleware stack policy (durable; do not remove)
 
@@ -197,6 +198,7 @@ Process rule:
 ## 7) Config model simplification (direction)
 
 Goal: simplify authoring while keeping strong types.
+
 - Per‑function config: a single object in each `config.ts` that inlines
   `eventSchema` and `responseSchema`; consumers read them from
   `functionConfig.eventSchema`/`responseSchema` (no external pairing needed).
@@ -228,12 +230,14 @@ should be recorded here and reflected in the dev plan.
 ## 8) App singleton & function registry (v0, breaking)
 
 Purpose
+
 - Establish a single source of truth for function definitions, env typing, and
   event-type unions (including app-local extensions like “step”). Eliminate
   intermediate glue (e.g., exported envConfig) and enable clean separation of
   concerns across modules (function definition, handler, OpenAPI, Serverless).
 
 Architecture overview
+
 - App singleton:
   - The application is represented by a single instance (the “app”) created
     from schemas and configuration:
@@ -261,6 +265,7 @@ Architecture overview
   - Runtime guard: assert that base keys exist in eventTypeMapSchema.shape.
 
 Slug policy
+
 - Define:
   - type SlugGenerator = (rootPath: string, functionPath: string) => string
   - A rational defaultSlugGenerator(root, fileDir) that derives a stable slug
@@ -284,6 +289,7 @@ Slug policy
     disambiguate by providing an explicit options.slug or modifying file layout.
 
 Function registration (single options argument; no intermediate env config)
+
 - Functions are registered on the app singleton with a single options object.
   - options include:
     - callerModuleUrl: string (import.meta.url),
@@ -301,6 +307,7 @@ Function registration (single options argument; no intermediate env config)
     (no exported envConfig), preserving fnEnvKeys typing and testability.
 
 Returned per-function API (no slug reuse required by consumers)
+
 - defineFunction(options) returns a typed object for that function:
   - handler(business): exports a runtime handler by wrapping the stored config
     (env read from the brand). No extra glue required.
@@ -309,19 +316,21 @@ Returned per-function API (no slug reuse required by consumers)
   - None of these require consumers to know or pass the slug explicitly.
 
 Separation of concerns (modules per function)
+
 - Hygiene goal: large concerns may be split into distinct modules; they must
   remain small and focused, and only import what they need.
-  - func.ts: the source of truth, calls app.defineFunction({...}) and exports
+  - lambda.ts: the source of truth, calls app.defineFunction({...}) and exports
     the per-function API object returned by registration (e.g., export const fn).
-  - handler.ts: import { fn } from './func' and export const handler = fn.handler(business).
-  - openapi.ts: import { fn } from './func' and call fn.openapi(baseOperation).
-  - serverless.ts (non-HTTP only): import { fn } from './func' and call
+  - handler.ts: import { fn } from './lambda' and export const handler = fn.handler(business).
+  - openapi.ts: import { fn } from './lambda' and call fn.openapi(baseOperation).
+  - serverless.ts (non-HTTP only): import { fn } from './lambda' and call
     fn.serverless(extras). HTTP endpoints typically don’t need a separate file
     if method/basePath/httpContexts suffice.
 
 Aggregation (explicit loaders; no hidden imports)
+
 - To generate global artifacts without per-function imports, use small loaders:
-  - register.functions.ts: imports all func.ts (ensures every function is
+  - register.functions.ts: imports all lambda.ts (ensures every function is
     registered before builds).
   - register.openapi.ts: imports all openapi.ts (ensures per-function OpenAPI
     base operations are attached).
@@ -330,17 +339,18 @@ Aggregation (explicit loaders; no hidden imports)
   - These are imported by:
     - serverless.ts: import app, register.functions, register.serverless, then
       call app.buildAllServerlessFunctions() to produce AWS['functions'].
-    - stack/config/openapi.ts: import app, register.functions, register.openapi,
+    - app/config/openapi.ts: import app, register.functions, register.openapi,
       then call app.buildAllOpenApiPaths() and compose the document.
   - Optionally, loader files can be generated by a script from a glob scan.
 
 OpenAPI and Serverless generation
+
 - OpenAPI:
   - Per-function baseOperation is attached via fn.openapi(baseOperation).
   - OperationId defaults:
     - HTTP with contexts: `${slug}_${method}_${context}`,
     - HTTP without contexts: `${slug}_${method}`,
-    - Non-HTTP: slug (or slug + “_internal” if configured).
+    - Non-HTTP: slug (or slug + “\_internal” if configured).
   - app.buildAllOpenApiPaths() merges per-function paths.
 
 - Serverless:
@@ -353,6 +363,7 @@ OpenAPI and Serverless generation
       buildFnEnv merges fnEnvKeys excluding globally exposed keys.
 
 Breaking changes (no shims; v0)
+
 - Remove exported envConfig and any “loadEnvConfig” helpers.
 - Remove free-function defineFunctionConfig/defineFunctionConfigFromApp; the
   only authoring surface is app.defineFunction(options), which returns a typed
@@ -363,6 +374,7 @@ Breaking changes (no shims; v0)
   app.buildAllOpenApiPaths only).
 
 Testing and DX
+
 - Tests can import the app singleton or a test factory; a reset API can be
   exposed under test-only builds to clear the registry, or a createTestApp
   helper can be provided. Handlers are wrapped through fn.handler(business),
