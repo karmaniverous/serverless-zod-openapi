@@ -6,22 +6,24 @@
  * - No shims/back-compat: new registration surface (defineFunction) returns per-function API.
  * - Allow widening HTTP event tokens via app.httpEventTypeTokens (runtime). Defaults ['rest','http'].
  */
-import { dirname, join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import type { AWS } from '@serverless/typescript';
-import { packageDirectorySync } from 'package-directory';
-import type { z, ZodObject, ZodRawShape } from 'zod';
+import type { z } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
+import { buildAllOpenApiPaths as buildPaths } from '@/src/app/buildOpenApi';
+import { buildAllServerlessFunctions as buildFns } from '@/src/app/buildServerless';
+import { handlerFactory } from '@/src/app/handlerFactory';
+import {
+  defaultHttpEventTypeTokens,
+  validateEventTypeMapSchemaIncludesBase,
+} from '@/src/app/httpTokens';
+import { deriveSlug } from '@/src/app/slug';
+import type { ZodObj } from '@/src/app/types';
 import { baseEventTypeMapSchema } from '@/src/config/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
 import type { EnvAttached } from '@/src/handler/defineFunctionConfig';
 import { ENV_CONFIG } from '@/src/handler/defineFunctionConfig';
-import { wrapHandler } from '@/src/handler/wrapHandler';
-import { resolveHttpFromFunctionConfig } from '@/src/http/resolveHttpFromFunctionConfig';
 import type { BaseOperation } from '@/src/openapi/types';
-import { buildPathElements } from '@/src/path/buildPath';
 import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
@@ -29,7 +31,6 @@ import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { Handler } from '@/src/types/Handler';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
-type ZodObj = ZodObject<ZodRawShape>;
 
 export interface AppServerlessConfig {
   defaultHandlerFileName: string;
@@ -128,17 +129,9 @@ export class App<
     this.serverless = init.serverless;
 
     // Validate that eventTypeMapSchema includes base keys at runtime
-    const shape = (this.eventTypeMapSchema as ZodObj).shape as Record<
-      string,
-      unknown
-    >;
-    for (const k of ['rest', 'http', 'sqs'] as const) {
-      if (!(k in shape)) {
-        throw new Error(
-          `eventTypeMapSchema is missing base key "${k}". Ensure it extends baseEventTypeMapSchema.`,
-        );
-      }
-    }
+    validateEventTypeMapSchemaIncludesBase(
+      (this.eventTypeMapSchema as ZodObj).shape as Record<string, unknown>,
+    );
 
     // Env exposure nodes
     this.global = {
@@ -158,14 +151,16 @@ export class App<
       globalEnvKeys: init.global.envKeys,
       stageEnvKeys: init.stage.envKeys,
       stages: init.stage.params,
-    });    this.stages = sf.stages;
+    });
+    this.stages = sf.stages;
     this.environment = sf.environment;
     this.buildFnEnv = sf.buildFnEnv;
 
     // HTTP tokens (runtime decision)
-    const defaultHttpTokens = ['rest', 'http'] as const;
-    this.httpEventTypeTokens = (init.httpEventTypeTokens ?? defaultHttpTokens) as readonly string[];
+    this.httpEventTypeTokens = (init.httpEventTypeTokens ??
+      defaultHttpEventTypeTokens) as readonly string[];
   }
+
   /** Ergonomic constructor for schema-first inference. */
   static create<
     G extends ZodObj,
@@ -173,26 +168,6 @@ export class App<
     E extends ZodObj = typeof baseEventTypeMapSchema,
   >(init: AppInit<G, S, E>): App<G, S, E> {
     return new App(init);
-  }
-
-  /** Derive a stable, lowercase, POSIX slug from module location (overrideable per function). */
-  private deriveSlug(
-    endpointsRootAbs: string,
-    callerModuleUrl: string,
-  ): string {
-    const rel = relative(
-      endpointsRootAbs,
-      dirname(fileURLToPath(callerModuleUrl)),
-    )
-      .split(sep)
-      .join('/')
-      .toLowerCase();
-    // sanitize: keep safe chars, collapse repeats
-    return rel
-      .replace(/[^a-z0-9/_-]+/g, '-')
-      .replace(/\/+/g, '/')
-      .replace(/-+/g, '-')
-      .replace(/^[-/]+|[-/]+$/g, '');
   }
 
   /** Register a function and return its per-function API (handler/openapi/serverless). */
@@ -207,7 +182,8 @@ export class App<
     >,
     EventSchema extends z.ZodType | undefined,
     ResponseSchema extends z.ZodType | undefined,
-  >(options: {    functionName: string;
+  >(options: {
+    functionName: string;
     eventType: EventType;
     // Optional HTTP-only
     method?: MethodKey;
@@ -227,7 +203,7 @@ export class App<
   }) {
     const slug =
       options.slug ??
-      this.deriveSlug(options.endpointsRootAbs, options.callerModuleUrl);
+      deriveSlug(options.endpointsRootAbs, options.callerModuleUrl);
     if (this.registry.has(slug)) {
       const other = this.registry.get(slug)!;
       throw new Error(
@@ -284,14 +260,16 @@ export class App<
       /** Wrapped AWS Lambda handler (HTTP or non-HTTP) */
       handler: (
         business: Handler<
-          EventSchema, ResponseSchema,
+          EventSchema,
+          ResponseSchema,
           (z.infer<EventTypeMapSchema> & BaseEventTypeMap)[EventType]
         >,
       ) => {
         type GlobalParams = z.infer<GlobalParamsSchema>;
         type StageParams = z.infer<StageParamsSchema>;
         type EventTypeMapResolved = z.infer<EventTypeMapSchema> &
-          BaseEventTypeMap;        type FC = FunctionConfig<
+          BaseEventTypeMap;
+        type FC = FunctionConfig<
           EventSchema,
           ResponseSchema,
           GlobalParams,
@@ -303,16 +281,15 @@ export class App<
 
         const functionConfig = brandedConfig as unknown as FC;
 
-        return wrapHandler<
+        const make = handlerFactory<
           GlobalParamsSchema,
           StageParamsSchema,
           EventTypeMapResolved,
           EventType,
           EventSchema,
           ResponseSchema
-        >(functionConfig, business, {
-          httpEventTypeTokens: this.httpEventTypeTokens,
-        });
+        >(this.httpEventTypeTokens);
+        return make(functionConfig, business);
       },
       /** Attach OpenAPI base operation info for this function */
       openapi: (baseOperation: BaseOperation) => {
@@ -329,115 +306,11 @@ export class App<
 
   /** Aggregate Serverless function definitions across the registry. */
   buildAllServerlessFunctions(): AWS['functions'] {
-    const out: Record<string, unknown> = {};
-    const repoRoot = packageDirectorySync()!;
-
-    for (const r of this.registry.values()) {
-      // Handler path
-      const callerDir = dirname(fileURLToPath(r.callerModuleUrl));
-      const handlerFileAbs = join(
-        callerDir,
-        this.serverless.defaultHandlerFileName,
-      );
-      const handlerFileRel = relative(repoRoot, handlerFileAbs)
-        .split(sep)
-        .join('/');
-      const handler = `${handlerFileRel}.${this.serverless.defaultHandlerFileExport}`;
-
-      let events: unknown = [];
-      // HTTP decision: runtime widenable
-      const isHttp = this.httpEventTypeTokens.includes(r.eventType);
-      if (isHttp) {
-        // Build method/path from stored fields or derive from layout
-        const { method, basePath, contexts } = resolveHttpFromFunctionConfig(
-          {
-            functionName: r.functionName,
-            eventType: r.eventType as keyof BaseEventTypeMap,
-            ...(r.method ? { method: r.method } : {}),
-            ...(r.basePath ? { basePath: r.basePath } : {}),
-            ...(r.httpContexts ? { httpContexts: r.httpContexts } : {}),
-          } as unknown as {
-            functionName: string;
-            eventType: keyof BaseEventTypeMap;
-            method?: MethodKey;
-            basePath?: string;
-            httpContexts?: readonly HttpContext[];
-          },
-          r.callerModuleUrl,
-          r.endpointsRootAbs,
-        );
-        const path = `/${basePath.replace(/^\/+/, '')}`;
-        const ctxs = contexts.length ? contexts : (['public'] as const);
-        events = ctxs.map(() => ({
-          http: {
-            method,
-            path,
-          },
-        }));
-      } else {
-        events = r.serverlessExtras ?? [];
-      }
-
-      const def: Record<string, unknown> = {
-        handler,
-        events,
-        environment: this.buildFnEnv((r.fnEnvKeys ?? []) as readonly never[]),
-      };
-
-      out[r.functionName] = def;
-    }
-
-    return out as NonNullable<AWS['functions']>;
+    return buildFns(this.registry.values(), this.serverless, this.buildFnEnv);
   }
 
   /** Aggregate OpenAPI paths across the registry. */
   buildAllOpenApiPaths(): ZodOpenApiPathsObject {
-    const paths: Record<string, unknown> = {};
-
-    for (const r of this.registry.values()) {
-      const isHttp = this.httpEventTypeTokens.includes(r.eventType);
-      if (!isHttp || !r.openapiBaseOperation) continue;
-
-      const { method, basePath, contexts } = resolveHttpFromFunctionConfig(
-        {
-          functionName: r.functionName,
-          eventType: r.eventType as keyof BaseEventTypeMap,
-          ...(r.method ? { method: r.method } : {}),
-          ...(r.basePath ? { basePath: r.basePath } : {}),
-          ...(r.httpContexts ? { httpContexts: r.httpContexts } : {}),
-        } as unknown as {
-          functionName: string;
-          eventType: keyof BaseEventTypeMap;
-          method?: MethodKey;
-          basePath?: string;
-          httpContexts?: readonly HttpContext[];
-        },
-        r.callerModuleUrl,
-        r.endpointsRootAbs,
-      );
-
-      const ctxs = (
-        contexts.length ? contexts : (['public'] as const)
-      );
-      for (const context of ctxs) {
-        const elems = buildPathElements(basePath, context);
-        const pathKey = `/${elems.join('/')}`;
-        const op = {
-          ...r.openapiBaseOperation,
-          operationId: [...elems, method].join('_'),
-          summary: `${r.openapiBaseOperation.summary} (${context})`,
-          tags: Array.from(
-            new Set([...(r.openapiBaseOperation.tags ?? []), context]),
-          ),
-        };
-        const existing = (paths[pathKey] as Record<string, unknown>) || {};
-        paths[pathKey] = {
-          ...existing,
-          [method]: op,
-        };
-      }
-    }
-
-    return paths as ZodOpenApiPathsObject;
+    return buildPaths(this.registry.values());
   }
 }
