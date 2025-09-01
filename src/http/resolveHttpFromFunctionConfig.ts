@@ -54,38 +54,47 @@ export const resolveHttpFromFunctionConfig = <
     httpContexts?: readonly HttpContext[];
   };
 
+  // Compute relative path from endpoints root to the caller directory
+  const relPath = relative(
+    endpointsRootAbs,
+    dirname(fileURLToPath(callerModuleUrl)),
+  )
+    .split(sep)
+    .join('/');
+  const underEndpointsRoot = !relPath.startsWith('..');
+
   let method: MethodKey;
   if (maybeMethod && HTTP_METHODS.has(maybeMethod)) {
     method = maybeMethod;
   } else {
-    // derive from folder name
-    const rel = relative(
-      endpointsRootAbs,
-      dirname(fileURLToPath(callerModuleUrl)),
-    )
-      .split(sep)
-      .join('/');
-    const segs = rel.split('/').filter(Boolean);
+    if (!underEndpointsRoot) {
+      throw new Error(
+        'resolveHttpFromFunctionConfig: method missing and caller is not under endpoints root; provide method explicitly.',
+      );
+    }
+    const segs = relPath.split('/').filter(Boolean);
     const tail = segs[segs.length - 1]?.toLowerCase();
-    method = HTTP_METHODS.has(tail as MethodKey) ? (tail as MethodKey) : 'get';
+    if (HTTP_METHODS.has(tail as MethodKey)) method = tail as MethodKey;
+    else
+      throw new Error(
+        'resolveHttpFromFunctionConfig: cannot infer method from folder; provide method explicitly.',
+      );
   }
 
   let basePath = sanitizeBasePath(maybeBase ?? '');
   if (!basePath) {
-    const rel = relative(
-      endpointsRootAbs,
-      dirname(fileURLToPath(callerModuleUrl)),
-    )
-      .split(sep)
-      .join('/');
-    const segs = rel.split('/').filter(Boolean);
+    if (!underEndpointsRoot) {
+      throw new Error(
+        'resolveHttpFromFunctionConfig: basePath missing and caller is not under endpoints root; provide basePath explicitly.',
+      );
+    }
+    const segs = relPath.split('/').filter(Boolean);
     if (segs.length && segs[segs.length - 1]?.toLowerCase() === method)
       segs.pop();
     basePath = segs.join('/');
   }
 
-  if (!basePath) {
-    throw new Error(
+  if (!basePath) {    throw new Error(
       'resolveHttpFromFunctionConfig: derived basePath is empty; ensure file is under endpoints root or set config.basePath.',
     );
   }

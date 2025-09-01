@@ -1,12 +1,18 @@
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { z } from 'zod';
 
 import { App, baseEventTypeMapSchema } from '@/src';
 
+// Derive the app root as the parent directory of app/config/
+const APP_ROOT_ABS = dirname(dirname(fileURLToPath(import.meta.url))).replace(/\\/g, '/');
+
 export const app = App.create({
+  appRootAbs: APP_ROOT_ABS,
   globalParamsSchema: z.object({
     ESB_MINIFY: z.boolean(),
-    ESB_SOURCEMAP: z.boolean(),
-    PROFILE: z.string(),
+    ESB_SOURCEMAP: z.boolean(),    PROFILE: z.string(),
     REGION: z.string(),
     SERVICE_NAME: z.string(),
   }),

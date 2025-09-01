@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-01T19:25:00Z
+When updated: 2025-09-01T19:45:00Z
 
 ## Next up
 
@@ -18,41 +18,23 @@ When updated: 2025-09-01T19:25:00Z
 
 ## Completed (recent)
 
-9. App: parse serverless internally; move schema to src
-   - Moved serverlessConfigSchema to src/config/serverlessConfig.ts.
-   - App.Init.serverless now accepts raw input (schema input type) and is
-     parsed in the constructor.
+9. Function registration defaults & slug removal
+   - Eliminated slug; functionName is now the unique registry key.
+   - Added DefineFunctionOptions; App.defineFunction uses it.
+   - Default functionName derived from path relative to app root with underscores.
+   - App.create now accepts appRootAbs; app root derived in app.config.ts from its own location.
 
-10. Stage params typing accepts global overrides
-    - Changed AppInit stage.params type to include Partial<GlobalParams>
-      alongside StageParams, resolving config TS errors.
+10. Path-based defaults
+    - method/basePath continue to be inferred only when file is under endpoints root.
+    - No change to OpenAPI: operationId remains derived from basePath + method; e.g. openapi_get.
 
-11. Remove obsolete app stages aggregator
+11. Stage params input typing
+    - Relaxed AppInit.stage.params input to Record<string, Record<string, unknown>>.
+    - App composes effective schema as global.partial().extend(stage.shape) at runtime.
+
+12. Legacy compile fix
+    - Removed unresolved app-local import from src/handler/defineFunctionConfig.ts; bound to BaseEventTypeMap.
+
+13. Remove obsolete app stages aggregator
     - Deleted app/config/stages/index.ts (unused; superseded by
       app/config/app.config.ts).
-
-12. Lint fix (App.ts)
-    - Removed unused BaseOperation import to satisfy
-      @typescript-eslint/no-unused-vars).
-
-13. App adopts registry.ts (delegation)
-    - Replaced internal Map-based registry with src/app/registry.ts.
-    - defineFunction forwards to registry; build functions iterate registry.values(). - Eliminates duplication and clears knip “unused file” for registry.
-14. Lint & export hygiene
-    - buildOpenApi: replaced “|| {}” with explicit in-operator check to satisfy no-unnecessary-condition.
-    - slug: removed default export to avoid duplicate export; keep named export (deriveSlug) only.5. Registry extraction
-    - Introduced src/app/registry.ts encapsulating function registration and storage.
-    - App delegates registration to registry; builders iterate via registry.values().
-15. Lint/types cleanup & OpenAPI handler
-    - Removed import() type annotation in App.defineFunction handler signature; added top-level type import for Handler.
-    - Constrained EventType to string keys; simplified httpEventTypeTokens init. - OpenAPI GET responseSchema -> z.any; handler uses top-level type import and Response alias.
-    - Tests: adjusted wrapHandler tests to cast via unknown for shaped HTTP envelopes.
-
-16. App SRP (phase 1)
-    - Extracted slug helper and HTTP tokens/guard to src/app/.
-    - App.ts updated accordingly; fixed no-unnecessary-condition.
-    - Scripts PASS (typecheck, test, openapi, package, stan:build); lint clean on changed modules.
-
-17. App SRP (phase 2 start)
-    - Introduced handlerFactory, buildServerless, buildOpenApi modules.
-    - App delegates wrap and builders to modules.

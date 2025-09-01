@@ -13,7 +13,6 @@ import type { Handler } from '@/src/types/Handler';
 import type { HttpContext } from '@/src/types/HttpContext';
 
 type RegistryEntry = {
-  slug: string;
   functionName: string;
   eventType: string;
   method?: MethodKey;
@@ -52,7 +51,6 @@ export const createRegistry = <
       EventSchema extends z.ZodType | undefined,
       ResponseSchema extends z.ZodType | undefined,
     >(options: {
-      slug: string;
       functionName: string;
       eventType: EventType;
       method?: MethodKey;
@@ -66,11 +64,11 @@ export const createRegistry = <
       callerModuleUrl: string;
       endpointsRootAbs: string;
     }) {
-      const slug = options.slug;
-      if (map.has(slug)) {
-        const other = map.get(slug)!;
+      const key = options.functionName;
+      if (map.has(key)) {
+        const other = map.get(key)!;
         throw new Error(
-          `Duplicate function slug "${slug}". Existing: ${other.callerModuleUrl}. New: ${options.callerModuleUrl}. Provide a custom slug to disambiguate.`,
+          `Duplicate functionName "${key}". Existing: ${other.callerModuleUrl}. New: ${options.callerModuleUrl}. Provide a unique functionName.`,
         );
       }
 
@@ -97,8 +95,7 @@ export const createRegistry = <
         },
       } as Record<string, unknown>;
 
-      map.set(slug, {
-        slug,
+      map.set(key, {
         functionName: options.functionName,
         eventType: options.eventType as string,
         ...(options.method ? { method: options.method } : {}),
@@ -151,11 +148,11 @@ export const createRegistry = <
           return make(fnConfig, business);
         },
         openapi: (baseOperation: BaseOperation) => {
-          const r = map.get(slug)!;
+          const r = map.get(key)!;
           r.openapiBaseOperation = baseOperation;
         },
         serverless: (extras: unknown) => {
-          const r = map.get(slug)!;
+          const r = map.get(key)!;
           r.serverlessExtras = extras;
         },
       };

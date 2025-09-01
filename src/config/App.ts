@@ -6,6 +6,9 @@
  * - No shims/back-compat: new registration surface (defineFunction) returns per-function API.
  * - Allow widening HTTP event tokens via app.httpEventTypeTokens (runtime). Defaults ['rest','http'].
  */
+import { dirname, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import type { AWS } from '@serverless/typescript';
 import { z, type ZodObject, type ZodRawShape } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
@@ -17,7 +20,6 @@ import {
   validateEventTypeMapSchemaIncludesBase,
 } from '@/src/app/httpTokens';
 import { createRegistry } from '@/src/app/registry';
-import { deriveSlug } from '@/src/app/slug';
 import type { ZodObj } from '@/src/app/types';
 import { baseEventTypeMapSchema } from '@/src/config/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
@@ -39,27 +41,23 @@ export interface AppInit<
   StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,
 > {
+  appRootAbs: string;
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
-  eventTypeMapSchema?: EventTypeMapSchema;
-  /** Accept raw serverless config; App will parse it internally. */
+  eventTypeMapSchema?: EventTypeMapSchema /** Accept raw serverless config; App will parse it internally. */;
   serverless: z.input<typeof serverlessConfigSchema>;
   global: {
     params: z.infer<GlobalParamsSchema>;
     envKeys: readonly (keyof z.infer<GlobalParamsSchema>)[];
   };
   stage: {
-    /** Allow stage objects to include optional overrides of global params. */
-    params: Record<
-      string,
-      z.infer<StageParamsSchema> & Partial<z.infer<GlobalParamsSchema>>
-    >;
+    /** Accept raw stage param objects; App will parse with (global.partial + stage) */
+    params: Record<string, Record<string, unknown>>;
     envKeys: readonly (keyof z.infer<StageParamsSchema>)[];
   };
   /**
    * HTTP tokens to treat as HTTP at runtime (widenable).
-   * Defaults to ['rest', 'http'].
-   */
+   * Defaults to ['rest', 'http'].   */
   httpEventTypeTokens?: readonly (keyof z.infer<EventTypeMapSchema>)[];
 }
 
@@ -69,10 +67,10 @@ export class App<
   EventTypeMapSchema extends ZodObj,
 > {
   // Schemas
+  public readonly appRootAbs: string;
   public readonly globalParamsSchema: GlobalParamsSchema;
   public readonly stageParamsSchema: StageParamsSchema;
   public readonly eventTypeMapSchema: EventTypeMapSchema;
-
   // Serverless config
   public readonly serverless: AppServerlessConfig;
 
@@ -100,6 +98,7 @@ export class App<
   private constructor(
     init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,
   ) {
+    this.appRootAbs = init.appRootAbs.replace(/\\/g, '/');
     this.globalParamsSchema = init.globalParamsSchema;
     this.stageParamsSchema = init.stageParamsSchema;
     // Default to base schema when omitted (apply default INSIDE the function)
@@ -170,13 +169,16 @@ export class App<
     return new App(init);
   }
 
-  /** Register a function and return its per-function API (handler/openapi/serverless). */
-  defineFunction<
+  /**
+   * Authoring interface for function registration.
+   * functionName is optional — defaults from appRootAbs + callerModuleUrl.
+   */
+  public defineFunction<
     EventType extends Extract<keyof z.infer<EventTypeMapSchema>, string>,
     EventSchema extends z.ZodType | undefined,
     ResponseSchema extends z.ZodType | undefined,
   >(options: {
-    functionName: string;
+    functionName?: string;
     eventType: EventType;
     // Optional HTTP-only
     method?: MethodKey;
@@ -189,19 +191,22 @@ export class App<
     // Optional env keys
     fnEnvKeys?: readonly (keyof (z.infer<GlobalParamsSchema> &
       z.infer<StageParamsSchema>))[];
-    // Identity & slugging
+    // Identity & roots
     callerModuleUrl: string;
     endpointsRootAbs: string;
-    slug?: string;
   }) {
-    const slug =
-      options.slug ??
-      deriveSlug(options.endpointsRootAbs, options.callerModuleUrl);
+    const functionName =
+      options.functionName ??
+      (() => {
+        const callerDir = dirname(fileURLToPath(options.callerModuleUrl));
+        const rel = relative(this.appRootAbs, callerDir).split(sep).join('/');
+        const parts = rel.split('/').filter(Boolean);
+        return parts.join('_'); // underscore formatting
+      })();
 
     return this.registry.defineFunction<EventType, EventSchema, ResponseSchema>(
       {
-        slug,
-        functionName: options.functionName,
+        functionName,
         eventType: options.eventType,
         ...(options.method ? { method: options.method } : {}),
         ...(options.basePath ? { basePath: options.basePath } : {}),
@@ -217,7 +222,6 @@ export class App<
       },
     );
   }
-
   /** Aggregate Serverless function definitions across the registry. */
   buildAllServerlessFunctions(): AWS['functions'] {
     return buildFns(this.registry.values(), this.serverless, this.buildFnEnv);
