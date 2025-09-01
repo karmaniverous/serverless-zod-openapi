@@ -19,6 +19,7 @@ import httpResponseSerializer from '@middy/http-response-serializer';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
+import { wrapSerializer } from '@/src/handler/wrapSerializer';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 
 import { asApiMiddleware } from './asApiMiddleware';
@@ -266,14 +267,19 @@ export const buildHttpMiddlewareStack = <
         {
           // Accept application/json, application/*+json (ld+json, vnd.api+json, etc.)
           regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
-          serializer: ({ body }) =>
-            typeof body === 'string' ? body : JSON.stringify(body),
+          serializer: wrapSerializer(
+            ({ body }) =>
+              typeof body === 'string' ? body : JSON.stringify(body),
+            {
+              label: 'json',
+              logger,
+            },
+          ),
         },
       ],
       defaultContentType: contentType,
     }),
   );
-
   // Compose in the correct order (header/event normalization first, serializer last)
   return combine(
     mHead,

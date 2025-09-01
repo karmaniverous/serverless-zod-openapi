@@ -1,15 +1,16 @@
 # Development Plan
 
-When updated: 2025-09-01T02:04:00Z
+When updated: 2025-09-01T02:12:00Z
 
 ## Next up
-- Knip cleanup and configuration  - Suppress known false-positives:
-    - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
-      Add an ignore pattern so Knip does not flag these as “Unused files”.
-    - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
-      cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
-      Add them to ignoreDependencies to reduce noise.
-    - Keep http-errors under review; do not remove until confirmed unused at runtime.
+
+- Knip cleanup and configuration - Suppress known false-positives:
+  - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
+    Add an ignore pattern so Knip does not flag these as “Unused files”.
+  - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
+    cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
+    Add them to ignoreDependencies to reduce noise.
+  - Keep http-errors under review; do not remove until confirmed unused at runtime.
   - Consider removing the redundant knip “entry” for app/config/openapi.ts per the hint.
   - Acceptance:
     - knip shows no “Unused files” for handler.ts paths and no “Unused dependencies” for the
@@ -66,7 +67,7 @@ When updated: 2025-09-01T02:04:00Z
 
 15. Knip config phase 1
     - Removed redundant entry (app/config/openapi.ts).
-    - Ignored Serverless handler files (app/**/handler.ts).
+    - Ignored Serverless handler files (app/\*\*/handler.ts).
     - Added ignoreDependencies for CLI/serverless-only and cross-folder deps to quiet false positives.
 
 16. Unused modules triage — phase 1 (delete)
@@ -82,3 +83,6 @@ When updated: 2025-09-01T02:04:00Z
       - src/types/HttpEvent.ts, src/types/MakeOptional.ts, src/types/ShapedResponse.ts
       - src/handler/middleware/index.ts, src/handler/middleware/noop.ts
     - Expect Knip “Unused files” list to shrink accordingly; all scripts remain green.
+
+17. Reintegrate wrapSerializer into HTTP middleware
+    - Wrapped http-response-serializer’s JSON serializer with wrapSerializer for debug logging.
