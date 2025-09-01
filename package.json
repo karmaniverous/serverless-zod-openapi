@@ -127,7 +127,7 @@
     "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
-    "generate": "cd services/activecampaign && npm run generate",
+    "generate": "cd services/activecampaign && orval",
     "knip": "knip",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -142,8 +142,5 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "type": "module",
-  "version": "0.0.0",
-  "workspaces": [
-    "services/*"
-  ]
+  "version": "0.0.0"
 }

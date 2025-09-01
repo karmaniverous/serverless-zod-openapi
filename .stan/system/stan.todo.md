@@ -1,9 +1,11 @@
 # Development Plan
 
-When updated: 2025-09-01T09:50:00Z
+When updated: 2025-09-01T11:10:00Z
 
 ## Next up
-- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
+
+- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:
+  - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
   - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
   - Design: toolkit packaging plan (publishable API surface):
     - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
@@ -19,8 +21,16 @@ When updated: 2025-09-01T09:50:00Z
       root (e.g., `cd services/activecampaign && npx orval`), eliminating the
       need for a child package.json.
     - Update ESLint parserOptions.project accordingly when removing the child tsconfig.
+    - Once child package.json is removed, update ESLint to drop the child
+      tsconfig path and, if desired, prune the services workspace from knip.json
+      (optional; currently not blocking).
 
 ## Completed (recent)
+
+- Base TS config simplification (fix TS6304 across tools)
+  - Removed composite/declaration emit flags from tsconfig.base.json to match
+    the simpler “working” pattern. This resolves “Composite projects may not
+    disable declaration emit” in typecheck, typedoc, and rollup plugin.
 
 - Typecheck scope & no-emit
   - Switched `typecheck` to `tsc -p tsconfig.json --noEmit` so it exercises
@@ -29,6 +39,11 @@ When updated: 2025-09-01T09:50:00Z
 - Rollup config stabilization
   - Set `declarationMap: false` in tsconfig.rollup.json to silence outDir
     requirements from the TS plugin. Library bundling remains dts-driven.
+
+- Single published package (simplify workspaces)
+  - Removed root `workspaces` (only the root package is published).
+  - Updated `generate` script to run Orval directly:
+    `cd services/activecampaign && orval`.
 
 - Rollup tsconfig hard‑pin
   - Both rollup.config.ts and stan.rollup.config.ts now explicitly pass
