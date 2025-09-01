@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-01T19:05:00Z
+When updated: 2025-09-01T19:12:00Z
 
 ## Next up
-- Split App.ts into SRP modules (phase 2)
-  - Done: extract slug, HTTP tokens/guard, ZodObj alias.
+- Split App.ts into SRP modules (phase 2)  - Done: extract slug, HTTP tokens/guard, ZodObj alias.
   - Implemented: handlerFactory, buildServerless, buildOpenApi modules; App delegates to them.
   - Implemented: registry extraction (src/app/registry.ts) with typed FunctionHandle.
   - App now delegates defineFunction and iterators to registry; proceed to thin orchestrator goal.
@@ -18,10 +17,13 @@ When updated: 2025-09-01T19:05:00Z
 
 ## Completed (recent)
 
+7. Lint fix (App.ts)
+   - Removed unused BaseOperation import to satisfy
+     @typescript-eslint/no-unused-vars.
+
 6. App adopts registry.ts (delegation)
    - Replaced internal Map-based registry with src/app/registry.ts.
-   - defineFunction forwards to registry; build functions iterate registry.values().
-   - Eliminates duplication and clears knip “unused file” for registry.
+   - defineFunction forwards to registry; build functions iterate registry.values().   - Eliminates duplication and clears knip “unused file” for registry.
 4. Lint & export hygiene
    - buildOpenApi: replaced “|| {}” with explicit in-operator check to satisfy no-unnecessary-condition.
    - slug: removed default export to avoid duplicate export; keep named export (deriveSlug) only.5. Registry extraction

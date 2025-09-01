@@ -21,12 +21,10 @@ import { deriveSlug } from '@/src/app/slug';
 import type { ZodObj } from '@/src/app/types';
 import { baseEventTypeMapSchema } from '@/src/config/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
-import type { BaseOperation } from '@/src/openapi/types';
 import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
-import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
-export interface AppServerlessConfig {
+import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';export interface AppServerlessConfig {
   defaultHandlerFileName: string;
   defaultHandlerFileExport: string;
   httpContextEventMap: SecurityContextHttpEventMap;
