@@ -69,14 +69,15 @@ describe('wrapHandler: GET happy path', () => {
       slug: 'wrap-get',
     });
     const handler = fn.handler(async () => {
-      logger.debug('business invoked');      return { what: 'ok' };
+      logger.debug('business invoked');
+      return { what: 'ok' };
     });
 
     const event = createApiGatewayV1Event('GET', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
-    const res = (await handler(event, ctx)) as {
+    const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -115,12 +116,13 @@ describe('wrapHandler: HEAD short-circuit', () => {
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
       slug: 'wrap-head',
     });
-    const handler = fn.handler(async () => ({}));    const event = createApiGatewayV1Event('HEAD', {
+    const handler = fn.handler(async () => ({}));
+    const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as {
+    const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
@@ -156,13 +158,14 @@ describe('wrapHandler: POST payload', () => {
       endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
       slug: 'wrap-post',
     });
-    const handler = fn.handler(async () => ({ what: 'ok' }));    const event = createApiGatewayV1Event('POST', {
+    const handler = fn.handler(async () => ({ what: 'ok' }));
+    const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as {
+    const res = (await handler(event, ctx)) as unknown as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;

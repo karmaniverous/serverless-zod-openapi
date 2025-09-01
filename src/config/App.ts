@@ -26,9 +26,9 @@ import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
+import type { Handler } from '@/src/types/Handler';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
-
 type ZodObj = ZodObject<ZodRawShape>;
 
 export interface AppServerlessConfig {
@@ -158,19 +158,14 @@ export class App<
       globalEnvKeys: init.global.envKeys,
       stageEnvKeys: init.stage.envKeys,
       stages: init.stage.params,
-    });
-    this.stages = sf.stages;
+    });    this.stages = sf.stages;
     this.environment = sf.environment;
     this.buildFnEnv = sf.buildFnEnv;
 
     // HTTP tokens (runtime decision)
     const defaultHttpTokens = ['rest', 'http'] as const;
-    const tokens = Array.isArray(init.httpEventTypeTokens)
-      ? (init.httpEventTypeTokens as readonly string[])
-      : (defaultHttpTokens as readonly string[]);
-    this.httpEventTypeTokens = tokens;
+    this.httpEventTypeTokens = (init.httpEventTypeTokens ?? defaultHttpTokens) as readonly string[];
   }
-
   /** Ergonomic constructor for schema-first inference. */
   static create<
     G extends ZodObj,
@@ -202,15 +197,17 @@ export class App<
 
   /** Register a function and return its per-function API (handler/openapi/serverless). */
   defineFunction<
-    EventType extends keyof z.infer<
-      EventTypeMapSchema extends ZodObj
-        ? EventTypeMapSchema
-        : typeof baseEventTypeMapSchema
+    EventType extends Extract<
+      keyof z.infer<
+        EventTypeMapSchema extends ZodObj
+          ? EventTypeMapSchema
+          : typeof baseEventTypeMapSchema
+      >,
+      string
     >,
     EventSchema extends z.ZodType | undefined,
     ResponseSchema extends z.ZodType | undefined,
-  >(options: {
-    functionName: string;
+  >(options: {    functionName: string;
     eventType: EventType;
     // Optional HTTP-only
     method?: MethodKey;
@@ -286,17 +283,15 @@ export class App<
     return {
       /** Wrapped AWS Lambda handler (HTTP or non-HTTP) */
       handler: (
-        business: import('@/src/types/Handler').Handler<
-          EventSchema,
-          ResponseSchema,
+        business: Handler<
+          EventSchema, ResponseSchema,
           (z.infer<EventTypeMapSchema> & BaseEventTypeMap)[EventType]
         >,
       ) => {
         type GlobalParams = z.infer<GlobalParamsSchema>;
         type StageParams = z.infer<StageParamsSchema>;
         type EventTypeMapResolved = z.infer<EventTypeMapSchema> &
-          BaseEventTypeMap;
-        type FC = FunctionConfig<
+          BaseEventTypeMap;        type FC = FunctionConfig<
           EventSchema,
           ResponseSchema,
           GlobalParams,

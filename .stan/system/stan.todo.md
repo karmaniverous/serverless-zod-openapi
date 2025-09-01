@@ -1,11 +1,12 @@
 # Development Plan
 
-When updated: 2025-09-01T17:20:00Z
+When updated: 2025-09-01T18:05:00Z
 
 ## Next up
-- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem. - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.  - Design: toolkit packaging plan (publishable API surface):
-    - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
-    - config typing utilities (FunctionConfig, AppConfig helpers).
+
+- All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem. - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers. - Design: toolkit packaging plan (publishable API surface):
+  - makeWrapHandler, HTTP middleware stack, serverless/OpenAPI builders,
+  - config typing utilities (FunctionConfig, AppConfig helpers).
   - Design: simplified config model
     - Single per-function config (inline event/response schemas),
     - Collapse stack config to EventTypeMap + AppConfig (zod-typed),
@@ -23,12 +24,29 @@ When updated: 2025-09-01T17:20:00Z
     - Consider renaming builders in docs/comments for clarity (OpenAPI/Serverless).
     - Prune deprecated references in internal docs to old names (makeWrapHandler/makeFunctionConfig/etc.).
     - Optional: expose a small keysOf<T>() helper if teams prefer arg-per-key authoring ergonomics.
+  - Refactor: split src/config/App.ts into SRP modules (≤300 LOC each)
+    - Module map:
+      - src/app/types.ts (ZodObj alias; AppServerlessConfig; AppInit<…>; FunctionHandle; Derive types)
+      - src/app/slug.ts (deriveSlug)
+      - src/app/httpTokens.ts (defaultHttpEventTypeTokens; runtime validator)
+      - src/app/registry.ts (registry + defineFunction; pure TS)
+      - src/app/handlerFactory.ts (produces wrapHandler<…>(…); no any; no dynamic imports)
+      - src/app/buildServerless.ts (buildAllServerlessFunctions; internalize NonNullable cast)
+      - src/app/buildOpenApi.ts (buildAllOpenApiPaths)
+      - src/config/App.ts (thin orchestrator wiring the above)
+    - Acceptance:
+      - App.ts ≤ 200 LOC; modules compile with strict TS.
+      - No import() type annotations; consistent-type-imports passes.
+      - Handler type derived from function definition (business signature matches FunctionConfig + app eventTypeMapSchema).
+      - exactOptionalPropertyTypes respected (no undefined materialized).
+      - serverless.ts uses app.buildAllServerlessFunctions() without casts; openapi generator uses app.buildAllOpenApiPaths().
+      - Tests, lint, typecheck, build all PASS.
   - Tools: registration generator CLI (new)
     - Implement a published CLI (bin: `szo`) with a command `szo gen:register` that:
       - Scans glob patterns (defaults):
-        - Functions (lambda): app/\*\*/lambda.ts
-        - OpenAPI ops: app/\*\*/openapi.ts
-        - Serverless extras: app/\*\*/serverless.ts
+        - Functions (lambda): app/\*_/_/lambda.ts
+        - OpenAPI ops: app/\*_/_/openapi.ts
+        - Serverless extras: app/\*_/_/serverless.ts
       - Emits deterministic, Prettier-formatted import aggregators:
         - app/register.functions.ts
         - app/register.openapi.ts
@@ -223,6 +241,14 @@ When updated: 2025-09-01T17:20:00Z
   - Moved generator to app/config/openapi.ts; output to app/openapi.json; orval generation stable with local mutator forwarder.
 
 - Introduced schema-first App class and baseEventTypeMapSchema; migrated representative endpoints to app.defineFunction; added runtime-widenable httpEventTypeTokens; aggregated Serverless/OpenAPI via app instance.
+
+- Lint/Types cleanup (prep for App split)
+  - Removed import() type annotation in App.defineFunction handler signature; added top-level type import for Handler.
+  - Constrained EventType generic to string keys with Extract<…, string> to satisfy TS2344.
+  - Simplified httpEventTypeTokens initialization to avoid no-unnecessary-condition warning.
+  - OpenAPI GET endpoint: responseSchema loosened to z.any() per project policy; handler uses top-level type import and Response alias (no dynamic import types).
+  - Tests: adjusted wrapHandler tests to cast via unknown to satisfy TS2352 where asserting shaped HTTP envelopes.
+  - Outcome: consistent-type-imports passes for changed files; typecheck no longer errors on App and OpenAPI handler; test/type/lint/build are aligned for the next refactor step.
 
 - Fix types/tests after App migration:
   - App: tighten eventTypeMapSchema typing; avoid undefined optional props under exactOptionalPropertyTypes; return ZodOpenApiPathsObject; cast serverless functions result.

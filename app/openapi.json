@@ -26,11 +26,7 @@
             "description": "JGS OpenAPI specification.",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {},
-                  "additionalProperties": false
-                }
+                "schema": {}
               }
             }
           }
