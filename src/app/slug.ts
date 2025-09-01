@@ -24,5 +24,3 @@ export const deriveSlug = (
     .replace(/-+/g, '-')
     .replace(/^[-/]+|[-/]+$/g, '');
 };
-
-export default deriveSlug;

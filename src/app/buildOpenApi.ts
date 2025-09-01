@@ -54,10 +54,10 @@ export const buildAllOpenApiPaths = (
         summary: `${r.openapiBaseOperation.summary} (${context})`,
         tags: Array.from(new Set([...(r.openapiBaseOperation.tags ?? []), context])),
       };
-      const existing = (paths[pathKey] as Record<string, unknown>) || {};
+      const existing: Record<string, unknown> =
+        pathKey in paths ? (paths[pathKey] as Record<string, unknown>) : {};
       paths[pathKey] = { ...existing, [method]: op };
     }
   }
 
-  return paths as ZodOpenApiPathsObject;
-};
+  return paths as ZodOpenApiPathsObject;};

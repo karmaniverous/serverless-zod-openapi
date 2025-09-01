@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-01T18:25:00Z
+When updated: 2025-09-01T18:40:00Z
 
 ## Next up
-
 - Split App.ts into SRP modules (phase 2)
   - Done: extract slug, HTTP tokens/guard, ZodObj alias.
   - Implemented: handlerFactory, buildServerless, buildOpenApi modules; App delegates to them.
@@ -20,6 +19,9 @@ When updated: 2025-09-01T18:25:00Z
 
 ## Completed (recent)
 
+4. Lint & export hygiene
+   - buildOpenApi: replaced “|| {}” with explicit in-operator check to satisfy no-unnecessary-condition.
+   - slug: removed default export to avoid duplicate export; keep named export (deriveSlug) only.
 1. Lint/types cleanup & OpenAPI handler
    - Removed import() type annotation in App.defineFunction handler signature; added top-level type import for Handler.
    - Constrained EventType to string keys; simplified httpEventTypeTokens init.
