@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-01T15:55:00Z
+When updated: 2025-09-01T16:40:00Z
 
 ## Next up
 
@@ -18,13 +18,25 @@ When updated: 2025-09-01T15:55:00Z
     - Keep services/activecampaign as a plain folder and call Orval from the
       root (e.g., `cd services/activecampaign && npx orval`), eliminating the
       need for a child package.json.
-    - Update ESLint parserOptions.project accordingly when removing the child tsconfig.
+    - Update ESLint parserOptions.project accordingly when removing the child tsconfig path.
     - Once child tsconfig path and, if desired, prune the services workspace from knip.json
       (optional; currently not blocking).
   - Follow-ups (post-refactor polish):
     - Consider renaming builders in docs/comments for clarity (OpenAPI/Serverless).
     - Prune deprecated references in internal docs to old names (makeWrapHandler/makeFunctionConfig/etc.).
     - Optional: expose a small keysOf<T>() helper if teams prefer arg-per-key authoring ergonomics.
+  - Tools: registration generator CLI (new)
+    - Implement a published CLI (bin: `szo`) with a command `szo gen:register` that:
+      - Scans glob patterns (defaults):
+        - Functions (lambda): app/\*\*/lambda.ts
+        - OpenAPI ops: app/\*\*/openapi.ts
+        - Serverless extras: app/\*\*/serverless.ts
+      - Emits deterministic, Prettier-formatted import aggregators:
+        - app/register.functions.ts
+        - app/register.openapi.ts
+        - app/register.serverless.ts
+      - Options: custom globs via config file (e.g., app/.szo.gen.json) or package.json “szo” key.
+      - Acceptance: idempotent generation, CI-safe, supports POSIX paths on all OS, optional watch mode (later).
 
 ## Next up (App singleton & registry implementation; v0, breaking)
 
@@ -59,7 +71,7 @@ When updated: 2025-09-01T15:55:00Z
   - Brand the stored FunctionConfig with env via private Symbol.
 - Return per-function API:
   - handler(business): wrap & return the runtime handler,
-  - openapi(baseOperation): attach OpenAPI base op,
+  - openapi(baseOperation): attach OpenAPI,
   - serverless(extras?): attach non-HTTP events.
 
 4. Module hygiene & loaders
@@ -90,12 +102,14 @@ When updated: 2025-09-01T15:55:00Z
 
 6. BREAKING removals (no shims; no backward-compat)
 
-- Remove exported envConfig and any “loadEnvConfig” helper.
-- Remove free-function defineFunctionConfig/defineFunctionConfigFromApp exports;
-  app.defineFunction(options) is the authoring surface.
-- Remove free-function builders (buildServerlessFunctions/buildOpenApiPath);
-  replace with app.buildAllServerlessFunctions/app.buildAllOpenApiPaths.
-- Handlers switch to `export const handler = fn.handler(business)`.
+- Remove exported envConfig and any “loadEnvConfig” helpers.
+- Remove free-function defineFunctionConfig/defineFunctionConfigFromApp; the
+  only authoring surface is app.defineFunction(options), which returns a typed
+  per-function API object ({ handler, openapi, serverless }).
+- Remove free-function builders buildServerlessFunctions/buildOpenApiPath from
+  the public API; these are now app instance methods used internally by the
+  registry aggregations (or exposed as app.buildAllServerlessFunctions/
+  app.buildAllOpenApiPaths only).
 
 7. Migration (initial endpoints)
 
@@ -113,6 +127,22 @@ When updated: 2025-09-01T15:55:00Z
   (e.g., 'step') only affect typing and non-HTTP registration.
 - Duplicate slug throws with clear error.
 - Knip configuration updated (optional after refactor) to reflect loader files.
+
+- buildAllOpenApiPaths() merges per-function paths.
+
+- Serverless:
+  - app.buildAllServerlessFunctions():
+    - For HTTP: derive handler, method/path via resolveHttpFromFunctionConfig
+      using stored { callerModuleUrl, endpointsRootAbs } and per-function HTTP
+      fields; functions[slug] is created.
+    - For non-HTTP: include per-function events attached via fn.serverless().
+    - Provider-level environment is taken from app.environment. Per-function
+      buildFnEnv merges fnEnvKeys and excluding globally exposed keys.
+  - HTTP token widening:
+    - App.httpEventTypeTokens defaults to ['rest','http'] and can be widened by apps.
+    - wrapHandler accepts an optional { httpEventTypeTokens } to keep standalone usage viable.
+    - Note: compile-time gating for HTTP-only options remains on base tokens; runtime behavior may widen.
+    - Acceptance: docs/tests cover widened behavior; explicit policy recorded in project prompt.
 
 ## Completed (recent)
 
@@ -142,6 +172,8 @@ When updated: 2025-09-01T15:55:00Z
   - Migrated handlers and endpoint builders to new names; updated exports in src/index.ts.
   - Added runtime guards to enforce “no unspecified \*EnvKeys” during config/wrapper usage.
   - Tests updated to use `wrapHandler` and direct envConfig.
+  - Outcome: typecheck/docs/rollup stop complaining about widened string[] for
+    `fnEnvKeys`; DX remains “dev specifies values, it just works.”
 
 - Env typing bound to function configs; wrapper signature simplified
   - `defineFunctionConfig` is now curried: `defineFunctionConfig(env)(config)`
@@ -191,3 +223,5 @@ When updated: 2025-09-01T15:55:00Z
 
 - OpenAPI and generation
   - Moved generator to app/config/openapi.ts; output to app/openapi.json; orval generation stable with local mutator forwarder.
+
+- Introduced schema-first App class and baseEventTypeMapSchema; migrated representative endpoints to app.defineFunction; added runtime-widenable httpEventTypeTokens; aggregated Serverless/OpenAPI via app instance.

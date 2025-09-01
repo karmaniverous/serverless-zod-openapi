@@ -4,15 +4,11 @@
  * - Call wrapHandler with (functionConfig, businessHandler).
  */
 import { getContact } from '@/services/activecampaign/src';
-import type { LambdaEvent } from '@/src';
-import { wrapHandler } from '@/src';
 
-import { functionConfig } from './config';
-export const handler = wrapHandler(functionConfig, (event) => {
-  // Narrow to the LambdaEvent shape established by eventSchema.transform
-  type EventWithPayload = LambdaEvent & { Payload: { contactId: string } };
-  const lambdaEvent = event as unknown as EventWithPayload;
-  return getContact({
-    contactId: lambdaEvent.Payload.contactId,
-  });
+import { fn } from './lambda';
+
+export const handler = fn.handler(async (event) => {
+  const e = event as { Payload: { contactId: string } };
+  const id = e?.Payload?.contactId;
+  return getContact({ contactId: id });
 });

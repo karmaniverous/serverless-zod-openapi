@@ -1,4 +1,6 @@
-import { defineAppConfig } from '@/src';
+import { z } from 'zod';
+
+import { App, baseEventTypeMapSchema } from '@/src';
 
 import {
   globalEnvKeys,
@@ -11,7 +13,15 @@ import { stageEnvKeys, type StageParams, stageParamsSchema } from './stage';
 import * as dev from './stages/dev';
 import * as prod from './stages/prod';
 
-export const app = defineAppConfig(globalParamsSchema, stageParamsSchema, {
+// Event type map schema — extend base with project-local tokens (e.g., 'step')
+export const eventTypeMapSchema = baseEventTypeMapSchema.extend({
+  step: z.custom<Record<string, unknown>>(),
+});
+
+export const app = App.create({
+  globalParamsSchema,
+  stageParamsSchema,
+  eventTypeMapSchema,
   serverless: serverlessConfig,
   global: {
     params: globalParams,
@@ -24,13 +34,8 @@ export const app = defineAppConfig(globalParamsSchema, stageParamsSchema, {
     } as Record<string, StageParams>,
     envKeys: stageEnvKeys as readonly (keyof StageParams)[],
   },
+  // HTTP tokens (runtime decision). Default is ['rest','http']; override if desired.
+  // httpEventTypeTokens: ['rest', 'http'],
 });
 
-export const { serverless, stages, environment, buildFnEnv, global, stage } =
-  app;
-
-// Wrapper input (schemas + envKeys)
-export const envConfig = {
-  global: { paramsSchema: globalParamsSchema, envKeys: global.envKeys },
-  stage: { paramsSchema: stageParamsSchema, envKeys: stage.envKeys },
-} as const;
+export const { stages, environment, buildFnEnv } = app;

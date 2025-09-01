@@ -16,11 +16,10 @@ scripts:
   knip: npm run knip
   generate: npm run generate
   typecheck: npm run typecheck
-  lint: npm run lint
+  lint: npm run lint:fix
   openapi: npm run openapi
   test: npm run test
   docs: npm run stan:docs
   build: npm run stan:build
   package: npm run package
 stanPath: .stan
-

@@ -5,13 +5,18 @@
  * Zod schemas. The generated document is written to `src/openapi/openapi.json`.
  *
  * @see https://github.com/johngalt/zod-openapi */
+// side-effect registrations
+import '@/app/endpoints/openapi/get/lambda';
+import '@/app/endpoints/openapi/get/openapi';
+import '@/app/endpoints/event/activecampaign/post/lambda';
+import '@/app/endpoints/event/activecampaign/post/openapi';
+
 import fs from 'fs-extra';
 import path from 'path';
 import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
-import eventActiveCampaignPost from '@/app/endpoints/event/activecampaign/post/openapi';
-import openapiGet from '@/app/endpoints/openapi/get/openapi';
+import { app } from '@/app/config/app.config';
 
 console.log('Generating OpenAPI document...');
 /**
@@ -19,7 +24,8 @@ console.log('Generating OpenAPI document...');
  *
  * @see https://spec.openapis.org/oas/v3.1.0
  */
-const doc = createDocument({
+const paths = app.buildAllOpenApiPaths();
+export const doc = createDocument({
   openapi: '3.1.0',
   servers: [
     { description: 'Production', url: 'https://api.johngalt.id' },
@@ -30,10 +36,7 @@ const doc = createDocument({
     title: process.env.npm_package_name ?? '',
     version: process.env.npm_package_version ?? '',
   },
-  paths: {
-    ...eventActiveCampaignPost,
-    ...openapiGet,
-  },
+  paths,
 });
 
 /**

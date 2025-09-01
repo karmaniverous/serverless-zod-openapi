@@ -1,8 +1,14 @@
+// Ensure functions/openapi registrations are loaded
+import '@/app/endpoints/openapi/get/lambda';
+import '@/app/endpoints/openapi/get/openapi';
+import '@/app/endpoints/event/activecampaign/post/lambda';
+import '@/app/endpoints/event/activecampaign/post/openapi';
+import '@/app/step/activecampaign/contacts/getContact/lambda';
+
 import type { AWS } from '@serverless/typescript';
 
-import { environment, stages } from '@/app/config/app.config';
-import endpointEventActivecampaignPost from '@/app/endpoints/event/activecampaign/post/serverless';
-import endpointOpenapiGet from '@/app/endpoints/openapi/get/serverless';
+import { app, environment, stages } from '@/app/config/app.config';
+
 const config: AWS = {
   service: '${param:SERVICE_NAME}',
   frameworkVersion: '4',
@@ -15,8 +21,7 @@ const config: AWS = {
   package: {
     individually: true,
     patterns: ['!**/?(*.)test.+(!(.))'],
-  },
-  custom: {
+  },  custom: {
     apiGatewayLogRetention: {
       accessLogging: {
         enabled: true,
@@ -87,10 +92,7 @@ const config: AWS = {
     },
     versionFunctions: false,
   },
-  functions: {
-    ...endpointEventActivecampaignPost,
-    ...endpointOpenapiGet,
-  },
+  functions: app.buildAllServerlessFunctions(),
   build: {
     esbuild: {
       bundle: true,

@@ -4,7 +4,5 @@
  * - Eliminate wrapHandler shim and stage/global injection here.
  * - Apply HTTP middleware automatically based on eventType token.
  */
-import { wrapHandler } from '@/src';
-
-import { functionConfig } from './config';
-export const handler = wrapHandler(functionConfig, async () => 'Ok');
+import { fn } from './lambda';
+export const handler = fn.handler(async () => 'Ok');

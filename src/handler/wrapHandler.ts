@@ -20,7 +20,7 @@ import { buildHttpMiddlewareStack } from '@/src/handler/middleware/buildHttpMidd
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { Handler, ShapedEvent } from '@/src/types/Handler';
-import { isHttpEventTypeToken } from '@/src/types/HttpEventTokens';
+import { HTTP_EVENT_TOKENS } from '@/src/types/HttpEventTokens';
 
 export function wrapHandler<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
@@ -40,13 +40,13 @@ export function wrapHandler<
   > &
     EnvAttached<GlobalParamsSchema, StageParamsSchema>,
   business: Handler<EventSchema, ResponseSchema, EventTypeMap[EventType]>,
+  opts?: { httpEventTypeTokens?: readonly (keyof BaseEventTypeMap | string)[] },
 ) {
   const assertKeysSubset = (
     schema: ZodObject<ZodRawShape>,
     keys: readonly string[],
     label: string,
-  ): void => {
-    const allowed = new Set(Object.keys(schema.shape));
+  ): void => {    const allowed = new Set(Object.keys(schema.shape));
     const bad = keys.filter((k) => !allowed.has(k));
     if (bad.length)
       throw new Error(`${label} contains unknown keys: ${bad.join(', ')}`);
@@ -91,16 +91,20 @@ export function wrapHandler<
     const logger = console;
 
     // Non-HTTP: call business directly
-    if (
-      !isHttpEventTypeToken(functionConfig.eventType as keyof BaseEventTypeMap)
-    ) {
+    const httpTokens =
+      (opts?.httpEventTypeTokens) ??
+      (HTTP_EVENT_TOKENS as readonly string[]);
+    const isHttp =
+      httpTokens.includes(
+        (functionConfig.eventType as unknown as string) ?? '',
+      );
+    if (!isHttp) {
       return business(
         event as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
         context,
         { env, logger },
       );
     }
-
     // HTTP: build middleware stack
     const http = buildHttpMiddlewareStack({
       ...(functionConfig.eventSchema

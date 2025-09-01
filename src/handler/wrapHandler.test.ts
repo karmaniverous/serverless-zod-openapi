@@ -7,31 +7,40 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { defineFunctionConfig, wrapHandler } from '@/src';
-import type { GlobalEnvConfig } from '@/src/config/defineAppConfig';
+import { App, baseEventTypeMapSchema } from '@/src';
 import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
 import { globalParamsSchema as testGlobalParamsSchema } from '@/src/test/serverless/config/global';
+import { serverlessConfig as testServerlessConfig } from '@/src/test/serverless/config/serverlessConfig';
 import { stageParamsSchema as testStageParamsSchema } from '@/src/test/serverless/config/stage';
+import { devStageParams } from '@/src/test/serverless/config/stages/dev';
+import { prodStageParams } from '@/src/test/serverless/config/stages/prod';
 import type { ConsoleLogger } from '@/src/types/Loggable';
-const envConfig: GlobalEnvConfig<
-  typeof testGlobalParamsSchema,
-  typeof testStageParamsSchema
-> = {
+
+// Minimal App instance for tests (schema-first)
+const app = App.create({
+  globalParamsSchema: testGlobalParamsSchema,
+  stageParamsSchema: testStageParamsSchema,
+  eventTypeMapSchema: baseEventTypeMapSchema,
+  serverless: testServerlessConfig,
   global: {
-    paramsSchema: testGlobalParamsSchema,
+    params: {
+      ESB_MINIFY: false,
+      ESB_SOURCEMAP: true,
+      FN_ENV: 'test', // not used by App directly in tests
+      PROFILE: 'dev',
+      REGION: 'us-east-1',
+      SERVICE_NAME: 'svc-test',
+    },
     envKeys: ['SERVICE_NAME', 'PROFILE'] as const,
   },
   stage: {
-    paramsSchema: testStageParamsSchema,
+    params: { dev: devStageParams, prod: prodStageParams },
     envKeys: ['STAGE'] as const,
   },
-};
-// Bind env types to per-function configs
-const defineFn = defineFunctionConfig(envConfig);
+});
 
 describe('wrapHandler: GET happy path', () => {
-  it('returns the business payload when validation passes and env is present', async () => {    // Ensure required env vars are set for validation
-    process.env.SERVICE_NAME = 'testService';
+  it('returns the business payload when validation passes and env is present', async () => {    // Ensure required env vars are set for validation    process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
 
@@ -45,30 +54,32 @@ describe('wrapHandler: GET happy path', () => {
       log: vi.fn(),
     };
 
-    const functionConfig = defineFn({
-      eventType: 'rest',
+    const fn = app.defineFunction({
       functionName: 'test_get',
-      contentType: 'application/json',      httpContexts: ['public'],
+      eventType: 'rest',
+      httpContexts: ['public'],
       method: 'get',
       basePath: 'test',
+      contentType: 'application/json',
       eventSchema,
       responseSchema,
-      logger,
+      callerModuleUrl: import.meta.url,
+      endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
     });
-    const handler = wrapHandler(functionConfig, async () => ({
-      what: 'ok',
-    }));
+    const handler = fn.handler(async () => {
+      logger.debug('business invoked');
+      return { what: 'ok' };
+    });
 
     const event = createApiGatewayV1Event('GET', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
-    const res = (await handler(event, ctx)) as unknown as {
+    const res = (await handler(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
     };
-
     expect(res.statusCode).toBe(200);
     expect(
       (
@@ -91,30 +102,29 @@ describe('wrapHandler: HEAD short-circuit', () => {
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
 
-    const functionConfig = defineFn({
-      eventType: 'rest',
+    const fn = app.defineFunction({
       functionName: 'test_head',
-      contentType: 'application/json',
+      eventType: 'rest',
       httpContexts: ['public'],
       method: 'head',
       basePath: 'test',
+      contentType: 'application/json',
       eventSchema,
       responseSchema,
+      callerModuleUrl: import.meta.url,
+      endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
     });
-    const handler = wrapHandler(functionConfig, async () => {
-      return {};
-    });
+    const handler = fn.handler(async () => ({}));
     const event = createApiGatewayV1Event('HEAD', {
       Accept: 'application/json',
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as unknown as {
+    const res = (await handler(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
     };
-
     expect(res.statusCode).toBe(200);
     const contentType =
       res.headers['Content-Type'] ?? res.headers['content-type'] ?? '';
@@ -140,26 +150,26 @@ describe('wrapHandler: POST payload', () => {
       log: vi.fn(),
     };
 
-    const functionConfig = defineFn({
-      eventType: 'rest',
+    const fn = app.defineFunction({
       functionName: 'test_post',
-      contentType: 'application/json',      httpContexts: ['public'],
+      eventType: 'rest',
+      httpContexts: ['public'],
       method: 'post',
       basePath: 'test',
+      contentType: 'application/json',
       eventSchema,
       responseSchema,
-      logger,
+      callerModuleUrl: import.meta.url,
+      endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
     });
-    const handler = wrapHandler(functionConfig, async () => {
-      return { what: 'ok' };
-    });
+    const handler = fn.handler(async () => ({ what: 'ok' }));
     const event = createApiGatewayV1Event('POST', {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     });
     const ctx: Context = createLambdaContext();
 
-    const res = (await handler(event, ctx)) as unknown as {
+    const res = (await handler(event, ctx)) as {
       statusCode: number;
       headers: Record<string, string>;
       body: string;
