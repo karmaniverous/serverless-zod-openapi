@@ -141,7 +141,7 @@ export class App<
         ).parse(params) as z.infer<typeof effectiveStageParamsSchema>;
         return [name, parsed];
       }),
-    ) as Record<string, z.infer<typeof effectiveStageParamsSchema>>;
+    ) as Record<string, z.infer<StageParamsSchema>>;
 
     const sf = stagesFactory({
       globalParamsSchema: this.globalParamsSchema,
