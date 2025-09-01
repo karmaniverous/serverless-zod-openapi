@@ -41,7 +41,7 @@ export interface AppServerlessConfig {
 export interface AppInit<
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
-  EventTypeMapSchema extends ZodObj = typeof baseEventTypeMapSchema,
+  EventTypeMapSchema extends ZodObj,
 > {
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
@@ -59,11 +59,7 @@ export interface AppInit<
    * HTTP tokens to treat as HTTP at runtime (widenable).
    * Defaults to ['rest', 'http'].
    */
-  httpEventTypeTokens?: readonly (keyof z.infer<
-    EventTypeMapSchema extends ZodObj
-      ? EventTypeMapSchema
-      : typeof baseEventTypeMapSchema
-  >)[];
+  httpEventTypeTokens?: readonly (keyof z.infer<EventTypeMapSchema>)[];
 }
 
 type FunctionRegistration = {
@@ -93,7 +89,7 @@ type FunctionRegistration = {
 export class App<
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
-  EventTypeMapSchema extends ZodObj = typeof baseEventTypeMapSchema,
+  EventTypeMapSchema extends ZodObj,
 > {
   // Schemas
   public readonly globalParamsSchema: GlobalParamsSchema;
@@ -123,7 +119,7 @@ export class App<
   ) {
     this.globalParamsSchema = init.globalParamsSchema;
     this.stageParamsSchema = init.stageParamsSchema;
-    // Default to base schema when omitted
+    // Default to base schema when omitted (apply default INSIDE the function)
     this.eventTypeMapSchema = (init.eventTypeMapSchema ??
       baseEventTypeMapSchema) as EventTypeMapSchema;
     this.serverless = init.serverless;
@@ -174,14 +170,7 @@ export class App<
 
   /** Register a function and return its per-function API (handler/openapi/serverless). */
   defineFunction<
-    EventType extends Extract<
-      keyof z.infer<
-        EventTypeMapSchema extends ZodObj
-          ? EventTypeMapSchema
-          : typeof baseEventTypeMapSchema
-      >,
-      string
-    >,
+    EventType extends Extract<keyof z.infer<EventTypeMapSchema>, string>,
     EventSchema extends z.ZodType | undefined,
     ResponseSchema extends z.ZodType | undefined,
   >(options: {
