@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-01T19:18:00Z
+When updated: 2025-09-01T19:25:00Z
 
 ## Next up
 
@@ -18,32 +18,41 @@ When updated: 2025-09-01T19:18:00Z
 
 ## Completed (recent)
 
-8. Remove obsolete app stages aggregator
-   - Deleted app/config/stages/index.ts (unused; superseded by
-     app/config/app.config.ts).
+9. App: parse serverless internally; move schema to src
+   - Moved serverlessConfigSchema to src/config/serverlessConfig.ts.
+   - App.Init.serverless now accepts raw input (schema input type) and is
+     parsed in the constructor.
 
-9. Lint fix (App.ts)
-   - Removed unused BaseOperation import to satisfy
-     @typescript-eslint/no-unused-vars.
+10. Stage params typing accepts global overrides
+    - Changed AppInit stage.params type to include Partial<GlobalParams>
+      alongside StageParams, resolving config TS errors.
 
-10. App adopts registry.ts (delegation)
+11. Remove obsolete app stages aggregator
+    - Deleted app/config/stages/index.ts (unused; superseded by
+      app/config/app.config.ts).
+
+12. Lint fix (App.ts)
+    - Removed unused BaseOperation import to satisfy
+      @typescript-eslint/no-unused-vars).
+
+13. App adopts registry.ts (delegation)
     - Replaced internal Map-based registry with src/app/registry.ts.
     - defineFunction forwards to registry; build functions iterate registry.values(). - Eliminates duplication and clears knip “unused file” for registry.
-11. Lint & export hygiene
+14. Lint & export hygiene
     - buildOpenApi: replaced “|| {}” with explicit in-operator check to satisfy no-unnecessary-condition.
     - slug: removed default export to avoid duplicate export; keep named export (deriveSlug) only.5. Registry extraction
     - Introduced src/app/registry.ts encapsulating function registration and storage.
     - App delegates registration to registry; builders iterate via registry.values().
-12. Lint/types cleanup & OpenAPI handler
+15. Lint/types cleanup & OpenAPI handler
     - Removed import() type annotation in App.defineFunction handler signature; added top-level type import for Handler.
     - Constrained EventType to string keys; simplified httpEventTypeTokens init. - OpenAPI GET responseSchema -> z.any; handler uses top-level type import and Response alias.
     - Tests: adjusted wrapHandler tests to cast via unknown for shaped HTTP envelopes.
 
-13. App SRP (phase 1)
+16. App SRP (phase 1)
     - Extracted slug helper and HTTP tokens/guard to src/app/.
     - App.ts updated accordingly; fixed no-unnecessary-condition.
     - Scripts PASS (typecheck, test, openapi, package, stan:build); lint clean on changed modules.
 
-14. App SRP (phase 2 start)
+17. App SRP (phase 2 start)
     - Introduced handlerFactory, buildServerless, buildOpenApi modules.
     - App delegates wrap and builders to modules.

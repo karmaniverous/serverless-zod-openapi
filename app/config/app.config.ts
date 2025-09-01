@@ -2,8 +2,6 @@ import { z } from 'zod';
 
 import { App, baseEventTypeMapSchema } from '@/src';
 
-import { serverlessConfigSchema } from './serverlessConfig';
-
 export const app = App.create({
   globalParamsSchema: z.object({
     ESB_MINIFY: z.boolean(),
@@ -20,7 +18,7 @@ export const app = App.create({
   eventTypeMapSchema: baseEventTypeMapSchema.extend({
     step: z.custom<Record<string, unknown>>(),
   }),
-  serverless: serverlessConfigSchema.parse({
+  serverless: {
     httpContextEventMap: {
       my: {
         authorizer: {
@@ -34,7 +32,7 @@ export const app = App.create({
     },
     defaultHandlerFileName: 'handler',
     defaultHandlerFileExport: 'handler',
-  }),
+  },
   global: {
     params: {
       ESB_MINIFY: false,
@@ -65,5 +63,4 @@ export const app = App.create({
     envKeys: ['STAGE'],
   },
 });
-
 export const { stages, environment, buildFnEnv } = app;

@@ -7,7 +7,7 @@
  * - Allow widening HTTP event tokens via app.httpEventTypeTokens (runtime). Defaults ['rest','http'].
  */
 import type { AWS } from '@serverless/typescript';
-import type { z } from 'zod';
+import { z, type ZodObject, type ZodRawShape } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { buildAllOpenApiPaths as buildPaths } from '@/src/app/buildOpenApi';
@@ -24,11 +24,15 @@ import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
 import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
-import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';export interface AppServerlessConfig {
-  defaultHandlerFileName: string;
-  defaultHandlerFileExport: string;
-  httpContextEventMap: SecurityContextHttpEventMap;
-}
+import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
+
+/** Serverless config schema (parsed internally by App). */
+const serverlessConfigSchema = z.object({
+  httpContextEventMap: z.custom<SecurityContextHttpEventMap>(),
+  defaultHandlerFileName: z.string().min(1),
+  defaultHandlerFileExport: z.string().min(1),
+});
+export type AppServerlessConfig = z.infer<typeof serverlessConfigSchema>;
 
 export interface AppInit<
   GlobalParamsSchema extends ZodObj,
@@ -38,13 +42,18 @@ export interface AppInit<
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
   eventTypeMapSchema?: EventTypeMapSchema;
-  serverless: AppServerlessConfig;
+  /** Accept raw serverless config; App will parse it internally. */
+  serverless: z.input<typeof serverlessConfigSchema>;
   global: {
     params: z.infer<GlobalParamsSchema>;
     envKeys: readonly (keyof z.infer<GlobalParamsSchema>)[];
   };
   stage: {
-    params: Record<string, z.infer<StageParamsSchema>>;
+    /** Allow stage objects to include optional overrides of global params. */
+    params: Record<
+      string,
+      z.infer<StageParamsSchema> & Partial<z.infer<GlobalParamsSchema>>
+    >;
     envKeys: readonly (keyof z.infer<StageParamsSchema>)[];
   };
   /**
@@ -55,7 +64,8 @@ export interface AppInit<
 }
 
 export class App<
-  GlobalParamsSchema extends ZodObj,  StageParamsSchema extends ZodObj,
+  GlobalParamsSchema extends ZodObj,
+  StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,
 > {
   // Schemas
@@ -80,17 +90,23 @@ export class App<
 
   // Registry (delegated to src/app/registry)
   private readonly registry: ReturnType<
-    typeof createRegistry<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>
+    typeof createRegistry<
+      GlobalParamsSchema,
+      StageParamsSchema,
+      EventTypeMapSchema
+    >
   >;
 
   private constructor(
-    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,  ) {
+    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,
+  ) {
     this.globalParamsSchema = init.globalParamsSchema;
     this.stageParamsSchema = init.stageParamsSchema;
     // Default to base schema when omitted (apply default INSIDE the function)
     this.eventTypeMapSchema = (init.eventTypeMapSchema ??
       baseEventTypeMapSchema) as EventTypeMapSchema;
-    this.serverless = init.serverless;
+    // Parse serverless input internally
+    this.serverless = serverlessConfigSchema.parse(init.serverless);
 
     // Validate that eventTypeMapSchema includes base keys at runtime
     validateEventTypeMapSchemaIncludesBase(
@@ -108,9 +124,17 @@ export class App<
     };
 
     // Build stages/environment/fn-env via factory
+    // Apply "stage extends global" implicitly: accept stage keys plus optional global overrides.
+    const effectiveStageParamsSchema = this.globalParamsSchema
+      .partial()
+      .extend(
+        (this.stageParamsSchema as unknown as ZodObject<ZodRawShape>)
+          .shape as Record<string, z.ZodType>,
+      );
+
     const sf = stagesFactory({
       globalParamsSchema: this.globalParamsSchema,
-      stageParamsSchema: this.stageParamsSchema,
+      stageParamsSchema: effectiveStageParamsSchema,
       globalParams: init.global.params,
       globalEnvKeys: init.global.envKeys,
       stageEnvKeys: init.stage.envKeys,
@@ -125,15 +149,18 @@ export class App<
       defaultHttpEventTypeTokens) as readonly string[];
 
     // Initialize function registry
-    this.registry = createRegistry<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>(
-      {
-        httpEventTypeTokens: this.httpEventTypeTokens,
-        env: { global: this.global, stage: this.stage },
-      },
-    );
+    this.registry = createRegistry<
+      GlobalParamsSchema,
+      StageParamsSchema,
+      EventTypeMapSchema
+    >({
+      httpEventTypeTokens: this.httpEventTypeTokens,
+      env: { global: this.global, stage: this.stage },
+    });
   }
 
-  /** Ergonomic constructor for schema-first inference. */  static create<
+  /** Ergonomic constructor for schema-first inference. */
+  static create<
     GlobalParamsSchema extends ZodObj,
     StageParamsSchema extends ZodObj,
     EventTypeMapSchema extends ZodObj,
@@ -171,26 +198,24 @@ export class App<
       options.slug ??
       deriveSlug(options.endpointsRootAbs, options.callerModuleUrl);
 
-    return this.registry.defineFunction<
-      EventType,
-      EventSchema,
-      ResponseSchema
-    >({
-      slug,
-      functionName: options.functionName,
-      eventType: options.eventType,
-      ...(options.method ? { method: options.method } : {}),
-      ...(options.basePath ? { basePath: options.basePath } : {}),
-      ...(options.httpContexts ? { httpContexts: options.httpContexts } : {}),
-      ...(options.contentType ? { contentType: options.contentType } : {}),
-      ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
-      ...(options.responseSchema
-        ? { responseSchema: options.responseSchema }
-        : {}),
-      ...(options.fnEnvKeys ? { fnEnvKeys: options.fnEnvKeys } : {}),
-      callerModuleUrl: options.callerModuleUrl,
-      endpointsRootAbs: options.endpointsRootAbs,
-    });
+    return this.registry.defineFunction<EventType, EventSchema, ResponseSchema>(
+      {
+        slug,
+        functionName: options.functionName,
+        eventType: options.eventType,
+        ...(options.method ? { method: options.method } : {}),
+        ...(options.basePath ? { basePath: options.basePath } : {}),
+        ...(options.httpContexts ? { httpContexts: options.httpContexts } : {}),
+        ...(options.contentType ? { contentType: options.contentType } : {}),
+        ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
+        ...(options.responseSchema
+          ? { responseSchema: options.responseSchema }
+          : {}),
+        ...(options.fnEnvKeys ? { fnEnvKeys: options.fnEnvKeys } : {}),
+        callerModuleUrl: options.callerModuleUrl,
+        endpointsRootAbs: options.endpointsRootAbs,
+      },
+    );
   }
 
   /** Aggregate Serverless function definitions across the registry. */
