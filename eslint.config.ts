@@ -30,12 +30,11 @@ export default tseslint.config(
       // parser from strictTypeChecked and the CLI falls back to espree.
       parser: tseslint.parser,
       parserOptions: {
-        // Be explicit so the CLI loads type info for all workspaces.
-        project: ['./tsconfig.json', './services/activecampaign/tsconfig.json'],
+        // Be explicit so the CLI loads type info from the root project.
+        project: ['./tsconfig.json'],
         tsconfigRootDir,
       },
-    },
-    plugins: {
+    },    plugins: {
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
     },

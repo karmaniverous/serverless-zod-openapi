@@ -84,11 +84,6 @@ export const getManagingRecords = () => {
     deleterecordbyexternalid,
   };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetalistofrecordsResult = NonNullable<
   Awaited<
     ReturnType<ReturnType<typeof getManagingRecords>['getalistofrecords']>

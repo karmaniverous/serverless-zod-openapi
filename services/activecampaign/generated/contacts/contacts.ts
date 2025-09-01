@@ -266,11 +266,6 @@ export const getContacts = () => {
     bulkImportStatusInfo,
   };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetContactsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getContacts>['getContacts']>>
 >;

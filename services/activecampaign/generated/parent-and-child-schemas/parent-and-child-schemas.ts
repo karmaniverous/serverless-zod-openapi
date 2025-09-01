@@ -33,11 +33,6 @@ export const getParentAndChildSchemas = () => {
   };
   return { createapublicschema, createachildschema };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type CreateapublicschemaResult = NonNullable<
   Awaited<
     ReturnType<

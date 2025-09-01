@@ -76,11 +76,6 @@ export const getSchemas = () => {
     deleteSchema,
   };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type ListallschemasResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSchemas>['listallschemas']>>
 >;

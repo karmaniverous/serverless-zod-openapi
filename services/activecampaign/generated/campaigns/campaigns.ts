@@ -24,11 +24,6 @@ export const getCampaigns = () => {
   };
   return { getCampaigns, getCampaignbyID };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetCampaignsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getCampaigns>['getCampaigns']>>
 >;

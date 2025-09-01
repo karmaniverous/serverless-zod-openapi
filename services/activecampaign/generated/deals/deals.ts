@@ -108,11 +108,6 @@ export const getDeals = () => {
     bulkupdatedealowners,
   };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type CreateadealResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDeals>['createadeal']>>
 >;

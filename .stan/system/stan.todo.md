@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-01T11:10:00Z
+When updated: 2025-09-01T11:12:00Z
 
 ## Next up
-
 - All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design:
   - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
   - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
@@ -40,10 +39,15 @@ When updated: 2025-09-01T11:10:00Z
   - Set `declarationMap: false` in tsconfig.rollup.json to silence outDir
     requirements from the TS plugin. Library bundling remains dts-driven.
 
+- Demo package cleanup
+  - Removed services/activecampaign/package.json and tsconfig.json; the demo
+    remains a plain folder driven by `orval` from the root.
+  - Updated ESLint parserOptions.project to drop the child tsconfig path.
+  - (Optional follow-up) Prune services workspace section in knip.json later.
+
 - Single published package (simplify workspaces)
   - Removed root `workspaces` (only the root package is published).
-  - Updated `generate` script to run Orval directly:
-    `cd services/activecampaign && orval`.
+  - Updated `generate` script to run Orval directly:    `cd services/activecampaign && orval`.
 
 - Rollup tsconfig hard‑pin
   - Both rollup.config.ts and stan.rollup.config.ts now explicitly pass

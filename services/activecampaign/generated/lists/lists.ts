@@ -28,11 +28,6 @@ export const getLists = () => {
   };
   return { getLists, createList };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetListsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getLists>['getLists']>>
 >;

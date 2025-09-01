@@ -61,11 +61,6 @@ export const getSiteEventTracking = () => {
   };
   return { createanewEventNameOnly, listAllEventsNameOnly, trackEvent };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type CreateanewEventNameOnlyResult = NonNullable<
   Awaited<
     ReturnType<

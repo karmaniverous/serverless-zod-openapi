@@ -21,11 +21,6 @@ export const getV1 = () => {
   };
   return { getContact };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetContactResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getV1>['getContact']>>
 >;

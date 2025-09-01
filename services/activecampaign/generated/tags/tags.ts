@@ -62,11 +62,6 @@ export const getTags = () => {
   };
   return { listalltags, createatag, updateatag, deleteatag, addatagtoacontact };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type ListalltagsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getTags>['listalltags']>>
 >;

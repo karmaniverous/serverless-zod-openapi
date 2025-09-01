@@ -33,11 +33,6 @@ export const getFieldRelationships = () => {
   };
   return { addFieldRelationship, deleteFieldRelationship };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type AddFieldRelationshipResult = NonNullable<
   Awaited<
     ReturnType<ReturnType<typeof getFieldRelationships>['addFieldRelationship']>

@@ -28,11 +28,6 @@ export const getUsers = () => {
   };
   return { getUsers, createUser };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetUsersResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUsers>['getUsers']>>
 >;

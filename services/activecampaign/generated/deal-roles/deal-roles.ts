@@ -22,11 +22,6 @@ export const getDealRoles = () => {
   };
   return { createadealrole };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type CreateadealroleResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getDealRoles>['createadealrole']>>
 >;

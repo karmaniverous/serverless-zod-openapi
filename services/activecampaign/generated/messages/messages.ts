@@ -15,11 +15,6 @@ export const getMessages = () => {
   };
   return { getMessages };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type GetMessagesResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getMessages>['getMessages']>>
 >;

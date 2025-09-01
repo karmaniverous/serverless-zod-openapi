@@ -56,11 +56,6 @@ export const getCustomFieldsAndValues = () => {
     updateCustomField,
   };
 };
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 export type ListAllCustomFieldsResult = NonNullable<
   Awaited<
     ReturnType<
