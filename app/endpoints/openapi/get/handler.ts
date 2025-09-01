@@ -6,8 +6,8 @@
  */
 import type { z } from 'zod';
 
+import openapi from '@/app/openapi.json';
 import { wrapHandler } from '@/src';
-import openapi from '@/stack/openapi.json';
 
 import { functionConfig, type responseSchema } from './config';
 export const handler = wrapHandler(

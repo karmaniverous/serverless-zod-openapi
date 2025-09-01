@@ -1,8 +1,8 @@
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
+import type { EventTypeMap as LocalEventTypeMap } from '@/app/config/EventTypeMap';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
-import type { EventTypeMap as LocalEventTypeMap } from '@/stack/config/EventTypeMap';
 
 /**
  * Private symbol used to attach env (schemas + envKeys) to FunctionConfig instances.

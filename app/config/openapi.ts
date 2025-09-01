@@ -10,8 +10,8 @@ import path from 'path';
 import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
-import eventActiveCampaignPost from '@/stack/endpoints/event/activecampaign/post/openapi';
-import openapiGet from '@/stack/endpoints/openapi/get/openapi';
+import eventActiveCampaignPost from '@/app/endpoints/event/activecampaign/post/openapi';
+import openapiGet from '@/app/endpoints/openapi/get/openapi';
 
 console.log('Generating OpenAPI document...');
 /**

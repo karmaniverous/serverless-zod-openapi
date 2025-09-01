@@ -3,9 +3,9 @@
 - The request body schema is the provided `eventSchema` (omit if undefined).
 - The 200 response schema is the provided `responseSchema`.
 */
+import { serverlessConfig } from '@/app/config/serverlessConfig';
+import { ENDPOINTS_ROOT_ABS } from '@/app/endpoints/_root';
 import { buildOpenApiPath } from '@/src';
-import { serverlessConfig } from '@/stack/config/serverlessConfig';
-import { ENDPOINTS_ROOT_ABS } from '@/stack/endpoints/_root';
 
 import { eventSchema, functionConfig, responseSchema } from './config';
 export default buildOpenApiPath(

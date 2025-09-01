@@ -5,8 +5,8 @@
  */
 import { z } from 'zod';
 
+import { envConfig } from '@/app/config/app.config';
 import { defineFunctionConfig } from '@/src';
-import { envConfig } from '@/stack/config/app.config';
 
 export const eventSchema = undefined;
 export const responseSchema = z.object({});
