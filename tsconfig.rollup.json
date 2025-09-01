@@ -3,6 +3,7 @@
   "compilerOptions": {
     "composite": false,
     "declaration": false,
+    "declarationMap": false,
     "emitDeclarationOnly": false,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
@@ -11,7 +12,5 @@
       "@@/*": ["services/activecampaign/*"]
     }
   },
-  "include": [
-    "src/**/*.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

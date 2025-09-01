@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-08-31T05:55:00Z
+When updated: 2025-09-01T09:50:00Z
 
 ## Next up
-
 - All scripts PASS (openapi, generate, typecheck, lint, test, package, stan:build). Proceed with polish and design: - DX (optional): stan:build currently emits “unresolved dependency” warnings for alias imports; acceptable as externals, no action required unless noise becomes a problem.
   - Knip: leave WARN list as-is until after config/model refactor; then prune or ignore intentionally kept helpers.
   - Design: toolkit packaging plan (publishable API surface):
@@ -14,14 +13,27 @@ When updated: 2025-08-31T05:55:00Z
     - Collapse stack config to EventTypeMap + AppConfig (zod-typed),
     - Identify which stack helpers migrate into the library and how builders consume only (FunctionConfig, AppConfig).
   - Prepare a short migration outline and acceptance criteria for the config model changes.
+  - Evaluate consolidating to a single package:
+    - Likely remove the root "workspaces" entry.
+    - Keep services/activecampaign as a plain folder and call Orval from the
+      root (e.g., `cd services/activecampaign && npx orval`), eliminating the
+      need for a child package.json.
+    - Update ESLint parserOptions.project accordingly when removing the child tsconfig.
 
 ## Completed (recent)
+
+- Typecheck scope & no-emit
+  - Switched `typecheck` to `tsc -p tsconfig.json --noEmit` so it exercises
+    the whole repo without producing stray JS/map files.
+
+- Rollup config stabilization
+  - Set `declarationMap: false` in tsconfig.rollup.json to silence outDir
+    requirements from the TS plugin. Library bundling remains dts-driven.
 
 - Rollup tsconfig hard‑pin
   - Both rollup.config.ts and stan.rollup.config.ts now explicitly pass
     'tsconfig.rollup.json' to @rollup/plugin-typescript to avoid inheriting
     the broad tsconfig.json program.
-
 - stan:build noise reduction
   - Added baseUrl/paths to tsconfig.stan.rollup.json and restricted include set
     to avoid service wrappers; fixed EventTypeMap type predicate to silence TS2677.

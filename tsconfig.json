@@ -3,6 +3,10 @@
     "baseUrl": ".",
     "declarationDir": ".tsbuild",
     "outDir": ".tsbuild",
+    "noEmit": true,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "declarationMap": false,
     "paths": {
       "@/*": ["*"],
       "@@/*": ["services/activecampaign/*"]
