@@ -19,10 +19,10 @@
     "services/activecampaign/src/wrapped/field-values.ts",
     "services/activecampaign/src/api/contacts/format.ts"
   ],
+  "ignoreBinaries": ["plantuml"],
   "ignoreDependencies": [
     "http-errors",
-    "@types/http-errors",
-    "@types/serverless",
+    "@types/http-errors",    "@types/serverless",
     "@vitest/coverage-v8",
     "serverless-apigateway-log-retention",
     "serverless-deployment-bucket",

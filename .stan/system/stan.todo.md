@@ -1,8 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-02T17:00:00Z
+When updated: 2025-09-02T17:15:00Z
 
 ## Next up
+
 - HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants). - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
@@ -51,9 +52,16 @@ When updated: 2025-09-02T17:00:00Z
 
 - App.ts orchestration slimming (follow-through)
   - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
-  - Acceptance: App.ts ~≤200 LOC; strict TS and lint clean.
+  - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 
 ## Completed (recent)
+
+29. Knip — unlisted binaries resolved
+
+- Added devDependencies: release-it, auto-changelog.
+- Configured knip.json ignoreBinaries: ["plantuml"] to accept external tool.
+- Acceptance: knip shows no “Unlisted binaries”.
+- Follow-up: leave plantuml as an external dependency invoked by scripts.
 
 28. Docs: HTTP middleware customization
 
@@ -87,6 +95,6 @@ When updated: 2025-09-02T17:00:00Z
 
 24. Tests for HTTP customization
 
-- Added compute tests: merge precedence, transform insertion, invariants violations,  Zod enforcement (including custom tagged validators), and replace behavior.
+- Added compute tests: merge precedence, transform insertion, invariants violations, Zod enforcement (including custom tagged validators), and replace behavior.
 - Added transformUtils tests: insert/replace/remove/find/getId on tagged steps.
 - All scripts pass (typecheck/lint/test/build/package).
