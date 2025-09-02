@@ -2,8 +2,6 @@ import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 
 import type { HttpContext } from '@/src/types/HttpContext';
 
-/** @category Public API */
-/** @category HTTP Middleware */
 /** Narrow to API Gateway v1 events with safe property checks. */
 /**
  * Type guard for API Gateway v1 events. *
@@ -21,7 +19,8 @@ export const isV1 = (evt: unknown): evt is APIGatewayProxyEvent => {
  */
 export const isV2 = (evt: unknown): evt is APIGatewayProxyEventV2 => {
   if (typeof evt !== 'object' || evt === null) return false;
-  if (!('version' in evt) || !('requestContext' in evt)) return false;  const rc = (evt as { requestContext?: unknown }).requestContext;
+  if (!('version' in evt) || !('requestContext' in evt)) return false;
+  const rc = (evt as { requestContext?: unknown }).requestContext;
   return (
     !!rc && typeof rc === 'object' && 'http' in (rc as Record<string, unknown>)
   );
@@ -141,7 +140,8 @@ const hasApiKey = (
  */
 export const detectSecurityContext = (evt: unknown): HttpContext => {
   if (isV1(evt)) {
-    const auth = getHeaderFromEvent(evt, 'authorization');    if (hasAwsSig(auth) || hasV1AccessKey(evt) || hasAuthorizer(evt))
+    const auth = getHeaderFromEvent(evt, 'authorization');
+    if (hasAwsSig(auth) || hasV1AccessKey(evt) || hasAuthorizer(evt))
       return 'my';
     if (hasApiKey(evt)) return 'private';
     return 'public';

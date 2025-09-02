@@ -1,8 +1,6 @@
 /**
  * baseEventTypeMapSchema
  * - Schema-first companion to BaseEventTypeMap.
- * @category Public API
- * @category Types
  * - Ensures z.infer<typeof baseEventTypeMapSchema> === BaseEventTypeMap.
  *
  * @remarks * Consumers typically extend this schema when creating an App to add
@@ -10,7 +8,8 @@
  * Only tokens listed in the app’s `httpEventTypeTokens` are treated as HTTP at runtime.
  */
 import type {
-  APIGatewayProxyEvent,  APIGatewayProxyEventV2,
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   SQSEvent,
 } from 'aws-lambda';
 import { z } from 'zod';

@@ -1,8 +1,7 @@
 /**
  + HTTP customization types and aliases.
- * @category Customization
- * @category HTTP Middleware
- */import type { MiddlewareObj } from '@middy/core';
+ */
+import type { MiddlewareObj } from '@middy/core';
 import type httpContentNegotiation from '@middy/http-content-negotiation';
 import type httpCors from '@middy/http-cors';
 import type httpErrorHandler from '@middy/http-error-handler';
@@ -23,7 +22,9 @@ export type HttpStackOptions = {
   contentNegotiation?: Parameters<typeof httpContentNegotiation>[0];
   cors?: Parameters<typeof httpCors>[0];
   errorHandler?: Parameters<typeof httpErrorHandler>[0];
-  serializer?: { json?: { label?: string; stringify?: (value: unknown) => string } };
+  serializer?: {
+    json?: { label?: string; stringify?: (value: unknown) => string };
+  };
   jsonBodyParser?: Parameters<typeof httpJsonBodyParser>[0];
   headerNormalizer?: Parameters<typeof httpHeaderNormalizer>[0];
 };

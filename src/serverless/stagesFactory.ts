@@ -1,8 +1,6 @@
 /**
  * Stage artifacts factory.
  *
- * @category Serverless
- * @category Types
  * Validates per‑stage configurations, composes them with global params,
  * and produces:
  *  - Serverless `stages` (params), *  - provider‑level `environment` mapping,
@@ -13,7 +11,8 @@ import type { ZodObject, ZodRawShape } from 'zod';
 export type Dict<T> = Record<string, T>;
 
 export type StagesFactoryInput<
-  GlobalParams extends Record<string, unknown>,  StageParams extends Record<string, unknown>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 > = {
   globalParamsSchema: ZodObject<ZodRawShape>;
   stageParamsSchema: ZodObject<ZodRawShape>;
@@ -51,7 +50,8 @@ export type StagesFactoryOutput<
  * @throws Error if a stage fails validation or a required global key is missing
  */
 export const stagesFactory = <
-  GlobalParams extends Record<string, unknown>,  StageParams extends Record<string, unknown>,
+  GlobalParams extends Record<string, unknown>,
+  StageParams extends Record<string, unknown>,
 >(
   input: StagesFactoryInput<GlobalParams, StageParams>,
 ): StagesFactoryOutput<GlobalParams, StageParams> => {

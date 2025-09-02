@@ -1,8 +1,6 @@
 /**
  * App (schema‑first)
  *
- * @category Public API
- * @category Config
  * Central orchestrator for a SMOZ application. You provide:
  * - Global/stage parameter schemas and env exposure keys
  * - Serverless defaults (handler filename/export and context map) * - Event‑type map schema (extendable: e.g., add 'step')
@@ -41,7 +39,8 @@ import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
 
 /** Serverless config schema (parsed internally by App). */
-const serverlessConfigSchema = z.object({  /** Context -> event fragment to merge into generated http events */
+const serverlessConfigSchema = z.object({
+  /** Context -> event fragment to merge into generated http events */
   httpContextEventMap: z.custom<SecurityContextHttpEventMap>(),
   /** Used to construct default handler string if missing on a function */
   defaultHandlerFileName: z.string().min(1),
@@ -50,11 +49,10 @@ const serverlessConfigSchema = z.object({  /** Context -> event fragment to merg
 export type AppServerlessConfig = z.infer<typeof serverlessConfigSchema>;
 
 export interface AppInit<
-  /** @category Public API */
-  /** @category Config */
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
-  EventTypeMapSchema extends ZodObj,> {
+  EventTypeMapSchema extends ZodObj,
+> {
   appRootAbs: string;
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
@@ -84,11 +82,9 @@ export interface AppInit<
  * Application class.
  *
  * @typeParam GlobalParamsSchema - Zod object schema for global parameters
- * @category Public API
- * @category Config
  * @typeParam StageParamsSchema  - Zod object schema for per‑stage parameters
  * @typeParam EventTypeMapSchema - Zod object schema mapping event tokens to runtime types
- */export class App<
+ */ export class App<
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,
@@ -141,7 +137,8 @@ export interface AppInit<
     );
 
     // Env exposure nodes
-    this.global = {      paramsSchema: this.globalParamsSchema,
+    this.global = {
+      paramsSchema: this.globalParamsSchema,
       envKeys: init.global.envKeys,
     };
     this.stage = {
@@ -187,7 +184,8 @@ export interface AppInit<
     this.http = init.http ?? {};
 
     // Initialize function registry
-    this.registry = createRegistry<      GlobalParamsSchema,
+    this.registry = createRegistry<
+      GlobalParamsSchema,
       StageParamsSchema,
       EventTypeMapSchema
     >({

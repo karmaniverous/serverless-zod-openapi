@@ -2,8 +2,6 @@ import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
-/** @category Customization */
-/** @category HTTP Middleware */
 import { combine } from '@/src/handler/middleware/combine';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 
@@ -93,7 +91,9 @@ export const computeHttpMiddleware = (args: {
     fn,
   } = args;
 
-  const baseContentType = (maybeContentType ?? 'application/json').toLowerCase();
+  const baseContentType = (
+    maybeContentType ?? 'application/json'
+  ).toLowerCase();
   let effective: HttpStackOptions = {
     contentType: baseContentType,
     logger: maybeLogger ?? console,
@@ -108,7 +108,7 @@ export const computeHttpMiddleware = (args: {
   effective = mergeOptions(effective, fn?.options);
 
   const contentType = (effective.contentType ?? baseContentType).toLowerCase();
-  const logger = (effective.logger ?? console);
+  const logger = effective.logger ?? console;
 
   // Build default phases with resolved options
   let phases = buildDefaultPhases({
@@ -120,7 +120,14 @@ export const computeHttpMiddleware = (args: {
   });
 
   // Layer B: extend (app.defaults → profile → function)
-  applyExtend(phases, (app?.defaults as { extend?: { before?: M[]; after?: M[]; onError?: M[] } } | undefined)?.extend);
+  applyExtend(
+    phases,
+    (
+      app?.defaults as
+        | { extend?: { before?: M[]; after?: M[]; onError?: M[] } }
+        | undefined
+    )?.extend,
+  );
   applyExtend(phases, profile?.extend);
   applyExtend(phases, fn?.extend);
 
@@ -141,7 +148,10 @@ export const computeHttpMiddleware = (args: {
   // Layer D: replace (full override)
   if (fn?.replace?.stack) {
     const rep = fn.replace.stack;
-    if (typeof rep === 'object' && 'before' in (rep as Record<string, unknown>)) {
+    if (
+      typeof rep === 'object' &&
+      'before' in (rep as Record<string, unknown>)
+    ) {
       const p = rep as { before?: M[]; after?: M[]; onError?: M[] };
       const final = {
         before: p.before ?? [],

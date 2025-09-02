@@ -1,13 +1,4 @@
 {
-  "categoryOrder": [
-    "Public API",
-    "HTTP Middleware",
-    "Customization",
-    "Config",
-    "Serverless",
-    "OpenAPI",
-    "Types"
-  ],
   "entryPoints": ["./src"],
   "entryPointStrategy": "expand",
   "exclude": ["**/*.test.ts", "src/test/**", "**/generated/**", "**/*.d.ts"],
@@ -27,11 +18,7 @@
   ],
   "hostedBaseUrl": "https://docs.karmanivero.us/smoz",
   "navigation": {
-    "includeCategories": false,
-    "includeFolders": true,
-    "excludeReferences": true,
-    "compactFolders": false,
-    "includeGroups": false
+    "excludeReferences": true
   },
   "navigationLinks": {
     "GitHub": "https://github.com/karmaniverous/smoz"

@@ -1,11 +1,12 @@
 import type { MiddlewareObj } from '@middy/core';
 import type { AWS } from '@serverless/typescript';
 import type { z } from 'zod';
-/** @category Public API */
-/** @category Types */
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
-import type {  HttpStackOptions, HttpTransform, PhasedArrays,
+import type {
+  HttpStackOptions,
+  HttpTransform,
+  PhasedArrays,
 } from '@/src/handler/middleware/httpStackCustomization';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { HttpContext } from '@/src/types/HttpContext';
@@ -33,7 +34,8 @@ export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
  * then applies HTTP middleware iff the token is in the app’s HTTP tokens set.
  */
 export type FunctionConfig<
-  EventSchema extends z.ZodType | undefined,  ResponseSchema extends z.ZodType | undefined,
+  EventSchema extends z.ZodType | undefined,
+  ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,

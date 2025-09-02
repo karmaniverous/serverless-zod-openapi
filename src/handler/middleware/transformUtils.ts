@@ -1,8 +1,6 @@
 /**
  * Transform helpers for HTTP middleware stacks.
  *
- * @category Customization
- * @category Types
  * - Steps are identified by a non-enumerable __id property on MiddlewareObj.
  * - Utilities operate on arrays immutably and return new arrays.
  * * Requirements addressed:

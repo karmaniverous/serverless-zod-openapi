@@ -1,11 +1,9 @@
 /**
  * wrapHandler
  * - No glue: accepts a branded functionConfig and a business handler.
- * @category Public API
- * @category Runtime
  *   Env (schemas + envKeys) is read from the branded config.
  * - Preserves HTTP/Non-HTTP split and middleware pipeline.
- */import middy from '@middy/core';
+ */ import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 

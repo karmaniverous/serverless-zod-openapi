@@ -7,8 +7,6 @@ import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHtt
 /** Base: envKeys tied to a Zod schema’s inferred keys. */
 /**
  * Bind a list of environment keys to a schema’s inferred key space.
- * @category Types
- * @category Config
  *
  * @typeParam Schema - Zod object schema
  * @remarks Used to express “these keys are allowed to be exposed from this schema”.
@@ -19,8 +17,6 @@ export interface EnvKeysNode<Schema extends ZodObject<ZodRawShape>> {
 /** For wrapper input: schema + envKeys. */
 export interface EnvSchemaNode<Schema extends ZodObject<ZodRawShape>>
   extends EnvKeysNode<Schema> {
-  /** @category Types */
-  /** @category Config */
   paramsSchema: Schema;
 }
 /** Wrapper input: no glue; both global and stage sides. */
@@ -28,8 +24,6 @@ export interface EnvSchemaNode<Schema extends ZodObject<ZodRawShape>>
  * Environment configuration bounds for an application.
  *
  * @typeParam GlobalParamsSchema - Global params schema
- * @category Types
- * @category Config
  * @typeParam StageParamsSchema  - Per‑stage params schema
  */
 export interface GlobalEnvConfig<
@@ -45,8 +39,6 @@ export interface GlobalEnvConfig<
  * Concrete global configuration for authoring (params + env exposure).
  *
  * @typeParam GlobalParamsSchema - Global params schema
- * @category Types
- * @category Config
  * @remarks The App keeps this typed and uses it to generate provider.environment.
  */
 export interface GlobalParamsNode<
@@ -60,8 +52,6 @@ export interface GlobalParamsNode<
  * Concrete per‑stage configuration for authoring (params + env exposure).
  *
  * @typeParam StageParamsSchema - Per‑stage params schema
- * @category Types
- * @category Config
  * @remarks The App composes stage with global (global.partial().extend(stage)).
  */
 export interface StageParamsNode<
@@ -77,8 +67,6 @@ export interface StageParamsNode<
  * @typeParam GlobalParamsSchema - Global params schema
  * @typeParam StageParamsSchema  - Per‑stage params schema
  * @remarks Use with {@link defineAppConfig}.
- * @category Types
- * @category Config
  */
 export interface DefineAppConfigInput<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
@@ -119,8 +107,6 @@ export interface DefineAppConfigOutput<
  * @typeParam StageParamsSchema  - Per‑stage params schema
  * @param globalParamsSchema - schema for global params
  * @param stageParamsSchema  - schema for stage params
- * @category Public API
- * @category Config
  * @param input - serverless defaults and concrete params + env exposure
  * @returns Typed configuration nodes and stage artifacts
  * * @throws Error if envKeys include keys not present in their corresponding schema
