@@ -207,10 +207,74 @@ SMOZ’s HTTP wrapper composes a robust Middy pipeline:
 
 Non‑HTTP events bypass Middy entirely, so your internal handlers stay tiny and fast.
 
+## HTTP middleware customization
+
+SMOZ exposes a modular customization surface for the HTTP middleware stack while
+keeping robust defaults. You can set app‑wide defaults and profiles, then refine
+per function with simple options, phased extensions, targeted transforms, or a
+full replace (phased arrays).
+
+Surfaces:
+
+- App level (optional; in App.create):
+  - http.defaults: HttpStackOptions (e.g., contentType, logger)
+  - http.profiles: Record<string, HttpProfile> (options + extend/transform)
+- Function level (optional; in app.defineFunction):
+  - http profile: pick one profile by name
+  - http options: Partial<HttpStackOptions> (shallow overrides)
+  - extend: append steps into phases (before/after/onError)
+  - transform: pure function that can insert/replace/remove steps by ID
+  - replace: supply phased arrays or a single middleware (see footgun note)
+
+Merge order:
+
+1) defaults (app) → 2) profile (app) → 3) options (function) → 4) extend
+   (defaults → profile → function) → 5) transform (defaults → profile →
+   function) → 6) replace (function; final).
+
+Step IDs and invariants:
+
+- Stable step IDs (in order around the core):
+  - before: head, header-normalizer, event-normalizer, content-negotiation,
+    json-body-parser, zod-before
+  - after: head-finalize, zod-after, error-expose, cors, preferred-media, shape, serializer
+  - onError: error-expose, error-handler
+- Invariants enforced:
+  - head must be first in before
+  - serializer must be last in after
+  - shape must precede serializer in after
+  - error-handler may appear only in onError
+- Zod enforcement:
+  - If eventSchema or responseSchema is provided, the final stack must include
+    zod-before (before) and zod-after (after). You may supply custom validators,
+    but they must be tagged with these IDs.
+
+Examples:
+
+- Choose a profile and override content type:
+  ```ts
+  app.defineFunction({
+    // ...
+    http: { profile: 'publicJson', options: { contentType: 'application/vnd.my+json' } },
+  });
+  ```
+- Insert a header after the response shaper:
+  ```ts
+  import { insertAfter } from 'smoz';
+  const mw = { after: (req: any) => { req.response.headers['X-My'] = 'yes'; } };
+  app.defineFunction({
+    // ...
+    http: { transform: ({ before, after, onError }) => ({ before, after: insertAfter(after, 'shape', mw as any), onError }) },
+  });
+  ```
+- Replace (advanced):
+  - Provide phased arrays { before, after, onError } tagged to satisfy invariants
+    and zod enforcement if schemas are present. Avoid a single middleware
+    replacement unless no schemas are used, as Zod presence cannot be validated.
+
 ## Typedoc
 
 Public API is documented with TSDoc and published with [TypeDoc]. Once generated:
-
 - Docs hosting: https://docs.karmanivero.us/smoz
 - Generate locally: `npm run docs`
 

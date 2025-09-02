@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-02T16:45:00Z
+When updated: 2025-09-02T17:00:00Z
 
 ## Next up
-
 - HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants). - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
@@ -56,10 +55,17 @@ When updated: 2025-09-02T16:45:00Z
 
 ## Completed (recent)
 
+28. Docs: HTTP middleware customization
+
+- Added README section covering customization surfaces (app defaults/profiles,
+  function profile/options/extend/transform/replace), merge order, step IDs,
+  invariants, Zod enforcement, and examples for overrides, transforms, and
+  phased replace.
+- Acceptance: docs build remains green.
+
 27. Knip cleanup (phase 2)
 
-- Remove @karmaniverous/cached-axios from ignoreDependencies per knip hint.
-- Ignore CLI/config and future-use wrappers explicitly:
+- Remove @karmaniverous/cached-axios from ignoreDependencies per knip hint.- Ignore CLI/config and future-use wrappers explicitly:
   - services/activecampaign/orval.config.ts
   - services/activecampaign/src/wrapped/field-values.ts
   - services/activecampaign/src/api/contacts/format.ts
@@ -79,14 +85,8 @@ When updated: 2025-09-02T16:45:00Z
 - Refactored knip.json to a single workspace covering root and services.
 - Kept src/serverless/intrinsic.ts for future use and added it to knip ignore.
 
-23. Remove shims and make compute args exact-optional safe
-
-- wrapHandler: dropped legacy-back-compat mapping for contentType and only pass computeHttpMiddleware options when defined (event/response/contentType,
-  app, fn) to satisfy exactOptionalPropertyTypes.
-
 24. Tests for HTTP customization
 
-- Added compute tests: merge precedence, transform insertion, invariants violations,
-  Zod enforcement (including custom tagged validators), and replace behavior.
+- Added compute tests: merge precedence, transform insertion, invariants violations,  Zod enforcement (including custom tagged validators), and replace behavior.
 - Added transformUtils tests: insert/replace/remove/find/getId on tagged steps.
 - All scripts pass (typecheck/lint/test/build/package).
