@@ -33,11 +33,11 @@ import { createRegistry } from '@/src/app/registry';
 import type { ZodObj } from '@/src/app/types';
 import { baseEventTypeMapSchema } from '@/src/config/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
+import type { AppHttpConfig } from '@/src/handler/middleware/httpStackCustomization';
 import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
-import type { AppHttpConfig } from '@/src/handler/middleware/httpStackCustomization';
 
 /** Serverless config schema (parsed internally by App). */
 const serverlessConfigSchema = z.object({  /** Context -> event fragment to merge into generated http events */
@@ -132,13 +132,13 @@ export class App<
     // Parse serverless input internally
     this.serverless = serverlessConfigSchema.parse(init.serverless);
 
-    // Validate that eventTypeMapSchema includes base keys at runtime    validateEventTypeMapSchemaIncludesBase(
+    // Validate that eventTypeMapSchema includes base keys at runtime
+    validateEventTypeMapSchemaIncludesBase(
       (this.eventTypeMapSchema as ZodObj).shape as Record<string, unknown>,
     );
 
     // Env exposure nodes
-    this.global = {
-      paramsSchema: this.globalParamsSchema,
+    this.global = {      paramsSchema: this.globalParamsSchema,
       envKeys: init.global.envKeys,
     };
     this.stage = {

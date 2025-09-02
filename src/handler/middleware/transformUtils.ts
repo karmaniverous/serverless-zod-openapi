@@ -8,12 +8,13 @@
  * - insertBefore, insertAfter, replaceStep, removeStep, findIndex, getId
  */
 import type { MiddlewareObj } from '@middy/core';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 const ID_PROP = '__id' as const;
+type ApiMiddleware = MiddlewareObj<APIGatewayProxyEvent, Context>;
 
 export type StepId =
-  | 'head'
-  | 'header-normalizer'
+  | 'head'  | 'header-normalizer'
   | 'event-normalizer'
   | 'content-negotiation'
   | 'json-body-parser'
@@ -28,10 +29,10 @@ export type StepId =
   | 'serializer';
 
 /** Attach a non-enumerable __id to a middleware step. */
-export const tagStep = <E, C, Err, Ctx, Opts>(
-  mw: MiddlewareObj<E, C, Err, Ctx, Opts>,
+export const tagStep = (
+  mw: ApiMiddleware,
   id: StepId,
-): MiddlewareObj<E, C, Err, Ctx, Opts> => {
+): ApiMiddleware => {
   if (!Object.prototype.hasOwnProperty.call(mw, ID_PROP)) {
     Object.defineProperty(mw, ID_PROP, { value: id, enumerable: false });
   }
@@ -39,21 +40,21 @@ export const tagStep = <E, C, Err, Ctx, Opts>(
 };
 
 /** Retrieve a step's id, if present. */
-export const getId = (mw: MiddlewareObj): StepId | undefined =>
+export const getId = (mw: ApiMiddleware): StepId | undefined =>
   (mw as Record<string, unknown>)[ID_PROP] as StepId | undefined;
 
 /** Find index of a step by id. */
 export const findIndex = (
-  list: MiddlewareObj[],
+  list: ApiMiddleware[],
   id: StepId,
 ): number => list.findIndex((m) => getId(m) === id);
 
 /** Insert a step before the step with given id. */
 export const insertBefore = (
-  list: MiddlewareObj[],
+  list: ApiMiddleware[],
   id: StepId,
-  mw: MiddlewareObj,
-): MiddlewareObj[] => {
+  mw: ApiMiddleware,
+): ApiMiddleware[] => {
   const i = findIndex(list, id);
   if (i < 0) return list.slice();
   return [...list.slice(0, i), mw, ...list.slice(i)];
@@ -61,10 +62,10 @@ export const insertBefore = (
 
 /** Insert a step after the step with given id. */
 export const insertAfter = (
-  list: MiddlewareObj[],
+  list: ApiMiddleware[],
   id: StepId,
-  mw: MiddlewareObj,
-): MiddlewareObj[] => {
+  mw: ApiMiddleware,
+): ApiMiddleware[] => {
   const i = findIndex(list, id);
   if (i < 0) return list.slice();
   return [...list.slice(0, i + 1), mw, ...list.slice(i + 1)];
@@ -72,10 +73,10 @@ export const insertAfter = (
 
 /** Replace a step with given id. */
 export const replaceStep = (
-  list: MiddlewareObj[],
+  list: ApiMiddleware[],
   id: StepId,
-  mw: MiddlewareObj,
-): MiddlewareObj[] => {
+  mw: ApiMiddleware,
+): ApiMiddleware[] => {
   const i = findIndex(list, id);
   if (i < 0) return list.slice();
   const out = list.slice();
@@ -85,41 +86,41 @@ export const replaceStep = (
 
 /** Remove a step with given id. */
 export const removeStep = (
-  list: MiddlewareObj[],
+  list: ApiMiddleware[],
   id: StepId,
-): MiddlewareObj[] => {
+): ApiMiddleware[] => {
   const i = findIndex(list, id);
   if (i < 0) return list.slice();
   return [...list.slice(0, i), ...list.slice(i + 1)];
 };
 
 export type PhasedArrays = {
-  before?: MiddlewareObj[];
-  after?: MiddlewareObj[];
-  onError?: MiddlewareObj[];
+  before?: ApiMiddleware[];
+  after?: ApiMiddleware[];
+  onError?: ApiMiddleware[];
 };
 
 export type HttpTransform = (stack: {
-  before: MiddlewareObj[];
-  after: MiddlewareObj[];
-  onError: MiddlewareObj[];
+  before: ApiMiddleware[];
+  after: ApiMiddleware[];
+  onError: ApiMiddleware[];
 }) => Partial<{
-  before: MiddlewareObj[];
-  after: MiddlewareObj[];
-  onError: MiddlewareObj[];
+  before: ApiMiddleware[];
+  after: ApiMiddleware[];
+  onError: ApiMiddleware[];
 }>;
 
 /** Invariant validation helpers */
 export const assertInvariants = (phases: {
-  before: MiddlewareObj[];
-  after: MiddlewareObj[];
-  onError: MiddlewareObj[];
+  before: ApiMiddleware[];
+  after: ApiMiddleware[];
+  onError: ApiMiddleware[];
 }): void => {
   const { before, after } = phases;
-  if (before.length === 0 || getId(before[0]) !== 'head') {
+  if (before.length === 0 || getId(before[0] as ApiMiddleware) !== 'head') {
     throw new Error("Invariant violation: 'head' must be first in before.");
   }
-  if (after.length === 0 || getId(after[after.length - 1]) !== 'serializer') {
+  if (after.length === 0 || getId(after[after.length - 1] as ApiMiddleware) !== 'serializer') {
     throw new Error("Invariant violation: 'serializer' must be last in after.");
   }
   const shapeIdx = findIndex(after, 'shape');
@@ -129,7 +130,7 @@ export const assertInvariants = (phases: {
       "Invariant violation: 'shape' must precede 'serializer' in after.",
     );
   }
-  const illegal = (arr: MiddlewareObj[]) =>
+  const illegal = (arr: ApiMiddleware[]) =>
     arr.find((m) => getId(m) === 'error-handler');
   if (illegal(before) || illegal(after)) {
     throw new Error(

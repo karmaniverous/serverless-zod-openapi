@@ -1,12 +1,17 @@
 # Development Plan
 
-When updated: 2025-09-02T00:00:00Z
+When updated: 2025-09-02T01:00:00Z
 
 ## Next up
+- HTTP customization modularization follow‑through
+  - Add tests covering the compute layer (merge order, replace, invariants).
+  - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
+  - Expand docs with “Step IDs and invariants” table and examples.
+  - Acceptance: typecheck/lint/test/build/package all pass.
+
 - HTTP customization follow‑through
   - Add unit tests for:
-    - Transform helpers (insert/replace/remove) and getId tagging.
-    - Invariant validation failures (head first; serializer last; shape before serializer; error-handler only in onError).
+    - Transform helpers (insert/replace/remove) and getId tagging.    - Invariant validation failures (head first; serializer last; shape before serializer; error-handler only in onError).
     - Zod enforcement on schemas present (remove zod-before/after → throws); accept custom tagged validators.
     - Merge order precedence (defaults → profile → fn overrides).
   - Documentation:
@@ -52,10 +57,15 @@ When updated: 2025-09-02T00:00:00Z
 
 ## Completed (recent)
 
+22. Split HTTP customization into modules and fix TS build
+   - Replaced monolithic httpStackCustomization with:
+     - customization/types.ts, customization/defaultSteps.ts, customization/compute.ts
+     - httpStackCustomization.ts now a barrel.
+   - Tightened transformUtils typing to API Gateway middleware and fixed invariants typing.
+   - Fixed malformed validateEventTypeMapSchemaIncludesBase call in App.ts.
 21. HTTP middleware customization (foundation)
    - Implemented phased stack builder with stable Step IDs and invariants.
-   - Added app-level http { defaults, profiles } and function-level http { profile, options, extend, transform, replace }.
-   - Merge order: defaults → profile → fn.options → fn.extend → fn.transform → fn.replace.
+   - Added app-level http { defaults, profiles } and function-level http { profile, options, extend, transform, replace }.   - Merge order: defaults → profile → fn.options → fn.extend → fn.transform → fn.replace.
    - Zod enforcement: schemas present ⇒ require 'zod-before' in before and 'zod-after' in after; accepts custom tagged steps.
    - Transform helpers exported: insertBefore, insertAfter, replaceStep, removeStep, findIndex, getId, tagStep.
    - Integrated with wrapHandler via App → registry → handlerFactory plumbed http config.
