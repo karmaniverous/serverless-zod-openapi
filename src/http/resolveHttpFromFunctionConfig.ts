@@ -38,7 +38,8 @@ export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
  */
 export const resolveHttpFromFunctionConfig = <
   EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,  GlobalParams extends Record<string, unknown>,
+  ResponseSchema extends z.ZodType | undefined,
+  GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,
@@ -108,7 +109,8 @@ export const resolveHttpFromFunctionConfig = <
     basePath = segs.join('/');
   }
 
-  if (!basePath) {    throw new Error(
+  if (!basePath) {
+    throw new Error(
       'resolveHttpFromFunctionConfig: derived basePath is empty; ensure file is under endpoints root or set config.basePath.',
     );
   }

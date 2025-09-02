@@ -27,7 +27,11 @@
   ],
   "hostedBaseUrl": "https://docs.karmanivero.us/smoz",
   "navigation": {
-    "includeCategories": true
+    "includeCategories": false,
+    "includeFolders": true,
+    "excludeReferences": true,
+    "compactFolders": false,
+    "includeGroups": false
   },
   "navigationLinks": {
     "GitHub": "https://github.com/karmaniverous/smoz"
@@ -49,6 +53,5 @@
     ]
   },
   "searchInComments": true,
-  "searchInDocuments": true,
-  "sort": ["alphabetical"]
+  "searchInDocuments": true
 }
