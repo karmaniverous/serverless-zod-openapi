@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-02T16:10:00Z
+When updated: 2025-09-02T16:30:00Z
 
 ## Next up
-- HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants).
-  - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
+- HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants).  - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
 
@@ -65,14 +64,13 @@ When updated: 2025-09-02T16:10:00Z
 - transformUtils.test.ts: add non-null assertion for array element access to
   satisfy noUncheckedIndexedAccess during typecheck/docs/build.
 
-26. Remove unused intrinsic helpers (knip)
+26. Knip: single workspace and ignore intrinsic helpers
 
-- Deleted src/serverless/intrinsic.ts which was unused and flagged by knip.
-- Aligns tree with earlier cleanup intent and reduces analyzer noise.
+- Refactored knip.json to a single workspace covering root and services.
+- Kept src/serverless/intrinsic.ts for future use and added it to knip ignore.
 
 23. Remove shims and make compute args exact-optional safe
-- wrapHandler: dropped legacy/back-compat mapping for contentType and only
-  pass computeHttpMiddleware options when defined (event/response/contentType,
+- wrapHandler: dropped legacy/back-compat mapping for contentType and only  pass computeHttpMiddleware options when defined (event/response/contentType,
   app, fn) to satisfy exactOptionalPropertyTypes.
 
 24. Tests for HTTP customization

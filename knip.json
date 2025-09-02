@@ -1,16 +1,21 @@
 {
-  "workspaces": {
-    ".": {
-      "entry": ["serverless.ts"],
-      "project": ["src/**", "app/**", "!docs/**"],
-      "ignore": ["lib/test/**", "app/**/handler.ts"]
-    },
-    "services/activecampaign": {
-      "entry": ["src/index.ts"],
-      "project": ["src/**", "!**/generated/**"],
-      "ignore": ["**/generated/**", "src/openapi.json"]
-    }
-  },
+  "entry": [
+    "serverless.ts",
+    "services/activecampaign/src/index.ts"
+  ],
+  "project": [
+    "src/**",
+    "app/**",
+    "services/**",
+    "!**/generated/**",
+    "!docs/**"
+  ],
+  "ignore": [
+    "lib/test/**",
+    "app/**/handler.ts",
+    "src/serverless/intrinsic.ts",
+    "services/**/src/openapi.json"
+  ],
   "ignoreDependencies": [
     "@karmaniverous/cached-axios",
     "http-errors",
