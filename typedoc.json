@@ -26,6 +26,9 @@
     "typescript"
   ],
   "hostedBaseUrl": "https://docs.karmanivero.us/smoz",
+  "navigation": {
+    "includeCategories": true
+  },
   "navigationLinks": {
     "GitHub": "https://github.com/karmaniverous/smoz"
   },
