@@ -1,9 +1,15 @@
 {
-  "entryPoints": ["./src/index.ts"],
+  "entryPoints": ["./src"],
+  "entryPointStrategy": "expand",
+  "exclude": [
+    "**/*.test.ts",
+    "src/test/**",
+    "**/generated/**",
+    "**/*.d.ts"
+  ],
   "highlightLanguages": [
     "bash",
-    "console",
-    "css",
+    "console",    "css",
     "html",
     "javascript",
     "json",
@@ -29,6 +35,7 @@
       }
     ]
   },
+  "excludeInternal": false,
   "searchInComments": true,
   "searchInDocuments": true
 }

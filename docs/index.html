@@ -1,6 +1,8 @@
 <!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><link rel="canonical" href="https://docs.karmanivero.us/smoz/"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>smoz</title><meta name="description" content="Documentation for smoz"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">smoz</a><div id="tsd-toolbar-links"><a href="https://github.com/karmaniverous/smoz">GitHub</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>smoz</h1></div><div class="tsd-panel tsd-typography"><div align="center">
-<h1 id="smoz" class="tsd-anchor-link">SMOZ<a href="#smoz" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1><p>Serverless + Middy + OpenAPI + Zod</p>
-<p><a href="https://www.serverless.com/" target="_blank" class="external">Serverless</a> · <a href="https://middy.js.org/" target="_blank" class="external">Middy</a> · <a href="https://spec.openapis.org/oas/latest.html" target="_blank" class="external">OpenAPI 3.1</a> · <a href="https://zod.dev/" target="_blank" class="external">Zod</a></p>
+<h1 id="smoz" class="tsd-anchor-link">SMOZ<a href="#smoz" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1><p><a href="https://www.serverless.com/" target="_blank" class="external">Serverless</a> · <a href="https://middy.js.org/" target="_blank" class="external">Middy</a> · <a href="https://spec.openapis.org/oas/latest.html" target="_blank" class="external">OpenAPI 3.1</a> · <a href="https://zod.dev/" target="_blank" class="external">Zod</a></p>
+<p><a href="https://www.npmjs.com/package/@karmaniverous/smoz" target="_blank" class="external"><img src="https://img.shields.io/npm/v/@karmaniverous/smoz.svg" alt="npm version"></a>
+<img src="https://img.shields.io/node/v/@karmaniverous/smoz" alt="Node Current">
+<a href="https://github.com/karmaniverous/smoz/tree/main/LICENSE.md" target="_blank" class="external"><img src="https://img.shields.io/badge/license-BSD--3--Clause-blue.svg" alt="license"></a></p>
 </div>
 <p>SMOZ is a tiny, pragmatic toolkit that helps you:</p>
 <ul>
@@ -106,6 +108,78 @@
 <li>Response serializer (JSON and vendor +json)</li>
 </ol>
 <p>Non‑HTTP events bypass Middy entirely, so your internal handlers stay tiny and fast.</p>
+<h2 id="http-middleware-customization" class="tsd-anchor-link">HTTP middleware customization<a href="#http-middleware-customization" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>SMOZ exposes a modular customization surface for the HTTP middleware stack while
+keeping robust defaults. You can set app‑wide defaults and profiles, then refine
+per function with simple options, phased extensions, targeted transforms, or a
+full replace (phased arrays).</p>
+<p>Surfaces:</p>
+<ul>
+<li>App level (optional; in App.create):
+<ul>
+<li>http.defaults: HttpStackOptions (e.g., contentType, logger)</li>
+<li>http.profiles: Record&lt;string, HttpProfile&gt; (options + extend/transform)</li>
+</ul>
+</li>
+<li>Function level (optional; in app.defineFunction):
+<ul>
+<li>http profile: pick one profile by name</li>
+<li>http options: Partial<HttpStackOptions> (shallow overrides)</li>
+<li>extend: append steps into phases (before/after/onError)</li>
+<li>transform: pure function that can insert/replace/remove steps by ID</li>
+<li>replace: supply phased arrays or a single middleware (see footgun note)</li>
+</ul>
+</li>
+</ul>
+<p>Merge order:</p>
+<ol>
+<li>defaults (app) → 2) profile (app) → 3) options (function) → 4) extend
+(defaults → profile → function) → 5) transform (defaults → profile →
+function) → 6) replace (function; final).</li>
+</ol>
+<p>Step IDs and invariants:</p>
+<ul>
+<li>Stable step IDs (in order around the core):
+<ul>
+<li>before: head, header-normalizer, event-normalizer, content-negotiation,
+json-body-parser, zod-before</li>
+<li>after: head-finalize, zod-after, error-expose, cors, preferred-media, shape, serializer</li>
+<li>onError: error-expose, error-handler</li>
+</ul>
+</li>
+<li>Invariants enforced:
+<ul>
+<li>head must be first in before</li>
+<li>serializer must be last in after</li>
+<li>shape must precede serializer in after</li>
+<li>error-handler may appear only in onError</li>
+</ul>
+</li>
+<li>Zod enforcement:
+<ul>
+<li>If eventSchema or responseSchema is provided, the final stack must include
+zod-before (before) and zod-after (after). You may supply custom validators,
+but they must be tagged with these IDs.</li>
+</ul>
+</li>
+</ul>
+<p>Examples:</p>
+<ul>
+<li>Choose a profile and override content type:<pre><code class="ts"><span class="hl-6">app</span><span class="hl-1">.</span><span class="hl-0">defineFunction</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-9">// ...</span><br/><span class="hl-1">  </span><span class="hl-6">http:</span><span class="hl-1"> { </span><span class="hl-6">profile:</span><span class="hl-1"> </span><span class="hl-2">&#39;publicJson&#39;</span><span class="hl-1">, </span><span class="hl-6">options:</span><span class="hl-1"> { </span><span class="hl-6">contentType:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/vnd.my+json&#39;</span><span class="hl-1"> } },</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>Insert a header after the response shaper:<pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> { </span><span class="hl-6">insertAfter</span><span class="hl-1"> } </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;smoz&#39;</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">mw</span><span class="hl-1"> = { </span><span class="hl-0">after</span><span class="hl-6">:</span><span class="hl-1"> (</span><span class="hl-6">req</span><span class="hl-1">: </span><span class="hl-10">any</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> { </span><span class="hl-6">req</span><span class="hl-1">.</span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-6">headers</span><span class="hl-1">[</span><span class="hl-2">&#39;X-My&#39;</span><span class="hl-1">] = </span><span class="hl-2">&#39;yes&#39;</span><span class="hl-1">; } };</span><br/><span class="hl-6">app</span><span class="hl-1">.</span><span class="hl-0">defineFunction</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-9">// ...</span><br/><span class="hl-1">  </span><span class="hl-6">http:</span><span class="hl-1"> { </span><span class="hl-0">transform</span><span class="hl-6">:</span><span class="hl-1"> ({ </span><span class="hl-6">before</span><span class="hl-1">, </span><span class="hl-6">after</span><span class="hl-1">, </span><span class="hl-6">onError</span><span class="hl-1"> }) </span><span class="hl-4">=&gt;</span><span class="hl-1"> ({ </span><span class="hl-6">before</span><span class="hl-1">, </span><span class="hl-6">after:</span><span class="hl-1"> </span><span class="hl-0">insertAfter</span><span class="hl-1">(</span><span class="hl-6">after</span><span class="hl-1">, </span><span class="hl-2">&#39;shape&#39;</span><span class="hl-1">, </span><span class="hl-6">mw</span><span class="hl-1"> </span><span class="hl-5">as</span><span class="hl-1"> </span><span class="hl-10">any</span><span class="hl-1">), </span><span class="hl-6">onError</span><span class="hl-1"> }) },</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>Replace (advanced):
+<ul>
+<li>Provide phased arrays { before, after, onError } tagged to satisfy invariants
+and zod enforcement if schemas are present. Avoid a single middleware
+replacement unless no schemas are used, as Zod presence cannot be validated.</li>
+</ul>
+</li>
+</ul>
 <h2 id="typedoc" class="tsd-anchor-link">Typedoc<a href="#typedoc" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Public API is documented with TSDoc and published with <a href="https://typedoc.org/" target="_blank" class="external">TypeDoc</a>. Once generated:</p>
 <ul>
 <li>Docs hosting: <a href="https://docs.karmanivero.us/smoz">https://docs.karmanivero.us/smoz</a></li>
@@ -125,4 +199,4 @@
 <h3 id="can-i-add-my-own-event-types" class="tsd-anchor-link">Can I add my own event types?<a href="#can-i-add-my-own-event-types" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Yes. Extend the base event type map schema in <code>App.create({ eventTypeMapSchema: baseEventTypeMapSchema.extend({ /* e.g., step */ }) })</code>. Use your custom token in <code>defineFunction({ eventType: 'step', ... })</code> — the wrapper will treat it as non‑HTTP unless you widen the HTTP event tokens at app construction time.</p>
 <h2 id="license" class="tsd-anchor-link">License<a href="#license" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>BSD‑3‑Clause © Jason Williscroft</p>
 <hr>
-</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#smoz"><span>SMOZ</span></a><ul><li><a href="#highlights"><span>Highlights</span></a></li><li><a href="#install"><span>Install</span></a></li><li><a href="#quick-start"><span>Quick start</span></a></li><li><a href="#what-you-get-http-stack"><span>What you get (<wbr/>HTTP stack)</span></a></li><li><a href="#typedoc"><span>Typedoc</span></a></li><li><a href="#scripts"><span>Scripts</span></a></li><li><a href="#faq"><span>FAQ</span></a></li><li><ul><li><a href="#why-handcrafted-openapi"><span>Why “hand‑crafted” <wbr/>Open<wbr/>API?</span></a></li><li><a href="#zod-v5"><span>Zod v5?</span></a></li><li><a href="#can-i-add-my-own-event-types"><span>Can <wbr/>I add my own event types?</span></a></li></ul></li><li><a href="#license"><span>License</span></a></li></ul></div></details></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/karmaniverous/smoz" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="modules.html">smoz</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#smoz"><span>SMOZ</span></a><ul><li><a href="#highlights"><span>Highlights</span></a></li><li><a href="#install"><span>Install</span></a></li><li><a href="#quick-start"><span>Quick start</span></a></li><li><a href="#what-you-get-http-stack"><span>What you get (<wbr/>HTTP stack)</span></a></li><li><a href="#http-middleware-customization"><span>HTTP middleware customization</span></a></li><li><a href="#typedoc"><span>Typedoc</span></a></li><li><a href="#scripts"><span>Scripts</span></a></li><li><a href="#faq"><span>FAQ</span></a></li><li><ul><li><a href="#why-handcrafted-openapi"><span>Why “hand‑crafted” <wbr/>Open<wbr/>API?</span></a></li><li><a href="#zod-v5"><span>Zod v5?</span></a></li><li><a href="#can-i-add-my-own-event-types"><span>Can <wbr/>I add my own event types?</span></a></li></ul></li><li><a href="#license"><span>License</span></a></li></ul></div></details></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/karmaniverous/smoz" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="modules.html">smoz</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>

@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-02T17:30:00Z
+When updated: 2025-09-02T17:40:00Z
 
 ## Next up
-
 - HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants). - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
@@ -55,10 +54,17 @@ When updated: 2025-09-02T17:30:00Z
 
 ## Completed (recent)
 
+31. TypeDoc deep docs (expand)
+
+- Switch TypeDoc to entryPointStrategy: "expand" with entryPoints: ["src"] so
+  internal/exported module types are discoverable without top‑level re‑exports.
+- Exclude tests and generated folders to reduce noise; keep excludeInternal: false
+  so deep links resolve to internal pages.
+- Acceptance: docs build remains green; deep links resolve.
+
 30. Expose buildSafeDefaults helper
 
-- Exported buildSafeDefaults from the customization barrel and top-level index.
-- Implemented as a thin alias for buildDefaultPhases; suitable for replace scenarios.
+- Exported buildSafeDefaults from the customization barrel and top-level index.- Implemented as a thin alias for buildDefaultPhases; suitable for replace scenarios.
 - Added unit tests to assert invariants and Zod step inclusion with schemas.
 - Acceptance: typecheck/lint/test/build/package all green.
 
