@@ -6,6 +6,12 @@ Serverless + Middy + OpenAPI + Zod
 
 [Serverless](https://www.serverless.com/) · [Middy](https://middy.js.org/) · [OpenAPI 3.1](https://spec.openapis.org/oas/latest.html) · [Zod](https://zod.dev/)
 
+[![npm version](https://img.shields.io/npm/v/@karmaniverous/smoz.svg)](https://www.npmjs.com/package/@karmaniverous/smoz)
+![Node Current](https://img.shields.io/node/v/@karmaniverous/smoz) <!-- TYPEDOC_EXCLUDE -->
+[![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/smoz)
+[![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/smoz/tree/main/CHANGELOG.md)<!-- /TYPEDOC_EXCLUDE -->
+[![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/smoz/tree/main/LICENSE.md)
+
 </div>
 
 SMOZ is a tiny, pragmatic toolkit that helps you:
