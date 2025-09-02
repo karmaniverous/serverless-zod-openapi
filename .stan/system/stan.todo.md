@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-01T02:35:00Z
+When updated: 2025-09-01T02:50:00Z
 
 ## Next up
-- Knip cleanup and configuration - Suppress known false-positives:
-  - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
+- Knip cleanup and configuration - Suppress known false-positives:  - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
     Add an ignore pattern so Knip does not flag these as “Unused files”.
   - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
     cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
@@ -94,3 +93,10 @@ When updated: 2025-09-01T02:35:00Z
       and core types.
     - Acceptance: `npm run docs` succeeds; typedoc shows API pages;
       CI scripts (build/test/typecheck/lint/openapi/package) remain green.
+
+19. Documentation — Phase 2
+    - Add TSDoc to remaining helpers and utilities:
+      DeepOverride, Merge, MakeRequired, PropFromUnion, HttpEventTokens,
+      ShapedEvent (alt), app/registry, app/httpTokens, app/types.
+    - Acceptance: `npm run docs` completes with same (or fewer) warnings;
+      public API pages include the newly documented types/functions.

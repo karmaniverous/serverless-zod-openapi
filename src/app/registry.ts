@@ -1,3 +1,12 @@
+/**
+ * Function registry.
+ *
+ * Stores per‑function definitions keyed by functionName and exposes:
+ *  - defineFunction(options) → { handler, openapi, serverless }
+ *  - values() → iterable entries for aggregation
+ *
+ * Intended for internal use by {@link import('../config/App').App}.
+ */
 import type { z } from 'zod';
 
 import { handlerFactory } from '@/src/app/handlerFactory';

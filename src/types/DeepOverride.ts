@@ -8,10 +8,18 @@
  *
  * - If T is `never`, we fall back to U (used when no explicit EventType is provided).
  * - If U is `never`, we keep T.
+ *
+ * @typeParam T - base type to be overridden
+ * @typeParam U - override type whose keys replace the base
+ *
+ * @example
+ * type A = { x: { a: number }, y: string };
+ * type B = { x: { a: string }, z: boolean };
+ * // => { x: { a: string }, y: string, z: boolean }
+ * type R = DeepOverride<A, B>;
  */
 export type DeepOverride<T, U> = [T] extends [never]
-  ? U
-  : [U] extends [never]
+  ? U  : [U] extends [never]
     ? T
     : T extends any[]
       ? U
