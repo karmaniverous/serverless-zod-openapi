@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-01T02:12:00Z
+When updated: 2025-09-01T02:35:00Z
 
 ## Next up
-
 - Knip cleanup and configuration - Suppress known false-positives:
   - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
     Add an ignore pattern so Knip does not flag these as “Unused files”.
@@ -86,3 +85,12 @@ When updated: 2025-09-01T02:12:00Z
 
 17. Reintegrate wrapSerializer into HTTP middleware
     - Wrapped http-response-serializer’s JSON serializer with wrapSerializer for debug logging.
+
+18. Documentation — Phase 1
+    - README overhaul (SMOZ positioning, quick start, OpenAPI + Serverless aggregation, scripts).
+    - TSDoc coverage across public API (modules exported by src/index.ts):
+      App, defineAppConfig, baseEventTypeMapSchema, envBuilder helpers,
+      wrapHandler and HTTP middleware, detectSecurityContext, serverless/openapi aggregators,
+      and core types.
+    - Acceptance: `npm run docs` succeeds; typedoc shows API pages;
+      CI scripts (build/test/typecheck/lint/openapi/package) remain green.

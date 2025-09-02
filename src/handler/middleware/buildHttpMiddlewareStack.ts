@@ -53,10 +53,15 @@ export type BuildHttpMiddlewareStackOptions<
 };
 
 /** Build the composed HTTP middleware stack in the correct order. */
+/**
+ * Build the SMOZ HTTP middleware stack.
+ *
+ * @param options - optional Zod schemas, content type, and logger
+ * @returns a Middy MiddlewareObj that shapes requests and responses
+ */
 export const buildHttpMiddlewareStack = <
   EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
->(
+  ResponseSchema extends z.ZodType | undefined,>(
   options: BuildHttpMiddlewareStackOptions<EventSchema, ResponseSchema>,
 ): MiddlewareObj<APIGatewayProxyEvent, Context> => {
   const contentType = options.contentType ?? 'application/json';

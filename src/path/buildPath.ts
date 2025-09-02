@@ -4,6 +4,13 @@ export const splitPath = (basePath: string): string[] =>
   basePath.split('/').filter(Boolean);
 
 /** Prefix non-public contexts and return path elements. */
+/**
+ * Build OpenAPI/serverless path elements from a base path and context.
+ *
+ * @param basePath - base path (e.g., 'users/:id')
+ * @param context  - 'my' | 'private' | 'public' (public is unprefixed)
+ * @returns array of path segments without leading/trailing slashes
+ */
 export const buildPathElements = (
   basePath: string,
   context: HttpContext,

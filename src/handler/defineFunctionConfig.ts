@@ -9,6 +9,13 @@ import type { FunctionConfig } from '@/src/types/FunctionConfig';
  */
 export const ENV_CONFIG = Symbol.for('szo.envConfig');
 
+/**
+ * Branding interface that attaches environment metadata to a function config.
+ *
+ * @typeParam GlobalParamsSchema - global params schema
+ * @typeParam StageParamsSchema  - stage params schema
+ * @remarks The brand is read by {@link wrapHandler} to build the typed env object.
+ */
 export interface EnvAttached<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   StageParamsSchema extends ZodObject<ZodRawShape>,
@@ -48,6 +55,11 @@ export function getEnvFromFunctionConfig<
  * EventSchema/ResponseSchema are inferred from the functionConfig argument.
  * EventType is explicit (binds to the project-local EventTypeMap).
  * Global/Stage params types are derived from the provided schemas.
+ *
+ * @typeParam GlobalParamsSchema - global params schema
+ * @typeParam StageParamsSchema  - stage params schema
+ * @param env - environment metadata (schemas + envKeys) for global and stage
+ * @returns a function that brands a {@link FunctionConfig} with env and preserves types
  */
 export function defineFunctionConfig<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,

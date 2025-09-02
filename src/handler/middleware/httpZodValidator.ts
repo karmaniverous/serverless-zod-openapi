@@ -19,7 +19,6 @@ export type HttpZodValidatorOptions<
   eventSchema?: EventSchema;
   responseSchema?: ResponseSchema;
 } & Partial<Loggable<Logger>>;
-
 const assertWithZod = (
   value: unknown,
   schema: z.ZodType | undefined,
@@ -63,8 +62,7 @@ export const httpZodValidator = <
 }: HttpZodValidatorOptions<EventSchema, ResponseSchema, Logger>): MiddlewareObj<
   APIGatewayProxyEvent,
   Context
-> => ({
-  before: async (request) => {
+> => ({  before: async (request) => {
     const event = (request as unknown as { event?: unknown }).event;
     assertWithZod(event, eventSchema, logger, 'event');
   },

@@ -1,6 +1,14 @@
+/**
+ * Stage artifacts factory.
+ *
+ * Validates per‑stage configurations, composes them with global params,
+ * and produces:
+ *  - Serverless `stages` (params),
+ *  - provider‑level `environment` mapping,
+ *  - a helper to build per‑function env mappings (excluding globally exposed keys).
+ */
 import { diff, unique } from 'radash';
 import type { ZodObject, ZodRawShape } from 'zod';
-
 type Dict<T> = Record<string, T>;
 
 export type StagesFactoryInput<
@@ -34,10 +42,16 @@ export type StagesFactoryOutput<
 /**
  * Create all stage artifacts from provided configs.  This is generic and can
  * be used by both production and tests.
+ *
+ * @typeParam GlobalParams - global params record
+ * @typeParam StageParams  - stage params record
+ * @param input - schemas, concrete params, env exposure, and per‑stage values
+ * @returns stage params object, provider environment, and per‑function env builder
+ *
+ * @throws Error if a stage fails validation or a required global key is missing
  */
 export const stagesFactory = <
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
+  GlobalParams extends Record<string, unknown>,  StageParams extends Record<string, unknown>,
 >(
   input: StagesFactoryInput<GlobalParams, StageParams>,
 ): StagesFactoryOutput<GlobalParams, StageParams> => {

@@ -22,11 +22,27 @@ import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { Handler, ShapedEvent } from '@/src/types/Handler';
 import { HTTP_EVENT_TOKENS } from '@/src/types/HttpEventTokens';
 
+/**
+ * Wrap a business handler with SMOZ runtime.
+ *
+ * - HTTP event tokens receive the full Middy pipeline (validation, shaping, CORS, etc.)
+ * - Non‑HTTP tokens bypass Middy and call the business function directly.
+ *
+ * @typeParam GlobalParamsSchema - global params schema type
+ * @typeParam StageParamsSchema  - stage params schema type
+ * @typeParam EventTypeMap       - event token → runtime type map
+ * @typeParam EventType          - a key of EventTypeMap
+ * @typeParam EventSchema        - optional Zod schema for event (validated before handler)
+ * @typeParam ResponseSchema     - optional Zod schema for response (validated after handler)
+ * @param functionConfig - per‑function configuration (branded with env nodes)
+ * @param business - the business handler implementation
+ * @param opts - optional runtime overrides (e.g., widen HTTP tokens)
+ * @returns a Lambda‑compatible handler function
+ */
 export function wrapHandler<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   StageParamsSchema extends ZodObject<ZodRawShape>,
-  EventTypeMap extends BaseEventTypeMap,
-  EventType extends keyof EventTypeMap,
+  EventTypeMap extends BaseEventTypeMap,  EventType extends keyof EventTypeMap,
   EventSchema extends z.ZodType | undefined,
   ResponseSchema extends z.ZodType | undefined,
 >(

@@ -5,10 +5,12 @@ import type { DeepOverride } from '@/src/types/DeepOverride';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 
 /** Event type after applying deep schema overrides. */
+/**
+ * Compute the event type as seen by a business handler after Zod overrides.
+ */
 export type ShapedEvent<
   EventSchema extends z.ZodType | undefined,
-  EventType,
-> = EventSchema extends z.ZodType
+  EventType,> = EventSchema extends z.ZodType
   ? DeepOverride<EventType, z.infer<EventSchema>>
   : EventType;
 
@@ -22,10 +24,14 @@ export type HandlerOptions = {
 };
 
 /** Business handler: returns raw payloads; wrapping layers handle HTTP shaping when applicable. */
+/**
+ * Business handler signature used by SMOZ.
+ *
+ * @returns the raw payload; the wrapper applies HTTP shaping when applicable.
+ */
 export type Handler<
   EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-  EventType,
+  ResponseSchema extends z.ZodType | undefined,  EventType,
 > = (
   event: ShapedEvent<EventSchema, EventType>,
   context: Context,

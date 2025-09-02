@@ -3,11 +3,16 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 /**
  * Combine several middlewares into one (order-preserving).
+ *
+ * @param parts - middlewares to compose
+ * @returns a middleware that calls before/after/onError in sequence
+ * @remarks
+ * If a previous middleware sets `request.response` during `before`, the
+ * sequence will stop early so the base handler is skipped (e.g. HEAD).
  */
 export const combine = (
   ...parts: MiddlewareObj<APIGatewayProxyEvent, Context>[]
-): MiddlewareObj<APIGatewayProxyEvent, Context> => {
-  const befores = parts.map((m) => m.before).filter(Boolean) as NonNullable<
+): MiddlewareObj<APIGatewayProxyEvent, Context> => {  const befores = parts.map((m) => m.before).filter(Boolean) as NonNullable<
     MiddlewareObj['before']
   >[];
   const afters = parts.map((m) => m.after).filter(Boolean) as NonNullable<

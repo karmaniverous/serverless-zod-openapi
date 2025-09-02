@@ -16,10 +16,20 @@ export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
  * - Per-function schemas, env requirements, routing metadata.
  * - EventTypeMap binds event tokens (e.g., 'rest'|'http'|'sqs') to runtime shapes.
  * - HTTP-only options are permitted only when EventType is an HTTP token.
+ *
+ * @typeParam EventSchema   - optional Zod schema for event (validated pre‑handler)
+ * @typeParam ResponseSchema- optional Zod schema for response (validated post‑handler)
+ * @typeParam GlobalParams  - app global params record
+ * @typeParam StageParams   - app stage params record
+ * @typeParam EventTypeMap  - event token → runtime type map
+ * @typeParam EventType     - selected event token
+ *
+ * @remarks
+ * The SMOZ wrapper reads env keys from this config’s brand and builds a typed `options.env`,
+ * then applies HTTP middleware iff the token is in the app’s HTTP tokens set.
  */
 export type FunctionConfig<
-  EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
+  EventSchema extends z.ZodType | undefined,  ResponseSchema extends z.ZodType | undefined,
   GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,

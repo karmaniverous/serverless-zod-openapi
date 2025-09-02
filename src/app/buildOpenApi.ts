@@ -1,3 +1,8 @@
+/**
+ * Registry → OpenAPI path aggregator.
+ *
+ * @returns ZodOpenApiPathsObject; plug into `createDocument({ paths })`.
+ */
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { resolveHttpFromFunctionConfig } from '@/src/http/resolveHttpFromFunctionConfig';

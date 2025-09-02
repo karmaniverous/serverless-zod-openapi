@@ -21,10 +21,24 @@ export const HTTP_METHODS: ReadonlySet<MethodKey> = new Set<MethodKey>([
   'trace',
 ]);
 
+/**
+ * Resolve `(method, basePath, contexts)` for an HTTP function definition.
+ *
+ * @typeParam EventSchema    - optional event Zod schema
+ * @typeParam ResponseSchema - optional response Zod schema
+ * @typeParam GlobalParams   - app global params type
+ * @typeParam StageParams    - app stage params type
+ * @typeParam EventTypeMap   - event type token map
+ * @typeParam EventType      - selected event token
+ * @param functionConfig - the per‑function config (may omit method/basePath)
+ * @param callerModuleUrl - import.meta.url of the registering module
+ * @param endpointsRootAbs - absolute root of endpoints
+ * @throws Error if method/basePath cannot be inferred under endpoints root
+ * @returns HTTP method key, basePath, and unique contexts list
+ */
 export const resolveHttpFromFunctionConfig = <
   EventSchema extends z.ZodType | undefined,
-  ResponseSchema extends z.ZodType | undefined,
-  GlobalParams extends Record<string, unknown>,
+  ResponseSchema extends z.ZodType | undefined,  GlobalParams extends Record<string, unknown>,
   StageParams extends Record<string, unknown>,
   EventTypeMap extends BaseEventTypeMap,
   EventType extends keyof EventTypeMap,

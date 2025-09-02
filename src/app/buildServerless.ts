@@ -1,3 +1,8 @@
+/**
+ * Registry → Serverless functions aggregator.
+ *
+ * @returns NonNullable<AWS['functions']> with HTTP/non‑HTTP events attached.
+ */
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

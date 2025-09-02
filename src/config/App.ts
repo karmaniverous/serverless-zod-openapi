@@ -1,10 +1,20 @@
 /**
- * App (schema-first, class-based)
- * Requirements addressed:
- * - App is a CLASS, generic on GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema.
- * - eventTypeMapSchema defaults to baseEventTypeMapSchema (Zod), matching BaseEventTypeMap.
- * - No shims/back-compat: new registration surface (defineFunction) returns per-function API.
- * - Allow widening HTTP event tokens via app.httpEventTypeTokens (runtime). Defaults ['rest','http'].
+ * App (schema‑first)
+ *
+ * Central orchestrator for a SMOZ application. You provide:
+ * - Global/stage parameter schemas and env exposure keys
+ * - Serverless defaults (handler filename/export and context map)
+ * - Event‑type map schema (extendable: e.g., add 'step')
+ *
+ * The instance:
+ * - Validates configuration
+ * - Exposes env and stage artifacts for Serverless (provider.environment and params)
+ * - Provides a registry to define functions (HTTP and non‑HTTP)
+ * - Aggregates artifacts:
+ *   - buildAllServerlessFunctions(): AWS['functions']
+ *   - buildAllOpenApiPaths(): ZodOpenApiPathsObject
+ *
+ * @remarks See README for a full quick‑start, and typedoc for detailed API docs.
  */
 import { dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +40,9 @@ import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHtt
 
 /** Serverless config schema (parsed internally by App). */
 const serverlessConfigSchema = z.object({
+  /** Context -> event fragment to merge into generated http events */
   httpContextEventMap: z.custom<SecurityContextHttpEventMap>(),
+  /** Used to construct default handler string if missing on a function */
   defaultHandlerFileName: z.string().min(1),
   defaultHandlerFileExport: z.string().min(1),
 });
@@ -63,6 +75,13 @@ export interface AppInit<
   httpEventTypeTokens?: readonly (keyof z.infer<EventTypeMapSchema>)[];
 }
 
+/**
+ * Application class.
+ *
+ * @typeParam GlobalParamsSchema - Zod object schema for global parameters
+ * @typeParam StageParamsSchema  - Zod object schema for per‑stage parameters
+ * @typeParam EventTypeMapSchema - Zod object schema mapping event tokens to runtime types
+ */
 export class App<
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
@@ -170,7 +189,12 @@ export class App<
     });
   }
 
-  /** Ergonomic constructor for schema-first inference. */
+  /**
+   * Ergonomic constructor for schema‑first inference.
+   *
+   * @param init - initialization object (schemas, serverless defaults, params/envKeys)
+   * @returns a new App instance
+   */
   static create<
     GlobalParamsSchema extends ZodObj,
     StageParamsSchema extends ZodObj,
@@ -182,8 +206,13 @@ export class App<
   }
 
   /**
-   * Authoring interface for function registration.
-   * functionName is optional — defaults from appRootAbs + callerModuleUrl.
+   * Register a function (HTTP or non‑HTTP).
+   *
+   * @typeParam EventType      - A key from your eventTypeMapSchema (e.g., 'rest' | 'http' | 'sqs' | 'step')
+   * @typeParam EventSchema    - Optional Zod schema validated BEFORE the handler (refines event shape)
+   * @typeParam ResponseSchema - Optional Zod schema validated AFTER the handler (refines response shape)
+   * @param options - per‑function configuration (method/basePath/httpContexts for HTTP; serverless extras for non‑HTTP)
+   * @returns a per‑function API: { handler(business), openapi(baseOperation), serverless(extras) }
    */
   public defineFunction<
     EventType extends Extract<keyof z.infer<EventTypeMapSchema>, string>,
@@ -237,12 +266,20 @@ export class App<
     );
   }
 
-  /** Aggregate Serverless function definitions across the registry. */
+  /**
+   * Aggregate Serverless function definitions across the registry.
+   *
+   * @returns An AWS['functions'] object suitable for serverless.ts
+   */
   buildAllServerlessFunctions(): AWS['functions'] {
     return buildFns(this.registry.values(), this.serverless, this.buildFnEnv);
   }
 
-  /** Aggregate OpenAPI paths across the registry. */
+  /**
+   * Aggregate OpenAPI path items across the registry.
+   *
+   * @returns ZodOpenApiPathsObject to be embedded in a full OpenAPI document
+   */
   buildAllOpenApiPaths(): ZodOpenApiPathsObject {
     return buildPaths(this.registry.values());
   }

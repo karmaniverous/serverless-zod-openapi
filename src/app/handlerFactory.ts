@@ -11,10 +11,12 @@ import type { Handler } from '@/src/types/Handler';
 + handlerFactory
  * - Produces a function that builds a wrapped handler with runtime HTTP tokens.
  * - Fully typed; no any; no dynamic import() types.
+ *
+ * @param httpEventTypeTokens - runtime widening of HTTP event tokens
+ * @returns a function that binds a branded FunctionConfig and a business handler, producing a Lambda handler
  */
 export const handlerFactory = <
-  GlobalParamsSchema extends ZodObj,
-  StageParamsSchema extends ZodObj,
+  GlobalParamsSchema extends ZodObj,  StageParamsSchema extends ZodObj,
   EventTypeMapResolved extends BaseEventTypeMap,
   EventType extends keyof EventTypeMapResolved,
   EventSchema extends z.ZodType | undefined,

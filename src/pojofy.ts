@@ -1,8 +1,14 @@
+/**
+ * Create a Plain‑Old‑JSON clone of an arbitrary input.
+ *
+ * - Drops non‑JSON scalars and containers (Map/Set/etc.)
+ * - Avoids circular references
+ * - Preserves Date via toJSON
+ */
 export const pojofy = (input: unknown): unknown => {
   const seen = new WeakSet<object>();
 
-  const replacer = (_key: string, value: unknown): unknown => {
-    if (value === null) return null;
+  const replacer = (_key: string, value: unknown): unknown => {    if (value === null) return null;
 
     const t = typeof value;
     if (t === 'string' || t === 'number' || t === 'boolean') return value;

@@ -15,10 +15,13 @@ type ShapedResponse = {
 /**
  * If the request is HEAD, short-circuit the handler and let the serializer
  * produce an empty JSON body. This keeps tests and clients predictable.
+ *
+ * @remarks
+ * This is placed very early in the pipeline. When it sets `request.response`
+ * during `before`, the composed middleware sequence will skip the base handler.
  */
 export const shortCircuitHead: MiddlewareObj<APIGatewayProxyEvent, Context> = {
-  before: async (request) => {
-    const evt = request.event as unknown as {
+  before: async (request) => {    const evt = request.event as unknown as {
       httpMethod?: string;
       requestContext?: { http?: { method?: string } };
     };
