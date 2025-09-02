@@ -1,6 +1,4 @@
 {
-  "entryPoints": ["./src"],
-  "entryPointStrategy": "expand",
   "categoryOrder": [
     "Public API",
     "HTTP Middleware",
@@ -8,10 +6,12 @@
     "Config",
     "Serverless",
     "OpenAPI",
-    "Types",
-    "*"
+    "Types"
   ],
+  "entryPoints": ["./src"],
+  "entryPointStrategy": "expand",
   "exclude": ["**/*.test.ts", "src/test/**", "**/generated/**", "**/*.d.ts"],
+  "excludeInternal": false,
   "highlightLanguages": [
     "bash",
     "console",
@@ -33,19 +33,22 @@
     "GitHub": "https://github.com/karmaniverous/smoz"
   },
   "out": "./docs/",
-  "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
+  "plugin": [
+    "typedoc-plugin-mdn-links",
+    "typedoc-plugin-replace-text",
+    "typedoc-plugin-zod"
+  ],
   "projectDocuments": ["./CHANGELOG.md"],
   "replaceText": {
     "replacements": [
       {
-        "pattern": "<!-- TYPEDOC_EXCLUDE -->.*?<!-- /TYPEDOC_EXCLUDE -->",
         "flags": "gis",
+        "pattern": "<!-- TYPEDOC_EXCLUDE -->.*?<!-- /TYPEDOC_EXCLUDE -->",
         "replace": ""
       }
     ]
   },
-  "sort": ["alphabetical"],
-  "excludeInternal": false,
   "searchInComments": true,
-  "searchInDocuments": true
+  "searchInDocuments": true,
+  "sort": ["alphabetical"]
 }
