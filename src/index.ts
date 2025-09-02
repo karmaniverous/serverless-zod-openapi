@@ -16,11 +16,13 @@
  * Public entry point for the toolkit. Stack code must import only from '@/src'.
  * Exposes runtime wrappers, middleware, builders, and commonly used types.
  */
+export type { AppInit } from './config/App';
 export { App } from './config/App';
 /** Base event map schema (rest/http/sqs). Extend it in your App. */
 export { baseEventTypeMapSchema } from './config/baseEventTypeMapSchema';
 export type {
-  DefineAppConfigInput,  DefineAppConfigOutput,
+  DefineAppConfigInput,
+  DefineAppConfigOutput,
   EnvKeysNode,
   EnvSchemaNode,
   GlobalEnvConfig,
@@ -33,30 +35,42 @@ export { detectSecurityContext } from './handler/detectSecurityContext';
 /** Convert a set of middlewares to API‑Gateway‑typed form. */
 export { asApiMiddleware } from './handler/middleware/asApiMiddleware';
 /** Build the standard HTTP middleware stack. */
+export type { BuildHttpMiddlewareStackOptions } from './handler/middleware/buildHttpMiddlewareStack';
 export { buildHttpMiddlewareStack } from './handler/middleware/buildHttpMiddlewareStack';
 /** Compose multiple middlewares into one. */
 export { combine } from './handler/middleware/combine';
 /** Zod validator middleware (event/response). */
+export type { HttpZodValidatorOptions } from './handler/middleware/httpZodValidator';
 export { httpZodValidator } from './handler/middleware/httpZodValidator';
 /** HEAD short‑circuit middleware (200 {}). */
 export { shortCircuitHead } from './handler/middleware/shortCircuitHead';
 /** Wrap a business handler with SMOZ runtime (HTTP or non‑HTTP). */
+export type { EnvAttached } from './handler/defineFunctionConfig';
 export { wrapHandler } from './handler/wrapHandler';
 
 // Types
 export type { BaseEventTypeMap } from './types/BaseEventTypeMap';
 export type { FunctionConfig } from './types/FunctionConfig';
+export type { MethodKey } from './types/FunctionConfig';
 export type { Handler } from './types/Handler';
+export type { HandlerOptions,ShapedEvent } from './types/Handler';
 export type { HttpContext } from './types/HttpContext';
 export type { LambdaEvent } from './types/LambdaEvent';
 export type { ConsoleLogger } from './types/Loggable';
+export type { PropFromUnion } from './types/PropFromUnion';
 export type { SecurityContextHttpEventMap } from './types/SecurityContextHttpEventMap';
 
 // Optional helper exports
+export type { ZodObj } from './app/types';
 export {
   buildEnvSchema,
   deriveAllKeys,
   parseTypedEnv,
   splitKeysBySchema,
 } from './handler/envBuilder';
+export type { BaseOperation } from './openapi/types';
+export type {
+  StagesFactoryInput,
+  StagesFactoryOutput,
+} from './serverless/stagesFactory';
 export { stagesFactory } from './serverless/stagesFactory';

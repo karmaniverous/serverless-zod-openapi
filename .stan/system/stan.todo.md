@@ -1,9 +1,10 @@
 # Development Plan
 
-When updated: 2025-09-01T02:50:00Z
+When updated: 2025-09-01T03:00:00Z
 
 ## Next up
-- Knip cleanup and configuration - Suppress known false-positives:  - Files referenced by Serverless via handler strings, not imports (e.g., app/\*\*/handler.ts).
+- Knip cleanup and configuration - Suppress known false-positives:
+  - Files referenced by Serverless via handler strings, not imports (e.g., app/**/*/handler.ts).
     Add an ignore pattern so Knip does not flag these as “Unused files”.
   - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
     cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
@@ -35,7 +36,7 @@ When updated: 2025-09-01T02:50:00Z
   - Acceptance: scripts continue to work (release, diagrams), no new Knip warnings for these items.
 
 - App.ts orchestration slimming (follow-through)
-  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
+  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/*.
   - Acceptance: App.ts ~≤200 LOC; strict TS and lint clean.
 
 ## Completed (recent)
@@ -65,7 +66,7 @@ When updated: 2025-09-01T02:50:00Z
 
 15. Knip config phase 1
     - Removed redundant entry (app/config/openapi.ts).
-    - Ignored Serverless handler files (app/\*\*/handler.ts).
+    - Ignored Serverless handler files (app/**/*/handler.ts).
     - Added ignoreDependencies for CLI/serverless-only and cross-folder deps to quiet false positives.
 
 16. Unused modules triage — phase 1 (delete)
@@ -100,3 +101,10 @@ When updated: 2025-09-01T02:50:00Z
       ShapedEvent (alt), app/registry, app/httpTokens, app/types.
     - Acceptance: `npm run docs` completes with same (or fewer) warnings;
       public API pages include the newly documented types/functions.
+
+20. Documentation — Phase 3
+    - Re-export internal/reference types from src/index.ts so Typedoc can include them:
+      AppInit, MethodKey, BuildHttpMiddlewareStackOptions, HttpZodValidatorOptions,
+      EnvAttached, StagesFactoryInput/Output, PropFromUnion, ZodObj, ShapedEvent (Handler),
+      HandlerOptions, BaseOperation.
+    - Acceptance: Typedoc warnings reduced for “referenced but not included”.
