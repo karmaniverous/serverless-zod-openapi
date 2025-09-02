@@ -1,10 +1,11 @@
 /**
  * App (schema‑first)
  *
+ * @category Public API
+ * @category Config
  * Central orchestrator for a SMOZ application. You provide:
  * - Global/stage parameter schemas and env exposure keys
- * - Serverless defaults (handler filename/export and context map)
- * - Event‑type map schema (extendable: e.g., add 'step')
+ * - Serverless defaults (handler filename/export and context map) * - Event‑type map schema (extendable: e.g., add 'step')
  *
  * The instance:
  * - Validates configuration
@@ -49,10 +50,11 @@ const serverlessConfigSchema = z.object({  /** Context -> event fragment to merg
 export type AppServerlessConfig = z.infer<typeof serverlessConfigSchema>;
 
 export interface AppInit<
+  /** @category Public API */
+  /** @category Config */
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
-  EventTypeMapSchema extends ZodObj,
-> {
+  EventTypeMapSchema extends ZodObj,> {
   appRootAbs: string;
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
@@ -82,10 +84,11 @@ export interface AppInit<
  * Application class.
  *
  * @typeParam GlobalParamsSchema - Zod object schema for global parameters
+ * @category Public API
+ * @category Config
  * @typeParam StageParamsSchema  - Zod object schema for per‑stage parameters
  * @typeParam EventTypeMapSchema - Zod object schema mapping event tokens to runtime types
- */
-export class App<
+ */export class App<
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,

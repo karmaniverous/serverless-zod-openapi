@@ -2,6 +2,8 @@ import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
+/** @category Customization */
+/** @category HTTP Middleware */
 import { combine } from '@/src/handler/middleware/combine';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 

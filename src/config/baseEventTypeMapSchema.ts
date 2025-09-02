@@ -1,10 +1,11 @@
 /**
  * baseEventTypeMapSchema
  * - Schema-first companion to BaseEventTypeMap.
+ * @category Public API
+ * @category Types
  * - Ensures z.infer<typeof baseEventTypeMapSchema> === BaseEventTypeMap.
  *
- * @remarks
- * Consumers typically extend this schema when creating an App to add
+ * @remarks * Consumers typically extend this schema when creating an App to add
  * project‑local event tokens (e.g., 'step').
  * Only tokens listed in the app’s `httpEventTypeTokens` are treated as HTTP at runtime.
  */

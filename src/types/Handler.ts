@@ -1,9 +1,10 @@
 import type { Context } from 'aws-lambda';
 import type { z } from 'zod';
 
+/** @category Public API */
+/** @category Types */
 import type { DeepOverride } from '@/src/types/DeepOverride';
 import type { ConsoleLogger } from '@/src/types/Loggable';
-
 /** Event type after applying deep schema overrides. */
 /**
  * Compute the event type as seen by a business handler after Zod overrides.

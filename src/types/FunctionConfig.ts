@@ -1,10 +1,11 @@
 import type { MiddlewareObj } from '@middy/core';
 import type { AWS } from '@serverless/typescript';
 import type { z } from 'zod';
+/** @category Public API */
+/** @category Types */
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
-import type {
-  HttpStackOptions, HttpTransform, PhasedArrays,
+import type {  HttpStackOptions, HttpTransform, PhasedArrays,
 } from '@/src/handler/middleware/httpStackCustomization';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { HttpContext } from '@/src/types/HttpContext';

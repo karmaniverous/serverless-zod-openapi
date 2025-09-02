@@ -1,10 +1,11 @@
 /**
  * HTTP middleware stack (HTTP-only).
  * Requirements:
+ * @category Public API
+ * @category HTTP Middleware
  * - Normalize responses to an HTTP envelope and set Content-Type.
  * - Expose errors and map validation-shaped errors to HTTP 400.
- * - HEAD requests short-circuit to 200 with an empty JSON body.
- *
+ * - HEAD requests short-circuit to 200 with an empty JSON body. *
  * NOTE: Non-HTTP ("internal") paths are handled by makeWrapHandler by
  * bypassing Middy entirely. Do NOT add an internal toggle here.
  */

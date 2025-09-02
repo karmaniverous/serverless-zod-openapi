@@ -6,10 +6,11 @@ import type {
 
 /**
  * Base event type map understood by SMOZ.
+ * @category Public API
+ * @category Types
  *
  * @remarks You can extend this map in your app (e.g., add 'step').
- */
-export interface BaseEventTypeMap {
+ */export interface BaseEventTypeMap {
   rest: APIGatewayProxyEvent;
   http: APIGatewayProxyEventV2;
   sqs: SQSEvent;

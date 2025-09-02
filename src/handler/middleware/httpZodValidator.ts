@@ -1,10 +1,11 @@
 /**
  * Requirements:
  * - Validate incoming events before the handler (when schema provided).
+ * @category HTTP Middleware
+ * @category Public API
  * - Validate outgoing responses after the handler (when schema provided).
  * - Throw errors with messages "Invalid event"/"Invalid response" for mapping in HTTP mode; internal mode will simply throw.
- */
-import type { MiddlewareObj } from '@middy/core';
+ */import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 

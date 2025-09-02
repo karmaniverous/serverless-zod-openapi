@@ -3,6 +3,7 @@
 When updated: 2025-09-02T17:40:00Z
 
 ## Next up
+
 - HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants). - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
@@ -53,6 +54,14 @@ When updated: 2025-09-02T17:40:00Z
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 
 ## Completed (recent)
+
+33. TypeDoc categories and ordering
+
+- Added @category tags across core modules (Public API, HTTP Middleware,
+  Customization, Config, Serverless, OpenAPI, Types).
+- Set typedoc.json categorizeByGroup=false and categoryOrder with “Public API”
+  first; alphabetical sort for stable ordering.
+- Acceptance: docs build green; public content appears first within pages.
 
 31. TypeDoc deep docs (expand)
 

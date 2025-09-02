@@ -1,10 +1,11 @@
 {
   "entryPoints": ["./src"],
   "entryPointStrategy": "expand",
+  "categorizeByGroup": false,
+  "categoryOrder": ["Public API", "HTTP Middleware", "Customization", "Config", "Serverless", "OpenAPI", "Types", "*"],
   "exclude": [
     "**/*.test.ts",
-    "src/test/**",
-    "**/generated/**",
+    "src/test/**",    "**/generated/**",
     "**/*.d.ts"
   ],
   "highlightLanguages": [
@@ -35,6 +36,7 @@
       }
     ]
   },
+  "sort": ["alphabetical"],
   "excludeInternal": false,
   "searchInComments": true,
   "searchInDocuments": true

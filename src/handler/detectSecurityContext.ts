@@ -2,10 +2,11 @@ import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 
 import type { HttpContext } from '@/src/types/HttpContext';
 
+/** @category Public API */
+/** @category HTTP Middleware */
 /** Narrow to API Gateway v1 events with safe property checks. */
 /**
- * Type guard for API Gateway v1 events.
- *
+ * Type guard for API Gateway v1 events. *
  * @param evt - unknown event
  * @returns true if the event looks like a v1 APIGatewayProxyEvent
  */

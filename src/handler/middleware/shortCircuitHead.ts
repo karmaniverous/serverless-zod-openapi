@@ -1,9 +1,10 @@
 /* REQUIREMENTS ADDRESSED
 - For HTTP HEAD requests, short-circuit the handler and return 200 with an empty JSON object body.
+* @category HTTP Middleware
+* @category Public API
 - Do not run the business handler when short-circuiting.
 - Allow downstream middlewares to continue shaping (e.g., serializer, headers).
-*/
-import type { MiddlewareObj } from '@middy/core';
+*/import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 type ShapedResponse = {

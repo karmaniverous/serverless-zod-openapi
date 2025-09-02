@@ -1,7 +1,8 @@
 /**
  + HTTP customization types and aliases.
- */
-import type { MiddlewareObj } from '@middy/core';
+ * @category Customization
+ * @category HTTP Middleware
+ */import type { MiddlewareObj } from '@middy/core';
 import type httpContentNegotiation from '@middy/http-content-negotiation';
 import type httpCors from '@middy/http-cors';
 import type httpErrorHandler from '@middy/http-error-handler';

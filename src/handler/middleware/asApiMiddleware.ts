@@ -3,10 +3,11 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 /**
  * Coerce a generic Middy middleware into an API‑Gateway‑typed middleware.
+ * @category HTTP Middleware
+ * @category Public API
  *
  * @param m - middleware object (any event/context signature)
- * @returns middleware object typed to (APIGatewayProxyEvent, Context)
- */
+ * @returns middleware object typed to (APIGatewayProxyEvent, Context) */
 export const asApiMiddleware = <
   E,
   Ctx,

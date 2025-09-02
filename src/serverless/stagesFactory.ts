@@ -1,10 +1,11 @@
 /**
  * Stage artifacts factory.
  *
+ * @category Serverless
+ * @category Types
  * Validates per‑stage configurations, composes them with global params,
  * and produces:
- *  - Serverless `stages` (params),
- *  - provider‑level `environment` mapping,
+ *  - Serverless `stages` (params), *  - provider‑level `environment` mapping,
  *  - a helper to build per‑function env mappings (excluding globally exposed keys).
  */
 import { diff, unique } from 'radash';
