@@ -14,6 +14,7 @@ import type { ZodObj } from '@/src/app/types';
 import type { EnvSchemaNode } from '@/src/config/defineAppConfig';
 import type { EnvAttached } from '@/src/handler/defineFunctionConfig';
 import { ENV_CONFIG } from '@/src/handler/defineFunctionConfig';
+import type { AppHttpConfig } from '@/src/handler/middleware/httpStackCustomization';
 import type { BaseOperation } from '@/src/openapi/types';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
@@ -24,8 +25,7 @@ import type { HttpContext } from '@/src/types/HttpContext';
 type RegistryEntry = {
   functionName: string;
   eventType: string;
-  method?: MethodKey;
-  basePath?: string;
+  method?: MethodKey;  basePath?: string;
   httpContexts?: readonly HttpContext[];
   contentType?: string;
   fnEnvKeys?: readonly PropertyKey[];
@@ -48,9 +48,9 @@ export const createRegistry = <
     global: EnvSchemaNode<GlobalParamsSchema>;
     stage: EnvSchemaNode<StageParamsSchema>;
   };
+  http: AppHttpConfig;
 }) => {
   const map = new Map<string, RegistryEntry>();
-
   return {
     defineFunction<
       EventType extends Extract<
@@ -153,11 +153,10 @@ export const createRegistry = <
             EventType,
             EventSchema,
             ResponseSchema
-          >(deps.httpEventTypeTokens);
+          >(deps.httpEventTypeTokens, deps.http);
           return make(fnConfig, business);
         },
-        openapi: (baseOperation: BaseOperation) => {
-          const r = map.get(key)!;
+        openapi: (baseOperation: BaseOperation) => {          const r = map.get(key)!;
           r.openapiBaseOperation = baseOperation;
         },
         serverless: (extras: unknown) => {

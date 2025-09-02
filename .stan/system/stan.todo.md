@@ -1,12 +1,23 @@
 # Development Plan
 
-When updated: 2025-09-01T03:00:00Z
+When updated: 2025-09-02T00:00:00Z
 
 ## Next up
+- HTTP customization follow‑through
+  - Add unit tests for:
+    - Transform helpers (insert/replace/remove) and getId tagging.
+    - Invariant validation failures (head first; serializer last; shape before serializer; error-handler only in onError).
+    - Zod enforcement on schemas present (remove zod-before/after → throws); accept custom tagged validators.
+    - Merge order precedence (defaults → profile → fn overrides).
+  - Documentation:
+    - README: “HTTP middleware customization” section (defaults, surfaces, examples).
+    - Typedoc: document HttpStackOptions, HttpProfile, FunctionHttpConfig, transform helpers, Step IDs.
+  - Consider exposing buildSafeDefaults(options) helper for replace scenarios.
+  - Acceptance: tests green; docs built; defaults unaffected for non-customizers.
+
 - Knip cleanup and configuration - Suppress known false-positives:
   - Files referenced by Serverless via handler strings, not imports (e.g., app/**/*/handler.ts).
-    Add an ignore pattern so Knip does not flag these as “Unused files”.
-  - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
+    Add an ignore pattern so Knip does not flag these as “Unused files”.  - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
     cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
     Add them to ignoreDependencies to reduce noise.
   - Keep http-errors under review; do not remove until confirmed unused at runtime.
@@ -41,10 +52,19 @@ When updated: 2025-09-01T03:00:00Z
 
 ## Completed (recent)
 
+21. HTTP middleware customization (foundation)
+   - Implemented phased stack builder with stable Step IDs and invariants.
+   - Added app-level http { defaults, profiles } and function-level http { profile, options, extend, transform, replace }.
+   - Merge order: defaults → profile → fn.options → fn.extend → fn.transform → fn.replace.
+   - Zod enforcement: schemas present ⇒ require 'zod-before' in before and 'zod-after' in after; accepts custom tagged steps.
+   - Transform helpers exported: insertBefore, insertAfter, replaceStep, removeStep, findIndex, getId, tagStep.
+   - Integrated with wrapHandler via App → registry → handlerFactory plumbed http config.
+   - Defaults preserved for non-customized functions.
+   - Follow-ups: tests and docs (see “Next up”).
+
 9. Function registration defaults & slug removal
    - Eliminated slug; functionName is now the unique registry key.
-   - Added DefineFunctionOptions; App.defineFunction uses it.
-   - Default functionName derived from path relative to app root with underscores.
+   - Added DefineFunctionOptions; App.defineFunction uses it.   - Default functionName derived from path relative to app root with underscores.
    - App.create now accepts appRootAbs; app root derived in app.config.ts from its own location.
 
 10. Path-based defaults

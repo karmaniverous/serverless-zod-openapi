@@ -1,13 +1,16 @@
+import type { MiddlewareObj } from '@middy/core';
 import type { AWS } from '@serverless/typescript';
 import type { z } from 'zod';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
+import type {
+  HttpStackOptions, HttpTransform, PhasedArrays,
+} from '@/src/handler/middleware/httpStackCustomization';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 
 import type { PropFromUnion } from './PropFromUnion';
-
 /** HTTP methods supported from zod-openapi's PathItem shape (excluding helper 'id'). */
 export type MethodKey = keyof Omit<ZodOpenApiPathItemObject, 'id'>;
 
@@ -67,3 +70,23 @@ export type FunctionConfig<
       basePath?: never;
       contentType?: never;
     });
+
+/** Function-level HTTP customization surface (HTTP tokens only). */
+export type FunctionHttpCustomization = {
+  /** Picks one of app.http.profiles */
+  profile?: string;
+  /** Shallow options patch on top of selected profile/defaults */
+  options?: Partial<HttpStackOptions>;
+  /** Simple injection points: append steps into phases */
+  extend?: {
+    before?: MiddlewareObj[];
+    after?: MiddlewareObj[];
+    onError?: MiddlewareObj[];
+  };
+  /** Targeted transforms */
+  transform?: HttpTransform;
+  /** Full replacement escape hatch */
+  replace?: {
+    stack: MiddlewareObj | PhasedArrays;
+  };
+};

@@ -42,10 +42,19 @@ export { combine } from './handler/middleware/combine';
 /** Zod validator middleware (event/response). */
 export type { HttpZodValidatorOptions } from './handler/middleware/httpZodValidator';
 export { httpZodValidator } from './handler/middleware/httpZodValidator';
+/** HTTP customization (options/profiles/transform helpers). */
+export type {
+  AppHttpConfig,
+  FunctionHttpConfig,
+  HttpProfile,
+  HttpStackOptions,
+} from './handler/middleware/httpStackCustomization';
+export {
+findIndex, getId, insertAfter,   insertBefore, removeStep, replaceStep, tagStep,
+} from './handler/middleware/transformUtils';
 /** HEAD short‑circuit middleware (200 {}). */
+/** Wrap a business handler with SMOZ runtime (HTTP or non‑HTTP). */export type { EnvAttached } from './handler/defineFunctionConfig';
 export { shortCircuitHead } from './handler/middleware/shortCircuitHead';
-/** Wrap a business handler with SMOZ runtime (HTTP or non‑HTTP). */
-export type { EnvAttached } from './handler/defineFunctionConfig';
 export { wrapHandler } from './handler/wrapHandler';
 
 // Types

@@ -37,10 +37,10 @@ import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
+import type { AppHttpConfig } from '@/src/handler/middleware/httpStackCustomization';
 
 /** Serverless config schema (parsed internally by App). */
-const serverlessConfigSchema = z.object({
-  /** Context -> event fragment to merge into generated http events */
+const serverlessConfigSchema = z.object({  /** Context -> event fragment to merge into generated http events */
   httpContextEventMap: z.custom<SecurityContextHttpEventMap>(),
   /** Used to construct default handler string if missing on a function */
   defaultHandlerFileName: z.string().min(1),
@@ -73,8 +73,11 @@ export interface AppInit<
    * Defaults to ['rest', 'http'].
    */
   httpEventTypeTokens?: readonly (keyof z.infer<EventTypeMapSchema>)[];
+  /**
+   * Optional app-level HTTP middleware customization (defaults & profiles).
+   */
+  http?: AppHttpConfig;
 }
-
 /**
  * Application class.
  *
@@ -104,9 +107,10 @@ export class App<
   public readonly environment: ReturnType<typeof stagesFactory>['environment'];
   public readonly buildFnEnv: ReturnType<typeof stagesFactory>['buildFnEnv'];
 
+  public readonly http: AppHttpConfig;
+
   // HTTP tokens for runtime decision
   public readonly httpEventTypeTokens: readonly string[];
-
   // Registry (delegated to src/app/registry)
   private readonly registry: ReturnType<
     typeof createRegistry<
@@ -128,8 +132,7 @@ export class App<
     // Parse serverless input internally
     this.serverless = serverlessConfigSchema.parse(init.serverless);
 
-    // Validate that eventTypeMapSchema includes base keys at runtime
-    validateEventTypeMapSchemaIncludesBase(
+    // Validate that eventTypeMapSchema includes base keys at runtime    validateEventTypeMapSchemaIncludesBase(
       (this.eventTypeMapSchema as ZodObj).shape as Record<string, unknown>,
     );
 
@@ -177,18 +180,19 @@ export class App<
     // HTTP tokens (runtime decision)
     this.httpEventTypeTokens = (init.httpEventTypeTokens ??
       defaultHttpEventTypeTokens) as readonly string[];
+    // App-level HTTP customization
+    this.http = init.http ?? {};
 
     // Initialize function registry
-    this.registry = createRegistry<
-      GlobalParamsSchema,
+    this.registry = createRegistry<      GlobalParamsSchema,
       StageParamsSchema,
       EventTypeMapSchema
     >({
       httpEventTypeTokens: this.httpEventTypeTokens,
       env: { global: this.global, stage: this.stage },
+      http: this.http,
     });
   }
-
   /**
    * Ergonomic constructor for schema‑first inference.
    *
