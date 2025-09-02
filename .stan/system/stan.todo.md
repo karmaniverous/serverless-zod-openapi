@@ -1,16 +1,11 @@
 # Development Plan
 
-When updated: 2025-09-02T21:35:00Z
+When updated: 2025-09-02T21:50:00Z
 
 ## Next up
 - App.ts orchestration slimming (follow‑through)
   - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
-
-- TypeDoc warnings cleanup
-  - Resolve current warnings for symbols referenced but not included (e.g., serverlessConfigSchema, ApiMiddleware, Dict, RegEntry, RegistryEntry) and broken links.
-  - Prefer explicit exports or @internal annotations where appropriate; fix comment links.
-  - Acceptance: docs build shows 0 warnings.
 
 - Dependencies and binaries housekeeping
   - Re‑evaluate http-errors usage; remove if unused or keep and explicitly ignore in Knip.
@@ -21,10 +16,14 @@ When updated: 2025-09-02T21:35:00Z
 
 ## Completed (recent)
 
+35. TypeDoc warnings cleanup (phase 2)
+
+- Resolved remaining docs warnings by ensuring projectDocuments exists (CHANGELOG.md) and adding zod plugin integration; docs build shows 0 warnings.
+- Acceptance: TypeDoc build clean (no warnings).
+
 34. TypeDoc cleanup (phase 1)
 
-- Exported internal types (ApiMiddleware, Dict, RegEntry, RegistryEntry) so TypeDoc can include their references.
-- Fixed broken JSDoc links to wrapHandler and ShapedEvent.
+- Exported internal types (ApiMiddleware, Dict, RegEntry, RegistryEntry) so TypeDoc can include their references.- Fixed broken JSDoc links to wrapHandler and ShapedEvent.
 - Acceptance: docs still warn for remaining items; follow-up remains.
 
 33. TypeDoc categories and ordering
