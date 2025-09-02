@@ -22,11 +22,10 @@ import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { Handler } from '@/src/types/Handler';
 import type { HttpContext } from '@/src/types/HttpContext';
 
-type RegistryEntry = {
+export type RegistryEntry = {
   functionName: string;
   eventType: string;
-  method?: MethodKey;  basePath?: string;
-  httpContexts?: readonly HttpContext[];
+  method?: MethodKey;  basePath?: string;  httpContexts?: readonly HttpContext[];
   contentType?: string;
   fnEnvKeys?: readonly PropertyKey[];
   eventSchema?: z.ZodType | undefined;

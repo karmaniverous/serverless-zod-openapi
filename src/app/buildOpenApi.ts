@@ -12,11 +12,10 @@ import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
 
-type RegEntry = {
+export type RegEntry = {
   functionName: string;
   eventType: string;
-  method?: MethodKey;
-  basePath?: string;
+  method?: MethodKey;  basePath?: string;
   httpContexts?: readonly HttpContext[];
   callerModuleUrl: string;
   endpointsRootAbs: string;

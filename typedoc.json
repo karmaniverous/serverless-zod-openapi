@@ -27,7 +27,8 @@
   ],
   "hostedBaseUrl": "https://docs.karmanivero.us/smoz",
   "navigation": {
-    "includeCategories": true
+    "includeCategories": true,
+    "includeFolders": false
   },
   "navigationLinks": {
     "GitHub": "https://github.com/karmaniverous/smoz"

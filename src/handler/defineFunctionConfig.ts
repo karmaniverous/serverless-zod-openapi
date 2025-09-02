@@ -14,11 +14,10 @@ export const ENV_CONFIG = Symbol.for('szo.envConfig');
  *
  * @typeParam GlobalParamsSchema - global params schema
  * @typeParam StageParamsSchema  - stage params schema
- * @remarks The brand is read by {@link wrapHandler} to build the typed env object.
+ * @remarks The brand is read by {@link handler/wrapHandler.wrapHandler | wrapHandler} to build the typed env object.
  */
 export interface EnvAttached<
-  GlobalParamsSchema extends ZodObject<ZodRawShape>,
-  StageParamsSchema extends ZodObject<ZodRawShape>,
+  GlobalParamsSchema extends ZodObject<ZodRawShape>,  StageParamsSchema extends ZodObject<ZodRawShape>,
 > {
   [ENV_CONFIG]: {
     global: EnvSchemaNode<GlobalParamsSchema>;

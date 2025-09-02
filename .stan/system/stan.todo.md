@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-02T21:25:00Z
+When updated: 2025-09-02T21:35:00Z
 
 ## Next up
-
 - App.ts orchestration slimming (follow‑through)
   - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
@@ -22,10 +21,15 @@ When updated: 2025-09-02T21:25:00Z
 
 ## Completed (recent)
 
+34. TypeDoc cleanup (phase 1)
+
+- Exported internal types (ApiMiddleware, Dict, RegEntry, RegistryEntry) so TypeDoc can include their references.
+- Fixed broken JSDoc links to wrapHandler and ShapedEvent.
+- Acceptance: docs still warn for remaining items; follow-up remains.
+
 33. TypeDoc categories and ordering
 
-- Added @category tags across core modules (Public API, HTTP Middleware,
-  Customization, Config, Serverless, OpenAPI, Types).
+- Added @category tags across core modules (Public API, HTTP Middleware,  Customization, Config, Serverless, OpenAPI, Types).
 - Set typedoc.json categorizeByGroup=false and categoryOrder with “Public API”
   first; alphabetical sort for stable ordering.
 - Acceptance: docs build green; public content appears first within pages.

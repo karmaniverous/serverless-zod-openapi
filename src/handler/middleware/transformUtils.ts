@@ -12,10 +12,11 @@ import type { MiddlewareObj } from '@middy/core';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 const ID_PROP = '__id' as const;
-type ApiMiddleware = MiddlewareObj<APIGatewayProxyEvent, Context>;
+export type ApiMiddleware = MiddlewareObj<APIGatewayProxyEvent, Context>;
 
 export type StepId =
-  | 'head'  | 'header-normalizer'
+  | 'head'
+  | 'header-normalizer'
   | 'event-normalizer'
   | 'content-negotiation'
   | 'json-body-parser'
@@ -30,10 +31,7 @@ export type StepId =
   | 'serializer';
 
 /** Attach a non-enumerable __id to a middleware step. */
-export const tagStep = (
-  mw: ApiMiddleware,
-  id: StepId,
-): ApiMiddleware => {
+export const tagStep = (mw: ApiMiddleware, id: StepId): ApiMiddleware => {
   if (!Object.prototype.hasOwnProperty.call(mw, ID_PROP)) {
     Object.defineProperty(mw, ID_PROP, { value: id, enumerable: false });
   }
@@ -45,10 +43,8 @@ export const getId = (mw: ApiMiddleware): StepId | undefined =>
   (mw as Record<string, unknown>)[ID_PROP] as StepId | undefined;
 
 /** Find index of a step by id. */
-export const findIndex = (
-  list: ApiMiddleware[],
-  id: StepId,
-): number => list.findIndex((m) => getId(m) === id);
+export const findIndex = (list: ApiMiddleware[], id: StepId): number =>
+  list.findIndex((m) => getId(m) === id);
 
 /** Insert a step before the step with given id. */
 export const insertBefore = (
@@ -121,7 +117,10 @@ export const assertInvariants = (phases: {
   if (before.length === 0 || getId(before[0] as ApiMiddleware) !== 'head') {
     throw new Error("Invariant violation: 'head' must be first in before.");
   }
-  if (after.length === 0 || getId(after[after.length - 1] as ApiMiddleware) !== 'serializer') {
+  if (
+    after.length === 0 ||
+    getId(after[after.length - 1] as ApiMiddleware) !== 'serializer'
+  ) {
     throw new Error("Invariant violation: 'serializer' must be last in after.");
   }
   const shapeIdx = findIndex(after, 'shape');

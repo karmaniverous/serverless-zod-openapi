@@ -10,11 +10,10 @@
  */
 import { diff, unique } from 'radash';
 import type { ZodObject, ZodRawShape } from 'zod';
-type Dict<T> = Record<string, T>;
+export type Dict<T> = Record<string, T>;
 
 export type StagesFactoryInput<
-  GlobalParams extends Record<string, unknown>,
-  StageParams extends Record<string, unknown>,
+  GlobalParams extends Record<string, unknown>,  StageParams extends Record<string, unknown>,
 > = {
   globalParamsSchema: ZodObject<ZodRawShape>;
   stageParamsSchema: ZodObject<ZodRawShape>;
