@@ -19,6 +19,7 @@ import {
 import {
   type AppHttpConfig,
   computeHttpMiddleware,
+  type FunctionHttpConfig,
 } from '@/src/handler/middleware/httpStackCustomization';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
@@ -136,20 +137,15 @@ export function wrapHandler<
       functionName:
         (functionConfig as { functionName?: string }).functionName ??
         'function',
-      eventSchema: (functionConfig as { eventSchema?: unknown })
-        .eventSchema as z.ZodType | undefined,
+      eventSchema: (functionConfig as { eventSchema?: unknown }).eventSchema as
+        | z.ZodType
+        | undefined,
       responseSchema: (functionConfig as { responseSchema?: unknown })
         .responseSchema as z.ZodType | undefined,
       logger,
       contentType: legacyContentType,
       app: opts?.httpConfig,
-      fn: fnHttp as {
-        profile?: string;
-        options?: Record<string, unknown>;
-        extend?: Record<string, unknown>;
-        transform?: unknown;
-        replace?: { stack: unknown };
-      },
+      fn: fnHttp as FunctionHttpConfig | undefined,
     });
 
     const wrapped = middy(async (e: unknown, c: Context) =>
