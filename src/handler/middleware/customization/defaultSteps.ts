@@ -5,7 +5,7 @@ import httpEventNormalizer from '@middy/http-event-normalizer';
 import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import httpJsonBodyParser from '@middy/http-json-body-parser';
 import httpResponseSerializer from '@middy/http-response-serializer';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 import type { z } from 'zod';
 
 import { asApiMiddleware } from '@/src/handler/middleware/asApiMiddleware';

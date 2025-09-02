@@ -2,15 +2,16 @@
  + HTTP customization types and aliases.
  */
 import type { MiddlewareObj } from '@middy/core';
-import httpContentNegotiation from '@middy/http-content-negotiation';
-import httpCors from '@middy/http-cors';
-import httpErrorHandler from '@middy/http-error-handler';
-import httpHeaderNormalizer from '@middy/http-header-normalizer';
-import httpJsonBodyParser from '@middy/http-json-body-parser';
+import type httpContentNegotiation from '@middy/http-content-negotiation';
+import type httpCors from '@middy/http-cors';
+import type httpErrorHandler from '@middy/http-error-handler';
+import type httpHeaderNormalizer from '@middy/http-header-normalizer';
+import type httpJsonBodyParser from '@middy/http-json-body-parser';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
 import type { ConsoleLogger } from '@/src/types/Loggable';
+
 import type { HttpTransform, PhasedArrays } from '../transformUtils';
 
 export type ApiMiddleware = MiddlewareObj<APIGatewayProxyEvent, Context>;
@@ -49,5 +50,5 @@ export type FunctionHttpConfig = {
   transform?: HttpTransform;
   replace?: { stack: MiddlewareObj | PhasedArrays };
 };
-
-export type Z
+/** Optional Zod type used by step builders. */
+export type Zodish = z.ZodType | undefined;
