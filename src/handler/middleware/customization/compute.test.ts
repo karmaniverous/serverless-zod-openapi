@@ -9,7 +9,6 @@ import {
   type FunctionHttpConfig,
 } from '@/src/handler/middleware/httpStackCustomization';
 import {
-  getId,
   type HttpTransform,
   insertAfter,
   removeStep,
@@ -33,10 +32,10 @@ const run = async (
     responseSchema?: z.ZodType;
     contentType?: string;
   },
+  accept?: string,
 ): Promise<HttpResponse> => {
   const http = computeHttpMiddleware({
-    functionName: 'testFn',
-    logger: console,
+    functionName: 'testFn',    logger: console,
     ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
     ...(options.responseSchema ? { responseSchema: options.responseSchema } : {}),
     ...(options.contentType ? { contentType: options.contentType } : {}),
@@ -44,7 +43,7 @@ const run = async (
     ...(options.fn ? { fn: options.fn } : {}),
   });
   const wrapped = middy(async (e: APIGatewayProxyEvent, c: Context) => base(e, c)).use(http);
-  const evt = createApiGatewayV1Event('GET', { Accept: 'application/json' });
+  const evt = createApiGatewayV1Event('GET', { Accept: accept ?? 'application/json' });
   const ctx = createLambdaContext();
   return (await wrapped(evt, ctx)) as HttpResponse;
 };
@@ -54,7 +53,6 @@ describe('computeHttpMiddleware: merge order', () => {
     const defCT = 'application/vnd.def+json';
     const profCT = 'application/vnd.prof+json';
     const fnCT = 'application/vnd.fn+json';
-
     const app: AppHttpConfig = {
       defaults: { contentType: defCT },
       profiles: { p: { contentType: profCT } },
@@ -64,14 +62,13 @@ describe('computeHttpMiddleware: merge order', () => {
       options: { contentType: fnCT },
     };
 
-    const res = await run(async () => ({ ok: true }), { app, fn });
+    const res = await run(async () => ({ ok: true }), { app, fn }, fnCT);
     const ct = (res.headers['Content-Type'] ?? res.headers['content-type'] ?? '').toLowerCase();
     expect(ct).toContain('application/vnd.fn+json');
     expect(res.statusCode).toBe(200);
     expect(JSON.parse(res.body)).toEqual({ ok: true });
   });
 });
-
 describe('computeHttpMiddleware: transform insertion', () => {
   it("insertAfter('shape', mw) can add a custom header", async () => {
     const mw = {

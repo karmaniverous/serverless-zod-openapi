@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-02T15:50:00Z
+When updated: 2025-09-02T16:10:00Z
 
 ## Next up
-
 - HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants).
   - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
@@ -57,8 +56,21 @@ When updated: 2025-09-02T15:50:00Z
 
 ## Completed (recent)
 
-23. Remove shims and make compute args exact-optional safe
+25. Fix tests and lint around HTTP customization and transform utils
 
+- customization/compute.test.ts: allow overriding the Accept header in the
+  helper and use the vendor content type when asserting content-type
+  precedence; prevents 406 NotAcceptableError.
+- customization/compute.test.ts: remove unused getId import to satisfy lint.
+- transformUtils.test.ts: add non-null assertion for array element access to
+  satisfy noUncheckedIndexedAccess during typecheck/docs/build.
+
+26. Remove unused intrinsic helpers (knip)
+
+- Deleted src/serverless/intrinsic.ts which was unused and flagged by knip.
+- Aligns tree with earlier cleanup intent and reduces analyzer noise.
+
+23. Remove shims and make compute args exact-optional safe
 - wrapHandler: dropped legacy/back-compat mapping for contentType and only
   pass computeHttpMiddleware options when defined (event/response/contentType,
   app, fn) to satisfy exactOptionalPropertyTypes.
