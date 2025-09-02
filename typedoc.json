@@ -13,9 +13,9 @@
     "tsx",
     "typescript"
   ],
-  "hostedBaseUrl": "https://docs.karmanivero.us/serverless-zod-openapi",
+  "hostedBaseUrl": "https://docs.karmanivero.us/smoz",
   "navigationLinks": {
-    "GitHub": "https://github.com/karmaniverous/serverless-zod-openapi"
+    "GitHub": "https://github.com/karmaniverous/smoz"
   },
   "out": "./docs/",
   "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],

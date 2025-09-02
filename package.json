@@ -1,7 +1,7 @@
 {
   "author": "Jason Williscroft",
   "bugs": {
-    "url": "https://github.com/karmaniverous/serverless-zod-openapi/issues"
+    "url": "https://github.com/karmaniverous/smoz/issues"
   },
   "dependencies": {
     "@karmaniverous/cached-axios": "^0.2.0",
@@ -74,12 +74,12 @@
   "files": [
     "dist"
   ],
-  "homepage": "https://github.com/karmaniverous/serverless-zod-openapi#readme",
+  "homepage": "https://github.com/karmaniverous/smoz#readme",
   "keywords": [],
   "license": "BSD-3-Clause",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
-  "name": "serverless-zod-openapi",
+  "name": "smoz",
   "publishConfig": {
     "access": "public"
   },
@@ -116,7 +116,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/karmaniverous/serverless-zod-openapi.git"
+    "url": "git+https://github.com/karmaniverous/smoz.git"
   },
   "scripts": {
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
