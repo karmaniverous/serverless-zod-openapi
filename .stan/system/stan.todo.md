@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-02T17:15:00Z
+When updated: 2025-09-02T17:30:00Z
 
 ## Next up
 
@@ -16,7 +16,6 @@ When updated: 2025-09-02T17:15:00Z
   - Documentation:
     - README: “HTTP middleware customization” section (defaults, surfaces, examples).
     - Typedoc: document HttpStackOptions, HttpProfile, FunctionHttpConfig, transform helpers, Step IDs.
-  - Consider exposing buildSafeDefaults(options) helper for replace scenarios.
   - Acceptance: tests green; docs built; defaults unaffected for non-customizers.
 
 - Knip cleanup and configuration - Suppress known false-positives:
@@ -55,6 +54,13 @@ When updated: 2025-09-02T17:15:00Z
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 
 ## Completed (recent)
+
+30. Expose buildSafeDefaults helper
+
+- Exported buildSafeDefaults from the customization barrel and top-level index.
+- Implemented as a thin alias for buildDefaultPhases; suitable for replace scenarios.
+- Added unit tests to assert invariants and Zod step inclusion with schemas.
+- Acceptance: typecheck/lint/test/build/package all green.
 
 29. Knip — unlisted binaries resolved
 

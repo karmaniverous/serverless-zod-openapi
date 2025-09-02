@@ -7,6 +7,7 @@
  * - Transform helpers: getId, tagStep, HttpTransform, PhasedArrays
  */
 export { computeHttpMiddleware } from './customization/compute';
+export { buildSafeDefaults } from './customization/defaultSteps';
 export type {
   AppHttpConfig,
   FunctionHttpConfig,
@@ -15,7 +16,6 @@ export type {
 } from './customization/types';
 export {
   getId,
-  type HttpTransform,
-  type PhasedArrays,
+  type HttpTransform,  type PhasedArrays,
   tagStep,
 } from './transformUtils';

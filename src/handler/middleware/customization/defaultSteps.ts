@@ -252,3 +252,8 @@ export const buildDefaultPhases = (args: {
   const onError: M[] = [makeErrorExpose(logger), makeErrorHandler(opts)];
   return { before, after, onError };
 };
+
+/** Public helper: build default phases suitable for replace scenarios. */
+export type BuildSafeDefaultsArgs = Parameters<typeof buildDefaultPhases>[0];
+export const buildSafeDefaults = (args: BuildSafeDefaultsArgs) =>
+  buildDefaultPhases(args);
