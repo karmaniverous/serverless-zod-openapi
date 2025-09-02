@@ -1,16 +1,17 @@
 # Development Plan
 
-When updated: 2025-09-02T07:50:00Z
+When updated: 2025-09-02T15:50:00Z
 
 ## Next up
-- HTTP customization modularization follow‑through  - Add tests covering the compute layer (merge order, replace, invariants).
+
+- HTTP customization modularization follow‑through - Add tests covering the compute layer (merge order, replace, invariants).
   - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
 
 - HTTP customization follow‑through
   - Add unit tests for:
-    - Transform helpers (insert/replace/remove) and getId tagging.    - Invariant validation failures (head first; serializer last; shape before serializer; error-handler only in onError).
+    - Transform helpers (insert/replace/remove) and getId tagging. - Invariant validation failures (head first; serializer last; shape before serializer; error-handler only in onError).
     - Zod enforcement on schemas present (remove zod-before/after → throws); accept custom tagged validators.
     - Merge order precedence (defaults → profile → fn overrides).
   - Documentation:
@@ -20,8 +21,8 @@ When updated: 2025-09-02T07:50:00Z
   - Acceptance: tests green; docs built; defaults unaffected for non-customizers.
 
 - Knip cleanup and configuration - Suppress known false-positives:
-  - Files referenced by Serverless via handler strings, not imports (e.g., app/**/*/handler.ts).
-    Add an ignore pattern so Knip does not flag these as “Unused files”.  - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
+  - Files referenced by Serverless via handler strings, not imports (e.g., app/\*_/_/handler.ts).
+    Add an ignore pattern so Knip does not flag these as “Unused files”. - Serverless plugin packages used only by the CLI (e.g., serverless-… plugins) and
     cross-workspace dependencies (e.g., @karmaniverous/cached-axios used under services/activecampaign/).
     Add them to ignoreDependencies to reduce noise.
   - Keep http-errors under review; do not remove until confirmed unused at runtime.
@@ -51,32 +52,44 @@ When updated: 2025-09-02T07:50:00Z
   - Acceptance: scripts continue to work (release, diagrams), no new Knip warnings for these items.
 
 - App.ts orchestration slimming (follow-through)
-  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/*.
+  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
   - Acceptance: App.ts ~≤200 LOC; strict TS and lint clean.
 
 ## Completed (recent)
 
 23. Remove shims and make compute args exact-optional safe
-   - wrapHandler: dropped legacy/back-compat mapping for contentType and only
-     pass computeHttpMiddleware options when defined (event/response/contentType,
-     app, fn) to satisfy exactOptionalPropertyTypes.
+
+- wrapHandler: dropped legacy/back-compat mapping for contentType and only
+  pass computeHttpMiddleware options when defined (event/response/contentType,
+  app, fn) to satisfy exactOptionalPropertyTypes.
+
+24. Tests for HTTP customization
+
+- Added compute tests: merge precedence, transform insertion, invariants violations,
+  Zod enforcement (including custom tagged validators), and replace behavior.
+- Added transformUtils tests: insert/replace/remove/find/getId on tagged steps.
+- All scripts pass (typecheck/lint/test/build/package).
+
 22. Split HTTP customization into modules and fix TS build
-   - Replaced monolithic httpStackCustomization with:
-     - customization/types.ts, customization/defaultSteps.ts, customization/compute.ts     - httpStackCustomization.ts now a barrel.
-   - Tightened transformUtils typing to API Gateway middleware and fixed invariants typing.
-   - Fixed malformed validateEventTypeMapSchemaIncludesBase call in App.ts.
+
+- Replaced monolithic httpStackCustomization with:
+  - customization/types.ts, customization/defaultSteps.ts, customization/compute.ts - httpStackCustomization.ts now a barrel.
+- Tightened transformUtils typing to API Gateway middleware and fixed invariants typing.
+- Fixed malformed validateEventTypeMapSchemaIncludesBase call in App.ts.
+
 21. HTTP middleware customization (foundation)
-   - Implemented phased stack builder with stable Step IDs and invariants.
-   - Added app-level http { defaults, profiles } and function-level http { profile, options, extend, transform, replace }.   - Merge order: defaults → profile → fn.options → fn.extend → fn.transform → fn.replace.
-   - Zod enforcement: schemas present ⇒ require 'zod-before' in before and 'zod-after' in after; accepts custom tagged steps.
-   - Transform helpers exported: insertBefore, insertAfter, replaceStep, removeStep, findIndex, getId, tagStep.
-   - Integrated with wrapHandler via App → registry → handlerFactory plumbed http config.
-   - Defaults preserved for non-customized functions.
-   - Follow-ups: tests and docs (see “Next up”).
+
+- Implemented phased stack builder with stable Step IDs and invariants.
+- Added app-level http { defaults, profiles } and function-level http { profile, options, extend, transform, replace }. - Merge order: defaults → profile → fn.options → fn.extend → fn.transform → fn.replace.
+- Zod enforcement: schemas present ⇒ require 'zod-before' in before and 'zod-after' in after; accepts custom tagged steps.
+- Transform helpers exported: insertBefore, insertAfter, replaceStep, removeStep, findIndex, getId, tagStep.
+- Integrated with wrapHandler via App → registry → handlerFactory plumbed http config.
+- Defaults preserved for non-customized functions.
+- Follow-ups: tests and docs (see “Next up”).
 
 9. Function registration defaults & slug removal
    - Eliminated slug; functionName is now the unique registry key.
-   - Added DefineFunctionOptions; App.defineFunction uses it.   - Default functionName derived from path relative to app root with underscores.
+   - Added DefineFunctionOptions; App.defineFunction uses it. - Default functionName derived from path relative to app root with underscores.
    - App.create now accepts appRootAbs; app root derived in app.config.ts from its own location.
 
 10. Path-based defaults
@@ -98,7 +111,7 @@ When updated: 2025-09-02T07:50:00Z
 
 15. Knip config phase 1
     - Removed redundant entry (app/config/openapi.ts).
-    - Ignored Serverless handler files (app/**/*/handler.ts).
+    - Ignored Serverless handler files (app/\*_/_/handler.ts).
     - Added ignoreDependencies for CLI/serverless-only and cross-folder deps to quiet false positives.
 
 16. Unused modules triage — phase 1 (delete)
