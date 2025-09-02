@@ -14,10 +14,12 @@
     "lib/test/**",
     "app/**/handler.ts",
     "src/serverless/intrinsic.ts",
-    "services/**/src/openapi.json"
+    "services/**/src/openapi.json",
+    "services/activecampaign/orval.config.ts",
+    "services/activecampaign/src/wrapped/field-values.ts",
+    "services/activecampaign/src/api/contacts/format.ts"
   ],
   "ignoreDependencies": [
-    "@karmaniverous/cached-axios",
     "http-errors",
     "@types/http-errors",
     "@types/serverless",
