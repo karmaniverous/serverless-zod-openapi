@@ -129,24 +129,33 @@ export function wrapHandler<
       );
     }
     // HTTP: build middleware stack
-    const fnHttp: unknown = (functionConfig as { http?: unknown }).http;
-    // Back-compat: map legacy contentType to function-level option if provided
-    const legacyContentType = (functionConfig as { contentType?: string })
+    const fnHttp = (functionConfig as { http?: unknown }).http;
+    const maybeContentType = (functionConfig as { contentType?: string })
       .contentType;
-    const http = computeHttpMiddleware({
-      functionName:
-        (functionConfig as { functionName?: string }).functionName ??
-        'function',
-      eventSchema: (functionConfig as { eventSchema?: unknown }).eventSchema as
-        | z.ZodType
-        | undefined,
-      responseSchema: (functionConfig as { responseSchema?: unknown })
-        .responseSchema as z.ZodType | undefined,
+    const args: {
+      functionName: string;
+      logger: Console;
+      eventSchema?: z.ZodType;
+      responseSchema?: z.ZodType;
+      contentType?: string;
+      app?: AppHttpConfig;
+      fn?: FunctionHttpConfig;
+    } = {
+      functionName: functionConfig.functionName,
       logger,
-      contentType: legacyContentType,
-      app: opts?.httpConfig,
-      fn: fnHttp as FunctionHttpConfig | undefined,
-    });
+      ...(functionConfig.eventSchema
+        ? { eventSchema: functionConfig.eventSchema }
+        : {}),
+      ...(functionConfig.responseSchema
+        ? { responseSchema: functionConfig.responseSchema }
+        : {}),
+      ...(typeof maybeContentType === 'string' && maybeContentType.length > 0
+        ? { contentType: maybeContentType }
+        : {}),
+      ...(opts?.httpConfig ? { app: opts.httpConfig } : {}),
+      ...(fnHttp ? { fn: fnHttp as FunctionHttpConfig } : {}),
+    };
+    const http = computeHttpMiddleware(args);
 
     const wrapped = middy(async (e: unknown, c: Context) =>
       business(e as ShapedEvent<EventSchema, EventTypeMap[EventType]>, c, {

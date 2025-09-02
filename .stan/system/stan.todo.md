@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-02T01:00:00Z
+When updated: 2025-09-02T07:50:00Z
 
 ## Next up
-- HTTP customization modularization follow‑through
-  - Add tests covering the compute layer (merge order, replace, invariants).
+- HTTP customization modularization follow‑through  - Add tests covering the compute layer (merge order, replace, invariants).
   - Ensure transformUtils helpers are covered (insert/replace/remove/find/getId).
   - Expand docs with “Step IDs and invariants” table and examples.
   - Acceptance: typecheck/lint/test/build/package all pass.
@@ -57,10 +56,13 @@ When updated: 2025-09-02T01:00:00Z
 
 ## Completed (recent)
 
+23. Remove shims and make compute args exact-optional safe
+   - wrapHandler: dropped legacy/back-compat mapping for contentType and only
+     pass computeHttpMiddleware options when defined (event/response/contentType,
+     app, fn) to satisfy exactOptionalPropertyTypes.
 22. Split HTTP customization into modules and fix TS build
    - Replaced monolithic httpStackCustomization with:
-     - customization/types.ts, customization/defaultSteps.ts, customization/compute.ts
-     - httpStackCustomization.ts now a barrel.
+     - customization/types.ts, customization/defaultSteps.ts, customization/compute.ts     - httpStackCustomization.ts now a barrel.
    - Tightened transformUtils typing to API Gateway middleware and fixed invariants typing.
    - Fixed malformed validateEventTypeMapSchemaIncludesBase call in App.ts.
 21. HTTP middleware customization (foundation)
