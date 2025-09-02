@@ -1,16 +1,21 @@
 {
   "entryPoints": ["./src"],
   "entryPointStrategy": "expand",
-  "categorizeByGroup": false,
-  "categoryOrder": ["Public API", "HTTP Middleware", "Customization", "Config", "Serverless", "OpenAPI", "Types", "*"],
-  "exclude": [
-    "**/*.test.ts",
-    "src/test/**",    "**/generated/**",
-    "**/*.d.ts"
+  "categoryOrder": [
+    "Public API",
+    "HTTP Middleware",
+    "Customization",
+    "Config",
+    "Serverless",
+    "OpenAPI",
+    "Types",
+    "*"
   ],
+  "exclude": ["**/*.test.ts", "src/test/**", "**/generated/**", "**/*.d.ts"],
   "highlightLanguages": [
     "bash",
-    "console",    "css",
+    "console",
+    "css",
     "html",
     "javascript",
     "json",
