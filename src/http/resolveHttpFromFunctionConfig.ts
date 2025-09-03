@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { unique } from 'radash';
 import type { z } from 'zod';
 
-import { sanitizeBasePath } from '@/src/path/buildPath';
+import { sanitizeBasePath } from '@/src/http/buildPath';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';

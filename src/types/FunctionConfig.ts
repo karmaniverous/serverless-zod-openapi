@@ -7,7 +7,7 @@ import type {
   HttpStackOptions,
   HttpTransform,
   PhasedArrays,
-} from '@/src/handler/middleware/httpStackCustomization';
+} from '@/src/http/middleware/httpStackCustomization';
 import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { ConsoleLogger } from '@/src/types/Loggable';
