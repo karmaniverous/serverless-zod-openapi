@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-03T01:00:00Z
+When updated: 2025-09-03T01:30:00Z
 
 ## Next up
-- App.ts orchestration slimming (follow‑through)  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
-  - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
+- App.ts orchestration slimming (follow‑through)  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.  - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 - Dependencies and binaries housekeeping
   - Re‑evaluate http-errors usage; remove if unused or keep and explicitly ignore in Knip.
   - Acceptance: scripts continue to work; Knip remains clean.
@@ -14,10 +13,17 @@ When updated: 2025-09-03T01:00:00Z
 
 ## Completed (recent)
 
+38. Compile-time tests stabilized; unused fixture removed
+
+- compiletime.envKeys.test: moved @ts-expect-error to the exact error lines
+  via typed constants; added a no-op Vitest suite.
+- compiletime.fnEnvKeys.test: added a no-op Vitest suite to avoid “No test
+  suite found”.
+- Removed unused src/test/serverless/config/stages/index.ts (clears Knip).
+
 37. Test fixtures refactor to mirror DX + new config coverage
 
-- Removed inferred type exports from src/test fixtures; configs now expose
-  Zod shapes and concrete values only (mirrors /app practice).
+- Removed inferred type exports from src/test fixtures; configs now expose  Zod shapes and concrete values only (mirrors /app practice).
 - Updated envBuilder tests to avoid importing inferred unions from fixtures.
 - Added runtime test for defineAppConfig (stages, provider environment,
   buildFnEnv) using src/test fixtures.

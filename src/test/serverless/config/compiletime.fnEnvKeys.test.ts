@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { App, baseEventTypeMapSchema } from '@/src';
 import {
   globalEnvKeys,
@@ -52,6 +54,13 @@ app.defineFunction({
   fnEnvKeys: ['NOT_A_KEY'] as const,
   callerModuleUrl: import.meta.url,
   endpointsRootAbs: process.cwd().replace(/\\/g, '/'),
+});
+
+// Minimal runtime suite so Vitest considers this a test file
+describe('compiletime.fnEnvKeys', () => {
+  it('compiles with expected @ts-expect-error markers', () => {
+    expect(true).toBe(true);
+  });
 });
 
 export {};
