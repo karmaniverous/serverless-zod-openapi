@@ -1,9 +1,11 @@
 # Development Plan
 
-When updated: 2025-09-03T01:30:00Z
+When updated: 2025-09-03T11:05:00Z
 
 ## Next up
-- App.ts orchestration slimming (follow‑through)  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.  - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
+
+- App.ts orchestration slimming (follow‑through) - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
+  - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 - Dependencies and binaries housekeeping
   - Re‑evaluate http-errors usage; remove if unused or keep and explicitly ignore in Knip.
   - Acceptance: scripts continue to work; Knip remains clean.
@@ -12,6 +14,22 @@ When updated: 2025-09-03T01:30:00Z
   - Review prior “Unused modules triage” list; confirm items are not present or add targeted tests/usages. Drop from plan if N/A.
 
 ## Completed (recent)
+
+40. App.ts orchestration slimming (phase 1)
+
+- Extracted serverless config schema into core/serverlessConfig.ts.
+- Extracted stage artifacts builder into core/buildStageArtifacts.ts.
+- Updated App.ts to consume these helpers; removed in-file duplication.
+- Preserved public API and behavior; App.ts now focuses on orchestration.
+- Fixed lingering TypeDoc wrapHandler link in defineFunctionConfig.ts.
+
+39. TypeDoc source links enabled + JSDoc link fix
+
+- typedoc.json: configured gitRemote=origin, gitRevision=main,
+  sourceLinkExternal=true, sourceLinkTemplate to GitHub, and ensured
+  disableSources=false. “Defined in …” now links to GitHub files/lines.
+- Fixed invalid JSDoc link in core/defineFunctionConfig.ts pointing
+  to handler/wrapHandler; corrected to runtime/wrapHandler.wrapHandler.
 
 38. Compile-time tests stabilized; unused fixture removed
 
@@ -23,7 +41,7 @@ When updated: 2025-09-03T01:30:00Z
 
 37. Test fixtures refactor to mirror DX + new config coverage
 
-- Removed inferred type exports from src/test fixtures; configs now expose  Zod shapes and concrete values only (mirrors /app practice).
+- Removed inferred type exports from src/test fixtures; configs now expose Zod shapes and concrete values only (mirrors /app practice).
 - Updated envBuilder tests to avoid importing inferred unions from fixtures.
 - Added runtime test for defineAppConfig (stages, provider environment,
   buildFnEnv) using src/test fixtures.
@@ -34,7 +52,7 @@ When updated: 2025-09-03T01:30:00Z
 
 36. Public API surface + test fixtures alignment
 
-- Trimmed public API: removed internal helpers from src/index.ts  (asApiMiddleware, buildHttpMiddlewareStack, combine, httpZodValidator,
+- Trimmed public API: removed internal helpers from src/index.ts (asApiMiddleware, buildHttpMiddlewareStack, combine, httpZodValidator,
   shortCircuitHead, envBuilder functions, FunctionConfig, PropFromUnion,
   ZodObj, BaseOperation, stagesFactory and related types).
 - Kept stable surfaces: App, baseEventTypeMapSchema, defineAppConfig (+types),
@@ -42,6 +60,7 @@ When updated: 2025-09-03T01:30:00Z
   common types.
 - Updated src/test fixtures to match /app shapes: dropped FN_ENV, switched
   global env exposure to REGION/SERVICE_NAME, added DOMAIN_CERTIFICATE_ARN to stages, and adjusted tests.
+
 35. TypeDoc warnings cleanup (phase 2)
 
 - Resolved remaining docs warnings by ensuring projectDocuments exists (CHANGELOG.md) and adding zod plugin integration; docs build shows 0 warnings.- Acceptance: TypeDoc build clean (no warnings).
@@ -53,7 +72,7 @@ When updated: 2025-09-03T01:30:00Z
 
 33. TypeDoc categories and ordering
 
-- Added @category tags across core modules (Public API, HTTP Middleware,  Customization, Config, Serverless, OpenAPI, Types).
+- Added @category tags across core modules (Public API, HTTP Middleware, Customization, Config, Serverless, OpenAPI, Types).
 - Set typedoc.json categorizeByGroup=false and categoryOrder with “Public API”
   first; alphabetical sort for stable ordering.
 - Acceptance: docs build green; public content appears first within pages.

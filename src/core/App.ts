@@ -3,7 +3,8 @@
  *
  * Central orchestrator for a SMOZ application. You provide:
  * - Global/stage parameter schemas and env exposure keys
- * - Serverless defaults (handler filename/export and context map) * - Event‑type map schema (extendable: e.g., add 'step')
+ * - Serverless defaults (handler filename/export and context map)
+ * - Event‑type map schema (extendable: e.g., add 'step')
  *
  * The instance:
  * - Validates configuration
@@ -19,40 +20,30 @@ import { dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { AWS } from '@serverless/typescript';
-import { z, type ZodObject, type ZodRawShape } from 'zod';
+import type { z} from 'zod';
+import { type ZodObject, type ZodRawShape } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { baseEventTypeMapSchema } from '@/src/core/baseEventTypeMapSchema';
+import { buildStageArtifacts } from '@/src/core/buildStageArtifacts';
 import type { EnvSchemaNode } from '@/src/core/defineAppConfig';
 import {
   defaultHttpEventTypeTokens,
   validateEventTypeMapSchemaIncludesBase,
 } from '@/src/core/httpTokens';
 import { createRegistry } from '@/src/core/registry';
+import { type AppServerlessConfig,serverlessConfigSchema } from '@/src/core/serverlessConfig';
 import type { ZodObj } from '@/src/core/types';
 import type { AppHttpConfig } from '@/src/http/middleware/httpStackCustomization';
 import { buildAllOpenApiPaths as buildPaths } from '@/src/openapi/buildOpenApi';
 import { buildAllServerlessFunctions as buildFns } from '@/src/serverless/buildServerless';
-import { stagesFactory } from '@/src/serverless/stagesFactory';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
-import type { SecurityContextHttpEventMap } from '@/src/types/SecurityContextHttpEventMap';
-
-/** Serverless config schema (parsed internally by App). */
-const serverlessConfigSchema = z.object({
-  /** Context -> event fragment to merge into generated http events */
-  httpContextEventMap: z.custom<SecurityContextHttpEventMap>(),
-  /** Used to construct default handler string if missing on a function */
-  defaultHandlerFileName: z.string().min(1),
-  defaultHandlerFileExport: z.string().min(1),
-});
-export type AppServerlessConfig = z.infer<typeof serverlessConfigSchema>;
 
 export interface AppInit<
   GlobalParamsSchema extends ZodObj,
   StageParamsSchema extends ZodObj,
-  EventTypeMapSchema extends ZodObj,
-> {
+  EventTypeMapSchema extends ZodObj,> {
   appRootAbs: string;
   globalParamsSchema: GlobalParamsSchema;
   stageParamsSchema: StageParamsSchema;
@@ -146,43 +137,22 @@ export interface AppInit<
       envKeys: init.stage.envKeys,
     };
 
-    // Build stages/environment/fn-env via factory
-    // Apply "stage extends global" implicitly: accept stage keys plus optional global overrides.
-    const effectiveStageParamsSchema = this.globalParamsSchema
-      .partial()
-      .extend(
-        (this.stageParamsSchema as unknown as ZodObject<ZodRawShape>)
-          .shape as Record<string, z.ZodType>,
-      );
-
-    // Parse raw stage params into the effective schema so types align
-    const typedStages = Object.fromEntries(
-      Object.entries(init.stage.params).map(([name, params]) => {
-        const parsed = (
-          effectiveStageParamsSchema as unknown as z.ZodType
-        ).parse(params) as z.infer<typeof effectiveStageParamsSchema>;
-        return [name, parsed];
-      }),
-    ) as Record<string, z.infer<StageParamsSchema>>;
-
-    const sf = stagesFactory({
-      globalParamsSchema: this.globalParamsSchema,
-      stageParamsSchema: effectiveStageParamsSchema,
-      globalParams: init.global.params,
-      globalEnvKeys: init.global.envKeys,
-      stageEnvKeys: init.stage.envKeys,
-      stages: typedStages,
-    });
-    this.stages = sf.stages;
-    this.environment = sf.environment;
-    this.buildFnEnv = sf.buildFnEnv;
+    // Build stages/environment/fn-env via helper (applies “stage extends global” and parsing)
+    const { stages, environment, buildFnEnv } = buildStageArtifacts(
+      this.globalParamsSchema,
+      this.stageParamsSchema,
+      { params: init.global.params, envKeys: init.global.envKeys },
+      { params: init.stage.params, envKeys: init.stage.envKeys },
+    );
+    this.stages = stages;
+    this.environment = environment;
+    this.buildFnEnv = buildFnEnv;
 
     // HTTP tokens (runtime decision)
     this.httpEventTypeTokens = (init.httpEventTypeTokens ??
       defaultHttpEventTypeTokens) as readonly string[];
     // App-level HTTP customization
     this.http = init.http ?? {};
-
     // Initialize function registry
     this.registry = createRegistry<
       GlobalParamsSchema,

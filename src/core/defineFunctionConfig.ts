@@ -15,23 +15,22 @@ export const ENV_CONFIG = Symbol.for('szo.envConfig');
  * @typeParam GlobalParamsSchema - global params schema
  * @typeParam StageParamsSchema  - stage params schema
  * @remarks The brand is read by {@link handler/wrapHandler.wrapHandler | wrapHandler} to build the typed env object.
- */
+ */ // Fixed path for TypeDoc link resolution:
 export interface EnvAttached<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   StageParamsSchema extends ZodObject<ZodRawShape>,
 > {
-  [ENV_CONFIG]: {
-    global: EnvSchemaNode<GlobalParamsSchema>;
+  [ENV_CONFIG]: {    global: EnvSchemaNode<GlobalParamsSchema>;
     stage: EnvSchemaNode<StageParamsSchema>;
   };
 }
 
+/** @see {@link runtime/wrapHandler.wrapHandler | wrapHandler} */
 export function getEnvFromFunctionConfig<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   StageParamsSchema extends ZodObject<ZodRawShape>,
 >(
-  fc: unknown,
-): {
+  fc: unknown,): {
   global: EnvSchemaNode<GlobalParamsSchema>;
   stage: EnvSchemaNode<StageParamsSchema>;
 } {
