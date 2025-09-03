@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-03T11:05:00Z
+When updated: 2025-09-03T12:00:00Z
 
 ## Next up
-
 - App.ts orchestration slimming (follow‑through) - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 - Dependencies and binaries housekeeping
@@ -15,11 +14,16 @@ When updated: 2025-09-03T11:05:00Z
 
 ## Completed (recent)
 
+41. Docs warning cleanup (wrapHandler link) and minor JSDoc tidy
+
+- Fixed invalid TypeDoc link in core/defineFunctionConfig.ts to point at
+  runtime/wrapHandler.wrapHandler.
+- Tidied header comment in core/buildStageArtifacts.ts.
+
 40. App.ts orchestration slimming (phase 1)
 
 - Extracted serverless config schema into core/serverlessConfig.ts.
-- Extracted stage artifacts builder into core/buildStageArtifacts.ts.
-- Updated App.ts to consume these helpers; removed in-file duplication.
+- Extracted stage artifacts builder into core/buildStageArtifacts.ts.- Updated App.ts to consume these helpers; removed in-file duplication.
 - Preserved public API and behavior; App.ts now focuses on orchestration.
 - Fixed lingering TypeDoc wrapHandler link in defineFunctionConfig.ts.
 

@@ -14,13 +14,14 @@ export const ENV_CONFIG = Symbol.for('szo.envConfig');
  *
  * @typeParam GlobalParamsSchema - global params schema
  * @typeParam StageParamsSchema  - stage params schema
- * @remarks The brand is read by {@link handler/wrapHandler.wrapHandler | wrapHandler} to build the typed env object.
- */ // Fixed path for TypeDoc link resolution:
+ * @remarks The brand is read by {@link runtime/wrapHandler.wrapHandler | wrapHandler} to build the typed env object.
+ */
 export interface EnvAttached<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   StageParamsSchema extends ZodObject<ZodRawShape>,
 > {
-  [ENV_CONFIG]: {    global: EnvSchemaNode<GlobalParamsSchema>;
+  [ENV_CONFIG]: {
+    global: EnvSchemaNode<GlobalParamsSchema>;
     stage: EnvSchemaNode<StageParamsSchema>;
   };
 }
@@ -30,13 +31,13 @@ export function getEnvFromFunctionConfig<
   GlobalParamsSchema extends ZodObject<ZodRawShape>,
   StageParamsSchema extends ZodObject<ZodRawShape>,
 >(
-  fc: unknown,): {
+  fc: unknown,
+): {
   global: EnvSchemaNode<GlobalParamsSchema>;
   stage: EnvSchemaNode<StageParamsSchema>;
 } {
   const env = (fc as { [ENV_CONFIG]?: unknown })[ENV_CONFIG];
-  if (!env) {
-    throw new Error(
+  if (!env) {    throw new Error(
       'FunctionConfig is missing env attachment. Use defineFunctionConfig(env)(...) when authoring.',
     );
   }
