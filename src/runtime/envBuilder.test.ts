@@ -10,13 +10,10 @@ import {
   stageEnvKeys,
   stageParamsSchema,
 } from '@/src/test/serverless/config/stage';
-// If you want a strict union for function-level keys in this test file:
-import type { AllParamsKeys } from '@/src/test/serverless/config/stages';
 
 import {
   buildEnvSchema,
-  deriveAllKeys,
-  isHead,
+  deriveAllKeys,  isHead,
   parseTypedEnv,
   splitKeysBySchema,
 } from './envBuilder';
@@ -24,10 +21,7 @@ import {
 describe('envBuilder helpers (using test stages fixture)', () => {
   // Function-specific keys for this test (not in the always-exposed lists).
   // Use FN_ENV (global) + DOMAIN_NAME (stage) to exercise both sides.
-  const fnEnv = [
-    'PROFILE',
-    'DOMAIN_NAME',
-  ] as const satisfies readonly AllParamsKeys[];
+  const fnEnv = ['PROFILE', 'DOMAIN_NAME'] as const;
 
   it('deriveAllKeys returns the exact union set (global ∪ stage ∪ function)', () => {
     const keys = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
@@ -36,7 +30,6 @@ describe('envBuilder helpers (using test stages fixture)', () => {
       ['REGION', 'SERVICE_NAME', 'STAGE', 'PROFILE', 'DOMAIN_NAME'].sort(),
     );
   });
-
   it('splitKeysBySchema partitions keys according to schema key sets', () => {
     const all = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     const { globalPick, stagePick } = splitKeysBySchema(

@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-03T00:00:00Z
+When updated: 2025-09-03T01:00:00Z
 
 ## Next up
-- App.ts orchestration slimming (follow‑through)
-  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
+- App.ts orchestration slimming (follow‑through)  - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
 - Dependencies and binaries housekeeping
   - Re‑evaluate http-errors usage; remove if unused or keep and explicitly ignore in Knip.
@@ -15,10 +14,21 @@ When updated: 2025-09-03T00:00:00Z
 
 ## Completed (recent)
 
+37. Test fixtures refactor to mirror DX + new config coverage
+
+- Removed inferred type exports from src/test fixtures; configs now expose
+  Zod shapes and concrete values only (mirrors /app practice).
+- Updated envBuilder tests to avoid importing inferred unions from fixtures.
+- Added runtime test for defineAppConfig (stages, provider environment,
+  buildFnEnv) using src/test fixtures.
+- Added compile-time tests:
+  - envKeys must be subsets of their schemas (global/stage).
+  - fnEnvKeys must be keys from global ∪ stage schemas.
+- Ensures both runtime and compile-time behaviors align with expected DX.
+
 36. Public API surface + test fixtures alignment
 
-- Trimmed public API: removed internal helpers from src/index.ts
-  (asApiMiddleware, buildHttpMiddlewareStack, combine, httpZodValidator,
+- Trimmed public API: removed internal helpers from src/index.ts  (asApiMiddleware, buildHttpMiddlewareStack, combine, httpZodValidator,
   shortCircuitHead, envBuilder functions, FunctionConfig, PropFromUnion,
   ZodObj, BaseOperation, stagesFactory and related types).
 - Kept stable surfaces: App, baseEventTypeMapSchema, defineAppConfig (+types),
