@@ -1,4 +1,3 @@
- 
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
@@ -23,32 +22,17 @@ type GKeys = readonly (keyof z.infer<typeof G>)[];
 // @ts-expect-error 'Z' is not a key of G
 const badGlobalEnvKeys: GKeys = ['Z'] as const;
 
-const badGlobal = defineAppConfig(G, S, {
-  serverless: {
-    defaultHandlerFileName: 'handler',
-    defaultHandlerFileExport: 'handler',
-    httpContextEventMap: { my: {}, private: {}, public: {} },
-  },
-  global: { params: { A: 'a' }, envKeys: badGlobalEnvKeys },
-  stage: { params: { dev: { B: 'b' } }, envKeys: ['B'] as const },
-});
-
 type SKeys = readonly (keyof z.infer<typeof S>)[];
 // Expect compile-time failure: 'A' belongs to G, not S; error on this line.
 // @ts-expect-error 'A' is not a key of S
 const badStageEnvKeys: SKeys = ['A'] as const;
 
-const badStage = defineAppConfig(G, S, {
-  serverless: {
-    defaultHandlerFileName: 'handler',
-    defaultHandlerFileExport: 'handler',
-    httpContextEventMap: { my: {}, private: {}, public: {} },
-  },
-  global: { params: { A: 'a' }, envKeys: ['A'] as const },
-  stage: { params: { dev: { B: 'b' } }, envKeys: badStageEnvKeys },
-});
+// Note: The two invalid cases above are intentionally NOT executed at runtime.
+// They exist only to enforce compile-time constraints via @ts-expect-error.
 
-void ok, void badGlobal, void badStage;
+void ok;
+void badGlobalEnvKeys;
+void badStageEnvKeys;
 
 // Minimal runtime suite so Vitest considers this a test file
 describe('compiletime.envKeys', () => {

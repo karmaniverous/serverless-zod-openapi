@@ -40,5 +40,8 @@
     ]
   },
   "searchInComments": true,
-  "searchInDocuments": true
+  "searchInDocuments": true,
+  "gitRemote": "origin",
+  "gitRevision": "main",
+  "sourceLinkTemplate": "https://github.com/karmaniverous/smoz/blob/{gitRevision}/{path}#L{line}"
 }
