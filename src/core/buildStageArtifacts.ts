@@ -1,10 +1,9 @@
-import type { z} from 'zod';
+import type { z } from 'zod';
 import { type ZodObject, type ZodRawShape } from 'zod';
 
 import { stagesFactory } from '@/src/serverless/stagesFactory';
 
-/**
- * Compose stage artifacts (effective schema + parsed stages + env helpers).
+/** * Compose stage artifacts (effective schema + parsed stages + env helpers).
  *
  * Extracted from App.ts to keep the class focused on orchestration.
  */

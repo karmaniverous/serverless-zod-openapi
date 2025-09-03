@@ -20,8 +20,7 @@ import { dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { AWS } from '@serverless/typescript';
-import type { z} from 'zod';
-import { type ZodObject, type ZodRawShape } from 'zod';
+import type { z } from 'zod';
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
 import { baseEventTypeMapSchema } from '@/src/core/baseEventTypeMapSchema';
@@ -32,7 +31,7 @@ import {
   validateEventTypeMapSchemaIncludesBase,
 } from '@/src/core/httpTokens';
 import { createRegistry } from '@/src/core/registry';
-import { type AppServerlessConfig,serverlessConfigSchema } from '@/src/core/serverlessConfig';
+import { type AppServerlessConfig, serverlessConfigSchema } from '@/src/core/serverlessConfig';
 import type { ZodObj } from '@/src/core/types';
 import type { AppHttpConfig } from '@/src/http/middleware/httpStackCustomization';
 import { buildAllOpenApiPaths as buildPaths } from '@/src/openapi/buildOpenApi';
@@ -80,12 +79,13 @@ export interface AppInit<
   StageParamsSchema extends ZodObj,
   EventTypeMapSchema extends ZodObj,
 > {
+  /** Helper alias for stage artifacts type */
+  private static readonly _stageArtifactsType = null as unknown as ReturnType<typeof buildStageArtifacts>;
   public readonly appRootAbs: string;
   // Schemas
   public readonly globalParamsSchema: GlobalParamsSchema;
   public readonly stageParamsSchema: StageParamsSchema;
-  public readonly eventTypeMapSchema: EventTypeMapSchema;
-  // Serverless config
+  public readonly eventTypeMapSchema: EventTypeMapSchema;  // Serverless config
   public readonly serverless: AppServerlessConfig;
 
   // Env exposure
@@ -93,12 +93,11 @@ export interface AppInit<
   public readonly stage: EnvSchemaNode<StageParamsSchema>;
 
   // Derived stage artifacts
-  public readonly stages: ReturnType<typeof stagesFactory>['stages'];
-  public readonly environment: ReturnType<typeof stagesFactory>['environment'];
-  public readonly buildFnEnv: ReturnType<typeof stagesFactory>['buildFnEnv'];
+  public readonly stages: ReturnType<typeof buildStageArtifacts>['stages'];
+  public readonly environment: ReturnType<typeof buildStageArtifacts>['environment'];
+  public readonly buildFnEnv: ReturnType<typeof buildStageArtifacts>['buildFnEnv'];
 
   public readonly http: AppHttpConfig;
-
   // HTTP tokens for runtime decision
   public readonly httpEventTypeTokens: readonly string[];
   // Registry (delegated to src/app/registry)
