@@ -1,12 +1,11 @@
 # Development Plan
 
-When updated: 2025-09-02T21:50:00Z
+When updated: 2025-09-03T00:00:00Z
 
 ## Next up
 - App.ts orchestration slimming (follow‑through)
   - Keep App.ts as a thin orchestrator by pushing remaining helpers/types into src/app/\*.
   - Acceptance: App.ts ~≤ 200 LOC; strict TS and lint clean.
-
 - Dependencies and binaries housekeeping
   - Re‑evaluate http-errors usage; remove if unused or keep and explicitly ignore in Knip.
   - Acceptance: scripts continue to work; Knip remains clean.
@@ -16,10 +15,20 @@ When updated: 2025-09-02T21:50:00Z
 
 ## Completed (recent)
 
+36. Public API surface + test fixtures alignment
+
+- Trimmed public API: removed internal helpers from src/index.ts
+  (asApiMiddleware, buildHttpMiddlewareStack, combine, httpZodValidator,
+  shortCircuitHead, envBuilder functions, FunctionConfig, PropFromUnion,
+  ZodObj, BaseOperation, stagesFactory and related types).
+- Kept stable surfaces: App, baseEventTypeMapSchema, defineAppConfig (+types),
+  detectSecurityContext, wrapHandler, HTTP customization types/utilities, and
+  common types.
+- Updated src/test fixtures to match /app shapes: dropped FN_ENV, switched
+  global env exposure to REGION/SERVICE_NAME, added DOMAIN_CERTIFICATE_ARN to stages, and adjusted tests.
 35. TypeDoc warnings cleanup (phase 2)
 
-- Resolved remaining docs warnings by ensuring projectDocuments exists (CHANGELOG.md) and adding zod plugin integration; docs build shows 0 warnings.
-- Acceptance: TypeDoc build clean (no warnings).
+- Resolved remaining docs warnings by ensuring projectDocuments exists (CHANGELOG.md) and adding zod plugin integration; docs build shows 0 warnings.- Acceptance: TypeDoc build clean (no warnings).
 
 34. TypeDoc cleanup (phase 1)
 

@@ -28,28 +28,26 @@ const app = App.create({
     params: {
       ESB_MINIFY: false,
       ESB_SOURCEMAP: true,
-      FN_ENV: 'test', // not used by App directly in tests
       PROFILE: 'dev',
       REGION: 'us-east-1',
       SERVICE_NAME: 'svc-test',
     },
-    envKeys: ['SERVICE_NAME', 'PROFILE'] as const,
+    envKeys: ['REGION', 'SERVICE_NAME'] as const,
   },
   stage: {
     params: { dev: devStageParams, prod: prodStageParams },
     envKeys: ['STAGE'] as const,
   },
 });
-
 describe('wrapHandler: GET happy path', () => {
   it('returns the business payload when validation passes and env is present', async () => {
     // Ensure required env vars are set for validation
     process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
+    process.env.REGION = 'testRegion';
     const eventSchema = z.object({});
     const responseSchema = z.object({ what: z.string() });
-
     const logger: ConsoleLogger = {
       debug: vi.fn(),
       info: vi.fn(),
@@ -104,10 +102,10 @@ describe('wrapHandler: HEAD short-circuit', () => {
     process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
+    process.env.REGION = 'testRegion';
     const fn = app.defineFunction({
       functionName: 'test_head',
-      eventType: 'rest',
-      httpContexts: ['public'],
+      eventType: 'rest',      httpContexts: ['public'],
       method: 'head',
       basePath: 'test',
       contentType: 'application/json',
@@ -144,10 +142,10 @@ describe('wrapHandler: POST payload', () => {
     process.env.SERVICE_NAME = 'testService';
     process.env.PROFILE = 'testProfile';
     process.env.STAGE = 'testStage';
+    process.env.REGION = 'testRegion';
 
     const fn = app.defineFunction({
-      functionName: 'test_post',
-      eventType: 'rest',
+      functionName: 'test_post',      eventType: 'rest',
       httpContexts: ['public'],
       method: 'post',
       basePath: 'test',

@@ -25,7 +25,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
   // Function-specific keys for this test (not in the always-exposed lists).
   // Use FN_ENV (global) + DOMAIN_NAME (stage) to exercise both sides.
   const fnEnv = [
-    'FN_ENV',
+    'PROFILE',
     'DOMAIN_NAME',
   ] as const satisfies readonly AllParamsKeys[];
 
@@ -33,7 +33,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
     const keys = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     expect(keys.size).toBe(5);
     expect(Array.from(keys).sort()).toEqual(
-      ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
+      ['REGION', 'SERVICE_NAME', 'STAGE', 'PROFILE', 'DOMAIN_NAME'].sort(),
     );
   });
 
@@ -46,11 +46,10 @@ describe('envBuilder helpers (using test stages fixture)', () => {
     );
 
     expect(new Set(globalPick)).toEqual(
-      new Set(['SERVICE_NAME', 'PROFILE', 'FN_ENV']),
+      new Set(['REGION', 'SERVICE_NAME', 'PROFILE']),
     );
     expect(new Set(stagePick)).toEqual(new Set(['STAGE', 'DOMAIN_NAME']));
   });
-
   it('buildEnvSchema composes a schema with exactly the picked keys', () => {
     const all = deriveAllKeys(globalEnvKeys, stageEnvKeys, fnEnv);
     const { globalPick, stagePick } = splitKeysBySchema(
@@ -69,7 +68,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
 
     const shapeKeys = Object.keys(envSchema.shape);
     expect([...shapeKeys].sort()).toEqual(
-      ['PROFILE', 'SERVICE_NAME', 'STAGE', 'FN_ENV', 'DOMAIN_NAME'].sort(),
+      ['PROFILE', 'SERVICE_NAME', 'STAGE', 'REGION', 'DOMAIN_NAME'].sort(),
     );
   });
 
@@ -90,7 +89,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
     const parsed = parseTypedEnv(envSchema, {
       SERVICE_NAME: 'svc',
       PROFILE: 'dev-profile',
-      FN_ENV: 'fnval',
+      REGION: 'us-east-1',
       STAGE: 'dev',
       DOMAIN_NAME: 'api.dev.example.test',
       EXTRA: 'ignored', // should be stripped by Zod
@@ -99,7 +98,7 @@ describe('envBuilder helpers (using test stages fixture)', () => {
     expect(parsed).toEqual({
       SERVICE_NAME: 'svc',
       PROFILE: 'dev-profile',
-      FN_ENV: 'fnval',
+      REGION: 'us-east-1',
       STAGE: 'dev',
       DOMAIN_NAME: 'api.dev.example.test',
     });
@@ -123,14 +122,13 @@ describe('envBuilder helpers (using test stages fixture)', () => {
     const run = () =>
       parseTypedEnv(envSchema, {
         SERVICE_NAME: 'svc',
-        FN_ENV: 'fnval',
+        REGION: 'us-east-1',
         STAGE: 'dev',
         DOMAIN_NAME: 'api.dev.example.test',
       });
 
     expect(run).toThrowError();
   });
-
   it('isHead detects HEAD and ignores others', () => {
     expect(isHead('HEAD')).toBe(true);
     expect(isHead('GET')).toBe(false);

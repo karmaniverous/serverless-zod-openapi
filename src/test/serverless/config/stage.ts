@@ -1,10 +1,9 @@
 import { z } from 'zod';
 
-import { globalParamsSchema } from './global';
-
-export const stageParamsSchema = globalParamsSchema.partial().extend({
+export const stageParamsSchema = z.object({
   STAGE: z.string(),
   DOMAIN_NAME: z.string(),
+  DOMAIN_CERTIFICATE_ARN: z.string(),
 });
 
 export type StageParams = z.infer<typeof stageParamsSchema>;
