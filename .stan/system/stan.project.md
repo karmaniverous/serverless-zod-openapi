@@ -2,10 +2,10 @@
 
 > Source of truth for non-file-specific requirements. Keep business logic comments lean; record the intent here.
 
+<!-- CLI REQUIREMENTS ADDED -->
 ## 1) Logger shape
 
-- Requirement: Anywhere a `logger` is accepted or passed, it MUST extend `ConsoleLogger` (i.e., be compatible with the standard `console` interface).
-- Implication: Defaults should use `console`. Function and middleware options that accept `logger` must type it as `ConsoleLogger`.
+- Requirement: Anywhere a `logger` is accepted or passed, it MUST extend `ConsoleLogger` (i.e., be compatible with the standard `console` interface).- Implication: Defaults should use `console`. Function and middleware options that accept `logger` must type it as `ConsoleLogger`.
 - Enforcement: `makeWrapHandler` and HTTP middleware use `ConsoleLogger` and default to `console`.
 
 ## 2) OpenAPI specs (hand-crafted)
@@ -379,3 +379,107 @@ Testing and DX
   exposed under test-only builds to clear the registry, or a createTestApp
   helper can be provided. Handlers are wrapped through fn.handler(business),
   preserving testability and avoiding config duplication.
+
+## 9) CLI requirements (smoz)
+
+Purpose
+- Provide a companion CLI to bootstrap and maintain SMOZ apps following the schema‑first DX and strong conventions already established in this repository.
+
+Conventions (directory layout)
+- Author code lives under:
+  - app/config/app.config.ts
+  - app/functions/<eventType>/... (e.g., app/functions/rest/openapi/get)
+- Generated artifacts live under:
+  - app/generated/
+    - register.functions.ts  (side‑effect imports of all lambda.ts)
+    - register.openapi.ts    (side‑effect imports of all openapi.ts)
+    - register.serverless.ts (side‑effect imports of per‑function serverless.ts; optional)
+    - openapi.json           (OpenAPI document)
+- Rationale:
+  - “Event‑type as directory” is preserved strictly for author code under app/functions.
+  - All generated files are co‑located in app/generated to keep the tree hygienic and predictable.
+
+Configuration boundaries
+- smoz.config.json|yml (project root):
+  - Minimal by design; v1 keys:
+    - appRoot: "app" (default)
+  - No “roots” map; no httpEventTypeTokens here.
+- app/config/app.config.ts:
+  - Authoritative source for httpEventTypeTokens (e.g., ['rest','http']).
+  - Apps may widen/modify this set at any time; CLI must respect it.
+
+Commands
+- smoz -v | --version
+  - Prints CLI version, Node version, detected package manager, repo root, and whether smoz.config.* and app/config/app.config.ts exist.
+- smoz init [--template minimal|full] [--pm npm|pnpm|yarn] [--yes]
+  - Scaffolds a new app:
+    - Creates app/config/app.config.ts importing from 'smoz' with default httpEventTypeTokens ['rest','http'].
+    - Creates example endpoints:
+      - app/functions/rest/hello/get/{lambda.ts, handler.ts}
+      - app/functions/rest/openapi/get/{lambda.ts, handler.ts, openapi.ts}
+    - Writes serverless.ts (imports app/generated/register.functions and register.serverless).
+    - Writes app/config/openapi.ts (imports app/generated/register.openapi and writes app/generated/openapi.json).
+    - Seeds app/generated/register.*.ts as empty modules so typecheck passes before first “register”.
+    - Installs dependencies: runtime (zod, @middy/core), infra (serverless v4 + curated plugins), and dev stack in the “full” template (typescript, tsx, eslint + typescript‑eslint, prettier, vitest, typedoc, zod‑openapi).
+- smoz register
+  - Scans app/functions/** for:
+    - lambda.ts → generates app/generated/register.functions.ts
+    - openapi.ts → generates app/generated/register.openapi.ts
+    - serverless.ts → generates app/generated/register.serverless.ts (only if any exist)
+  - Idempotent: rewrites only on content change; formats with Prettier.
+  - Does not require loading app.config.ts.
+- smoz add <eventType>/<segments>/<method>
+  - Example:
+    - smoz add rest/foo/post
+    - smoz add step/activecampaign/contacts/getContact
+  - Requires app/config/app.config.ts; reads httpEventTypeTokens from it.
+  - Generates:
+    - lambda.ts + handler.ts for all event types.
+    - openapi.ts only when eventType ∈ httpEventTypeTokens.
+  - Paths must follow the event‑type‑as‑directory convention under app/functions.
+
+Safety, idempotence, and failure modes
+- Generated folder is fixed (app/generated). No override knob.
+- smoz add fails with clear guidance if app/config/app.config.ts is missing (run smoz init first) or cannot be evaluated (install tsx).
+- smoz register exits successfully even if no matching files are found; it still ensures empty register files exist (to preserve typecheck stability).
+- All file writes are atomic and formatted; no partial or malformed outputs.
+
+Runtime and packaging decisions
+- Library: dual outputs (ESM + CJS) remain.
+- CLI bin: compiled CJS entry for maximum compatibility.
+  - When the CLI needs to evaluate TypeScript (e.g., reading app.config.ts for httpEventTypeTokens), it will spawn the project’s local tsx when available; otherwise, it will print actionable guidance and fail (for smoz add).
+
+Templates (packaged)
+- templates/project: shared boilerplate (tsconfig, eslint/ts‑eslint, prettier, vitest, typedoc, npm scripts).
+- templates/minimal: hello + openapi endpoints; “just enough” DX.
+- templates/full: curated DX mirroring this repo (can follow after minimal).
+- The package includes templates/** in “files”; CLI copies from packaged assets (resolved via import.meta.url).
+
+VCS guidance
+- Commit app/generated/register.*.ts so typecheck is stable without running the CLI.
+- app/generated/openapi.json is ignored by default; teams may choose to track it explicitly.
+
+Future extensions (non‑blocking)
+- smoz doctor: verify environment and project shape.
+- smoz add --http/--non-http: override token inference if app.config.ts can’t be evaluated (out of scope for v1 to keep semantics clean).
+- smoz register --watch: optional live mode; defer until after v1.
+
+## 10) Repo hygiene for event types and tokens (durable rules)
+
+- Single source of truth for event type mapping is the Zod schema:
+  - core/baseEventTypeMapSchema exports:
+    - baseEventTypeMapSchema (Zod object)
+    - type BaseEventTypeMap = z.infer<typeof baseEventTypeMapSchema>
+  - The schema includes widely‑used, generic AWS events (e.g., rest, http, alb, sqs, sns, s3, dynamodb, kinesis, eventbridge, cloudwatch‑logs, ses, cloudfront, firehose, iot‑button, cognito‑userpool, codepipeline). Apps may extend with project‑specific tokens.
+- defaultHttpEventTypeTokens lives in core/httpTokens.ts. No parallel definitions elsewhere.
+- Remove redundant/obsolete artifacts:
+  - src/types/BaseEventTypeMap.ts (replaced by the schema’s type alias)
+  - src/types/HttpEventTokens.ts (replaced by core/httpTokens.ts)
+  - src/types/ShapedEvent.ts if unreferenced (business handlers should rely on the generic Handler.ShapedEvent from types/Handler.ts)
+- Tests must use the same schema‑first surfaces as production (no legacy helpers). Any test relying on removed artifacts must be migrated to current API prior to deletion.
+
+Acceptance criteria for hygiene
+- Grep reveals no imports from src/types/BaseEventTypeMap or src/types/HttpEventTokens.
+- The base event schema is consolidated into a single module; the type alias is re‑exported from it and consumed across the codebase.
+- All tests compile and pass using the schema‑first DX (no local test‑only shapes).
+- Only intrinsics flagged for future use (e.g., serverless/intrinsic.ts) remain as deliberately retained forward‑compatibility helpers.
