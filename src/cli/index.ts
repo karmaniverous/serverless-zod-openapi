@@ -12,8 +12,9 @@ import { join } from 'node:path';
 import { Command } from 'commander';
 import { packageDirectorySync } from 'package-directory';
 
-type Pkg = { name?: string; version?: string };
+import { runRegister } from './register';
 
+type Pkg = { name?: string; version?: string };
 const getRepoRoot = (): string => packageDirectorySync() ?? process.cwd();
 
 const readPkg = (root: string): Pkg => {
@@ -75,11 +76,22 @@ const main = (): void => {
   const program = new Command();
   program.name('smoz').description('SMOZ CLI').version(pkg.version ?? '0.0.0');
 
+  program
+    .command('register')
+    .description(
+      'Scan app/functions/** and generate app/generated/register.*.ts',
+    )
+    .action(async () => {
+      const { wrote } = await runRegister(root);
+       
+      console.log(
+        wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
+      );
+    });
   // Default action (no subcommand): print version + signature block
   program.action(() => {
     printSignature();
   });
-
   program.parse(process.argv);
 };
 

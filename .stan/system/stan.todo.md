@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-04T18:50:00Z
+When updated: 2025-09-04T19:05:00Z
 
-## Next up
-0. Execution mechanics for directory changes (important)
+## Next up0. Execution mechanics for directory changes (important)
    - Any tasks that reorganize the app tree (moves/renames/deletions) will be delivered as a precise file move plan (paths to move/rename/delete), not as patches. You will apply the plan in your IDE to avoid an “import blast area.”
    - After you confirm the moves are complete, I will follow up (if needed) with a small focused patch to adjust imports and wiring only.
 
@@ -107,8 +106,7 @@ When updated: 2025-09-04T18:50:00Z
      - Fresh consumer project: init → register → openapi → package succeeds.
      - add fails clearly when app.config.ts missing or tsx not resolvable.
    - Open questions (to confirm when coding)
-     - Keep CLI inside this package vs split package: start inline for v1; revisit post‑v1 if size grows.
-     - Name “full” template scope (dev stack parity with this repo) vs “minimal” (only necessary runtime + TypeScript).
+     - Keep CLI inside this package vs split package: start inline for v1; revisit post‑v1 if size grows.     - Name “full” template scope (dev stack parity with this repo) vs “minimal” (only necessary runtime + TypeScript).
    - Objective: Implement smoz CLI with init/register/add.
    - Tasks:
      a. smoz init
@@ -144,10 +142,21 @@ When updated: 2025-09-04T18:50:00Z
 
 ## Completed (recent)
 
+1. CLI: slice 2 (register command)
+   - Implemented `smoz register`: scans app/functions/** for lambda.ts, openapi.ts,
+     serverless.ts and generates side-effect import modules:
+       - app/generated/register.functions.ts
+       - app/generated/register.openapi.ts
+       - app/generated/register.serverless.ts
+   - Deterministic ordering, POSIX paths, idempotent writes (compare-on-write).
+   - Optional Prettier formatting (auto-resolves project config if available);
+     falls back to raw content when Prettier is absent.
+   - Acceptance: `npm run cli:build && node dist/cli/index.cjs register` creates
+     or updates the register files; typecheck/lint/docs/build remain green.
+
 1. CLI polish: commander argv + knip entry
    - Fixed TS2554 by passing `process.argv` to `program.parse` in src/cli/index.ts.
-   - Added `src/cli/index.ts` to knip.json `entry` so the CLI entry is recognized,
-     avoiding “unused file/dependency” reports for the CLI and commander.
+   - Added `src/cli/index.ts` to knip.json `entry` so the CLI entry is recognized,     avoiding “unused file/dependency” reports for the CLI and commander.
    - Acceptance: typecheck/docs/build pass; knip no longer reports the CLI file
      or commander as unused.
 
