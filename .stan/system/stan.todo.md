@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T18:10:00Z
+When updated: 2025-09-04T18:25:00Z
 
 ## Next up
 
@@ -65,6 +65,46 @@ When updated: 2025-09-04T18:10:00Z
      - A fresh copy of the template compiles (typecheck), lints cleanly, and the example endpoints can be packaged.
 
 4. CLI skeleton and commands
+   Design (proposal; Open‑Source First + packaging)
+   - Packaging shape
+     - Code: ESM in repo; build a CJS bin for maximum compatibility.
+     - Output: dist/cli/index.cjs with a shebang; package.json "bin": { "smoz": "dist/cli/index.cjs" }.
+     - Build: add a small cli.rollup.config.ts (or extend current rollup) to compile src/cli/index.ts → CJS (no DTS needed).
+   - Libraries (actively maintained)
+     - CLI framework: commander (mature, typings, sub‑commands).
+       - Alternatives considered: yargs (solid; heavier), sade (smaller; less mainstream).
+     - FS/paths/globs: fs-extra, pathe (POSIX normalize), globby for scans.
+     - Formatting: prettier (reuse project config; resolve local prettier).
+     - TS eval for app.config.ts: tsx (spawn local binary; no runtime bundling).
+     - Schema: zod for any CLI‑local config (future smoz.config.\*), but v1 keeps it minimal.
+   - Commands
+     - smoz -v | --version
+       - Print CLI version, Node, detected package manager, repo root, presence of smoz.config.\* and app/config/app.config.ts.
+     - smoz init [--template minimal|full] [--pm npm|pnpm|yarn] [--yes]
+       - Copy templates/project + selected template into CWD.
+       - Write app/generated/register.\*.ts placeholders (empty modules).
+       - Optionally run install for the selected PM; respect --yes to skip prompts.
+     - smoz register
+       - Scan app/functions/\*\*:
+         - lambda.ts → app/generated/register.functions.ts (side‑effect imports).
+         - openapi.ts → app/generated/register.openapi.ts.
+         - serverless.ts (non‑HTTP) → app/generated/register.serverless.ts when any exist.
+       - Idempotent: write only on content change; format with Prettier.
+     - smoz add <eventType>/<segments>/<method>
+       - Read httpEventTypeTokens from app/config/app.config.ts via local tsx (subprocess).
+       - Generate lambda.ts + handler.ts for all tokens; add openapi.ts only when token ∈ httpEventTypeTokens.
+       - Respect current layout (app/functions/<token>/...).
+   - Implementation slices (incremental)
+     1. Wire commander with -v and minimal scaffolding; emit version and signatures.
+     2. Implement register (pure FS/glob + Prettier format).
+     3. Implement add (requires tsx evaluation and token check).
+     4. Implement init (templates copy + optional install).
+   - Acceptance
+     - Fresh consumer project: init → register → openapi → package succeeds.
+     - add fails clearly when app.config.ts missing or tsx not resolvable.
+   - Open questions (to confirm when coding)
+     - Keep CLI inside this package vs split package: start inline for v1; revisit post‑v1 if size grows.
+     - Name “full” template scope (dev stack parity with this repo) vs “minimal” (only necessary runtime + TypeScript).
    - Objective: Implement smoz CLI with init/register/add.
    - Tasks:
      a. smoz init
@@ -79,6 +119,12 @@ When updated: 2025-09-04T18:10:00Z
      - add fails with clear guidance if app.config.ts is missing or cannot be evaluated (install tsx).
 
 5. Documentation updates
+   Design (proposal)
+   - Update README Quick Start to use app/functions/\* paths (no app/endpoints).
+   - Document CLI workflow up front (init/register/add) and generated files (app/generated/\*).
+   - Note httpEventTypeTokens lives only in app/config/app.config.ts.
+   - VCS guidance: commit app/generated/register.\*.ts; openapi.json generally ignored.
+   - Keep “hand‑crafted OpenAPI” guidance; clarify that register.\* only ensures side‑effects are loaded.
    - Objective: Align README and any developer notes with the new CLI workflow and directory conventions.
    - Tasks:
      a. README quick start with smoz init/register/add and the app/functions + app/generated layout.

@@ -5,7 +5,8 @@ import prettierConfig from 'eslint-config-prettier';
 import eslintComments from 'eslint-plugin-eslint-comments';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
-import { dirname } from 'path';import tseslint from 'typescript-eslint';
+import { dirname } from 'path';
+import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
