@@ -16,7 +16,8 @@ import { runAdd } from './add';
 import { runInit } from './init';
 import { runRegister } from './register';
 
-type Pkg = { name?: string; version?: string };const getRepoRoot = (): string => packageDirectorySync() ?? process.cwd();
+type Pkg = { name?: string; version?: string };
+const getRepoRoot = (): string => packageDirectorySync() ?? process.cwd();
 
 const readPkg = (root: string): Pkg => {
   try {
@@ -90,7 +91,7 @@ const main = (): void => {
     .action(async (spec: string) => {
       try {
         const { created, skipped } = await runAdd(root, spec);
-         
+
         console.log(
           created.length
             ? `Created:\n - ${created.join('\n - ')}${
@@ -101,7 +102,6 @@ const main = (): void => {
             : 'Nothing created (files already exist).',
         );
       } catch (e) {
-         
         console.error((e as Error).message);
         process.exitCode = 1;
       }
@@ -112,14 +112,11 @@ const main = (): void => {
     .description(
       'Scaffold a new SMOZ app from packaged templates (default: minimal)',
     )
-    .option(
-      '--template <name>',
-      'Template name (minimal|full)',
-      'minimal',
-    )
+    .option('--template <name>', 'Template name (minimal|full)', 'minimal')
     .action(async (opts: { template?: string }) => {
       try {
-        const tpl = typeof opts?.template === 'string' ? opts.template : 'minimal';
+        const tpl =
+          typeof opts.template === 'string' ? opts.template : 'minimal';
         const { created, skipped } = await runInit(root, tpl);
         console.log(
           created.length
@@ -133,7 +130,8 @@ const main = (): void => {
     });
   program
     .command('register')
-    .description(      'Scan app/functions/** and generate app/generated/register.*.ts',
+    .description(
+      'Scan app/functions/** and generate app/generated/register.*.ts',
     )
     .action(async () => {
       const { wrote } = await runRegister(root);

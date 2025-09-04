@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "rootDir": ".",
     "emitDeclarationOnly": false,
     "exactOptionalPropertyTypes": true,
     "module": "esnext",
-    "moduleDetection": "force",
-    "moduleResolution": "bundler",
+    "moduleDetection": "force",    "moduleResolution": "bundler",
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,

@@ -20,10 +20,10 @@ export default tseslint.config(
       'coverage/**',
       'dist/**',
       'docs/**',
+      'templates/**',
       'node_modules/**',
     ],
-  },
-  eslint.configs.recommended,
+  },  eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   prettierConfig,
   {
