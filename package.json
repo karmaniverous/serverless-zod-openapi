@@ -6,10 +6,10 @@
   "dependencies": {
     "@karmaniverous/cached-axios": "^0.2.0",
     "@middy/core": "^6.4.4",
+    "commander": "^12.1.0",
     "@middy/http-content-negotiation": "^6.4.4",
     "@middy/http-cors": "^6.4.4",
-    "@middy/http-error-handler": "^6.4.4",
-    "@middy/http-event-normalizer": "^6.4.4",
+    "@middy/http-error-handler": "^6.4.4",    "@middy/http-event-normalizer": "^6.4.4",
     "@middy/http-header-normalizer": "^6.4.4",
     "@middy/http-json-body-parser": "^6.4.4",
     "@middy/http-response-serializer": "^6.4.4",
@@ -19,8 +19,7 @@
     "radash": "^12.1.1",
     "zod": "^4.1.5"
   },
-  "description": "John Galt Services back end.",
-  "devDependencies": {
+  "description": "John Galt Services back end.",  "devDependencies": {
     "@dotenvx/dotenvx": "^1.49.0",
     "@eslint/js": "^9.34.0",
     "@rollup/plugin-typescript": "^12.1.4",
@@ -104,10 +103,12 @@
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
   "name": "smoz",
+  "bin": {
+    "smoz": "dist/cli/index.cjs"
+  },
   "publishConfig": {
     "access": "public"
-  },
-  "release-it": {
+  },  "release-it": {
     "git": {
       "changelog": "npx auto-changelog --unreleased-only --stdout --template https://raw.githubusercontent.com/release-it/release-it/main/templates/changelog-compact.hbs",
       "commitMessage": "chore: release v${version}",
@@ -160,9 +161,9 @@
     "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",    "remove": "serverless remove",
     "stan:build": "rimraf stan.dist && rollup --config stan.rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf stan.dist",
     "stan:docs": "typedoc --emit none",
+    "cli:build": "rollup --config cli.rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "type": "module",
+  },  "type": "module",
   "version": "0.0.0"
 }

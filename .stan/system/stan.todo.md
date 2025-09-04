@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T18:25:00Z
+When updated: 2025-09-04T18:40:00Z
 
 ## Next up
 
@@ -63,6 +63,11 @@ When updated: 2025-09-04T18:25:00Z
      c. Include templates/\*\* in package.json "files".
      d. Acceptances
      - A fresh copy of the template compiles (typecheck), lints cleanly, and the example endpoints can be packaged.
+
+   Next slice (CLI):
+   - Implement `smoz register` (scan app/functions/\*_ and write app/generated/register._.ts,
+     idempotent + Prettier). Defer `add` and `init` to following slices.
+   - Acceptance: running `npm run cli:build && node dist/cli/index.cjs` works; `smoz -V` prints version.
 
 4. CLI skeleton and commands
    Design (proposal; Open‑Source First + packaging)
@@ -139,6 +144,17 @@ When updated: 2025-09-04T18:25:00Z
    - “full” template publishing
 
 ## Completed (recent)
+
+1. CLI: slice 1 (version/signature/bin)
+   - Added src/cli/index.ts with commander; default action prints package version,
+     Node version, repo root, detected stanPath, and presence of app/config/app.config.ts
+     and smoz.config.\*.
+   - Added cli.rollup.config.ts to produce dist/cli/index.cjs with shebang.
+   - Wired package.json:
+     - bin: { "smoz": "dist/cli/index.cjs" }
+     - script: "cli:build"
+     - dependency: "commander"
+   - Acceptance: build succeeds; `node dist/cli/index.cjs` prints signature.
 
 1. ESLint policy (safety rules)
    - Removed inline disables in lambdas; made no‑unsafe‑\* rules explicit in eslint.config.ts with a documented policy.
