@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T19:05:00Z
+When updated: 2025-09-04T19:25:00Z
 
 ## Next up
 
@@ -128,65 +128,3 @@ When updated: 2025-09-04T19:05:00Z
    - Document CLI workflow up front (init/register/add) and generated files (app/generated/\*).
    - Note httpEventTypeTokens lives only in app/config/app.config.ts.
    - VCS guidance: commit app/generated/register.\*.ts; openapi.json generally ignored.
-   - Keep “hand‑crafted OpenAPI” guidance; clarify that register.\* only ensures side‑effects are loaded.
-   - Objective: Align README and any developer notes with the new CLI workflow and directory conventions.
-   - Tasks:
-     a. README quick start with smoz init/register/add and the app/functions + app/generated layout.
-     b. Note that httpEventTypeTokens live only in app.config.ts.
-     c. VCS guidance: commit register.\*.ts; openapi.json generally ignored.
-     d. Acceptances
-     - Docs reference the new conventions consistently.
-
-6. Optional follow-ups (post‑v1)
-   - smoz register --watch
-   - smoz doctor
-   - “full” template publishing
-
-## Completed (recent)
-
-1. CLI: slice 2 (register command)
-   - Implemented `smoz register`: scans app/functions/\*\* for lambda.ts, openapi.ts,
-     serverless.ts and generates side-effect import modules:
-     - app/generated/register.functions.ts
-     - app/generated/register.openapi.ts
-     - app/generated/register.serverless.ts
-   - Deterministic ordering, POSIX paths, idempotent writes (compare-on-write).
-   - Optional Prettier formatting (auto-resolves project config if available);
-     falls back to raw content when Prettier is absent.
-   - Acceptance: `npm run cli:build && node dist/cli/index.cjs register` creates
-     or updates the register files; typecheck/lint/docs/build remain green.
-
-1. CLI polish: commander argv + knip entry
-   - Fixed TS2554 by passing `process.argv` to `program.parse` in src/cli/index.ts.
-   - Added `src/cli/index.ts` to knip.json `entry` so the CLI entry is recognized, avoiding “unused file/dependency” reports for the CLI and commander.
-   - Acceptance: typecheck/docs/build pass; knip no longer reports the CLI file
-     or commander as unused.
-
-1. CLI: slice 1 (version/signature/bin)
-   - Added src/cli/index.ts with commander; default action prints package version, Node version, repo root, detected stanPath, and presence of app/config/app.config.ts
-     and smoz.config.\*.
-   - Added cli.rollup.config.ts to produce dist/cli/index.cjs with shebang.
-   - Wired package.json:
-     - bin: { "smoz": "dist/cli/index.cjs" }
-     - script: "cli:build"
-     - dependency: "commander"
-   - Acceptance: build succeeds; `node dist/cli/index.cjs` prints signature.
-
-1. ESLint policy (safety rules)
-   - Removed inline disables in lambdas; made no‑unsafe‑\* rules explicit in eslint.config.ts with a documented policy.
-   - Added eslint-plugin-eslint-comments to require descriptions on any inline disable,
-     forbid unlimited disables, and catch unused disables. Updated existing disables
-     with clear justifications (types/DeepOverride, core/baseEventTypeMapSchema).
-
-1. Crust cleanup (schema‑first alignment + remove redundancy)
-   - Consolidated base event schema (fixed aws‑lambda types; kept Cognito generic with deprecation note). - Removed redundant types (BaseEventTypeMap interface, HttpEventTokens, legacy ShapedEvent helper, Merge). - Migrated imports to schema module; adjusted http resolution helper/test generics.
-   - Public API exports schemas, not schema‑derived types.
-   - Repo is green: typecheck/lint/test/build/package succeed.
-   - Build output cleaned by filtering alias unresolved warnings in Rollup (no behavior change; externals preserved).
-
-1. TypeScript types: fix ESLint v9 RuleModule typing
-   - Replaced `Linter.RuleModule` with `Rule.RuleModule` in `eslint.config.ts` and
-     the local declaration file for `eslint-plugin-eslint-comments`.
-   - Rationale: ESLint 9 exports the rule type under `Rule.RuleModule`; `Linter.RuleModule`
-     no longer exists, causing TS2694 in typecheck/docs/build.
-   - Result: typecheck/docs/build should pass without the TS2694 error.
