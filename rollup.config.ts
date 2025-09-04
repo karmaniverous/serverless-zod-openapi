@@ -78,11 +78,27 @@ const makePlugins = (tsconfigPath?: string): Plugin[] => [
 const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
   plugins: makePlugins(tsconfigPath),
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
+    // Suppress unresolved import warnings for alias externals that we
+    // intentionally mark as external for specialized builds (stan:build).
+    // This keeps the build output clean without altering bundling behavior.
+    // See external() below where '@/' and '@@/' are treated as external.
+    try {
+      const code = (warning as unknown as { code?: string }).code;
+      const source = (warning as unknown as { source?: unknown }).source;
+      if (
+        code === 'UNRESOLVED_IMPORT' &&
+        typeof source === 'string' &&
+        (source.startsWith('@/') || source.startsWith('@@/'))
+      ) {
+        return;
+      }
+    } catch {
+      // Fall through to default handler on any unexpected shape
+    }
     defaultHandler(warning);
   },
   external: (id) =>
-    // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.
-    id.startsWith('@/') ||
+    // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.    id.startsWith('@/') ||
     id.startsWith('@@/') ||
     nodeExternals.has(id) ||
     Array.from(runtimeExternalPkgs).some(

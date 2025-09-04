@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-03T12:45:00Z
+When updated: 2025-09-04T12:05:00Z
 
 ## Next up
 
@@ -8,14 +8,14 @@ When updated: 2025-09-03T12:45:00Z
    - Any tasks that reorganize the app tree (moves/renames/deletions) will be delivered as a precise file move plan (paths to move/rename/delete), not as patches. You will apply the plan in your IDE to avoid an “import blast area.”
    - After you confirm the moves are complete, I will follow up (if needed) with a small focused patch to adjust imports and wiring only.
 
-1. Cruft cleanup (schema‑first alignment + remove redundancy)
+1. Crust cleanup (schema‑first alignment + remove redundancy)
    - Objective: Bring tests and implementation fully in sync with the schema‑first DX, then remove redundant code. No new CLI features or layout changes in this step.
    - Tasks:
      a. Base event mapping — single source of truth
      - Consolidate core/baseEventTypeMapSchema to a single module exporting:
        - baseEventTypeMapSchema
        - type BaseEventTypeMap = z.infer<typeof baseEventTypeMapSchema>
-     - Include generic/common AWS events: rest, http, alb, sqs, sns, s3, dynamodb, kinesis, eventbridge, cloudwatch-logs, ses, cloudfront, firehose, iot-button, cognito-userpool, codepipeline.
+     - Include generic/common AWS events: rest, http, alb, sqs, sns, s3, dynamodb, kinesis, eventbridge, cloudwatch-logs, ses, cloudfront, firehose, cognito-userpool.
      - Ensure defaultHttpEventTypeTokens remains in core/httpTokens.ts.
        b. Replace imports across code/tests
      - Replace imports from src/types/BaseEventTypeMap with the alias from core/baseEventTypeMapSchema.
@@ -31,7 +31,7 @@ When updated: 2025-09-03T12:45:00Z
      - Lint/test/typecheck/build all green.
      - Grep shows no imports of removed modules.
      - No behavior drift in public API; only internal references updated.
-   - Check-in: Pause here for validation before moving on. I will ping you with a concise diff/summary to confirm the repo is clean.
+   - Check-in: Completed — repo green (typecheck/lint/test/build). Build warnings filtered for alias externals in Rollup.
 
 2. Directory conventions migration (author vs generated; file‑move plan first)
    - Objective: Adopt final layout without introducing CLI yet.
@@ -89,4 +89,10 @@ When updated: 2025-09-03T12:45:00Z
 
 ## Completed (recent)
 
-(Fresh start — none)
+1. Crust cleanup (schema‑first alignment + remove redundancy)
+   - Consolidated base event schema (fixed aws‑lambda types; kept Cognito generic with deprecation note).
+   - Removed redundant types (BaseEventTypeMap interface, HttpEventTokens, legacy ShapedEvent helper, Merge).
+   - Migrated imports to schema module; adjusted http resolution helper/test generics.
+   - Public API exports schemas, not schema‑derived types.
+   - Repo is green: typecheck/lint/test/build/package succeed.
+   - Build output cleaned by filtering alias unresolved warnings in Rollup (no behavior change; externals preserved).
