@@ -1,10 +1,9 @@
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
-import type { EnvSchemaNode } from '@/src/core/defineAppConfig';
 // Legacy helper: bind to base map to avoid app-local imports
-import type { BaseEventTypeMap as LocalEventTypeMap } from '@/src/types/BaseEventTypeMap';
-import type { FunctionConfig } from '@/src/types/FunctionConfig';
-/**
+import type { BaseEventTypeMap as LocalEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
+import type { EnvSchemaNode } from '@/src/core/defineAppConfig';
+import type { FunctionConfig } from '@/src/types/FunctionConfig';/**
  * Private symbol used to attach env (schemas + envKeys) to FunctionConfig instances.
  */
 export const ENV_CONFIG = Symbol.for('szo.envConfig');

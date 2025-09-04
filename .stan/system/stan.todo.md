@@ -8,7 +8,7 @@ When updated: 2025-09-03T12:45:00Z
    - Any tasks that reorganize the app tree (moves/renames/deletions) will be delivered as a precise file move plan (paths to move/rename/delete), not as patches. You will apply the plan in your IDE to avoid an “import blast area.”
    - After you confirm the moves are complete, I will follow up (if needed) with a small focused patch to adjust imports and wiring only.
 
-1. Crust cleanup (schema‑first alignment + remove redundancy)
+1. Cruft cleanup (schema‑first alignment + remove redundancy)
    - Objective: Bring tests and implementation fully in sync with the schema‑first DX, then remove redundant code. No new CLI features or layout changes in this step.
    - Tasks:
      a. Base event mapping — single source of truth

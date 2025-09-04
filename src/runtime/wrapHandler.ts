@@ -7,8 +7,10 @@
 import type { Context } from 'aws-lambda';
 import type { z, ZodObject, ZodRawShape } from 'zod';
 
+import type { BaseEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
 import type { EnvAttached } from '@/src/core/defineFunctionConfig';
 import { getEnvFromFunctionConfig } from '@/src/core/defineFunctionConfig';
+import { defaultHttpEventTypeTokens } from '@/src/core/httpTokens';
 import {
   type AppHttpConfig,
   computeHttpMiddleware,
@@ -20,14 +22,11 @@ import {
   parseTypedEnv,
   splitKeysBySchema,
 } from '@/src/runtime/envBuilder';
-import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { Handler, ShapedEvent } from '@/src/types/Handler';
-import { HTTP_EVENT_TOKENS } from '@/src/types/HttpEventTokens';
 
 /**
- * Wrap a business handler with SMOZ runtime.
- *
+ * Wrap a business handler with SMOZ runtime. *
  * - HTTP event tokens receive the full Middy pipeline (validation, shaping, CORS, etc.)
  * - Non‑HTTP tokens bypass Middy and call the business function directly.
  *
@@ -116,11 +115,10 @@ export function wrapHandler<
 
     // Non-HTTP: call business directly
     const httpTokens =
-      opts?.httpEventTypeTokens ?? (HTTP_EVENT_TOKENS as readonly string[]);
+      opts?.httpEventTypeTokens ?? (defaultHttpEventTypeTokens as readonly string[]);
     const isHttp = httpTokens.includes(
       functionConfig.eventType as unknown as string,
-    );
-    if (!isHttp) {
+    );    if (!isHttp) {
       return business(
         event as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
         context,

@@ -53,7 +53,7 @@ export {
 } from './http/middleware/transformUtils';
 
 // Types
-export type { BaseEventTypeMap } from './types/BaseEventTypeMap';
+export type { BaseEventTypeMap } from './core/baseEventTypeMapSchema';
 export type { MethodKey } from './types/FunctionConfig';
 export type { Handler } from './types/Handler';
 export type { HandlerOptions, ShapedEvent } from './types/Handler';

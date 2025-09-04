@@ -3,12 +3,12 @@ import type { AWS } from '@serverless/typescript';
 import type { z } from 'zod';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
+import type { BaseEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
 import type {
   HttpStackOptions,
   HttpTransform,
   PhasedArrays,
 } from '@/src/http/middleware/httpStackCustomization';
-import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { HttpContext } from '@/src/types/HttpContext';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 
