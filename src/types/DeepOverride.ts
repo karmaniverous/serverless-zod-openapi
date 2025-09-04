@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Generic utility type operates at the type level; constrained any is intentional here. */
 
 /**
  * DeepOverride
- * -----------
- * For two object types T (base) and U (override), produce a new type where keys present in U
+ * ----------- * For two object types T (base) and U (override), produce a new type where keys present in U
  * replace those in T; nested objects are recursed. Arrays and primitives are replaced wholesale.
  *
  * - If T is `never`, we fall back to U (used when no explicit EventType is provided).
