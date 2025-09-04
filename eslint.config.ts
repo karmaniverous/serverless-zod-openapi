@@ -1,12 +1,11 @@
 import eslint from '@eslint/js';
 // Narrow the plugin value so TypeScript accepts it in the plugins map.
-import type { Linter } from 'eslint';
+import type { Rule } from 'eslint';
 import prettierConfig from 'eslint-config-prettier';
 import eslintComments from 'eslint-plugin-eslint-comments';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
-import { dirname } from 'path';
-import tseslint from 'typescript-eslint';
+import { dirname } from 'path';import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
@@ -40,11 +39,10 @@ export default tseslint.config(
     // eslint: flat config plugin registry
     // Provide the comments plugin with a narrowed shape (rules only) to satisfy TS.
     plugins: {
-      'eslint-comments': (eslintComments as unknown as { rules?: Record<string, Linter.RuleModule> }),
+      'eslint-comments': (eslintComments as unknown as { rules?: Record<string, Rule.RuleModule> }),
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
-    },
-    rules: {      // Code-quality and sorting
+    },    rules: {      // Code-quality and sorting
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',

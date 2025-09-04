@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T17:52:00Z
+When updated: 2025-09-04T18:10:00Z
 
 ## Next up
 
@@ -15,7 +15,7 @@ When updated: 2025-09-04T17:52:00Z
      - Consolidate core/baseEventTypeMapSchema to a single module exporting:
        - baseEventTypeMapSchema
        - type BaseEventTypeMap = z.infer<typeof baseEventTypeMapSchema>
-     - Include generic/common AWS events: rest, http, alb, sqs, sns, s3, dynamodb, kinesis, eventbridge, cloudwatch-logs, ses, cloudfront, firehose, cognito-userpool.
+     - Include generic/common AWS events: rest, http, alb, sqs, sns, s3, dynamodb, kinesis, eventbridge, cloudwatch‑logs, ses, cloudfront, firehose, cognito-userpool.
      - Ensure defaultHttpEventTypeTokens remains in core/httpTokens.ts.
        b. Replace imports across code/tests
      - Replace imports from src/types/BaseEventTypeMap with the alias from core/baseEventTypeMapSchema.
@@ -105,3 +105,10 @@ When updated: 2025-09-04T17:52:00Z
    - Public API exports schemas, not schema‑derived types.
    - Repo is green: typecheck/lint/test/build/package succeed.
    - Build output cleaned by filtering alias unresolved warnings in Rollup (no behavior change; externals preserved).
+
+1. TypeScript types: fix ESLint v9 RuleModule typing
+   - Replaced `Linter.RuleModule` with `Rule.RuleModule` in `eslint.config.ts` and
+     the local declaration file for `eslint-plugin-eslint-comments`.
+   - Rationale: ESLint 9 exports the rule type under `Rule.RuleModule`; `Linter.RuleModule`
+     no longer exists, causing TS2694 in typecheck/docs/build.
+   - Result: typecheck/docs/build should pass without the TS2694 error.
