@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T22:55:00Z
+When updated: 2025-09-04T23:05:00Z
 
 ## Completed (recent)
 
@@ -13,7 +13,7 @@ When updated: 2025-09-04T22:55:00Z
 ## Next up
 
 3. Templates authoring (packaged assets)
-   - Objective: Provide a robust starting baseline for new apps.   - Remaining tasks:
+   - Objective: Provide a robust starting baseline for new apps. - Remaining tasks:
      a. Project boilerplate: include vitest and typedoc configs (baseline).
      b. Minimal docs: brief README snippet in template notes (future slice).
    - Acceptances
