@@ -1,12 +1,19 @@
 # Development Plan
 
-When updated: 2025-09-04T22:30:00Z
+When updated: 2025-09-04T22:55:00Z
+
+## Completed (recent)
+
+- Remove eslint-plugin-eslint-comments across project and templates:
+  - Dropped plugin from root and template ESLint configs.
+  - Deleted local type shim under types/.
+  - Removed devDependency from package.json.
+  - Rationale: simplify lint stack; avoid noisy rules.
 
 ## Next up
 
 3. Templates authoring (packaged assets)
-   - Objective: Provide a robust starting baseline for new apps.
-   - Remaining tasks:
+   - Objective: Provide a robust starting baseline for new apps.   - Remaining tasks:
      a. Project boilerplate: include vitest and typedoc configs (baseline).
      b. Minimal docs: brief README snippet in template notes (future slice).
    - Acceptances
