@@ -6,12 +6,11 @@ When updated: 2025-09-04T23:05:00Z
 
 - Remove eslint-plugin-eslint-comments across project and templates:
   - Dropped plugin from root and template ESLint configs.
-  - Deleted local type shim under types/.
+  - Deleted leftover shim file: types/eslint-plugin-eslint-comments.d.ts
   - Removed devDependency from package.json.
   - Rationale: simplify lint stack; avoid noisy rules.
 
 ## Next up
-
 3. Templates authoring (packaged assets)
    - Objective: Provide a robust starting baseline for new apps. - Remaining tasks:
      a. Project boilerplate: include vitest and typedoc configs (baseline).
