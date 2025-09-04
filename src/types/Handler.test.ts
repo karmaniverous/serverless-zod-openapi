@@ -4,13 +4,11 @@ import { z } from 'zod';
 
 import { createApiGatewayV1Event, createLambdaContext } from '@/src/test/aws';
 import type { ConsoleLogger } from '@/src/types/Loggable';
-import type { ShapedEvent } from '@/src/types/ShapedEvent';
 
-import type { Handler, HandlerOptions } from './Handler';
+import type { Handler, HandlerOptions, ShapedEvent } from './Handler';
 
 const eventSchema = z.object({
-  id: z.string(),
-  q: z.string().optional(),
+  id: z.string(),  q: z.string().optional(),
 });
 
 const responseSchema = z.object({

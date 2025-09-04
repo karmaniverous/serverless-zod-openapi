@@ -5,13 +5,12 @@
  */
 import type { ZodOpenApiPathsObject } from 'zod-openapi';
 
+import type { BaseEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
 import { buildPathElements } from '@/src/http/buildPath';
 import { resolveHttpFromFunctionConfig } from '@/src/http/resolveHttpFromFunctionConfig';
 import type { BaseOperation } from '@/src/openapi/types';
-import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { HttpContext } from '@/src/types/HttpContext';
-
 export type RegEntry = {
   functionName: string;
   eventType: string;

@@ -1,8 +1,7 @@
-import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
+import type { BaseEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
 
 /** Default base tokens treated as HTTP by the runtime. */
-/**
- * Default HTTP event tokens used by the runtime.
+/** * Default HTTP event tokens used by the runtime.
  */
 export const defaultHttpEventTypeTokens = [
   'rest',

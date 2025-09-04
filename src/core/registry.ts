@@ -9,6 +9,7 @@
  */
 import type { z } from 'zod';
 
+import type { BaseEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
 import type { EnvSchemaNode } from '@/src/core/defineAppConfig';
 import type { EnvAttached } from '@/src/core/defineFunctionConfig';
 import { ENV_CONFIG } from '@/src/core/defineFunctionConfig';
@@ -16,7 +17,6 @@ import { handlerFactory } from '@/src/core/handlerFactory';
 import type { ZodObj } from '@/src/core/types';
 import type { AppHttpConfig } from '@/src/http/middleware/httpStackCustomization';
 import type { BaseOperation } from '@/src/openapi/types';
-import type { BaseEventTypeMap } from '@/src/types/BaseEventTypeMap';
 import type { MethodKey } from '@/src/types/FunctionConfig';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
 import type { Handler } from '@/src/types/Handler';

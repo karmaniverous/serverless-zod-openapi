@@ -16,8 +16,7 @@ import type {
   CognitoUserPoolTriggerEvent,
   DynamoDBStreamEvent,
   EventBridgeEvent,
-  IoTButtonEvent,
-  KinesisFirehoseTransformationEvent,
+  FirehoseTransformationEvent,
   KinesisStreamEvent,
   S3Event,
   SESEvent,
@@ -35,12 +34,12 @@ export const baseEventTypeMapSchema = z.object({
   s3: z.custom<S3Event>(),
   dynamodb: z.custom<DynamoDBStreamEvent>(),
   kinesis: z.custom<KinesisStreamEvent>(),
-  eventbridge: z.custom<EventBridgeEvent<unknown, unknown>>(),
+  eventbridge: z.custom<EventBridgeEvent<string, unknown>>(),
   'cloudwatch-logs': z.custom<CloudWatchLogsEvent>(),
   ses: z.custom<SESEvent>(),
   cloudfront: z.custom<CloudFrontRequestEvent>(),
-  firehose: z.custom<KinesisFirehoseTransformationEvent>(),
-  'iot-button': z.custom<IoTButtonEvent>(),
+  firehose: z.custom<FirehoseTransformationEvent>(),
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   'cognito-userpool': z.custom<CognitoUserPoolTriggerEvent>(),
 });
 
