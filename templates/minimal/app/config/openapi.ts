@@ -1,9 +1,7 @@
-import '@/app/functions/rest/hello/get/lambda';
-import '@/app/functions/rest/hello/get/openapi';
+import '@/app/generated/register.openapi';
 
 import fs from 'fs-extra';
-import path from 'path';
-import { packageDirectorySync } from 'pkg-dir';
+import path from 'path';import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
 import { app } from '@/app/config/app.config';
