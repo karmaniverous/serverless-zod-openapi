@@ -25,26 +25,25 @@ describe('Handler type', () => {
       typeof responseSchema,
       APIGatewayProxyEvent
     > = async (
-      _event: ShapedEvent<typeof eventSchema>,
+      _event: ShapedEvent<typeof eventSchema, APIGatewayProxyEvent>,
       _ctx: Context,
       _opts: HandlerOptions,
     ) => {
-      void _event;
-      void _ctx;
+      void _event;      void _ctx;
       void _opts;
       return { ok: true };
     };
 
     expect(
+       
       await impl(
         {
           ...createApiGatewayV1Event('GET'),
           id: 'x',
-        } as unknown as ShapedEvent<typeof eventSchema>,
+        } as unknown as ShapedEvent<typeof eventSchema, APIGatewayProxyEvent>,
         createLambdaContext(),
         {
-          env: {},
-          logger: {
+          env: {},          logger: {
             debug: vi.fn(),
             info: vi.fn(),
             error: vi.fn(),
