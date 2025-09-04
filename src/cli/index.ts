@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * SMOZ CLI — slice 1 (version/signature)
+ * SMOZ CLI — version/signature + register/add
  *
- * Prints CLI version, Node version, repo root, stanPath detection, and presence
- * of app/config/app.config.ts and smoz.config.*. Additional commands will be
- * added in subsequent slices (register, add, init).
+ * - Default: print project signature (version, Node, repo root, stanPath, config presence)
+ * - register: generate app/generated/register.*.ts from app/functions/**
+ * - add: scaffold a new function skeleton under app/functions
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { Command } from 'commander';
 import { packageDirectorySync } from 'package-directory';
 
+import { runAdd } from './add';
 import { runRegister } from './register';
 
 type Pkg = { name?: string; version?: string };
@@ -56,7 +57,6 @@ const printSignature = (): void => {
     existsSync(join(root, 'smoz.config.yml')) ||
     existsSync(join(root, 'smoz.config.yaml'));
 
-   
   console.log(`${name} v${version}`);
   console.log(`Node ${process.version}`);
   console.log(`Repo: ${root}`);
@@ -64,9 +64,10 @@ const printSignature = (): void => {
   console.log(
     `app/config/app.config.ts: ${hasAppConfig ? 'found' : 'missing'}`,
   );
-  console.log(`smoz.config.*: ${hasSmozJson || hasSmozYaml ? 'found' : 'absent'}`);
+  console.log(
+    `smoz.config.*: ${hasSmozJson || hasSmozYaml ? 'found' : 'absent'}`,
+  );
   if (pm) console.log(`PM: ${pm}`);
-   
 };
 
 const main = (): void => {
@@ -74,7 +75,37 @@ const main = (): void => {
   const pkg = readPkg(root);
 
   const program = new Command();
-  program.name('smoz').description('SMOZ CLI').version(pkg.version ?? '0.0.0');
+  program
+    .name('smoz')
+    .description('SMOZ CLI')
+    .version(pkg.version ?? '0.0.0');
+
+  program
+    .command('add')
+    .argument(
+      '<spec>',
+      'Add function: HTTP <eventType>/<segments...>/<method> or non-HTTP <eventType>/<segments...>',
+    )
+    .description('Scaffold a new function under app/functions')
+    .action(async (spec: string) => {
+      try {
+        const { created, skipped } = await runAdd(root, spec);
+         
+        console.log(
+          created.length
+            ? `Created:\n - ${created.join('\n - ')}${
+                skipped.length
+                  ? `\nSkipped (exists):\n - ${skipped.join('\n - ')}`
+                  : ''
+              }`
+            : 'Nothing created (files already exist).',
+        );
+      } catch (e) {
+         
+        console.error((e as Error).message);
+        process.exitCode = 1;
+      }
+    });
 
   program
     .command('register')
@@ -83,7 +114,6 @@ const main = (): void => {
     )
     .action(async () => {
       const { wrote } = await runRegister(root);
-       
       console.log(
         wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
       );
