@@ -3,7 +3,8 @@
  * - Schema-first companion to BaseEventTypeMap.
  * - Ensures z.infer<typeof baseEventTypeMapSchema> === BaseEventTypeMap.
  *
- * @remarks * Consumers typically extend this schema when creating an App to add
+ * @remarks
+ * Consumers typically extend this schema when creating an App to add
  * project‑local event tokens (e.g., 'step').
  * Only tokens listed in the app’s `httpEventTypeTokens` are treated as HTTP at runtime.
  */
@@ -39,12 +40,12 @@ export const baseEventTypeMapSchema = z.object({
   ses: z.custom<SESEvent>(),
   cloudfront: z.custom<CloudFrontRequestEvent>(),
   firehose: z.custom<FirehoseTransformationEvent>(),
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- Upstream AWS types mark this as deprecated; we retain the token for compatibility with existing apps.
   'cognito-userpool': z.custom<CognitoUserPoolTriggerEvent>(),
 });
 
-/** Canonical base event map type (schema‑first). Extend the schema in your App. */export type BaseEventTypeMap = z.infer<typeof baseEventTypeMapSchema>;
+/** Canonical base event map type (schema‑first). Extend the schema in your App. */
+export type BaseEventTypeMap = z.infer<typeof baseEventTypeMapSchema>;
 // Notes:
 // - This list intentionally includes widely used, generic AWS events.
 // - Apps can extend the schema with custom or specialized tokens:

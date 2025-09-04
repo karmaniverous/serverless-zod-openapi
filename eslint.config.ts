@@ -1,10 +1,11 @@
 import eslint from '@eslint/js';
 import prettierConfig from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
 import eslintComments from 'eslint-plugin-eslint-comments';
+import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import { dirname } from 'path';
-import tseslint from 'typescript-eslint';import { fileURLToPath } from 'url';
+import tseslint from 'typescript-eslint';
+import { fileURLToPath } from 'url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
@@ -34,7 +35,8 @@ export default tseslint.config(
         project: ['./tsconfig.json'],
         tsconfigRootDir,
       },
-    },    plugins: {
+    },
+    plugins: {
       prettier: prettierPlugin,
       'eslint-comments': eslintComments,
       'simple-import-sort': simpleImportSortPlugin,
@@ -43,7 +45,8 @@ export default tseslint.config(
       // Code-quality and sorting
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/require-await': 'off',
       'no-unused-vars': 'off',
@@ -62,10 +65,7 @@ export default tseslint.config(
       // - Require a human-readable description on any disable pragma
       // - Forbid blanket unlimited disables
       // - Forbid stale/unused disables
-      'eslint-comments/require-description': [
-        'error',
-        { ignore: false },
-      ],
+      'eslint-comments/require-description': ['error', { ignore: [] }],
       'eslint-comments/no-unlimited-disable': 'error',
       'eslint-comments/no-unused-disable': 'error',
     },
