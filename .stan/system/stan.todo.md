@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T12:05:00Z
+When updated: 2025-09-04T12:18:00Z
 
 ## Next up
 
@@ -36,11 +36,17 @@ When updated: 2025-09-04T12:05:00Z
 2. Directory conventions migration (author vs generated; file‑move plan first)
    - Objective: Adopt final layout without introducing CLI yet.
    - Tasks:
-     a. Prepare a file move plan:
-     - List each file to move/rename/delete to achieve the final structure:
-       - Author code under app/functions/<eventType>/...
-       - All generated artifacts under app/generated/
-     - Deliver as a clear checklist (source → destination; deletions explicit).
+     a. File move plan (apply first; no content changes):
+     - Move: app/endpoints/openapi/get/lambda.ts -> app/functions/rest/openapi/get/lambda.ts
+     - Move: app/endpoints/openapi/get/handler.ts -> app/functions/rest/openapi/get/handler.ts
+     - Move: app/endpoints/openapi/get/openapi.ts -> app/functions/rest/openapi/get/openapi.ts
+     - Move: app/endpoints/event/activecampaign/post/lambda.ts -> app/functions/rest/event/activecampaign/post/lambda.ts
+     - Move: app/endpoints/event/activecampaign/post/handler.ts -> app/functions/rest/event/activecampaign/post/handler.ts
+     - Move: app/endpoints/event/activecampaign/post/openapi.ts -> app/functions/rest/event/activecampaign/post/openapi.ts
+     - Move: app/step/activecampaign/contacts/getContact/lambda.ts -> app/functions/step/activecampaign/contacts/getContact/lambda.ts
+     - Move: app/step/activecampaign/contacts/getContact/handler.ts -> app/functions/step/activecampaign/contacts/getContact/handler.ts
+     - Delete: app/endpoints/\_root.ts (obsolete; endpointsRootAbs will be provided explicitly per token in follow‑up patch)
+     - Note: No changes yet to serverless.ts or app/config/openapi.ts; these will be updated in the follow‑up patch (2.b).
        b. After you apply the move plan and confirm, introduce/wire:
      - serverless.ts to import './app/generated/register.functions' and './app/generated/register.serverless'
      - app/config/openapi.ts to import './app/generated/register.openapi' and write openapi.json to app/generated/openapi.json
