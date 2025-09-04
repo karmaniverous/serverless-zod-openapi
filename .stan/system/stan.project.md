@@ -3,10 +3,17 @@
 > Source of truth for non-file-specific requirements. Keep business logic comments lean; record the intent here.
 
 <!-- CLI REQUIREMENTS ADDED -->
+## Contributor workflow: Directory/file changes
+
+- When a structural reorganization (moves/renames/deletions) is needed,
+  the assistant will provide a precise file-move plan (paths to move,
+  rename, or delete) instead of emitting patches for those changes.
+- You apply the moves in your IDE. After you confirm, the assistant will
+  follow up with a focused patch to adjust imports/wiring only.
+
 ## 1) Logger shape
 
-- Requirement: Anywhere a `logger` is accepted or passed, it MUST extend `ConsoleLogger` (i.e., be compatible with the standard `console` interface).- Implication: Defaults should use `console`. Function and middleware options that accept `logger` must type it as `ConsoleLogger`.
-- Enforcement: `makeWrapHandler` and HTTP middleware use `ConsoleLogger` and default to `console`.
+- Requirement: Anywhere a `logger` is accepted or passed, it MUST extend `ConsoleLogger` (i.e., be compatible with the standard `console` interface).- Implication: Defaults should use `console`. Function and middleware options that accept `logger` must type it as `ConsoleLogger`.- Enforcement: `makeWrapHandler` and HTTP middleware use `ConsoleLogger` and default to `console`.
 
 ## 2) OpenAPI specs (hand-crafted)
 
