@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-04T18:40:00Z
+When updated: 2025-09-04T18:50:00Z
 
 ## Next up
-
 0. Execution mechanics for directory changes (important)
    - Any tasks that reorganize the app tree (moves/renames/deletions) will be delivered as a precise file move plan (paths to move/rename/delete), not as patches. You will apply the plan in your IDE to avoid an “import blast area.”
    - After you confirm the moves are complete, I will follow up (if needed) with a small focused patch to adjust imports and wiring only.
@@ -145,9 +144,15 @@ When updated: 2025-09-04T18:40:00Z
 
 ## Completed (recent)
 
+1. CLI polish: commander argv + knip entry
+   - Fixed TS2554 by passing `process.argv` to `program.parse` in src/cli/index.ts.
+   - Added `src/cli/index.ts` to knip.json `entry` so the CLI entry is recognized,
+     avoiding “unused file/dependency” reports for the CLI and commander.
+   - Acceptance: typecheck/docs/build pass; knip no longer reports the CLI file
+     or commander as unused.
+
 1. CLI: slice 1 (version/signature/bin)
-   - Added src/cli/index.ts with commander; default action prints package version,
-     Node version, repo root, detected stanPath, and presence of app/config/app.config.ts
+   - Added src/cli/index.ts with commander; default action prints package version,     Node version, repo root, detected stanPath, and presence of app/config/app.config.ts
      and smoz.config.\*.
    - Added cli.rollup.config.ts to produce dist/cli/index.cjs with shebang.
    - Wired package.json:

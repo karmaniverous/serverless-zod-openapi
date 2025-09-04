@@ -1,12 +1,12 @@
 {
   "entry": [
     "serverless.ts",
-    "services/activecampaign/src/index.ts"
+    "services/activecampaign/src/index.ts",
+    "src/cli/index.ts"
   ],
   "project": [
     "src/**",
-    "app/**",
-    "services/**",
+    "app/**",    "services/**",
     "!**/generated/**",
     "!docs/**"
   ],

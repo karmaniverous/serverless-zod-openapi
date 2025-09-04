@@ -80,7 +80,7 @@ const main = (): void => {
     printSignature();
   });
 
-  program.parse();
+  program.parse(process.argv);
 };
 
 main();
