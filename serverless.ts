@@ -1,14 +1,13 @@
 // Ensure functions/openapi registrations are loaded
-import '@/app/endpoints/openapi/get/lambda';
-import '@/app/endpoints/openapi/get/openapi';
-import '@/app/endpoints/event/activecampaign/post/lambda';
-import '@/app/endpoints/event/activecampaign/post/openapi';
-import '@/app/step/activecampaign/contacts/getContact/lambda';
+import '@/app/functions/rest/openapi/get/lambda';
+import '@/app/functions/rest/openapi/get/openapi';
+import '@/app/functions/rest/event/activecampaign/post/lambda';
+import '@/app/functions/rest/event/activecampaign/post/openapi';
+import '@/app/functions/step/activecampaign/contacts/getContact/lambda';
 
 import type { AWS } from '@serverless/typescript';
 
 import { app, environment, stages } from '@/app/config/app.config';
-
 const config: AWS = {
   service: '${param:SERVICE_NAME}',
   frameworkVersion: '4',

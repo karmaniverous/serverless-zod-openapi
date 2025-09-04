@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T12:18:00Z
+When updated: 2025-09-04T12:44:00Z
 
 ## Next up
 
@@ -36,7 +36,7 @@ When updated: 2025-09-04T12:18:00Z
 2. Directory conventions migration (author vs generated; file‑move plan first)
    - Objective: Adopt final layout without introducing CLI yet.
    - Tasks:
-     a. File move plan (apply first; no content changes):
+     a. File move plan (apply first; no content changes): (APPLIED)
      - Move: app/endpoints/openapi/get/lambda.ts -> app/functions/rest/openapi/get/lambda.ts
      - Move: app/endpoints/openapi/get/handler.ts -> app/functions/rest/openapi/get/handler.ts
      - Move: app/endpoints/openapi/get/openapi.ts -> app/functions/rest/openapi/get/openapi.ts
@@ -46,11 +46,10 @@ When updated: 2025-09-04T12:18:00Z
      - Move: app/step/activecampaign/contacts/getContact/lambda.ts -> app/functions/step/activecampaign/contacts/getContact/lambda.ts
      - Move: app/step/activecampaign/contacts/getContact/handler.ts -> app/functions/step/activecampaign/contacts/getContact/handler.ts
      - Delete: app/endpoints/\_root.ts (obsolete; endpointsRootAbs will be provided explicitly per token in follow‑up patch)
-     - Note: No changes yet to serverless.ts or app/config/openapi.ts; these will be updated in the follow‑up patch (2.b).
-       b. After you apply the move plan and confirm, introduce/wire:
-     - serverless.ts to import './app/generated/register.functions' and './app/generated/register.serverless'
-     - app/config/openapi.ts to import './app/generated/register.openapi' and write openapi.json to app/generated/openapi.json
-       c. Remove app/\_root.ts and endpoints/\_root.ts; explicitly pass endpointsRootAbs as join(APP_ROOT_ABS, 'functions', '<token>') in lambdas.
+       b. After you apply the move plan and confirm, introduce/wire: (APPLIED)
+     - serverless.ts to import app/functions side‑effect modules (later switch to app/generated/register.\* after CLI)
+     - app/config/openapi.ts to import updated app/functions modules (later switch to register.openapi) and write openapi.json to app/generated/openapi.json
+       c. Remove app/\_root.ts and endpoints/\_root.ts; explicitly pass endpointsRootAbs as join(APP_ROOT_ABS, 'functions', '<token>') in lambdas. (APPLIED)
        d. Seed empty app/generated/register.\*.ts so typecheck remains stable prior to generation.
        e. Acceptances
      - Repo builds and runs scripts with the new structure.

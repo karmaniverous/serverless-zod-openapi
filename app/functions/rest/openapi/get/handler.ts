@@ -6,11 +6,10 @@
  */
 import type { z } from 'zod';
 
-import openapi from '@/app/openapi.json';
+import openapi from '@/app/generated/openapi.json';
 
 import type { responseSchema } from './lambda';
 import { fn } from './lambda';
-
 type Response = z.infer<typeof responseSchema>;
 export const handler = fn.handler(
   async (): Promise<Response> => openapi as Response,

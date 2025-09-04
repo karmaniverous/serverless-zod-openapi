@@ -1,10 +1,13 @@
 /**
  * Registration: Step function to get an ActiveCampaign contact by id.
  */
+ 
+import { join } from 'node:path';
+
 import { z } from 'zod';
 
 import { app } from '@/app/config/app.config';
-import { ENDPOINTS_ROOT } from '@/app/endpoints/_root';
+import { APP_ROOT_ABS } from '@/app/config/app.config';
 import { contactSchema } from '@/services/activecampaign/src';
 import type { LambdaEvent } from '@/src';
 
@@ -22,5 +25,5 @@ export const fn = app.defineFunction({
   eventSchema,
   responseSchema,
   callerModuleUrl: import.meta.url,
-  endpointsRootAbs: ENDPOINTS_ROOT,
+  endpointsRootAbs: join(APP_ROOT_ABS, 'functions', 'step').replace(/\\/g, '/'),
 });

@@ -5,11 +5,11 @@
  * Zod schemas. The generated document is written to `src/openapi/openapi.json`.
  *
  * @see https://github.com/johngalt/zod-openapi */
-// side-effect registrations
-import '@/app/endpoints/openapi/get/lambda';
-import '@/app/endpoints/openapi/get/openapi';
-import '@/app/endpoints/event/activecampaign/post/lambda';
-import '@/app/endpoints/event/activecampaign/post/openapi';
+// side-effect registrations (moved under app/functions)
+import '@/app/functions/rest/openapi/get/lambda';
+import '@/app/functions/rest/openapi/get/openapi';
+import '@/app/functions/rest/event/activecampaign/post/lambda';
+import '@/app/functions/rest/event/activecampaign/post/openapi';
 
 import fs from 'fs-extra';
 import path from 'path';
@@ -44,9 +44,11 @@ export const doc = createDocument({
  */
 const pkgDir = packageDirectorySync();
 
-// Write the generated OpenAPI document to `app/openapi.json`.
+// Write the generated OpenAPI document to `app/generated/openapi.json`.
+const outDir = path.join(pkgDir!, 'app', 'generated');
+fs.ensureDirSync(outDir);
 fs.writeFileSync(
-  path.join(pkgDir!, 'app/openapi.json'),
+  path.join(outDir, 'openapi.json'),
   JSON.stringify(doc, null, 2),
 );
 
