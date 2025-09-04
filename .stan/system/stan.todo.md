@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T23:08:00Z
+When updated: 2025-09-04T23:12:00Z
 
 ## Completed (recent)
 - Remove eslint-plugin-eslint-comments across project and templates:
@@ -9,12 +9,15 @@ When updated: 2025-09-04T23:08:00Z
   - Removed devDependency from package.json.
   - Rationale: simplify lint stack; avoid noisy rules.
 
+- Templates authoring: add minimal README to templates/project with
+  conventions and common scripts.
+
 ## Next up
 
 1) Templates authoring (packaged assets)
    - Objective: robust starting baseline for new apps.
    - Remaining:
-     a. Add a minimal README snippet to templates/project (what it scaffolds; how to run typecheck/lint/test/docs).
+     a. (DONE) Add a minimal README snippet to templates/project.
    - Acceptance:
      - Fresh template copy compiles (typecheck), lints, tests (empty OK), and docs tooling loads.
 
