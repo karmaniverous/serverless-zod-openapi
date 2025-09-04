@@ -2,6 +2,7 @@
  * smoz init
  *
  * Scaffolds a new project from packaged templates.
+ * - Copies ./templates/project/ into the target root (shared boilerplate)
  * - Copies ./templates/<template>/ into the target root (default: minimal)
  * - Seeds app/generated/register.*.ts (empty modules) if missing
  * - Idempotent: does not overwrite existing files
@@ -42,35 +43,47 @@ const resolveTemplatesBase = (): string => {
   return resolve(pkgRoot, 'templates');
 };
 
+const copyDirIdempotent = async (
+  srcDir: string,
+  dstRoot: string,
+  created: string[],
+  skipped: string[],
+) => {
+  const files = await walk(srcDir);
+  for (const abs of files) {
+    const rel = relative(srcDir, abs);
+    const dest = resolve(dstRoot, rel);
+    const data = await fs.readFile(abs, 'utf8');
+    const { created: c } = await writeIfAbsent(dest, data);
+    if (c) created.push(posix.normalize(dest));
+    else skipped.push(posix.normalize(dest));
+  }
+};
+
 export const runInit = async (
   root: string,
-  template = 'minimal',
-): Promise<{ created: string[]; skipped: string[] }> => {
+  template = 'minimal',): Promise<{ created: string[]; skipped: string[] }> => {
   const created: string[] = [];
   const skipped: string[] = [];
 
   const templatesBase = resolveTemplatesBase();
   const srcBase = resolve(templatesBase, template);
+  const projectBase = resolve(templatesBase, 'project');
   if (!existsSync(srcBase)) {
     throw new Error(
       `Template "${template}" not found under ${toPosix(templatesBase)}.`,
     );
   }
 
-  // Copy all files from template source to target root (idempotent)
-  const files = await walk(srcBase);
-  for (const abs of files) {
-    const rel = relative(srcBase, abs);
-    const dest = resolve(root, rel);
-    const data = await fs.readFile(abs, 'utf8');
-    const { created: c } = await writeIfAbsent(dest, data);
-    if (c) created.push(posix.normalize(dest));
-    else skipped.push(posix.normalize(dest));
+  // 1) Copy shared boilerplate (project) first (idempotent)
+  if (existsSync(projectBase)) {
+    await copyDirIdempotent(projectBase, root, created, skipped);
   }
+  // 2) Copy selected template
+  await copyDirIdempotent(srcBase, root, created, skipped);
 
   // Seed app/generated/register.*.ts (empty modules) if missing
-  const genDir = resolve(root, 'app', 'generated');
-  const seeds: Array<{ path: string; content: string }> = [
+  const genDir = resolve(root, 'app', 'generated');  const seeds: Array<{ path: string; content: string }> = [
     {
       path: join(genDir, 'register.functions.ts'),
       content: `/* AUTO-GENERATED placeholder; will be rewritten by \`smoz register\` */\nexport {};\n`,
