@@ -48,6 +48,16 @@ export default tseslint.config(
       'no-unused-vars': 'off',
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
+      /**
+       * Safety policy (no inline disables without justification):
+       * - Keep unsafe rules explicit and enforced. Prefer typed narrowing,
+       *   precise generics, and explicit assertions at well-documented seams
+       *   instead of broad rule suppression.
+       * - If a specific location requires an assertion, document why at the site.
+       */
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
     },
   },
 );

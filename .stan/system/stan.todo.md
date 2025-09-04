@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-04T12:44:00Z
+When updated: 2025-09-04T17:32:00Z
 
 ## Next up
-
 0. Execution mechanics for directory changes (important)
    - Any tasks that reorganize the app tree (moves/renames/deletions) will be delivered as a precise file move plan (paths to move/rename/delete), not as patches. You will apply the plan in your IDE to avoid an “import blast area.”
    - After you confirm the moves are complete, I will follow up (if needed) with a small focused patch to adjust imports and wiring only.
@@ -94,10 +93,12 @@ When updated: 2025-09-04T12:44:00Z
 
 ## Completed (recent)
 
+1. ESLint policy (safety rules)
+   - Removed inline disables in lambdas; made no‑unsafe‑* rules explicit in eslint.config.ts with a documented policy.
+
 1. Crust cleanup (schema‑first alignment + remove redundancy)
    - Consolidated base event schema (fixed aws‑lambda types; kept Cognito generic with deprecation note).
-   - Removed redundant types (BaseEventTypeMap interface, HttpEventTokens, legacy ShapedEvent helper, Merge).
-   - Migrated imports to schema module; adjusted http resolution helper/test generics.
+   - Removed redundant types (BaseEventTypeMap interface, HttpEventTokens, legacy ShapedEvent helper, Merge).   - Migrated imports to schema module; adjusted http resolution helper/test generics.
    - Public API exports schemas, not schema‑derived types.
    - Repo is green: typecheck/lint/test/build/package succeed.
    - Build output cleaned by filtering alias unresolved warnings in Rollup (no behavior change; externals preserved).
