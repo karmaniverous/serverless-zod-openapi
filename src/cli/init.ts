@@ -60,7 +60,9 @@ const writeJson = async (file: string, obj: unknown): Promise<void> => {
   await fs.writeFile(file, JSON.stringify(obj, null, 2), 'utf8');
 };
 
-const detectPm = (root: string): 'pnpm' | 'yarn' | 'npm' | 'bun' | undefined => {
+const detectPm = (
+  root: string,
+): 'pnpm' | 'yarn' | 'npm' | 'bun' | undefined => {
   if (existsSync(join(root, 'pnpm-lock.yaml'))) return 'pnpm';
   if (existsSync(join(root, 'yarn.lock'))) return 'yarn';
   if (existsSync(join(root, 'package-lock.json'))) return 'npm';
@@ -76,7 +78,14 @@ const detectPm = (root: string): 'pnpm' | 'yarn' | 'npm' | 'bun' | undefined => 
 const runInstall = (
   root: string,
   pm?: string,
-): 'ran (npm)' | 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'skipped' | 'unknown-pm' | 'failed' => {
+):
+  | 'ran (npm)'
+  | 'ran (pnpm)'
+  | 'ran (yarn)'
+  | 'ran (bun)'
+  | 'skipped'
+  | 'unknown-pm'
+  | 'failed' => {
   if (!pm) return 'skipped';
   const known = pm === 'pnpm' || pm === 'yarn' || pm === 'bun' || pm === 'npm';
   if (!known) return 'unknown-pm';
@@ -90,37 +99,55 @@ const runInstall = (
 
   if (res.status === 0) {
     const tag: 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'ran (npm)' =
-      pm === 'pnpm' ? 'ran (pnpm)' : pm === 'yarn' ? 'ran (yarn)' : pm === 'bun' ? 'ran (bun)' : 'ran (npm)';
+      pm === 'pnpm'
+        ? 'ran (pnpm)'
+        : pm === 'yarn'
+          ? 'ran (yarn)'
+          : pm === 'bun'
+            ? 'ran (bun)'
+            : 'ran (npm)';
     return tag;
   }
   return 'failed';
 };
 
-const mergeAdditive = (target: Record<string, unknown>, source: Record<string, unknown>) => {
+const mergeAdditive = (
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+) => {
   const merged: string[] = [];
-  const mergeKey = (key: 'dependencies' | 'devDependencies' | 'peerDependencies') => {
+  const mergeKey = (
+    key: 'dependencies' | 'devDependencies' | 'peerDependencies',
+  ) => {
     // Allow possibly-undefined shapes to satisfy lint (no-unnecessary-condition).
     const src = (source[key] as Record<string, string> | undefined) ?? {};
     const dst = (target[key] as Record<string, string> | undefined) ?? {};
     const out = { ...dst };
+    let changed = false;
     for (const [k, v] of Object.entries(src)) {
       if (!(k in dst)) {
         out[k] = v;
         merged.push(`${key}:${k}@${v}`);
+        changed = true;
       }
     }
-    if (Object.keys(out).length) (target[key] as Record<string, string>) = out;
+    if (changed) {
+      (target[key] as Record<string, string>) = out;
+    }
   };
   mergeKey('dependencies');
   mergeKey('devDependencies');
   mergeKey('peerDependencies');
-  const srcScripts = (source.scripts as Record<string, string> | undefined) ?? {};
-  const dstScripts = (target.scripts as Record<string, string> | undefined) ?? {};
+  const srcScripts =
+    (source.scripts as Record<string, string> | undefined) ?? {};
+  const dstScripts =
+    (target.scripts as Record<string, string> | undefined) ?? {};
   const scriptsOut = { ...dstScripts };
   for (const [name, script] of Object.entries(srcScripts)) {
     if (!(name in dstScripts)) {
       scriptsOut[name] = script;
-      merged.push(`scripts:${name}`);    } else if (dstScripts[name] !== script) {
+      merged.push(`scripts:${name}`);
+    } else if (dstScripts[name] !== script) {
       const alias = `${name}:smoz`;
       if (!(alias in dstScripts)) {
         scriptsOut[alias] = script;
@@ -184,7 +211,8 @@ export const runInit = async (
   const templatesBase = resolveTemplatesBase();
   const srcBase = resolve(templatesBase, template);
   const projectBase = resolve(templatesBase, 'project');
-  if (!existsSync(srcBase)) {    throw new Error(
+  if (!existsSync(srcBase)) {
+    throw new Error(
       `Template "${template}" not found under ${toPosix(templatesBase)}.`,
     );
   }
@@ -225,18 +253,29 @@ export const runInit = async (
     const shouldInit = !!(opts && opts.init);
     if (shouldInit) {
       const name = toPosix(root).split('/').pop() ?? 'smoz-app';
-      pkg = { name, private: true, type: 'module', version: '0.0.0', scripts: {} };
+      pkg = {
+        name,
+        private: true,
+        type: 'module',
+        version: '0.0.0',
+        scripts: {},
+      };
       // Avoid optional chain to satisfy no-unnecessary-condition; normalize to boolean.
       const dryRunCreate = !!(opts && opts.dryRun);
       if (!dryRunCreate) await writeJson(pkgPath, pkg);
       created.push(posix.normalize(pkgPath));
     } else {
-      throw new Error(        'No package.json found. Run "npm init -y" (or re-run with --init) and then "smoz init" again.',
+      throw new Error(
+        'No package.json found. Run "npm init -y" (or re-run with --init) and then "smoz init" again.',
       );
     }
   }
   // 4) Merge manifest (deps/devDeps/scripts) additively
-  const manifestPath = resolve(templatesBase, '.manifests', `package.${template}.json`);
+  const manifestPath = resolve(
+    templatesBase,
+    '.manifests',
+    `package.${template}.json`,
+  );
   const manifest = await readJson<Record<string, unknown>>(manifestPath);
   if (manifest) {
     const before = JSON.stringify(pkg);
@@ -249,7 +288,14 @@ export const runInit = async (
   }
 
   // 5) Optional install
-  let installed: 'skipped' | 'ran (npm)' | 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'unknown-pm' | 'failed' = 'skipped';
+  let installed:
+    | 'skipped'
+    | 'ran (npm)'
+    | 'ran (pnpm)'
+    | 'ran (yarn)'
+    | 'ran (bun)'
+    | 'unknown-pm'
+    | 'failed' = 'skipped';
   const installOpt = opts ? opts.install : false;
   const wantsInstall =
     (typeof installOpt === 'string' && installOpt.length > 0) ||
