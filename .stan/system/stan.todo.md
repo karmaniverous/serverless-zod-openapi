@@ -1,9 +1,13 @@
 # Development Plan
 
-When updated: 2025-09-06T17:35:00Z
+When updated: 2025-09-06T17:45:00Z
 
 ## Completed (recent)
 
+- Documentation updates:
+  - README Quick Start now uses app/functions/\* paths.
+  - OpenAPI & Serverless snippets load CLI-generated registers.
+  - Added npm script `register` and noted generated output path.
 - Seed placeholder register files under app/generated so imports resolve
   prior to running `smoz register`.
 - Switch Serverless/OpenAPI to use CLI‑generated register files
@@ -11,7 +15,7 @@ When updated: 2025-09-06T17:35:00Z
   runtime with the CLI “register” workflow.
 - CLI lint polish (init): track dependency merge changes with a boolean flag in
   mergeAdditive; avoids unnecessary-condition while preserving behavior.
-- CLI lint polish (init): normalize install option into `stringInstall` and  compare against '' to avoid unnecessary-condition on length checks.
+- CLI lint polish (init): normalize install option into `stringInstall` and compare against '' to avoid unnecessary-condition on length checks.
 - CLI lint polish (init): derive pm (string or detected) and run install only
   when pm is defined; removes unnecessary-condition in install logic.
 - Lint zero (init): ESLint passes with 0 errors after refining optional
@@ -49,9 +53,3 @@ When updated: 2025-09-06T17:35:00Z
    - Remaining: a. (DONE) Add a minimal README snippet to templates/project.
    - Acceptance:
      - Fresh template copy compiles (typecheck), lints, tests (empty OK), and docs tooling loads.
-
-2. Documentation updates
-   - Update README Quick Start to use app/functions/\* paths (no app/endpoints).
-   - Document CLI workflow (init/register/add) and generated files (app/generated/\*).
-   - Note httpEventTypeTokens lives only in app/config/app.config.ts.
-   - VCS guidance: commit app/generated/register.\*.ts; openapi.json generally ignored.

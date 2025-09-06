@@ -66,7 +66,7 @@ npm i -D typescript typescript-eslint eslint prettier typedoc
 
 ## Quick start
 
-1) Create your application config (schema‑first)
+1. Create your application config (schema‑first)
 
 app/config/app.config.ts
 
@@ -76,7 +76,10 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { App, baseEventTypeMapSchema } from 'smoz';
 
-const APP_ROOT_ABS = dirname(dirname(fileURLToPath(import.meta.url))).replace(/\\/g, '/');
+const APP_ROOT_ABS = dirname(dirname(fileURLToPath(import.meta.url))).replace(
+  /\\/g,
+  '/',
+);
 
 export const app = App.create({
   appRootAbs: APP_ROOT_ABS,
@@ -93,15 +96,18 @@ export const app = App.create({
     defaultHandlerFileName: 'handler',
     defaultHandlerFileExport: 'handler',
   },
-  global: { params: { REGION: 'us-east-1', SERVICE_NAME: 'my-svc' }, envKeys: ['REGION', 'SERVICE_NAME'] },
+  global: {
+    params: { REGION: 'us-east-1', SERVICE_NAME: 'my-svc' },
+    envKeys: ['REGION', 'SERVICE_NAME'],
+  },
   stage: { params: { dev: { STAGE: 'dev' } }, envKeys: ['STAGE'] },
 });
 export const { stages, environment, buildFnEnv } = app;
 ```
 
-2) Define an HTTP endpoint
+2. Define an HTTP endpoint
 
-app/endpoints/hello/get/lambda.ts
+app/functions/rest/hello/get/lambda.ts
 
 ```ts
 import { z } from 'zod';
@@ -120,24 +126,25 @@ export const fn = app.defineFunction({
   // eventSchema: z.object({ ... }) // optional request validation
   responseSchema,
   callerModuleUrl: import.meta.url,
-  endpointsRootAbs: ENDPOINTS_ROOT,
+  endpointsRootAbs: ENDPOINTS_ROOT, // e.g., absolute "functions/rest" root
 });
 ```
 
-app/endpoints/hello/get/handler.ts
+app/functions/rest/hello/get/handler.ts
 
 ```ts
 import { fn, responseSchema } from './lambda';
 type Response = import('zod').infer<typeof responseSchema>;
-export const handler = fn.handler(async () => ({ ok: true }) satisfies Response);
+export const handler = fn.handler(
+  async () => ({ ok: true }) satisfies Response,
+);
 ```
 
-3) Generate OpenAPI (hand‑crafted entries)
+3. Generate OpenAPI (hand‑crafted entries)
 
 ```ts
 // app/config/openapi.ts
-import '@/app/endpoints/hello/get/lambda';
-import '@/app/endpoints/hello/get/openapi'; // attach path item info
+import '@/app/generated/register.openapi'; // load all per-function OpenAPI registrations
 import fs from 'fs-extra';
 import path from 'path';
 import { packageDirectorySync } from 'pkg-dir';
@@ -151,21 +158,26 @@ const doc = createDocument({
   info: { title: 'smoz', version: process.env.npm_package_version ?? '' },
   paths,
 });
-fs.writeFileSync(path.join(packageDirectorySync()!, 'app/openapi.json'), JSON.stringify(doc, null, 2));
+fs.writeFileSync(
+  path.join(packageDirectorySync()!, 'app/generated/openapi.json'),
+  JSON.stringify(doc, null, 2),
+);
 ```
 
 Run:
 
 ```bash
+npm run register   # generates app/generated/register.*.ts
 npm run openapi
 ```
 
-4) Package / Deploy with Serverless
+4. Package / Deploy with Serverless
 
 serverless.ts (snippet)
 
 ```ts
-import '@/app/endpoints/hello/get/lambda';
+import '@/app/generated/register.functions';
+import '@/app/generated/register.serverless';
 import type { AWS } from '@serverless/typescript';
 import { app, environment, stages } from '@/app/config/app.config';
 
@@ -176,8 +188,9 @@ const config: AWS = {
   provider: {
     name: 'aws',
     region: '${param:REGION}',
-    environment,
     runtime: 'nodejs22.x',
+    environment,
+    stage: '${opt:stage, "dev"}',
   },
   functions: app.buildAllServerlessFunctions() as NonNullable<AWS['functions']>,
 };
@@ -185,6 +198,7 @@ export default config;
 ```
 
 ```bash
+npm run register   # ensure registers reflect current app/functions/**
 npm run package
 ```
 
@@ -228,7 +242,7 @@ Surfaces:
 
 Merge order:
 
-1) defaults (app) → 2) profile (app) → 3) options (function) → 4) extend
+1. defaults (app) → 2) profile (app) → 3) options (function) → 4) extend
    (defaults → profile → function) → 5) transform (defaults → profile →
    function) → 6) replace (function; final).
 
@@ -255,16 +269,29 @@ Examples:
   ```ts
   app.defineFunction({
     // ...
-    http: { profile: 'publicJson', options: { contentType: 'application/vnd.my+json' } },
+    http: {
+      profile: 'publicJson',
+      options: { contentType: 'application/vnd.my+json' },
+    },
   });
   ```
 - Insert a header after the response shaper:
   ```ts
   import { insertAfter } from 'smoz';
-  const mw = { after: (req: any) => { req.response.headers['X-My'] = 'yes'; } };
+  const mw = {
+    after: (req: any) => {
+      req.response.headers['X-My'] = 'yes';
+    },
+  };
   app.defineFunction({
     // ...
-    http: { transform: ({ before, after, onError }) => ({ before, after: insertAfter(after, 'shape', mw as any), onError }) },
+    http: {
+      transform: ({ before, after, onError }) => ({
+        before,
+        after: insertAfter(after, 'shape', mw as any),
+        onError,
+      }),
+    },
   });
   ```
 - Replace (advanced):
@@ -275,11 +302,16 @@ Examples:
 ## Typedoc
 
 Public API is documented with TSDoc and published with [TypeDoc]. Once generated:
+
 - Docs hosting: https://docs.karmanivero.us/smoz
 - Generate locally: `npm run docs`
 
 ## Scripts
 
+- `npm run register` — scan app/functions/\*\* and (re)generate:
+  - app/generated/register.functions.ts
+  - app/generated/register.openapi.ts
+  - app/generated/register.serverless.ts
 - `npm run build` — produce ESM/CJS and a DTS bundle
 - `npm run test` — run the unit tests
 - `npm run openapi` — build the OpenAPI document
@@ -289,6 +321,14 @@ Public API is documented with TSDoc and published with [TypeDoc]. Once generated
 - `npm run knip` — static usage analysis for dead code
 
 ## FAQ
+
+### Registers and httpEventTypeTokens
+
+Use the CLI to maintain side‑effect registers under app/generated/register.\*.ts.
+These are imported by serverless.ts and app/config/openapi.ts to aggregate
+function and OpenAPI metadata.
+
+httpEventTypeTokens are configured only in your app/config/app.config.ts.
 
 ### Why “hand‑crafted” OpenAPI?
 

@@ -147,10 +147,10 @@
     "url": "git+https://github.com/karmaniverous/smoz.git"
   },
   "scripts": {
+    "register": "smoz register",
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "changelog": "auto-changelog",
-    "deploy": "serverless deploy",
-    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
+    "deploy": "serverless deploy",    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
     "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
