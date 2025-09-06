@@ -222,7 +222,8 @@ export const runInit = async (
   const pkgPath = join(root, 'package.json');
   let pkg = await readJson<Record<string, unknown>>(pkgPath);
   if (!pkg) {
-    if (opts?.init) {
+    const shouldInit = !!(opts && opts.init);
+    if (shouldInit) {
       const name = toPosix(root).split('/').pop() ?? 'smoz-app';
       pkg = { name, private: true, type: 'module', version: '0.0.0', scripts: {} };
       if (!opts?.dryRun) await writeJson(pkgPath, pkg);
@@ -233,7 +234,6 @@ export const runInit = async (
       );
     }
   }
-
   // 4) Merge manifest (deps/devDeps/scripts) additively
   const manifestPath = resolve(templatesBase, '.manifests', `package.${template}.json`);
   const manifest = await readJson<Record<string, unknown>>(manifestPath);
@@ -247,11 +247,11 @@ export const runInit = async (
     }
   }
 
-  // 5) Optional install  let installed: string = 'skipped';
+  // 5) Optional install
+  let installed: 'skipped' | 'ran (npm)' | 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'unknown-pm' | 'failed' = 'skipped';
   const installOpt = opts?.install;
   if (installOpt) {
-    let pm: string | undefined;
-    if (typeof installOpt === 'string' && installOpt.length > 0) {
+    let pm: string | undefined;    if (typeof installOpt === 'string' && installOpt.length > 0) {
       pm = installOpt;
     } else {
       pm = detectPm(root);

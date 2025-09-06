@@ -1,12 +1,11 @@
 # Development Plan
 
-When updated: 2025-09-04T23:24:00Z
+When updated: 2025-09-04T23:28:00Z
 
 ## Completed (recent)
 - Remove eslint-plugin-eslint-comments across project and templates:
   - Dropped plugin from root and template ESLint configs.
-  - Deleted leftover shim file: types/eslint-plugin-eslint-comments.d.ts
-  - Removed devDependency from package.json.
+  - Deleted leftover shim file: types/eslint-plugin-eslint-comments.d.ts  - Removed devDependency from package.json.
   - Rationale: simplify lint stack; avoid noisy rules.
 
 - Templates authoring: add minimal README to templates/project with
@@ -22,9 +21,10 @@ When updated: 2025-09-04T23:24:00Z
   - --install[=<pm>] with tiny safe detection; no auto-install by default
   - TypeScript and lint polish: spawnSync typing, literal return, and
     avoiding unnecessary nullish/optional checks
+  - Follow-up fix: ensure `installed` variable is declared (newline) and
+    replace one remaining optional-chain with a boolean guard
 
 ## Next up
-
 1) Templates authoring (packaged assets)
    - Objective: robust starting baseline for new apps.   - Remaining:
      a. (DONE) Add a minimal README snippet to templates/project.
