@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-06T17:55:00Z
+When updated: 2025-09-06T18:05:00Z
 
 ## Completed (recent)
 
@@ -50,10 +50,6 @@ When updated: 2025-09-06T17:55:00Z
   - Resolve remaining lint warning by replacing broad truthiness check for
     install option with an explicit predicate (done).
 
-## Next up
-
-1. Templates authoring (packaged assets)
-   - Objective: robust starting baseline for new apps.
-   - Remaining: a. (DONE) Add a minimal README snippet to templates/project.
-   - Acceptance:
-     - Fresh template copy compiles (typecheck), lints, tests (empty OK), and docs tooling loads.
+- Templates authoring (packaged assets) — acceptance
+  - Fresh template copy compiles (templates:typecheck), lints (templates:lint),
+    tests (empty OK), and docs tooling loads.
