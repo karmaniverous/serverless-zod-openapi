@@ -113,21 +113,51 @@ const main = (): void => {
       'Scaffold a new SMOZ app from packaged templates (default: minimal)',
     )
     .option('--template <name>', 'Template name (minimal|full)', 'minimal')
-    .action(async (opts: { template?: string }) => {
+    .option('--init', 'Create a minimal package.json if missing')
+    .option(
+      '-i, --install [pm]',
+      'Install dependencies (optionally specify pm: npm|pnpm|yarn|bun)',
+    )
+    .option('--yes', 'Skip prompts (non-interactive)', false)
+    .option('--dry-run', 'Show planned actions without writing', false)
+    .action(async (opts: {
+      template?: string;
+      init?: boolean;
+      install?: string | boolean;
+      yes?: boolean;
+      dryRun?: boolean;
+    }) => {
       try {
         const tpl =
           typeof opts.template === 'string' ? opts.template : 'minimal';
-        const { created, skipped } = await runInit(root, tpl);
+        const { created, skipped, examples, merged, installed } = await runInit(
+          root,
+          tpl,
+          opts,
+        );
         console.log(
-          created.length
-            ? `Created:\n - ${created.join('\n - ')}${skipped.length ? `\nSkipped (exists):\n - ${skipped.join('\n - ')}` : ''}`
-            : 'Nothing created (files already exist).',
+          [
+            created.length
+              ? `Created:\n - ${created.join('\n - ')}`
+              : 'Created: (none)',
+            examples.length
+              ? `Examples (existing preserved):\n - ${examples.join('\n - ')}`
+              : undefined,
+            skipped.length
+              ? `Skipped (exists):\n - ${skipped.join('\n - ')}`
+              : undefined,
+            merged.length
+              ? `package.json (additive):\n - ${merged.join('\n - ')}`
+              : undefined,
+            `Install: ${installed}`,
+          ]
+            .filter(Boolean)
+            .join('\n'),
         );
       } catch (e) {
         console.error((e as Error).message);
         process.exitCode = 1;
-      }
-    });
+      }    });
   program
     .command('register')
     .description(

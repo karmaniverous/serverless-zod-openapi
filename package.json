@@ -167,7 +167,9 @@
     "stan:docs": "typedoc --emit none",
     "cli:build": "rollup --config cli.rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "templates:typecheck": "tsc -p templates/project/tsconfig.json --noEmit && tsc -p templates/.check/tsconfig.minimal.json --noEmit",
+    "templates:lint": "eslint -c templates/project/eslint.config.ts templates/project && eslint -c templates/.check/eslint.minimal.config.ts templates/minimal"
   },
   "type": "module",
   "version": "0.0.0"

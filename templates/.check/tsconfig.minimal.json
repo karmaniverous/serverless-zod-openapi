@@ -1,0 +1,14 @@
+{
+  "extends": "../project/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "../../templates/minimal",
+    "paths": {
+      "@/*": ["*"],
+      "smoz": ["../../src/index.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": [
+    "../../templates/minimal/**/*.ts"
+  ]
+}

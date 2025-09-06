@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T23:12:00Z
+When updated: 2025-09-04T23:20:00Z
 
 ## Completed (recent)
 - Remove eslint-plugin-eslint-comments across project and templates:
@@ -11,6 +11,15 @@ When updated: 2025-09-04T23:12:00Z
 
 - Templates authoring: add minimal README to templates/project with
   conventions and common scripts.
+
+- Template verification overlays & manifests:
+  - Added templates/.check/tsconfig.minimal.json and eslint.minimal.config.ts
+  - Added templates/.manifests/package.minimal.json and package.project.json
+
+- CLI init enhancements:
+  - Additive manifest merge into package.json (deps/devDeps/scripts)
+  - Copy-if-absent with .example on conflicts (no content merges)
+  - --install[=<pm>] with tiny safe detection; no auto-install by default
 
 ## Next up
 
