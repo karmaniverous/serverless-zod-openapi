@@ -477,7 +477,6 @@ Future extensions (non‑blocking)
 
 - smoz doctor: verify environment and project shape.
 - smoz add --http/--non-http: override token inference if app.config.ts can’t be evaluated (out of scope for v1 to keep semantics clean).
-- smoz register --watch: optional live mode; defer until after v1.
 
 ## 10) Repo hygiene for event types and tokens (durable rules)
 
@@ -499,3 +498,91 @@ Acceptance criteria for hygiene
 - The base event schema is consolidated into a single module; the type alias is re‑exported from it and consumed across the codebase.
 - All tests compile and pass using the schema‑first DX (no local test‑only shapes).
 - Only intrinsics flagged for future use (e.g., serverless/intrinsic.ts) remain as deliberately retained forward‑compatibility helpers.
+
+## 8.5) App-level function defaults (env key defaults)
+
+Purpose
+
+- Reduce repetition of common per-function environment keys by allowing the App
+  to define default function-level env exposure.
+
+Requirements
+
+- App.create accepts an optional node:
+  - functionDefaults: { fnEnvKeys: readonly string[] }
+- The registry MUST union app.functionDefaults.fnEnvKeys with a function’s
+  own fnEnvKeys before calling buildFnEnv for that function.
+- Defaults are applied uniformly across HTTP and non-HTTP functions.
+- Documented intent: keep provider-level environment driven by global/stage
+  envKeys; buildFnEnv includes only non-globally-exposed keys.
+
+Testing
+
+- Add tests ensuring:
+  - Defaults are included when a function omits fnEnvKeys.
+  - Per-function fnEnvKeys extend (not replace) the defaults.
+  - Globally exposed keys remain excluded from buildFnEnv.
+
+## 11) Routing & function mapping policy (durable guardrails)
+
+Goal
+
+- Maintain a clean, observable, and well-documented mapping between HTTP routes
+  and Lambda functions.
+
+Requirements
+
+- One function per method/basePath pair.
+- HEAD is handled automatically by the HTTP stack; do not create explicit HEAD
+  siblings.
+- Multiple security contexts for the same route are expressed via httpContexts.
+- When two routes perform similar work (e.g., a legacy alias), prefer:
+  - a small alias endpoint that either calls the shared service or issues a
+    redirect (e.g., 308), and
+  - shared business logic in services, not shared handlers.
+- Keep Zod schemas per-route to preserve clear contracts and validation.
+- OpenAPI operationIds remain one-per-route (context-tagged) for clarity.
+
+Observability & operations
+
+- Per-route metrics, logs, and alarms must remain distinct by keeping separate
+  functions at the handler layer while sharing services under the hood.
+
+## 12) Path normalization & portability
+
+Requirements
+
+- Normalize all authored and generated path strings to POSIX separators (‘/’)
+  for consistency across platforms.
+- Provide a tiny helper in templates:
+  - toPosixPath(p: string): string — replace “\” with “/”.
+  - Optionally dirFromHere(metaUrl: string, levelsUp = 1): string that resolves
+    a directory relative to import.meta.url and applies toPosixPath.
+- Refactor APP_ROOT_ABS examples in templates to:
+  const APP_ROOT_ABS = toPosixPath(fileURLToPath(new URL('..', import.meta.url)));
+
+Acceptance
+
+- Templates and examples compile and run on Windows/macOS/Linux with identical
+  relative path behavior.
+
+## 9.1) CLI register --watch (live mode)
+
+Requirements
+
+- CLI supports “smoz register --watch”:
+  - Watches app/functions/\*\*/{lambda,openapi,serverless}.ts for add/change/unlink.
+  - Debounce events by ~200–300ms to batch flurries.
+  - Regenerate registers when changes are detected; print concise output:
+    “Updated” when files were rewritten, “No changes” otherwise.
+- Implementation uses chokidar with stable, POSIX-sorted imports and idempotent writes.
+- Provide "register:watch" npm script shortcut.
+
+## 9.2) Script chaining (guardrail)
+
+Requirements
+
+- Package scripts MUST chain register to avoid footguns:
+  - "openapi": "npm run register && tsx app/config/openapi && prettier -w app/generated/openapi.json"
+  - "package": "npm run register && serverless package"
+  - "deploy": "npm run register && serverless deploy"
