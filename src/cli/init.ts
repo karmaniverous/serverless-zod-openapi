@@ -297,16 +297,13 @@ export const runInit = async (
     | 'unknown-pm'
     | 'failed' = 'skipped';
   const installOpt = opts ? opts.install : false;
-  // Normalize string form to avoid unnecessary condition patterns.
-  const stringInstall = typeof installOpt === 'string' ? installOpt : '';
-  const wantsInstall =
-    stringInstall !== '' || installOpt === true;
-  if (wantsInstall) {
-    const pm: string | undefined =
-      stringInstall !== ''
-        ? stringInstall
-        : detectPm(root);
-    installed = runInstall(root, pm);
+  // Derive package manager to use (explicit string or detected when true).
+  let pm: string | undefined;
+  if (typeof installOpt === 'string' && installOpt.trim() !== '') {
+    pm = installOpt;
+  } else if (installOpt === true) {
+    pm = detectPm(root);
   }
+  if (pm) installed = runInstall(root, pm);
   return { created, skipped, examples, merged, installed };
 };
