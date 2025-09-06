@@ -261,7 +261,7 @@ export const runInit = async (
         scripts: {},
       };
       // Avoid optional chain to satisfy no-unnecessary-condition; normalize to boolean.
-      const dryRunCreate = !!(opts && opts.dryRun);
+      const dryRunCreate = !!opts.dryRun;
       if (!dryRunCreate) await writeJson(pkgPath, pkg);
       created.push(posix.normalize(pkgPath));
     } else {
@@ -297,13 +297,15 @@ export const runInit = async (
     | 'unknown-pm'
     | 'failed' = 'skipped';
   const installOpt = opts ? opts.install : false;
-  // Derive package manager to use (explicit string or detected when true).
-  let pm: string | undefined;
-  if (typeof installOpt === 'string' && installOpt.trim() !== '') {
-    pm = installOpt;
-  } else if (installOpt === true) {
-    pm = detectPm(root);
-  }
-  if (pm) installed = runInstall(root, pm);
+  // Derive package manager to use (explicit string or detected when true),
+  // then set installed based on presence of a PM.
+  const hasInstallString =
+    typeof installOpt === 'string' && installOpt.trim() !== '';
+  const pm = hasInstallString
+    ? installOpt
+    : installOpt === true
+      ? detectPm(root)
+      : undefined;
+  installed = pm ? runInstall(root, pm) : installed;
   return { created, skipped, examples, merged, installed };
 };

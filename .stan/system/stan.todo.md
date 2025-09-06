@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-06T00:45:00Z
+When updated: 2025-09-06T00:50:00Z
 
 ## Completed (recent)
-
 - CLI lint polish (init): track dependency merge changes with a boolean flag in
   mergeAdditive; avoids unnecessary-condition while preserving behavior.
 - CLI lint polish (init): normalize install option into `stringInstall` and
