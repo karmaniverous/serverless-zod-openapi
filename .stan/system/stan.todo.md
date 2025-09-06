@@ -1,16 +1,17 @@
 # Development Plan
 
-When updated: 2025-09-06T17:20:00Z
+When updated: 2025-09-06T17:35:00Z
 
 ## Completed (recent)
 
+- Seed placeholder register files under app/generated so imports resolve
+  prior to running `smoz register`.
 - Switch Serverless/OpenAPI to use CLI‑generated register files
   (app/generated/register.\*.ts); removed direct function imports to align
   runtime with the CLI “register” workflow.
 - CLI lint polish (init): track dependency merge changes with a boolean flag in
   mergeAdditive; avoids unnecessary-condition while preserving behavior.
-- CLI lint polish (init): normalize install option into `stringInstall` and
-  compare against '' to avoid unnecessary-condition on length checks.
+- CLI lint polish (init): normalize install option into `stringInstall` and  compare against '' to avoid unnecessary-condition on length checks.
 - CLI lint polish (init): derive pm (string or detected) and run install only
   when pm is defined; removes unnecessary-condition in install logic.
 - Lint zero (init): ESLint passes with 0 errors after refining optional
