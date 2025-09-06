@@ -6,23 +6,27 @@
   ],
   "project": [
     "src/**",
-    "app/**",    "services/**",
+    "app/**",
+    "services/**",
     "!**/generated/**",
     "!docs/**"
   ],
   "ignore": [
     "lib/test/**",
     "app/**/handler.ts",
+    "app/functions/**/lambda.ts",
+    "app/functions/**/openapi.ts",
     "src/serverless/intrinsic.ts",
     "services/**/src/openapi.json",
     "services/activecampaign/orval.config.ts",
     "services/activecampaign/src/wrapped/field-values.ts",
     "services/activecampaign/src/api/contacts/format.ts"
   ],
-  "ignoreBinaries": ["plantuml"],
+  "ignoreBinaries": ["plantuml", "smoz"],
   "ignoreDependencies": [
     "http-errors",
-    "@types/http-errors",    "@types/serverless",
+    "@types/http-errors",
+    "@types/serverless",
     "@vitest/coverage-v8",
     "serverless-apigateway-log-retention",
     "serverless-deployment-bucket",

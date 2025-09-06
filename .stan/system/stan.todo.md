@@ -1,9 +1,13 @@
 # Development Plan
 
-When updated: 2025-09-06T17:45:00Z
+When updated: 2025-09-06T17:55:00Z
 
 ## Completed (recent)
 
+- knip hygiene:
+  - Ignore pre-register app/functions/\*\*/{lambda.ts,openapi.ts} so they
+    don’t flag as unused prior to generating registers.
+  - Ignore CLI bin “smoz” as an unlisted binary.
 - Documentation updates:
   - README Quick Start now uses app/functions/\* paths.
   - OpenAPI & Serverless snippets load CLI-generated registers.
