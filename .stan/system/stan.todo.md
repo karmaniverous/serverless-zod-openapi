@@ -1,14 +1,15 @@
 # Development Plan
 
-When updated: 2025-09-06T00:25:00Z
+When updated: 2025-09-06T00:35:00Z
 
 ## Completed (recent)
 - CLI lint polish (init): track dependency merge changes with a boolean flag in
   mergeAdditive; avoids unnecessary-condition while preserving behavior.
+- CLI lint polish (init): normalize install option into `stringInstall` and
+  compare against '' to avoid unnecessary-condition on length checks.
 - CLI lint fix (init): resolve @typescript-eslint/no-unnecessary-condition by
   replacing a broad truthiness check on Object.keys(out).length with an explicit
-  > 0 comparison in mergeAdditive. Keeps behavior identical and satisfies the
-  > rule.- Remove eslint-plugin-eslint-comments across project and templates:
+  > 0 comparison in mergeAdditive. Keeps behavior identical and satisfies the  > rule.- Remove eslint-plugin-eslint-comments across project and templates:
   - Dropped plugin from root and template ESLint configs. - Deleted leftover shim file: types/eslint-plugin-eslint-comments.d.ts - Removed devDependency from package.json. - Rationale: simplify lint stack; avoid noisy rules.
 
 - Templates authoring: add minimal README to templates/project with

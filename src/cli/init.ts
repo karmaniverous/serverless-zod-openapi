@@ -297,16 +297,16 @@ export const runInit = async (
     | 'unknown-pm'
     | 'failed' = 'skipped';
   const installOpt = opts ? opts.install : false;
+  // Normalize string form to avoid unnecessary condition patterns.
+  const stringInstall = typeof installOpt === 'string' ? installOpt : '';
   const wantsInstall =
-    (typeof installOpt === 'string' && installOpt.length > 0) ||
-    installOpt === true;
+    stringInstall !== '' || installOpt === true;
   if (wantsInstall) {
     const pm: string | undefined =
-      typeof installOpt === 'string' && installOpt.length > 0
-        ? installOpt
+      stringInstall !== ''
+        ? stringInstall
         : detectPm(root);
     installed = runInstall(root, pm);
   }
-
   return { created, skipped, examples, merged, installed };
 };
