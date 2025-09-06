@@ -251,11 +251,14 @@ export const runInit = async (
   // 5) Optional install
   let installed: 'skipped' | 'ran (npm)' | 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'unknown-pm' | 'failed' = 'skipped';
   const installOpt = opts ? opts.install : false;
-  if (installOpt) {
-    let pm: string | undefined;    if (typeof installOpt === 'string' && installOpt.length > 0) {
-      pm = installOpt;
-    } else {      pm = detectPm(root);
-    }
+  const wantsInstall =
+    (typeof installOpt === 'string' && installOpt.length > 0) ||
+    installOpt === true;
+  if (wantsInstall) {
+    const pm: string | undefined =
+      typeof installOpt === 'string' && installOpt.length > 0
+        ? installOpt
+        : detectPm(root);
     installed = runInstall(root, pm);
   }
 
