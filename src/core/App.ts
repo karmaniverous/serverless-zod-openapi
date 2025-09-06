@@ -67,10 +67,13 @@ export interface AppInit<
    * Optional app-level HTTP middleware customization (defaults & profiles).
    */
   http?: AppHttpConfig;
+  /** Optional defaults applied to every function (merged per registration). */
+  functionDefaults?: {
+    fnEnvKeys?: readonly string[];
+  };
 }
 /**
- * Application class.
- *
+ * Application class. *
  * @typeParam GlobalParamsSchema - Zod object schema for global parameters
  * @typeParam StageParamsSchema  - Zod object schema for per‑stage parameters
  * @typeParam EventTypeMapSchema - Zod object schema mapping event tokens to runtime types
@@ -161,9 +164,9 @@ export interface AppInit<
       httpEventTypeTokens: this.httpEventTypeTokens,
       env: { global: this.global, stage: this.stage },
       http: this.http,
+      functionDefaults: init.functionDefaults,
     });
-  }
-  /**
+  }  /**
    * Ergonomic constructor for schema‑first inference.
    *
    * @param init - initialization object (schemas, serverless defaults, params/envKeys)

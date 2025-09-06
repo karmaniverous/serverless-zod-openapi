@@ -1,16 +1,17 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { App, baseEventTypeMapSchema } from 'smoz';
+import { App, baseEventTypeMapSchema, toPosixPath } from '@karmaniverous/smoz';
 import { z } from 'zod';
 
 // Derive the app root as the parent directory of app/config/
-export const APP_ROOT_ABS = dirname(dirname(fileURLToPath(import.meta.url))).replace(/\\/g, '/');
+export const APP_ROOT_ABS = toPosixPath(
+  fileURLToPath(new URL('..', import.meta.url)),
+);
 
 export const app = App.create({
   appRootAbs: APP_ROOT_ABS,
-  globalParamsSchema: z.object({
-    PROFILE: z.string(),
+  globalParamsSchema: z.object({    PROFILE: z.string(),
     REGION: z.string(),
     SERVICE_NAME: z.string(),
   }),
@@ -44,4 +45,4 @@ export const app = App.create({
 });
 
 export const { stages, environment, buildFnEnv } = app;
-export const ENDPOINTS_ROOT_REST = join(APP_ROOT_ABS, 'functions', 'rest').replace(/\\/g, '/');
+export const ENDPOINTS_ROOT_REST = toPosixPath(join(APP_ROOT_ABS, 'functions', 'rest'));

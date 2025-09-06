@@ -50,10 +50,13 @@ export const createRegistry = <
     stage: EnvSchemaNode<StageParamsSchema>;
   };
   http: AppHttpConfig;
+  functionDefaults?: {
+    /** Default per-function env keys applied to all functions (merged). */
+    fnEnvKeys?: readonly string[];
+  };
 }) => {
   const map = new Map<string, RegistryEntry>();
-  return {
-    defineFunction<
+  return {    defineFunction<
       EventType extends Extract<keyof z.infer<EventTypeMapSchema>, string>,
       EventSchema extends z.ZodType | undefined,
       ResponseSchema extends z.ZodType | undefined,
@@ -78,6 +81,13 @@ export const createRegistry = <
           `Duplicate functionName "${key}". Existing: ${other.callerModuleUrl}. New: ${options.callerModuleUrl}. Provide a unique functionName.`,
         );
       }
+      // Merge default fnEnvKeys with per-function keys (unique, preserve order).
+      const mergedFnEnvKeys = (() => {
+        const out = new Set<PropertyKey>();
+        (deps.functionDefaults?.fnEnvKeys ?? []).forEach((k) => out.add(k));
+        (options.fnEnvKeys ?? []).forEach((k) => out.add(k));
+        return Array.from(out);
+      })();
 
       const brandedConfig = {
         functionName: options.functionName,
@@ -86,8 +96,8 @@ export const createRegistry = <
         ...(options.basePath ? { basePath: options.basePath } : {}),
         ...(options.httpContexts ? { httpContexts: options.httpContexts } : {}),
         ...(options.contentType ? { contentType: options.contentType } : {}),
-        ...(options.fnEnvKeys
-          ? { fnEnvKeys: options.fnEnvKeys as readonly PropertyKey[] }
+        ...(mergedFnEnvKeys.length
+          ? { fnEnvKeys: mergedFnEnvKeys as readonly PropertyKey[] }
           : {}),
         ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
         ...(options.responseSchema
@@ -109,8 +119,8 @@ export const createRegistry = <
         ...(options.basePath ? { basePath: options.basePath } : {}),
         ...(options.httpContexts ? { httpContexts: options.httpContexts } : {}),
         ...(options.contentType ? { contentType: options.contentType } : {}),
-        ...(options.fnEnvKeys
-          ? { fnEnvKeys: options.fnEnvKeys as readonly PropertyKey[] }
+        ...(mergedFnEnvKeys.length
+          ? { fnEnvKeys: mergedFnEnvKeys as readonly PropertyKey[] }
           : {}),
         ...(options.eventSchema ? { eventSchema: options.eventSchema } : {}),
         ...(options.responseSchema
@@ -120,7 +130,6 @@ export const createRegistry = <
         endpointsRootAbs: options.endpointsRootAbs,
         brandedConfig,
       });
-
       return {
         handler: (
           business: Handler<

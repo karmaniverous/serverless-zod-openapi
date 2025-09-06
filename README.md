@@ -74,16 +74,14 @@ app/config/app.config.ts
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { App, baseEventTypeMapSchema } from 'smoz';
+import { App, baseEventTypeMapSchema, toPosixPath } from '@karmaniverous/smoz';
 
-const APP_ROOT_ABS = dirname(dirname(fileURLToPath(import.meta.url))).replace(
-  /\\/g,
-  '/',
+const APP_ROOT_ABS = toPosixPath(
+  fileURLToPath(new URL('..', import.meta.url)),
 );
 
 export const app = App.create({
-  appRootAbs: APP_ROOT_ABS,
-  globalParamsSchema: z.object({
+  appRootAbs: APP_ROOT_ABS,  globalParamsSchema: z.object({
     REGION: z.string(),
     SERVICE_NAME: z.string(),
   }),

@@ -8,6 +8,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { join } from 'node:path';
 
 import { Command } from 'commander';
 import { packageDirectorySync } from 'package-directory';
@@ -18,7 +19,6 @@ import { runRegister } from './register';
 
 type Pkg = { name?: string; version?: string };
 const getRepoRoot = (): string => packageDirectorySync() ?? process.cwd();
-
 const readPkg = (root: string): Pkg => {
   try {
     const raw = readFileSync(join(root, 'package.json'), 'utf8');
@@ -163,17 +163,47 @@ const main = (): void => {
     .description(
       'Scan app/functions/** and generate app/generated/register.*.ts',
     )
-    .action(async () => {
-      const { wrote } = await runRegister(root);
-      console.log(
-        wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
-      );
+    .option('-w, --watch', 'Watch for changes and regenerate registers')
+    .action(async (opts: { watch?: boolean }) => {
+      const runOnce = async () => {
+        const { wrote } = await runRegister(root);
+        console.log(
+          wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
+        );
+      };
+      if (!opts?.watch) {
+        await runOnce();
+        return;
+      }
+      await runOnce();
+      // Lazy-load chokidar to avoid adding overhead when not watching.
+      const chokidar = (await import('chokidar')).default;
+      const globs = [
+        join(root, 'app', 'functions', '**', 'lambda.ts'),
+        join(root, 'app', 'functions', '**', 'openapi.ts'),
+        join(root, 'app', 'functions', '**', 'serverless.ts'),
+      ];
+      const watcher = chokidar.watch(globs, {
+        ignoreInitial: true,
+        awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
+      });
+      let timer: NodeJS.Timeout | undefined;
+      const schedule = () => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          void runOnce();
+        }, 250);
+      };
+      watcher.on('add', schedule).on('change', schedule).on('unlink', schedule);
+      console.log('Watching for function registration changes...');
+      // Keep process alive
+       
+      await new Promise<void>(() => {});
     });
   // Default action (no subcommand): print version + signature block
   program.action(() => {
     printSignature();
   });
-  program.parse(process.argv);
-};
+  program.parse(process.argv);};
 
 main();

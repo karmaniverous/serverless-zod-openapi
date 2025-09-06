@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { z } from 'zod';
 
 import { app, APP_ROOT_ABS } from '@/app/config/app.config';
+import { toPosixPath } from 'smoz';
 
 export const eventSchema = z.object({}).optional();
 export const responseSchema = z.object({ ok: z.boolean() });
@@ -17,5 +18,5 @@ export const fn = app.defineFunction({
   eventSchema,
   responseSchema,
   callerModuleUrl: import.meta.url,
-  endpointsRootAbs: join(APP_ROOT_ABS, 'functions', 'rest').replace(/\\/g, '/'),
+  endpointsRootAbs: toPosixPath(join(APP_ROOT_ABS, 'functions', 'rest')),
 });

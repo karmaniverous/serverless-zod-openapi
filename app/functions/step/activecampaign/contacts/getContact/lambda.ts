@@ -10,6 +10,7 @@ import { app } from '@/app/config/app.config';
 import { APP_ROOT_ABS } from '@/app/config/app.config';
 import { contactSchema } from '@/services/activecampaign/src';
 import type { LambdaEvent } from '@/src';
+import { toPosixPath } from '@/src';
 
 export const eventSchema = z
   .object({
@@ -25,5 +26,5 @@ export const fn = app.defineFunction({
   eventSchema,
   responseSchema,
   callerModuleUrl: import.meta.url,
-  endpointsRootAbs: join(APP_ROOT_ABS, 'functions', 'step').replace(/\\/g, '/'),
+  endpointsRootAbs: toPosixPath(join(APP_ROOT_ABS, 'functions', 'step')),
 });

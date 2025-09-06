@@ -1,59 +1,41 @@
 # Development Plan
 
-When updated: 2025-09-06T19:20:00Z
+When updated: 2025-09-06T19:35:00Z
 
 ## Next up (near‑term, actionable)
 
-1) Path utilities and APP_ROOT_ABS refactor
-   - Implement a tiny reusable normalizer:
-     - toPosixPath(p: string): string — normalize “\” → “/”.
-     - Optional: dirFromHere(metaUrl: string, levelsUp = 1): string with
-       toPosixPath applied.
-   - Refactor APP_ROOT_ABS in templates/examples to:
-     const APP_ROOT_ABS = toPosixPath(fileURLToPath(new URL('..', import.meta.url)));
-   - Acceptance:
-     - Template projects compile on Windows/macOS/Linux with consistent
-       path behavior.
-     - README and template code updated accordingly.
+1) Tests — CLI & aggregators
+   - register (non-watch): stable, POSIX-sorted imports; idempotency; Prettier integration safe.
+   - register --watch: debounce and multi-event simulation.
+   - add/init: creation lists, idempotency, manifest merge.
+   - serverless/openapi aggregators: contexts → events, operationId composition; env extras only; summaries/tags.
 
-2) CLI “register --watch” via chokidar
-   - Add -w/--watch to “smoz register”.
-   - Watch: app/functions/**/{lambda,openapi,serverless}.ts
-   - Debounce: ~200–300ms.
-   - On add/change/unlink: regenerate registers; print “Updated” or
-     “No changes”.
-   - Add script: "register:watch": "smoz register --watch"
-   - Keep dev ergonomics: in-repo “register” can use tsx in package.json
-     if desired; published consumers use the bin.
-
-3) Scripts — chain register to prevent footguns
-   - "openapi": "npm run register && tsx app/config/openapi && prettier -w app/generated/openapi.json"
-   - "package": "npm run register && serverless package"
-   - "deploy": "npm run register && serverless deploy"
-
-4) App-level function defaults (fnEnvKeys)
-   - App.create accepts functionDefaults: { fnEnvKeys: readonly string[] }.
-   - Registry unions defaults with per-function fnEnvKeys before buildFnEnv.
-   - Tests:
-     - Defaults flow into buildFnEnv.
-     - Per-function keys extend (not replace) defaults.
-     - Globally exposed keys remain excluded from buildFnEnv.
-
-5) README & templates updates
-   - Imports refer to '@karmaniverous/smoz' (published).
-   - Provide path constant (e.g., ENDPOINTS_ROOT_REST) or use join with
-     APP_ROOT_ABS + toPosixPath consistently.
-   - templates/.check/tsconfig.minimal.json maps 'smoz' → '../../src/index.ts'
-     so template typechecks inside this repo.
-   - Ensure templates:lint and templates:typecheck remain green.
+2) Template/Docs polish
+   - Re-verify templates:lint and templates:typecheck after helper refactor.
+   - Expand README with short “Path hygiene” note referencing toPosixPath.
 
 ## Completed (recent)
 
+- Path utilities & APP_ROOT_ABS refactor:
+  - Added src/util/path.ts with toPosixPath and dirFromHere.
+  - Exported from public entry; updated app/config/app.config.ts.
+  - Updated templates to use toPosixPath and published import name.
+- CLI “register --watch”:
+  - Added -w/--watch to “smoz register” using chokidar with ~250ms debounce.
+  - Added script: "register:watch": "smoz register --watch".
+- Scripts — chain register to prevent footguns:
+  - openapi/package/deploy scripts now prefix npm run register.
+- App-level function defaults (fnEnvKeys):
+  - App.create now accepts functionDefaults.fnEnvKeys.
+  - Registry merges defaults into per-function fnEnvKeys to drive both runtime
+    env parsing and serverless buildFnEnv (extras-only).
+- README & templates updates:
+  - Quick Start now uses toPosixPath + '@karmaniverous/smoz' imports.
+  - templates/.check tsconfig maps '@karmaniverous/smoz' to '../../src/index.ts'.
 - Removed legacy app/openapi.json (pruned stale artifact).
 - knip hygiene:
   - Ignore pre-register app/functions/\*\*/{lambda.ts,openapi.ts} so they
-    don’t flag as unused prior to generating registers.  - Ignore CLI bin “smoz” as an unlisted binary.
-- Documentation updates:
+    don’t flag as unused prior to generating registers.  - Ignore CLI bin “smoz” as an unlisted binary.- Documentation updates:
   - README Quick Start now uses app/functions/\* paths.
   - OpenAPI & Serverless snippets load CLI-generated registers.
   - Added npm script `register` and noted generated output path.
@@ -98,26 +80,3 @@ When updated: 2025-09-06T19:20:00Z
 - Templates authoring (packaged assets) — acceptance
   - Fresh template copy compiles (templates:typecheck), lints (templates:lint),
     tests (empty OK), and docs tooling loads.
-
-## Tests to add (CLI & aggregators)
-
-CLI:
-- register (non-watch): In a temp sandbox with fake app/functions:
-  - After runRegister(): verify app/generated/register.functions.ts and
-    app/generated/register.openapi.ts contain stable, sorted POSIX imports;
-    idempotent on second run; Prettier integration (formatMaybe) works if
-    installed, no crash if absent.
-- register --watch: Simulate file changes and assert debounced regeneration
-  and updated content.
-- add: Generate both HTTP (rest/<segments>/<method>) and non‑HTTP
-  (step/<segments>) trees; assert created list, content, idempotency.
-- init: Dry-run and real copy (no install); verify package.json merged
-  additively and register placeholders seeded.
-
-Aggregators:
-- serverless/buildServerlessFunctions:
-  - HTTP vs non‑HTTP behavior; env includes provider + buildFnEnv extras only.
-- openapi/buildAllOpenApiPaths: context prefixing, operationId composition,
-  tag merge, summary augmentation.
-
-Helpers & edge cases: resolveHttpFromFunctionConfig error clarity and overrides.

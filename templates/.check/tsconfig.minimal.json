@@ -4,11 +4,10 @@
     "baseUrl": "../../templates/minimal",
     "paths": {
       "@/*": ["*"],
-      "smoz": ["../../src/index.ts"]
+      "@karmaniverous/smoz": ["../../src/index.ts"]
     },
     "types": ["node"]
-  },
-  "include": [
+  },  "include": [
     "../../templates/minimal/**/*.ts"
   ]
 }
