@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-06T00:40:00Z
+When updated: 2025-09-06T00:45:00Z
 
 ## Completed (recent)
 
@@ -38,16 +38,28 @@ When updated: 2025-09-06T00:40:00Z
 
 ## Next up
 
-1. Templates authoring (packaged assets) - Objective: robust starting baseline for new apps. - Remaining: a. (DONE) Add a minimal README snippet to templates/project.
+1. Lint zero (init)
+   - Objective: eliminate the remaining ESLint error in src/cli/init.ts.
+   - Steps:
+     - Run: `npx eslint src/cli/init.ts -f unix` to confirm the exact node and
+       line; current report indicates @typescript-eslint/no-unnecessary-condition.
+     - Adjust the flagged conditional to avoid length-based truthiness or
+       conditions that the rule can infer as always truthy/falsey.
+     - Re-run: `npm run lint` (should report 0 errors).
+   - Acceptance: `npm run lint` returns 0 errors/warnings.
+
+2. Templates authoring (packaged assets)
+   - Objective: robust starting baseline for new apps.
+   - Remaining: a. (DONE) Add a minimal README snippet to templates/project.
    - Acceptance:
      - Fresh template copy compiles (typecheck), lints, tests (empty OK), and docs tooling loads.
 
-2. CLI — verify register end-to-end
+3. CLI — verify register end-to-end
    - Build CLI (npm run cli:build).
    - Run register to generate app/generated/register.\*.ts from current app/functions.
    - Acceptance: “smoz -v” prints signature; register writes files idempotently and formats with Prettier.
 
-3. Documentation updates
+4. Documentation updates
    - Update README Quick Start to use app/functions/\* paths (no app/endpoints).
    - Document CLI workflow (init/register/add) and generated files (app/generated/\*).
    - Note httpEventTypeTokens lives only in app/config/app.config.ts.
