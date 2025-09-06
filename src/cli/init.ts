@@ -226,11 +226,12 @@ export const runInit = async (
     if (shouldInit) {
       const name = toPosix(root).split('/').pop() ?? 'smoz-app';
       pkg = { name, private: true, type: 'module', version: '0.0.0', scripts: {} };
-      if (!opts?.dryRun) await writeJson(pkgPath, pkg);
+      // Avoid optional chain to satisfy no-unnecessary-condition; normalize to boolean.
+      const dryRunCreate = !!(opts && opts.dryRun);
+      if (!dryRunCreate) await writeJson(pkgPath, pkg);
       created.push(posix.normalize(pkgPath));
     } else {
-      throw new Error(
-        'No package.json found. Run "npm init -y" (or re-run with --init) and then "smoz init" again.',
+      throw new Error(        'No package.json found. Run "npm init -y" (or re-run with --init) and then "smoz init" again.',
       );
     }
   }
@@ -249,12 +250,11 @@ export const runInit = async (
 
   // 5) Optional install
   let installed: 'skipped' | 'ran (npm)' | 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'unknown-pm' | 'failed' = 'skipped';
-  const installOpt = opts?.install;
+  const installOpt = opts ? opts.install : false;
   if (installOpt) {
     let pm: string | undefined;    if (typeof installOpt === 'string' && installOpt.length > 0) {
       pm = installOpt;
-    } else {
-      pm = detectPm(root);
+    } else {      pm = detectPm(root);
     }
     installed = runInstall(root, pm);
   }
