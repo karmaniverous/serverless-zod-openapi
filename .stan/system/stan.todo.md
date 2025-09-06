@@ -1,9 +1,12 @@
 # Development Plan
 
-When updated: 2025-09-06T01:00:00Z
+When updated: 2025-09-06T17:20:00Z
 
 ## Completed (recent)
 
+- Switch Serverless/OpenAPI to use CLI‑generated register files
+  (app/generated/register.\*.ts); removed direct function imports to align
+  runtime with the CLI “register” workflow.
 - CLI lint polish (init): track dependency merge changes with a boolean flag in
   mergeAdditive; avoids unnecessary-condition while preserving behavior.
 - CLI lint polish (init): normalize install option into `stringInstall` and
@@ -46,12 +49,7 @@ When updated: 2025-09-06T01:00:00Z
    - Acceptance:
      - Fresh template copy compiles (typecheck), lints, tests (empty OK), and docs tooling loads.
 
-2. CLI — verify register end-to-end
-   - Build CLI (npm run cli:build).
-   - Run register to generate app/generated/register.\*.ts from current app/functions.
-   - Acceptance: “smoz -v” prints signature; register writes files idempotently and formats with Prettier.
-
-3. Documentation updates
+2. Documentation updates
    - Update README Quick Start to use app/functions/\* paths (no app/endpoints).
    - Document CLI workflow (init/register/add) and generated files (app/generated/\*).
    - Note httpEventTypeTokens lives only in app/config/app.config.ts.
