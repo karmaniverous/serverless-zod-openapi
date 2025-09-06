@@ -78,27 +78,30 @@ const runInstall = (
   pm?: string,
 ): 'ran (npm)' | 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'skipped' | 'unknown-pm' | 'failed' => {
   if (!pm) return 'skipped';
-  const cmd =
-    pm === 'pnpm'
-      ? ['pnpm', ['install']]
-      : pm === 'yarn'
-        ? ['yarn', ['install']]
-        : pm === 'bun'
-          ? ['bun', ['install']]
-          : pm === 'npm'
-            ? ['npm', ['install']]
-            : undefined;
-  if (!cmd) return 'unknown-pm';
-  const res = spawnSync(cmd[0]!, cmd[1], { stdio: 'inherit', cwd: root, shell: true });
-  if (res.status === 0) return `ran (${pm})` as const;
+  const known = pm === 'pnpm' || pm === 'yarn' || pm === 'bun' || pm === 'npm';
+  if (!known) return 'unknown-pm';
+
+  // Spawn with explicit args; avoid tuple inference that widens types.
+  const res = spawnSync(pm, ['install'], {
+    stdio: 'inherit',
+    cwd: root,
+    shell: true,
+  });
+
+  if (res.status === 0) {
+    const tag: 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'ran (npm)' =
+      pm === 'pnpm' ? 'ran (pnpm)' : pm === 'yarn' ? 'ran (yarn)' : pm === 'bun' ? 'ran (bun)' : 'ran (npm)';
+    return tag;
+  }
   return 'failed';
 };
 
 const mergeAdditive = (target: Record<string, unknown>, source: Record<string, unknown>) => {
   const merged: string[] = [];
   const mergeKey = (key: 'dependencies' | 'devDependencies' | 'peerDependencies') => {
-    const src = (source[key] as Record<string, string>) ?? {};
-    const dst = (target[key] as Record<string, string>) ?? {};
+    // Allow possibly-undefined shapes to satisfy lint (no-unnecessary-condition).
+    const src = (source[key] as Record<string, string> | undefined) ?? {};
+    const dst = (target[key] as Record<string, string> | undefined) ?? {};
     const out = { ...dst };
     for (const [k, v] of Object.entries(src)) {
       if (!(k in dst)) {
@@ -111,14 +114,13 @@ const mergeAdditive = (target: Record<string, unknown>, source: Record<string, u
   mergeKey('dependencies');
   mergeKey('devDependencies');
   mergeKey('peerDependencies');
-  const srcScripts = (source.scripts as Record<string, string>) ?? {};
-  const dstScripts = (target.scripts as Record<string, string>) ?? {};
+  const srcScripts = (source.scripts as Record<string, string> | undefined) ?? {};
+  const dstScripts = (target.scripts as Record<string, string> | undefined) ?? {};
   const scriptsOut = { ...dstScripts };
   for (const [name, script] of Object.entries(srcScripts)) {
     if (!(name in dstScripts)) {
       scriptsOut[name] = script;
-      merged.push(`scripts:${name}`);
-    } else if (dstScripts[name] !== script) {
+      merged.push(`scripts:${name}`);    } else if (dstScripts[name] !== script) {
       const alias = `${name}:smoz`;
       if (!(alias in dstScripts)) {
         scriptsOut[alias] = script;
@@ -239,13 +241,13 @@ export const runInit = async (
     const before = JSON.stringify(pkg);
     const added = mergeAdditive(pkg, manifest);
     merged.push(...added);
-    if (!opts?.dryRun && before !== JSON.stringify(pkg)) {
+    const dryRun = !!(opts && opts.dryRun);
+    if (!dryRun && before !== JSON.stringify(pkg)) {
       await writeJson(pkgPath, pkg);
     }
   }
 
-  // 5) Optional install
-  let installed: string = 'skipped';
+  // 5) Optional install  let installed: string = 'skipped';
   const installOpt = opts?.install;
   if (installOpt) {
     let pm: string | undefined;

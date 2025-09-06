@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-04T23:20:00Z
+When updated: 2025-09-04T23:24:00Z
 
 ## Completed (recent)
 - Remove eslint-plugin-eslint-comments across project and templates:
@@ -20,12 +20,13 @@ When updated: 2025-09-04T23:20:00Z
   - Additive manifest merge into package.json (deps/devDeps/scripts)
   - Copy-if-absent with .example on conflicts (no content merges)
   - --install[=<pm>] with tiny safe detection; no auto-install by default
+  - TypeScript and lint polish: spawnSync typing, literal return, and
+    avoiding unnecessary nullish/optional checks
 
 ## Next up
 
 1) Templates authoring (packaged assets)
-   - Objective: robust starting baseline for new apps.
-   - Remaining:
+   - Objective: robust starting baseline for new apps.   - Remaining:
      a. (DONE) Add a minimal README snippet to templates/project.
    - Acceptance:
      - Fresh template copy compiles (typecheck), lints, tests (empty OK), and docs tooling loads.
