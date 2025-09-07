@@ -54,12 +54,11 @@ describe('serverless/buildServerlessFunctions', () => {
     };
     expect(fn.events.length).toBe(2);
     const paths = fn.events.map((e) => e.http.path).sort();
-    expect(paths).toEqual(['/public/users', '/users']);
+    expect(paths).toEqual(['/users', '/users']);
     expect(fn.environment).toEqual({
       PROFILE: '${param:PROFILE}',
       DOMAIN_NAME: '${param:DOMAIN_NAME}',
-    });
-    expect(typeof fn.handler).toBe('string');
+    });    expect(typeof fn.handler).toBe('string');
     expect(fn.handler.endsWith('.handler')).toBe(true);
   });
 

@@ -1,8 +1,7 @@
 {
   "entry": [
     "serverless.ts",
-    "services/activecampaign/src/index.ts",
-    "src/cli/index.ts"
+    "services/activecampaign/src/index.ts"
   ],
   "project": [
     "src/**",
@@ -11,8 +10,7 @@
     "!**/generated/**",
     "!docs/**"
   ],
-  "ignore": [
-    "lib/test/**",
+  "ignore": [    "lib/test/**",
     "app/**/handler.ts",
     "app/functions/**/lambda.ts",
     "app/functions/**/openapi.ts",
@@ -22,12 +20,11 @@
     "services/activecampaign/src/wrapped/field-values.ts",
     "services/activecampaign/src/api/contacts/format.ts"
   ],
-  "ignoreBinaries": ["plantuml", "smoz"],
+  "ignoreBinaries": ["plantuml"],
   "ignoreDependencies": [
     "http-errors",
     "@types/http-errors",
-    "@types/serverless",
-    "@vitest/coverage-v8",
+    "@types/serverless",    "@vitest/coverage-v8",
     "serverless-apigateway-log-retention",
     "serverless-deployment-bucket",
     "serverless-domain-manager",
