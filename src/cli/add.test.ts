@@ -1,17 +1,17 @@
+/* REQUIREMENTS ADDRESSED (TEST)
+- CLI add: scaffolds HTTP and non-HTTP trees idempotently with expected files.
+*/
 import { mkdtempSync, rmSync } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, sep } from 'node:path';
+import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { runAdd } from '@/src/cli/add';
 
-const posix = (p: string) => p.split(sep).join('/');
-
 describe('CLI: add', () => {
-  it('scaffolds HTTP and non-HTTP trees and is idempotent', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'smoz-add-'));
+  it('scaffolds HTTP and non-HTTP trees and is idempotent', async () => {    const root = mkdtempSync(join(tmpdir(), 'smoz-add-'));
     try {
       // HTTP example
       const http = await runAdd(root, 'rest/foo/get');
@@ -27,13 +27,12 @@ describe('CLI: add', () => {
       expect(http2.skipped.length).toBeGreaterThanOrEqual(1);
 
       // Non-HTTP example
-      const non = await runAdd(
+      await runAdd(
         root,
         'step/activecampaign/contacts/getContact',
       );
       const nonBase = join(
-        root,
-        'app',
+        root,        'app',
         'functions',
         'step',
         'activecampaign',

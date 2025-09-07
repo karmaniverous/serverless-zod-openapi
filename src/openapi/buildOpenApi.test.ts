@@ -1,12 +1,27 @@
+/* REQUIREMENTS ADDRESSED (TEST)
+- OpenAPI aggregator: build per-context path items with augmented summaries,
+  tags, and composed operationIds; cross-platform URL/path handling.
+*/
 import { describe, expect, it } from 'vitest';
 
-import {
-  buildAllOpenApiPaths,
+import {  buildAllOpenApiPaths,
   type RegEntry,
 } from '@/src/openapi/buildOpenApi';
 
 describe('openapi/buildAllOpenApiPaths', () => {
   it('builds path items per context with augmented summary, tags, and composed operationIds', () => {
+    const fileUrl =
+      process.platform === 'win32'
+        ? new URL(
+            'file:///C:/tmp/sandbox/app/functions/rest/users/get/openapi.ts',
+          )
+        : new URL(
+            'file:///tmp/sandbox/app/functions/rest/users/get/openapi.ts',
+          );
+    const endpointsRoot =
+      process.platform === 'win32'
+        ? 'C:/tmp/sandbox/app/functions/rest'
+        : '/tmp/sandbox/app/functions/rest';
     const reg: RegEntry[] = [
       {
         functionName: 'users_get',
@@ -14,13 +29,11 @@ describe('openapi/buildAllOpenApiPaths', () => {
         method: 'get',
         basePath: 'users',
         httpContexts: ['public', 'private'],
-        callerModuleUrl: new URL('file:///tmp/sandbox/app/functions/rest/users/get/openapi.ts')
-          .href,
-        endpointsRootAbs: '/tmp/sandbox/app/functions/rest',
+        callerModuleUrl: fileUrl.href,
+        endpointsRootAbs: endpointsRoot,
         openapiBaseOperation: {
           summary: 'List users',
-          description: 'Return a list of users.',
-          tags: ['users'],
+          description: 'Return a list of users.',          tags: ['users'],
           responses: {},
         },
       },

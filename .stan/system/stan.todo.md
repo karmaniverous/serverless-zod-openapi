@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-06T19:50:00Z
+When updated: 2025-09-07T09:12:00Z
 
 ## Next up (near‑term, actionable)
 1) Tests — CLI & aggregators
@@ -8,6 +8,7 @@ When updated: 2025-09-06T19:50:00Z
    - register --watch: debounce and multi-event simulation.
    - add/init: creation lists, idempotency, manifest merge.
    - serverless/openapi aggregators: contexts → events, operationId composition; env extras only; summaries/tags.
+   - knip: apply hints (remove redundant entry and unneeded ignoreBinaries).
 
 2) Template/Docs polish
    - Re-verify templates:lint and templates:typecheck after helper refactor.
@@ -15,10 +16,14 @@ When updated: 2025-09-06T19:50:00Z
 
 ## Completed (recent)
 
+- Fix tests & lint for stability across platforms:
+  - src/cli/register.test.ts — add missing closing brace; remove unused helper.
+  - src/serverless/buildServerless.test.ts — complete non-HTTP extras test and close blocks.
+  - src/openapi/buildOpenApi.test.ts — make file URL/endpoints root OS-portable to avoid Windows fileURLToPath errors.
+  - src/cli/add.test.ts, src/cli/init.test.ts — remove unused variables to satisfy eslint.
 - Dev hygiene (typecheck/lint/build):
   - CLI: removed duplicate import of `join` and replaced unnecessary optional
-    chain on `opts.watch` in register --watch handler.
-  - App: pass `functionDefaults` to registry only when defined to satisfy
+    chain on `opts.watch` in register --watch handler.  - App: pass `functionDefaults` to registry only when defined to satisfy
     exactOptionalPropertyTypes with `--exactOptionalPropertyTypes`.
   - Scripts: made `"register"` and `"register:watch"` use `tsx src/cli/index.ts`
     so in-repo development works on Windows without a built CLI bin.

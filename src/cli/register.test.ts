@@ -1,18 +1,19 @@
+/* REQUIREMENTS ADDRESSED (TEST)
+- Validate CLI register: generates stable, POSIX-sorted side-effect imports,
+  idempotent rewrites, and presence of expected import lines.
+*/
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, sep } from 'node:path';
+import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { runRegister } from '@/src/cli/register';
 
-const toPosix = (p: string) => p.split(sep).join('/');
-
 describe('CLI: register', () => {
-  const makeSandbox = () => {
-    const root = mkdtempSync(join(tmpdir(), 'smoz-reg-'));
+  const makeSandbox = () => {    const root = mkdtempSync(join(tmpdir(), 'smoz-reg-'));
     // Minimal author layout: app/functions/rest/hello/get/{lambda,openapi}.ts
     const base = join(root, 'app', 'functions', 'rest', 'hello', 'get');
     mkdirSync(base, { recursive: true });
@@ -51,3 +52,4 @@ describe('CLI: register', () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+});

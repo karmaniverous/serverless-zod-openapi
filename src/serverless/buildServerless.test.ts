@@ -30,13 +30,15 @@ describe('serverless/buildServerlessFunctions', () => {
         httpContexts: ['public', 'private'],
         contentType: 'application/json',
         fnEnvKeys: ['PROFILE', 'DOMAIN_NAME'],
-        callerModuleUrl: new URL('file:///tmp/sandbox/app/functions/rest/users/get/lambda.ts').href,
+        callerModuleUrl: new URL(
+          'file:///tmp/sandbox/app/functions/rest/users/get/lambda.ts',
+        ).href,
         endpointsRootAbs: '/tmp/sandbox/app/functions/rest',
       },
     ];
     const out = buildAllServerlessFunctions(reg, serverlessCfg, buildFnEnv);
     expect(out).toHaveProperty('users_get');
-    const fn = out!.users_get as unknown as {
+    const fn = out.users_get as unknown as {
       events: Array<{ http: { method: string; path: string } }>;
       environment: Record<string, string>;
       handler: string;
@@ -59,8 +61,19 @@ describe('serverless/buildServerlessFunctions', () => {
         functionName: 'tick',
         eventType: 'sqs',
         serverlessExtras: extraEvent,
-        callerModuleUrl: new URL('file:///tmp/sandbox/app/functions/sqs/tick/lambda.ts').href,
+        callerModuleUrl: new URL(
+          'file:///tmp/sandbox/app/functions/sqs/tick/lambda.ts',
+        ).href,
         endpointsRootAbs: '/tmp/sandbox/app/functions/sqs',
       } as unknown as RegEntry,
     ];
-    const out
+    const out = buildAllServerlessFunctions(reg, serverlessCfg, buildFnEnv);
+    expect(out).toHaveProperty('tick');
+    const fn2 = out.tick as unknown as {
+      events: unknown;
+      handler?: string;
+      environment?: Record<string, string>;
+    };
+    expect(fn2.events).toEqual(extraEvent);
+  });
+});
