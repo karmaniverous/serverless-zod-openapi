@@ -8,7 +8,6 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { join } from 'node:path';
 
 import { Command } from 'commander';
 import { packageDirectorySync } from 'package-directory';
@@ -171,11 +170,10 @@ const main = (): void => {
           wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
         );
       };
-      if (!opts?.watch) {
+      if (!opts.watch) {
         await runOnce();
         return;
-      }
-      await runOnce();
+      }      await runOnce();
       // Lazy-load chokidar to avoid adding overhead when not watching.
       const chokidar = (await import('chokidar')).default;
       const globs = [

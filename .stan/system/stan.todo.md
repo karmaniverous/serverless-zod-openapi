@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-06T19:35:00Z
+When updated: 2025-09-06T19:50:00Z
 
 ## Next up (near‑term, actionable)
-
 1) Tests — CLI & aggregators
    - register (non-watch): stable, POSIX-sorted imports; idempotency; Prettier integration safe.
    - register --watch: debounce and multi-event simulation.
@@ -16,11 +15,20 @@ When updated: 2025-09-06T19:35:00Z
 
 ## Completed (recent)
 
+- Dev hygiene (typecheck/lint/build):
+  - CLI: removed duplicate import of `join` and replaced unnecessary optional
+    chain on `opts.watch` in register --watch handler.
+  - App: pass `functionDefaults` to registry only when defined to satisfy
+    exactOptionalPropertyTypes with `--exactOptionalPropertyTypes`.
+  - Scripts: made `"register"` and `"register:watch"` use `tsx src/cli/index.ts`
+    so in-repo development works on Windows without a built CLI bin.
+  - Template: unified imports to `@karmaniverous/smoz` for path helpers to
+    match template tsconfig mapping.
+
 - Path utilities & APP_ROOT_ABS refactor:
   - Added src/util/path.ts with toPosixPath and dirFromHere.
   - Exported from public entry; updated app/config/app.config.ts.
-  - Updated templates to use toPosixPath and published import name.
-- CLI “register --watch”:
+  - Updated templates to use toPosixPath and published import name.- CLI “register --watch”:
   - Added -w/--watch to “smoz register” using chokidar with ~250ms debounce.
   - Added script: "register:watch": "smoz register --watch".
 - Scripts — chain register to prevent footguns:

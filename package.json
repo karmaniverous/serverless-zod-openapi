@@ -147,12 +147,11 @@
     "url": "git+https://github.com/karmaniverous/smoz.git"
   },
   "scripts": {
-    "register": "smoz register",
-    "register:watch": "smoz register --watch",
+    "register": "tsx src/cli/index.ts register",
+    "register:watch": "tsx src/cli/index.ts register --watch",
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "changelog": "auto-changelog",
-    "deploy": "npm run register && serverless deploy",    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
-    "docs": "typedoc",
+    "deploy": "npm run register && serverless deploy",    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",    "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
     "generate": "cd services/activecampaign && orval",
