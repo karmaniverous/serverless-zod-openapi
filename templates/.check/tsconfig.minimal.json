@@ -1,6 +1,7 @@
 {
   "extends": "../project/tsconfig.base.json",
   "compilerOptions": {
+    "rootDir": "../../templates/minimal",
     "baseUrl": "../../templates/minimal",
     "paths": {
       "@/*": ["*"],

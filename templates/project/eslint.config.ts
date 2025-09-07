@@ -2,12 +2,15 @@ import eslint from '@eslint/js';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+import { dirname } from 'path';
 import tseslint from 'typescript-eslint';
+import { fileURLToPath } from 'url';
+
+const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(  {
     ignores: [
-      '.serverless/**',
-      '.tsbuild/**',
+      '.serverless/**',      '.tsbuild/**',
       'coverage/**',
       'dist/**',
       'docs/**',
@@ -21,11 +24,11 @@ export default tseslint.config(  {
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: ['./tsconfig.json']
+        project: ['./tsconfig.json'],
+        tsconfigRootDir,
       }
     },
-    plugins: {
-      prettier: prettierPlugin,
+    plugins: {      prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin
     },
     rules: {

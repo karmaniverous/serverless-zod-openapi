@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-07T16:50:00Z
+When updated: 2025-09-07T17:06:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -9,9 +9,8 @@ When updated: 2025-09-07T16:50:00Z
      workspaces after helper refactors. Address any drift (lint rules,
      tsconfig) and keep README instructions accurate.
 2. Optional: build noise
-   - Investigate reducing rollup-plugin-dts “Unresolved dependencies” warnings
-     during stan:build by passing tsconfig paths or adjusting dts externals;
-     treat as non‑blocking polish.
+   - If any residual warnings remain, consider further tuning (e.g., dts
+     externals or paths) — non‑blocking polish.
 
 ## Completed (recent)
 
@@ -24,3 +23,10 @@ When updated: 2025-09-07T16:50:00Z
   - openapi document generation ok; packaging ok; lint/typecheck/tests ok.
 - Templates README:
   - Added cross‑platform path hygiene note (toPosixPath guidance).
+- Build noise:
+  - Suppress alias UNRESOLVED_IMPORT warnings during DTS bundling (onwarn in
+    buildTypes of rollup.config.ts).
+- Templates validation:
+  - ESLint (templates/project) — set tsconfigRootDir to fix parser error.
+  - Typecheck (templates/.check) — set rootDir to templates/minimal and add
+    tsconfigRootDir in ESLint config for stable resolution.

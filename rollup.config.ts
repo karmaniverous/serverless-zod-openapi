@@ -127,6 +127,24 @@ export const buildTypes = (dest: string): RollupOptions => ({
   // - dist/mutators/index.d.ts
   output: { dir: dest, format: 'es' },
   plugins: [dtsPlugin()],
+  // Suppress unresolved warnings for alias imports during DTS bundling.
+  // These are harmless with rollup-plugin-dts and keep build output clean.
+  onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
+    try {
+      const code = (warning as unknown as { code?: string }).code;
+      const source = (warning as unknown as { source?: unknown }).source;
+      if (
+        code === 'UNRESOLVED_IMPORT' &&
+        typeof source === 'string' &&
+        (source.startsWith('@/') || source.startsWith('@@/'))
+      ) {
+        return;
+      }
+    } catch {
+      // Fall through to default handler on any unexpected shape
+    }
+    defaultHandler(warning);
+  },
 });
 
 export default [buildLibrary(outputPath, 'tsconfig.rollup.json'), buildTypes(outputPath)];

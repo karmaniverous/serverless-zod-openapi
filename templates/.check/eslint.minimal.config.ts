@@ -3,10 +3,13 @@ import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
-  {
-    ignores: [
+  {    ignores: [
       '**/node_modules/**',
       '**/dist/**',
       '**/.tsbuild/**',
@@ -19,11 +22,11 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: ['./templates/.check/tsconfig.minimal.json'],
+        project: ['./tsconfig.minimal.json'],
+        tsconfigRootDir,
       },
     },
-    plugins: {
-      prettier: prettierPlugin,
+    plugins: {      prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
