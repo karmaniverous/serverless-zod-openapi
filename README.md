@@ -1,7 +1,6 @@
 <div align="center">
 
 # SMOZ
-
 [Serverless](https://www.serverless.com/) · [Middy](https://middy.js.org/) · [OpenAPI 3.1](https://spec.openapis.org/oas/latest.html) · [Zod](https://zod.dev/)
 
 [![npm version](https://img.shields.io/npm/v/@karmaniverous/smoz.svg)](https://www.npmjs.com/package/@karmaniverous/smoz)
@@ -200,10 +199,19 @@ npm run register   # ensure registers reflect current app/functions/**
 npm run package
 ```
 
+## Path hygiene (cross‑platform)
+
+Windows uses backslashes in paths, which can leak into string comparisons and
+generated artifacts. Use the tiny helper exported by the toolkit to normalize
+separators consistently:
+
+```ts
+import { toPosixPath } from '@karmaniverous/smoz';
+```
+
 ## What you get (HTTP stack)
 
 SMOZ’s HTTP wrapper composes a robust Middy pipeline:
-
 1. HEAD short‑circuit (200 {} immediately)
 2. Header normalization (canonical case)
 3. APIGW v1 event normalization
