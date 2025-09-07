@@ -1,11 +1,10 @@
 # Development Plan
 
-When updated: 2025-09-07T15:30:00Z
+When updated: 2025-09-07T16:05:00Z
 
 ## Next up (near‑term, actionable)
 1) Tests — CLI & aggregators
    - register (non-watch): stable, POSIX-sorted imports; idempotency; Prettier integration safe.
-   - register --watch: debounce and multi-event simulation.
    - add/init: creation lists, idempotency, manifest merge.
    - serverless/openapi aggregators: contexts → events, operationId composition; env extras only; summaries/tags.
 2) Template/Docs polish
@@ -14,12 +13,13 @@ When updated: 2025-09-07T15:30:00Z
 
 ## Completed (recent)
 
+- CLI register --watch tests:
+  - Added watch helper (debounced, injectable watcher) and unit tests simulating rapid events and verifying coalescing.
 - Serverless aggregator test alignment:
   - src/serverless/buildServerless.test.ts — expect non-prefixed path for public context; paths now ['/users','/users'] to match implementation.
 - Knip config hygiene:
   - knip.json — removed redundant entry ("src/cli/index.ts") and unnecessary ignoreBinaries entry ("smoz"); hints resolved.
-- Serverless tests OS portability:
-  - src/serverless/buildServerless.test.ts — use Windows/POSIX-aware file URLs and endpoints roots to satisfy fileURLToPath on Windows.
+- Serverless tests OS portability:  - src/serverless/buildServerless.test.ts — use Windows/POSIX-aware file URLs and endpoints roots to satisfy fileURLToPath on Windows.
 - CLI register test robustness:
   - src/cli/register.test.ts — accept either single or double quotes in generated import assertions.- Fix tests & lint for stability across platforms:
   - src/cli/register.test.ts — add missing closing brace; remove unused helper.

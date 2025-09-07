@@ -173,35 +173,17 @@ const main = (): void => {
       if (!opts.watch) {
         await runOnce();
         return;
-      }      await runOnce();
-      // Lazy-load chokidar to avoid adding overhead when not watching.
-      const chokidar = (await import('chokidar')).default;
-      const globs = [
-        join(root, 'app', 'functions', '**', 'lambda.ts'),
-        join(root, 'app', 'functions', '**', 'openapi.ts'),
-        join(root, 'app', 'functions', '**', 'serverless.ts'),
-      ];
-      const watcher = chokidar.watch(globs, {
-        ignoreInitial: true,
-        awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
-      });
-      let timer: NodeJS.Timeout | undefined;
-      const schedule = () => {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          void runOnce();
-        }, 250);
-      };
-      watcher.on('add', schedule).on('change', schedule).on('unlink', schedule);
+      }
+      await runOnce();
+      const { watchRegister } = await import('./register.watch');
+      void (await watchRegister(root, runOnce));
       console.log('Watching for function registration changes...');
       // Keep process alive
-       
       await new Promise<void>(() => {});
     });
   // Default action (no subcommand): print version + signature block
   program.action(() => {
-    printSignature();
-  });
+    printSignature();  });
   program.parse(process.argv);};
 
 main();
