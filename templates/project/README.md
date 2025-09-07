@@ -67,3 +67,19 @@ Teams often keep `app/generated/openapi.json` untracked in VCS (optional).
 - Run the CLI register step
 - Generate OpenAPI
 - Package or deploy with your preferred toolchain
+
+## Path hygiene (cross‑platform)
+
+Windows uses backslashes in paths, which can leak into string comparisons and
+generated artifacts. Normalize separators consistently using the helper exported
+by the toolkit:
+
+```ts
+import { toPosixPath } from '@karmaniverous/smoz';
+
+// Derive the app root as the parent directory of app/config/
+import { fileURLToPath } from 'node:url';
+export const APP_ROOT_ABS = toPosixPath(
+  fileURLToPath(new URL('..', import.meta.url)),
+);
+```
