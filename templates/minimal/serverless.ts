@@ -4,7 +4,8 @@ import '@/app/generated/register.serverless';
 import type { AWS } from '@serverless/typescript';
 import { app, environment, stages } from '@/app/config/app.config';
 
-const config: AWS = {  service: '${param:SERVICE_NAME}',
+const config: AWS = {
+  service: '${param:SERVICE_NAME}',
   frameworkVersion: '4',
   stages,
   provider: {

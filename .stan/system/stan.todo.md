@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-07T17:06:00Z
+When updated: 2025-09-07T17:20:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -29,4 +29,7 @@ When updated: 2025-09-07T17:06:00Z
 - Templates validation:
   - ESLint (templates/project) — set tsconfigRootDir to fix parser error.
   - Typecheck (templates/.check) — set rootDir to templates/minimal and add
-    tsconfigRootDir in ESLint config for stable resolution.
+    tsconfigRootDir in ESLint config for stable resolution; point library
+    types to .stan/dist/index.d.ts. Keep strict rules; fix template code
+    (import sort, require-await, non-null assertion, unused var) and resolve
+    d.ts alias imports during build.

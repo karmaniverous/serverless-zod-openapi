@@ -1,4 +1,4 @@
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { App, baseEventTypeMapSchema, toPosixPath } from '@karmaniverous/smoz';
@@ -11,7 +11,8 @@ export const APP_ROOT_ABS = toPosixPath(
 
 export const app = App.create({
   appRootAbs: APP_ROOT_ABS,
-  globalParamsSchema: z.object({    PROFILE: z.string(),
+  globalParamsSchema: z.object({
+    PROFILE: z.string(),
     REGION: z.string(),
     SERVICE_NAME: z.string(),
   }),
@@ -44,5 +45,9 @@ export const app = App.create({
   },
 });
 
-export const { stages, environment, buildFnEnv } = app;
-export const ENDPOINTS_ROOT_REST = toPosixPath(join(APP_ROOT_ABS, 'functions', 'rest'));
+export const stages = app.stages;
+export const environment = app.environment;
+export const buildFnEnv = app.buildFnEnv;
+export const ENDPOINTS_ROOT_REST = toPosixPath(
+  join(APP_ROOT_ABS, 'functions', 'rest'),
+);

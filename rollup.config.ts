@@ -126,12 +126,23 @@ export const buildTypes = (dest: string): RollupOptions => ({
   // - dist/mutators/orval.d.ts
   // - dist/mutators/index.d.ts
   output: { dir: dest, format: 'es' },
-  plugins: [dtsPlugin()],
+  plugins: [
+    dtsPlugin({
+      // Help the DTS bundler resolve our alias imports so it can inline types
+      // instead of leaving unresolved "@/" and "@@/" references.
+      compilerOptions: {
+        baseUrl: '.',
+        paths: {
+          '@/*': ['src/*'],
+          '@@/*': ['services/activecampaign/*'],
+        },
+      },
+    }),
+  ],
   // Suppress unresolved warnings for alias imports during DTS bundling.
   // These are harmless with rollup-plugin-dts and keep build output clean.
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
-    try {
-      const code = (warning as unknown as { code?: string }).code;
+    try {      const code = (warning as unknown as { code?: string }).code;
       const source = (warning as unknown as { source?: unknown }).source;
       if (
         code === 'UNRESOLVED_IMPORT' &&

@@ -1,15 +1,15 @@
 import '@/app/generated/register.openapi';
 
 import fs from 'fs-extra';
-import path from 'path';import { packageDirectorySync } from 'pkg-dir';
+import path from 'path';
+import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
 import { app } from '@/app/config/app.config';
 
 console.log('Generating OpenAPI document...');
 
-const paths = app.buildAllOpenApiPaths();
-export const doc = createDocument({
+const paths = app.buildAllOpenApiPaths();export const doc = createDocument({
   openapi: '3.1.0',
   servers: [{ description: 'Dev', url: 'http://localhost' }],
   info: {
@@ -20,7 +20,10 @@ export const doc = createDocument({
 });
 
 const pkgDir = packageDirectorySync();
-const outDir = path.join(pkgDir!, 'app', 'generated');
+if (!pkgDir) {
+  throw new Error('Could not resolve package root directory');
+}
+const outDir = path.join(pkgDir, 'app', 'generated');
 fs.ensureDirSync(outDir);
 fs.writeFileSync(path.join(outDir, 'openapi.json'), JSON.stringify(doc, null, 2));
 
