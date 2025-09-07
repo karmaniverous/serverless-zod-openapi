@@ -17,17 +17,18 @@ class FakeWatcher implements Watcher {
     event: 'add' | 'change' | 'unlink',
     cb: () => void,
   ): Watcher {
-    this.handlers[event].push(cb);
+    const list = this.handlers[event] ?? (this.handlers[event] = []);
+    list.push(cb);
     return this;
   }
   trigger(event: 'add' | 'change' | 'unlink') {
-    for (const cb of this.handlers[event]) cb();
+    const list = this.handlers[event] ?? [];
+    for (const cb of list) cb();
   }
   close(): void {
     // no-op for fake
   }
 }
-
 describe('register.watch (debounce)', () => {
   it('coalesces rapid events and calls runOnce once per burst', async () => {
     vi.useFakeTimers();
@@ -35,12 +36,11 @@ describe('register.watch (debounce)', () => {
       const fake = new FakeWatcher();
       const watchFactory: WatchFactory = () => fake;
 
-      const runOnce = vi.fn<[], Promise<void>>().mockResolvedValue();
+      const runOnce = vi.fn(async () => { /* no-op */ });
       const close = await watchRegister('/tmp/sandbox', runOnce, {
         debounceMs: 50,
         watchFactory,
       });
-
       // First burst (multiple events within debounce window)
       fake.trigger('add');
       fake.trigger('change');

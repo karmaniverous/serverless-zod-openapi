@@ -1,23 +1,24 @@
 # Development Plan
 
-When updated: 2025-09-07T16:05:00Z
+When updated: 2025-09-07T16:20:00Z
 
 ## Next up (near‑term, actionable)
 1) Tests — CLI & aggregators
    - register (non-watch): stable, POSIX-sorted imports; idempotency; Prettier integration safe.
-   - add/init: creation lists, idempotency, manifest merge.
-   - serverless/openapi aggregators: contexts → events, operationId composition; env extras only; summaries/tags.
+   - add/init: creation lists, idempotency, manifest merge.   - serverless/openapi aggregators: contexts → events, operationId composition; env extras only; summaries/tags.
 2) Template/Docs polish
    - Re-verify templates:lint and templates:typecheck after helper refactor.
    - Expand README with short “Path hygiene” note referencing toPosixPath.
 
 ## Completed (recent)
 
+- Watch tests typecheck fix:
+  - src/cli/register.watch.test.ts — guard handler array indexing for strict noUncheckedIndexedAccess and simplify vi.fn to return Promise<void>.
+
 - CLI register --watch tests:
   - Added watch helper (debounced, injectable watcher) and unit tests simulating rapid events and verifying coalescing.
 - Serverless aggregator test alignment:
-  - src/serverless/buildServerless.test.ts — expect non-prefixed path for public context; paths now ['/users','/users'] to match implementation.
-- Knip config hygiene:
+  - src/serverless/buildServerless.test.ts — expect non-prefixed path for public context; paths now ['/users','/users'] to match implementation.- Knip config hygiene:
   - knip.json — removed redundant entry ("src/cli/index.ts") and unnecessary ignoreBinaries entry ("smoz"); hints resolved.
 - Serverless tests OS portability:  - src/serverless/buildServerless.test.ts — use Windows/POSIX-aware file URLs and endpoints roots to satisfy fileURLToPath on Windows.
 - CLI register test robustness:
