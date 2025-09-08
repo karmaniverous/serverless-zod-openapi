@@ -166,10 +166,9 @@
     "stan:docs": "typedoc --emit none",
     "cli:build": "rollup --config cli.rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "npm run register && tsc -p tsconfig.json --noEmit",
     "templates:typecheck": "tsx scripts/templates-typecheck.ts",
     "templates:lint": "eslint --fix -c templates/.check/eslint.templates.config.ts \"templates/**/*.{ts,tsx,js,jsx}\" && eslint --fix --no-ignore templates/.check/eslint.templates.config.ts"
-  },
-  "type": "module",
+  },  "type": "module",
   "version": "0.0.0"
 }
