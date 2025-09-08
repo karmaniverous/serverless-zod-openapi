@@ -9,7 +9,8 @@ import { app } from '@/app/config/app.config';
 
 console.log('Generating OpenAPI document...');
 
-const paths = app.buildAllOpenApiPaths();export const doc = createDocument({
+const paths = app.buildAllOpenApiPaths();
+export const doc = createDocument({
   openapi: '3.1.0',
   servers: [{ description: 'Dev', url: 'http://localhost' }],
   info: {
@@ -25,6 +26,9 @@ if (!pkgDir) {
 }
 const outDir = path.join(pkgDir, 'app', 'generated');
 fs.ensureDirSync(outDir);
-fs.writeFileSync(path.join(outDir, 'openapi.json'), JSON.stringify(doc, null, 2));
+fs.writeFileSync(
+  path.join(outDir, 'openapi.json'),
+  JSON.stringify(doc, null, 2),
+);
 
 console.log('Done!');

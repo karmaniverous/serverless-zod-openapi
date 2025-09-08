@@ -9,7 +9,8 @@ const reg = fn as unknown as FnOpenApiApi;
 reg.openapi({
   summary: 'Hello',
   description: 'Return a simple OK payload.',
-  responses: {    200: {
+  responses: {
+    200: {
       description: 'Ok',
       content: {
         'application/json': { schema: responseSchema },

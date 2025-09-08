@@ -1,18 +1,23 @@
 # Development Plan
 
-When updated: 2025-09-08T15:00:00Z
+When updated: 2025-09-08T15:20:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows project mapping)
-   - Verify project discovery fixes land across shells; if not, add a targeted
-     mapping pass per template, or fall back to non‑typed lint for unmatched
-     files (retain typed lint where projects match).
+1. Templates lint (Windows verification)
+   - Re-run templates:lint on Windows to confirm the new
+     templates/minimal/tsconfig.json resolves projectService mapping.
+   - If any residual “not found by the project service” errors remain, add a
+     small, targeted mapping fallback per template; otherwise keep the current
+     unified config.
 
 ## Completed (recent)
+- Templates: minimal tsconfig + typecheck discovery
+  - Added templates/minimal/tsconfig.json so ESLint’s projectService can map
+    files on Windows and scripts/templates-typecheck.ts discovers the template.
+    Expect templates:lint to pass on Windows and templates:typecheck to run.
 - README slimming
   - Trimmed the README to essentials and linked to the docs pages (overview,
-    getting started, CLI, middleware, templates, contributing).
-- Lint coverage (templates config)
+    getting started, CLI, middleware, templates, contributing).- Lint coverage (templates config)
   - Updated `templates:lint` to add a second pass with `--no-ignore` for
     `templates/.check/eslint.templates.config.ts`, ensuring the config file    itself is always linted/fixed under stan run. Normal template files still
     respect the unified `.check` ignores via the first pass.

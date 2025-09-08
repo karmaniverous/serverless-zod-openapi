@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": ".tsbuild",
+    "paths": {
+      "@/*": ["*"],
+      "@karmaniverous/smoz": ["../../.stan/dist/index.d.ts"]
+    },
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
+  },
+  "exclude": [
+    ".serverless/**",
+    "node_modules/**",
+    "app/generated/**",
+    "dist/**"
+  ],
+  "extends": "../project/tsconfig.base.json",
+  "include": [
+    "**/*",
+    "**/*.json"
+  ]
+}
