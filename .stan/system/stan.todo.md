@@ -1,11 +1,11 @@
 # Development Plan
 
-When updated: 2025-09-08T20:45:00Z
+When updated: 2025-09-08T21:00:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Seed an examples area (or separate repo) with three tiny apps:
-   - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP).
+1. Examples — continue seeding:
+   - rest‑sqs (non‑HTTP) and rest‑step (non‑HTTP).
    - Keep each example minimal (init, one endpoint, run notes).
    - Cross‑link examples from the Recipes index.
 
@@ -14,12 +14,14 @@ When updated: 2025-09-08T20:45:00Z
 
 ## Completed (recent)
 
+- Examples: created examples area and rest‑only guide
+  - examples/README.md (index and status)
+  - examples/rest-only/README.md (step‑by‑step)
 - Docs: added navigation pages and initial recipes
   - Why smoz? (docs-src/why-smoz.md)
   - 10‑minute tour (docs-src/tour-10-minutes.md)
   - Recipes index + subpages:
-    - sqs, contexts-auth, custom-middleware, per-function-env, observability, troubleshooting
-  - typedoc.json updated to include new docs in order.
+    - sqs, contexts-auth, custom-middleware, per-function-env, observability, troubleshooting  - typedoc.json updated to include new docs in order.
   - README quick links updated.
 - Docs site plumbing:
   - Front matter added to overview/getting-started/middleware/templates/cli/contributing.
