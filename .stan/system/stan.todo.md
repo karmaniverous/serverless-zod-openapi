@@ -1,12 +1,17 @@
 # Development Plan
 
-When updated: 2025-09-08T14:28:00Z
+When updated: 2025-09-08T14:38:00Z
 
 ## Next up (near‑term, actionable)
 1. README slimming - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
    - If residual warnings remain, consider further tuning (non‑blocking).
 
 ## Completed (recent)
+- Templates: lint mapping (project discovery)
+  - Switched templates ESLint parser to `project: true` with `projectService`
+    and `allowDefaultProject` so the nearest tsconfig.json is discovered per
+    file on Windows/macOS/Linux. This resolves remaining “not found by the
+    project service” errors.
 - Templates: lint mapping fallback
   - Added an explicit fallback project reference to
     `templates/.check/tsconfig.minimal.json` in the unified templates ESLint

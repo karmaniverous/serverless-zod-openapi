@@ -28,12 +28,9 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        // Discover individual template projects explicitly
-        project: [
-          '../*/tsconfig.json',
-          '../project/tsconfig.json',
-          './tsconfig.minimal.json',
-        ],
+        // Let the project service discover the nearest tsconfig.json per file
+        // (typed where possible; falls back to default project when unmatched).
+        project: true,
         projectService: true,
         allowDefaultProject: true,
         tsconfigRootDir,
