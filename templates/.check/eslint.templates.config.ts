@@ -31,10 +31,10 @@ export default tseslint.config(
         // Discover individual template projects explicitly
         project: ['../*/tsconfig.json', '../project/tsconfig.json'],
         projectService: true,
+        allowDefaultProject: true,
         tsconfigRootDir,
       },
-    },
-    plugins: {
+    },    plugins: {
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
     },
