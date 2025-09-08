@@ -23,12 +23,14 @@ OpenAPI 3.1 paths from a single, schema‑first application definition.
 Quick links
 
 - Overview: https://docs.karmanivero.us/smoz/overview
+- Why smoz?: https://docs.karmanivero.us/smoz/why-smoz
 - Getting started: https://docs.karmanivero.us/smoz/getting-started
+- 10-minute tour: https://docs.karmanivero.us/smoz/tour-10-minutes
 - CLI: https://docs.karmanivero.us/smoz/cli
 - Middleware: https://docs.karmanivero.us/smoz/middleware
 - Templates: https://docs.karmanivero.us/smoz/templates
+- Recipes: https://docs.karmanivero.us/smoz/recipes
 - Contributing: https://docs.karmanivero.us/smoz/contributing
-
 Install
 
 ```bash

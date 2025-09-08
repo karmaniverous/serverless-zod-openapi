@@ -1,10 +1,17 @@
 {
   "entryPoints": ["./src"],
   "entryPointStrategy": "expand",
-  "exclude": ["**/*.test.ts", "src/test/**", "src/cli/**", "**/generated/**", "**/*.d.ts"],
+  "exclude": [
+    "**/*.test.ts",
+    "src/test/**",
+    "src/cli/**",
+    "**/generated/**",
+    "**/*.d.ts"
+  ],
   "excludeInternal": false,
   "highlightLanguages": [
-    "bash",    "console",
+    "bash",
+    "console",
     "css",
     "html",
     "javascript",
@@ -30,8 +37,17 @@
   ],
   "projectDocuments": [
     "./docs-src/overview.md",
+    "./docs-src/why-smoz.md",
     "./docs-src/getting-started.md",
+    "./docs-src/tour-10-minutes.md",
     "./docs-src/middleware.md",
+    "./docs-src/recipes/index.md",
+    "./docs-src/recipes/sqs.md",
+    "./docs-src/recipes/contexts-auth.md",
+    "./docs-src/recipes/custom-middleware.md",
+    "./docs-src/recipes/per-function-env.md",
+    "./docs-src/recipes/observability.md",
+    "./docs-src/recipes/troubleshooting.md",
     "./docs-src/templates.md",
     "./docs-src/cli.md",
     "./docs-src/contributing.md",
@@ -39,7 +55,8 @@
   ],
   "replaceText": {
     "replacements": [
-      {        "flags": "gis",
+      {
+        "flags": "gis",
         "pattern": "<!-- TYPEDOC_EXCLUDE -->.*?<!-- /TYPEDOC_EXCLUDE -->",
         "replace": ""
       }

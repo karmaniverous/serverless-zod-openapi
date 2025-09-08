@@ -203,12 +203,15 @@ Conventions
   ---
 - Typedoc ordering is explicitly set via typedoc.json “projectDocuments”:
   1) docs-src/overview.md
-  2) docs-src/getting-started.md
-  3) docs-src/middleware.md
-  4) docs-src/templates.md
-  5) docs-src/cli.md
-  6) docs-src/contributing.md
-  7) CHANGELOG.md (last)
+  2) docs-src/why-smoz.md
+  3) docs-src/getting-started.md
+  4) docs-src/tour-10-minutes.md
+  5) docs-src/middleware.md
+  6) docs-src/recipes/index.md (+ its subpages)
+  7) docs-src/templates.md
+  8) docs-src/cli.md
+  9) docs-src/contributing.md
+  10) CHANGELOG.md (last)
 - Exclude CLI source symbols from the API reference to avoid confusion:
   - typedoc.json “exclude”: add "src/cli/**"
   - Keep CLI usage documented on docs-src/cli.md.

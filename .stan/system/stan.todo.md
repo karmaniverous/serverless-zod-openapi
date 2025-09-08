@@ -1,23 +1,26 @@
 # Development Plan
 
-When updated: 2025-09-08T20:22:00Z
+When updated: 2025-09-08T20:45:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Examples & recipes (after plugin lands)
-   - Seed an examples area (or separate repo) with three tiny apps:
-     - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP). - Author recipe pages:
-     - SQS function example; contexts + Cognito authorizer; custom middleware insertion
-       (insertAfter 'shape'); per‑function env (fnEnvKeys); observability (pino + requestId);
-       troubleshooting (register lifecycle, Windows TS errors, serverless‑offline loop).
-   - Positioning & tour pages:
-     - “Why smoz?” (vs SST/NestJS/tsoa/bare Middy) and “10‑minute tour” (init → add → register → openapi → package → curl).
+1. Seed an examples area (or separate repo) with three tiny apps:
+   - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP).
+   - Keep each example minimal (init, one endpoint, run notes).
+   - Cross‑link examples from the Recipes index.
 
 2. Loop guard: verify install (standing)
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
 
+- Docs: added navigation pages and initial recipes
+  - Why smoz? (docs-src/why-smoz.md)
+  - 10‑minute tour (docs-src/tour-10-minutes.md)
+  - Recipes index + subpages:
+    - sqs, contexts-auth, custom-middleware, per-function-env, observability, troubleshooting
+  - typedoc.json updated to include new docs in order.
+  - README quick links updated.
 - Docs site plumbing:
   - Front matter added to overview/getting-started/middleware/templates/cli/contributing.
   - typedoc.json projectDocuments reordered; CHANGELOG last.
