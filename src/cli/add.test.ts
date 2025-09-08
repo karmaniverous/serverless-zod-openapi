@@ -42,14 +42,14 @@ describe('CLI: add', () => {
       expect(existsSync(ppBase)).toBe(true);
       // lambda.ts: basePath uses {id}
       const lambdaBody = readFileSync(join(ppBase, 'lambda.ts'), 'utf8');
-      expect(lambdaBody).toMatch(/basePath:\s*'users\/\{id\}'/);
+      expect(lambdaBody).toMatch(/basePath:\s*(['"])users\/\{id\}\1/);
       // openapi.ts: parameters entry and Path template hint
       const oaiBody = readFileSync(join(ppBase, 'openapi.ts'), 'utf8');
       // Path template hint
       expect(oaiBody).toMatch(/Path template:\s*\/users\/\{id\}/);
       // Parameters array contains id in: path
       expect(oaiBody).toMatch(
-        /\{\s*name:\s*'id',\s*in:\s*'path',\s*required:\s*true,\s*schema:\s*\{\s*type:\s*'string'\s*\}/,
+        /\{\s*name:\s*['"]id['"],\s*in:\s*['"]path['"],\s*required:\s*true,\s*schema:\s*\{\s*type:\s*['"]string['"]\s*\}\s*\}/,
       );
       // handler.ts exists as usual
       expect(existsSync(join(ppBase, 'handler.ts'))).toBe(true);
