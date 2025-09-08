@@ -6,13 +6,12 @@ is kept minimal and uses the SMOZ CLI to generate registers and OpenAPI.
 Status
 
 - rest-only: ready (instructions below and in `examples/rest-only/README.md`)
-- rest-sqs: planned
-- rest-step: planned
+- rest-sqs: ready (see `examples/rest-sqs/README.md`)
+- rest-step: ready (see `examples/rest-step/README.md`)
 
 Quick start (rest-only)
 
-1) Create a new folder outside this repository (or anywhere you prefer):
-   ```bash
+1) Create a new folder outside this repository (or anywhere you prefer):   ```bash
    mkdir -p /tmp/smoz-rest-only && cd /tmp/smoz-rest-only
    ```
 2) Initialize a minimal app:
