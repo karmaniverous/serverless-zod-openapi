@@ -13,10 +13,7 @@ class FakeWatcher implements Watcher {
     change: [],
     unlink: [],
   };
-  on(
-    event: 'add' | 'change' | 'unlink',
-    cb: () => void,
-  ): Watcher {
+  on(event: 'add' | 'change' | 'unlink', cb: () => void): Watcher {
     const list = this.handlers[event] ?? (this.handlers[event] = []);
     list.push(cb);
     return this;
@@ -36,7 +33,9 @@ describe('register.watch (debounce)', () => {
       const fake = new FakeWatcher();
       const watchFactory: WatchFactory = () => fake;
 
-      const runOnce = vi.fn(async () => { /* no-op */ });
+      const runOnce = vi.fn(async () => {
+        /* no-op */
+      });
       const close = await watchRegister('/tmp/sandbox', runOnce, {
         debounceMs: 50,
         watchFactory,
@@ -62,4 +61,3 @@ describe('register.watch (debounce)', () => {
     }
   });
 });
-

@@ -119,44 +119,44 @@ const main = (): void => {
     )
     .option('--yes', 'Skip prompts (non-interactive)', false)
     .option('--dry-run', 'Show planned actions without writing', false)
-    .action(async (opts: {
-      template?: string;
-      init?: boolean;
-      install?: string | boolean;
-      yes?: boolean;
-      dryRun?: boolean;
-    }) => {
-      try {
-        const tpl =
-          typeof opts.template === 'string' ? opts.template : 'minimal';
-        const { created, skipped, examples, merged, installed } = await runInit(
-          root,
-          tpl,
-          opts,
-        );
-        console.log(
-          [
-            created.length
-              ? `Created:\n - ${created.join('\n - ')}`
-              : 'Created: (none)',
-            examples.length
-              ? `Examples (existing preserved):\n - ${examples.join('\n - ')}`
-              : undefined,
-            skipped.length
-              ? `Skipped (exists):\n - ${skipped.join('\n - ')}`
-              : undefined,
-            merged.length
-              ? `package.json (additive):\n - ${merged.join('\n - ')}`
-              : undefined,
-            `Install: ${installed}`,
-          ]
-            .filter(Boolean)
-            .join('\n'),
-        );
-      } catch (e) {
-        console.error((e as Error).message);
-        process.exitCode = 1;
-      }    });
+    .action(
+      async (opts: {
+        template?: string;
+        init?: boolean;
+        install?: string | boolean;
+        yes?: boolean;
+        dryRun?: boolean;
+      }) => {
+        try {
+          const tpl =
+            typeof opts.template === 'string' ? opts.template : 'minimal';
+          const { created, skipped, examples, merged, installed } =
+            await runInit(root, tpl, opts);
+          console.log(
+            [
+              created.length
+                ? `Created:\n - ${created.join('\n - ')}`
+                : 'Created: (none)',
+              examples.length
+                ? `Examples (existing preserved):\n - ${examples.join('\n - ')}`
+                : undefined,
+              skipped.length
+                ? `Skipped (exists):\n - ${skipped.join('\n - ')}`
+                : undefined,
+              merged.length
+                ? `package.json (additive):\n - ${merged.join('\n - ')}`
+                : undefined,
+              `Install: ${installed}`,
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          );
+        } catch (e) {
+          console.error((e as Error).message);
+          process.exitCode = 1;
+        }
+      },
+    );
   program
     .command('register')
     .description(
@@ -183,7 +183,9 @@ const main = (): void => {
     });
   // Default action (no subcommand): print version + signature block
   program.action(() => {
-    printSignature();  });
-  program.parse(process.argv);};
+    printSignature();
+  });
+  program.parse(process.argv);
+};
 
 main();

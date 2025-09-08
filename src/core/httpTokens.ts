@@ -20,7 +20,11 @@ const BASE_EVENT_TYPE_KEYS = ['rest', 'http', 'sqs'] as const;
  */
 export const validateEventTypeMapSchemaIncludesBase = (
   shape: Record<string, unknown>,
-): void => {  for (const k of BASE_EVENT_TYPE_KEYS) {
-    if (!(k in shape)) throw new Error(`eventTypeMapSchema is missing base key "${k}". Ensure it extends baseEventTypeMapSchema.`);
+): void => {
+  for (const k of BASE_EVENT_TYPE_KEYS) {
+    if (!(k in shape))
+      throw new Error(
+        `eventTypeMapSchema is missing base key "${k}". Ensure it extends baseEventTypeMapSchema.`,
+      );
   }
 };

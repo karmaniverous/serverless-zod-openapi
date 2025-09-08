@@ -11,7 +11,8 @@ import { describe, expect, it } from 'vitest';
 import { runAdd } from '@/src/cli/add';
 
 describe('CLI: add', () => {
-  it('scaffolds HTTP and non-HTTP trees and is idempotent', async () => {    const root = mkdtempSync(join(tmpdir(), 'smoz-add-'));
+  it('scaffolds HTTP and non-HTTP trees and is idempotent', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'smoz-add-'));
     try {
       // HTTP example
       const http = await runAdd(root, 'rest/foo/get');
@@ -27,12 +28,10 @@ describe('CLI: add', () => {
       expect(http2.skipped.length).toBeGreaterThanOrEqual(1);
 
       // Non-HTTP example
-      await runAdd(
-        root,
-        'step/activecampaign/contacts/getContact',
-      );
+      await runAdd(root, 'step/activecampaign/contacts/getContact');
       const nonBase = join(
-        root,        'app',
+        root,
+        'app',
         'functions',
         'step',
         'activecampaign',
@@ -46,4 +45,3 @@ describe('CLI: add', () => {
     }
   });
 });
-

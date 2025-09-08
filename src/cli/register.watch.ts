@@ -6,10 +6,7 @@
 import { join } from 'node:path';
 
 export type Watcher = {
-  on: (
-    event: 'add' | 'change' | 'unlink',
-    cb: () => void,
-  ) => Watcher;
+  on: (event: 'add' | 'change' | 'unlink', cb: () => void) => Watcher;
   close: () => void;
 };
 
@@ -64,4 +61,3 @@ export const watchRegister = async (
     watcher.close();
   };
 };
-

@@ -67,4 +67,4 @@ export type { SecurityContextHttpEventMap } from './types/SecurityContextHttpEve
 
 // Cross-platform path helpers (for templates and app config derivations).
 // Small and stable; safe to include in the public surface.
-export { dirFromHere,toPosixPath } from './util/path';
+export { dirFromHere, toPosixPath } from './util/path';

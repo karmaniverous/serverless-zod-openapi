@@ -1,7 +1,7 @@
 /**
  * Registration: Step function to get an ActiveCampaign contact by id.
  */
- 
+
 import { join } from 'node:path';
 
 import { z } from 'zod';

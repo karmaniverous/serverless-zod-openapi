@@ -18,7 +18,8 @@
  * type R = DeepOverride<A, B>;
  */
 export type DeepOverride<T, U> = [T] extends [never]
-  ? U  : [U] extends [never]
+  ? U
+  : [U] extends [never]
     ? T
     : T extends any[]
       ? U

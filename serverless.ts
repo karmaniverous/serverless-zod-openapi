@@ -7,7 +7,8 @@ import type { AWS } from '@serverless/typescript';
 import { app, environment, stages } from '@/app/config/app.config';
 const config: AWS = {
   service: '${param:SERVICE_NAME}',
-  frameworkVersion: '4',  plugins: [
+  frameworkVersion: '4',
+  plugins: [
     'serverless-apigateway-log-retention',
     'serverless-deployment-bucket',
     'serverless-domain-manager',
@@ -16,7 +17,8 @@ const config: AWS = {
   package: {
     individually: true,
     patterns: ['!**/?(*.)test.+(!(.))'],
-  },  custom: {
+  },
+  custom: {
     apiGatewayLogRetention: {
       accessLogging: {
         enabled: true,
@@ -90,7 +92,8 @@ const config: AWS = {
   functions: app.buildAllServerlessFunctions() as NonNullable<AWS['functions']>,
   build: {
     esbuild: {
-      bundle: true,      minify: '${param:ESB_MINIFY}' as unknown as boolean,
+      bundle: true,
+      minify: '${param:ESB_MINIFY}' as unknown as boolean,
       sourcemap: '${param:ESB_SOURCEMAP}' as unknown as boolean,
       exclude: ['@aws-sdk/*'],
       target: 'node22',

@@ -12,7 +12,8 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
  */
 export const combine = (
   ...parts: MiddlewareObj<APIGatewayProxyEvent, Context>[]
-): MiddlewareObj<APIGatewayProxyEvent, Context> => {  const befores = parts.map((m) => m.before).filter(Boolean) as NonNullable<
+): MiddlewareObj<APIGatewayProxyEvent, Context> => {
+  const befores = parts.map((m) => m.before).filter(Boolean) as NonNullable<
     MiddlewareObj['before']
   >[];
   const afters = parts.map((m) => m.after).filter(Boolean) as NonNullable<

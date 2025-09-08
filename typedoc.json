@@ -29,7 +29,15 @@
     "typedoc-plugin-replace-text",
     "typedoc-plugin-zod"
   ],
-  "projectDocuments": ["./CHANGELOG.md"],
+  "projectDocuments": [
+    "./CHANGELOG.md",
+    "./docs-src/overview.md",
+    "./docs-src/getting-started.md",
+    "./docs-src/templates.md",
+    "./docs-src/contributing.md",
+    "./docs-src/cli.md",
+    "./docs-src/middleware.md"
+  ],
   "replaceText": {
     "replacements": [
       {

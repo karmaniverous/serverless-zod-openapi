@@ -56,7 +56,8 @@ export const createRegistry = <
   };
 }) => {
   const map = new Map<string, RegistryEntry>();
-  return {    defineFunction<
+  return {
+    defineFunction<
       EventType extends Extract<keyof z.infer<EventTypeMapSchema>, string>,
       EventSchema extends z.ZodType | undefined,
       ResponseSchema extends z.ZodType | undefined,

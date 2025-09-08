@@ -500,7 +500,6 @@ Acceptance criteria for hygiene
 - Only intrinsics flagged for future use (e.g., serverless/intrinsic.ts) remain as deliberately retained forward‑compatibility helpers.
 
 ## 8.5) App-level function defaults (env key defaults)
-
 Purpose
 
 - Reduce repetition of common per-function environment keys by allowing the App
@@ -586,3 +585,31 @@ Requirements
   - "openapi": "npm run register && tsx app/config/openapi && prettier -w app/generated/openapi.json"
   - "package": "npm run register && serverless package"
   - "deploy": "npm run register && serverless deploy"
+
+## 13) Lint/format and template scalability (durable policy)
+
+Lint/format
+
+- ESLint drives Prettier formatting across the repo and templates:
+  - eslint-plugin-prettier is enabled and the rule `'prettier/prettier': 'error'`
+    is set in flat configs.
+  - Developers run `npm run lint:fix` (repo) and `npm run templates:lint`
+    (templates). Both commands apply Prettier and import sorting (`simple-import-sort`)
+    in one pass.
+
+Templates linting
+
+- A unified ESLint flat config (templates/.check/eslint.templates.config.ts)
+  discovers all template projects using `parserOptions.projectService: true`.
+  No per‑template lint config changes are required when adding templates.
+
+Templates typechecking
+
+- A small script (`scripts/templates-typecheck.ts`) discovers
+  `templates/*/tsconfig.json` and runs `tsc -p --noEmit` per template. The
+  package script `npm run templates:typecheck` invokes this helper.
+
+Contributor note
+
+- Run `npm run stan:build` once locally so `@karmaniverous/smoz` types resolve
+  across the workspace (templates use the bundled d.ts).

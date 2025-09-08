@@ -8,14 +8,16 @@ import { fileURLToPath } from 'url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
-export default tseslint.config(  {
+export default tseslint.config(
+  {
     ignores: [
-      '.serverless/**',      '.tsbuild/**',
+      '.serverless/**',
+      '.tsbuild/**',
       'coverage/**',
       'dist/**',
       'docs/**',
-      'node_modules/**'
-    ]
+      'node_modules/**',
+    ],
   },
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
@@ -26,18 +28,20 @@ export default tseslint.config(  {
       parserOptions: {
         project: ['./tsconfig.json'],
         tsconfigRootDir,
-      }
+      },
     },
-    plugins: {      prettier: prettierPlugin,
-      'simple-import-sort': simpleImportSortPlugin
+    plugins: {
+      prettier: prettierPlugin,
+      'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
+      'prettier/prettier': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
       'no-unused-vars': 'off',
       'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error'
-    }
-  }
+      'simple-import-sort/exports': 'error',
+    },
+  },
 );

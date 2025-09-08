@@ -15,7 +15,8 @@ export default defineConfig({
           path: '../src/orval.mutator.ts',
           name: 'orvalMutator',
         },
-      },    },
+      },
+    },
     hooks: { afterAllFilesWrite: ['prettier -w'] },
   },
   zod: {

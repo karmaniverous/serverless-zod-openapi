@@ -167,8 +167,8 @@
     "cli:build": "rollup --config cli.rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "templates:typecheck": "tsc -p templates/project/tsconfig.json --noEmit && tsc -p templates/.check/tsconfig.minimal.json --noEmit",
-    "templates:lint": "eslint -c templates/project/eslint.config.ts templates/project && eslint -c templates/.check/eslint.minimal.config.ts templates/minimal"
+    "templates:typecheck": "tsx scripts/templates-typecheck.ts",
+    "templates:lint": "eslint --fix -c templates/.check/eslint.templates.config.ts templates"
   },
   "type": "module",
   "version": "0.0.0"

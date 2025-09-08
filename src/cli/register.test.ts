@@ -13,7 +13,8 @@ import { describe, expect, it } from 'vitest';
 import { runRegister } from '@/src/cli/register';
 
 describe('CLI: register', () => {
-  const makeSandbox = () => {    const root = mkdtempSync(join(tmpdir(), 'smoz-reg-'));
+  const makeSandbox = () => {
+    const root = mkdtempSync(join(tmpdir(), 'smoz-reg-'));
     // Minimal author layout: app/functions/rest/hello/get/{lambda,openapi}.ts
     const base = join(root, 'app', 'functions', 'rest', 'hello', 'get');
     mkdirSync(base, { recursive: true });

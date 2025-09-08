@@ -42,7 +42,10 @@ const formatMaybe = async (root: string, filePath: string, source: string) => {
   }
 };
 
-const writeIfAbsent = async (outFile: string, content: string): Promise<{
+const writeIfAbsent = async (
+  outFile: string,
+  content: string,
+): Promise<{
   created: boolean;
 }> => {
   if (existsSync(outFile)) return { created: false };
@@ -181,7 +184,14 @@ export const runAdd = async (
   const method = isHttp ? tail : undefined;
   const basePathPosix = toPosix(baseParts.join('/'));
 
-  const dir = join(root, 'app', 'functions', token, ...baseParts, ...(method ? [method] : []));
+  const dir = join(
+    root,
+    'app',
+    'functions',
+    token,
+    ...baseParts,
+    ...(method ? [method] : []),
+  );
   const lambdaPath = join(dir, 'lambda.ts');
   const handlerPath = join(dir, 'handler.ts');
   const openapiPath = join(dir, 'openapi.ts');
@@ -191,14 +201,34 @@ export const runAdd = async (
   if (isHttp) {
     files.push({
       path: lambdaPath,
-      content: lambdaHttpTemplate({ token, basePath: basePathPosix, method: method! }),
+      content: lambdaHttpTemplate({
+        token,
+        basePath: basePathPosix,
+        method: method!,
+      }),
       enabled: true,
     });
-    files.push({ path: handlerPath, content: handlerHttpTemplate(), enabled: true });
-    files.push({ path: openapiPath, content: openapiTemplate(), enabled: true });
+    files.push({
+      path: handlerPath,
+      content: handlerHttpTemplate(),
+      enabled: true,
+    });
+    files.push({
+      path: openapiPath,
+      content: openapiTemplate(),
+      enabled: true,
+    });
   } else {
-    files.push({ path: lambdaPath, content: lambdaInternalTemplate(token), enabled: true });
-    files.push({ path: handlerPath, content: handlerInternalTemplate(), enabled: true });
+    files.push({
+      path: lambdaPath,
+      content: lambdaInternalTemplate(token),
+      enabled: true,
+    });
+    files.push({
+      path: handlerPath,
+      content: handlerInternalTemplate(),
+      enabled: true,
+    });
     files.push({ path: openapiPath, content: '', enabled: false });
   }
 

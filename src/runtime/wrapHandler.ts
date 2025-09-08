@@ -115,10 +115,12 @@ export function wrapHandler<
 
     // Non-HTTP: call business directly
     const httpTokens =
-      opts?.httpEventTypeTokens ?? (defaultHttpEventTypeTokens as readonly string[]);
+      opts?.httpEventTypeTokens ??
+      (defaultHttpEventTypeTokens as readonly string[]);
     const isHttp = httpTokens.includes(
       functionConfig.eventType as unknown as string,
-    );    if (!isHttp) {
+    );
+    if (!isHttp) {
       return business(
         event as ShapedEvent<EventSchema, EventTypeMap[EventType]>,
         context,

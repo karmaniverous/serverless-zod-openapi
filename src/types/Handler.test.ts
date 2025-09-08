@@ -8,7 +8,8 @@ import type { ConsoleLogger } from '@/src/types/Loggable';
 import type { Handler, HandlerOptions, ShapedEvent } from './Handler';
 
 const eventSchema = z.object({
-  id: z.string(),  q: z.string().optional(),
+  id: z.string(),
+  q: z.string().optional(),
 });
 
 const responseSchema = z.object({
@@ -29,13 +30,13 @@ describe('Handler type', () => {
       _ctx: Context,
       _opts: HandlerOptions,
     ) => {
-      void _event;      void _ctx;
+      void _event;
+      void _ctx;
       void _opts;
       return { ok: true };
     };
 
     expect(
-       
       await impl(
         {
           ...createApiGatewayV1Event('GET'),
@@ -43,7 +44,8 @@ describe('Handler type', () => {
         } as unknown as ShapedEvent<typeof eventSchema, APIGatewayProxyEvent>,
         createLambdaContext(),
         {
-          env: {},          logger: {
+          env: {},
+          logger: {
             debug: vi.fn(),
             info: vi.fn(),
             error: vi.fn(),

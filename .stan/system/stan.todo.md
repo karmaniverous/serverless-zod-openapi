@@ -1,23 +1,30 @@
 # Development Plan
 
-When updated: 2025-09-07T17:45:00Z
+When updated: 2025-09-08T12:00:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Template/Docs polish
-   - Run templates:typecheck and templates:lint to re‑verify the template
-     workspaces after helper refactors. Address any drift (lint rules,
-     tsconfig) and keep README instructions accurate.
+1. README slimming
+   - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
 2. Optional: build noise
-   - If any residual warnings remain, consider further tuning (e.g., dts
-     externals or paths) — non‑blocking polish.
+   - If residual warnings remain, consider further tuning (non‑blocking).
 
 ## Completed (recent)
 
+- Docs: split authored pages under docs-src/ and wired into TypeDoc:
+  - overview, getting-started, cli, middleware, templates, contributing.
+- Lint/format policy: ESLint drives Prettier
+  - Added 'prettier/prettier': 'error' in root and template ESLint configs.
+  - Unified template lint config at templates/.check/eslint.templates.config.ts.
+- Template typecheck scalability:
+  - Added scripts/templates-typecheck.ts and updated npm scripts to discover
+    all templates automatically.
+- Template lint fixes (minimal):
+  - Sorted imports; avoided unsafe assignment by asserting stages type in serverless.ts.
+- Project prompt updated to memorialize lint/format + template scalability policy.
 - CLI & aggregators tests green:
   - register/add/init happy paths, idempotency, POSIX sorting (register).
-  - watch debounce with coalescing; injectable watcher tests.
-  - Serverless/OpenAPI aggregators: contexts → events/paths, operationId and
+  - watch debounce with coalescing; injectable watcher tests.  - Serverless/OpenAPI aggregators: contexts → events/paths, operationId and
     tags; env extras mapping validated.
 - Docs/OpenAPI/build/package exercised:
   - openapi document generation ok; packaging ok; lint/typecheck/tests ok.

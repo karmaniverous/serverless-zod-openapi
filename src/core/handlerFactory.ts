@@ -6,7 +6,7 @@ import type { ZodObj } from '@/src/core/types';
 import type { AppHttpConfig } from '@/src/http/middleware/httpStackCustomization';
 import { wrapHandler } from '@/src/runtime/wrapHandler';
 import type { FunctionConfig } from '@/src/types/FunctionConfig';
-import type { Handler } from '@/src/types/Handler';/**
+import type { Handler } from '@/src/types/Handler'; /**
 + handlerFactory
  * - Produces a function that builds a wrapped handler with runtime HTTP tokens.
  * - Fully typed; no any; no dynamic import() types.

@@ -1,0 +1,126 @@
+# Getting started
+
+## Install
+
+```bash
+npm i smoz zod zod-openapi @middy/core \
+  @middy/http-header-normalizer \
+  @middy/http-event-normalizer \
+  @middy/http-json-body-parser \
+  @middy/http-content-negotiation \
+  @middy/http-error-handler \
+  @middy/http-cors \
+  @middy/http-response-serializer
+```
+
+Dev tooling (recommended):
+
+```bash
+npm i -D typescript typescript-eslint eslint prettier typedoc
+```
+
+## Initialize a new app
+
+```bash
+npx smoz init --template minimal --yes
+```
+
+This scaffolds:
+
+- app/config/app.config.ts — schemas/config (params, env, http tokens)
+- app/functions/** — endpoints (rest/http and non‑HTTP)
+- app/generated/** — registers and OpenAPI JSON placeholder
+- serverless.ts — uses the app registry to build functions
+- scripts, lint/typecheck/docs configs
+
+## Generate registers and OpenAPI
+
+```bash
+npx smoz register
+npm run openapi
+```
+
+`openapi` will:
+
+1) Import `app/generated/register.openapi.ts`
+2) Call `app.buildAllOpenApiPaths()`
+3) Write `app/generated/openapi.json`
+
+## Package or deploy with Serverless
+
+```bash
+npm run package   # no deploy
+# or
+npm run deploy
+```
+
+Serverless picks up:
+
+- `functions` from `app.buildAllServerlessFunctions()`
+- Provider‑level env from `app.environment`
+- Stages/params from `app.stages`
+
+## Author an endpoint (HTTP)
+
+````ts
+// app/functions/rest/hello/get/lambda.ts
+import { dirname, join } from 'node:path'; // example for path helpers
+import { z } from 'zod';
+import { app } from '@/app/config/app.config';
+
+export const responseSchema = z.object({ ok: z.boolean() });
+
+export const fn = app.defineFunction({
+  functionName: 'hello_get',
+  eventType: 'rest',
+  httpContexts: ['public'],
+  method: 'get',
+  basePath: 'hello',
+  contentType: 'application/json',
+  responseSchema,
+  callerModuleUrl: import.meta.url,
+  endpointsRootAbs: dirname(new URL('../..', import.meta.url).pathname),
+});
+````
+
+````ts
+// app/functions/rest/hello/get/handler.ts
+import type { z } from 'zod';
+import type { responseSchema } from './lambda';
+import { fn } from './lambda';
+type Response = z.infer<typeof responseSchema>;
+export const handler = fn.handler(async () => ({ ok: true }) satisfies Response);
+````
+
+````ts
+// app/functions/rest/hello/get/openapi.ts
+import { fn, responseSchema } from './lambda';
+fn.openapi({
+  summary: 'Hello',
+  description: 'Return a simple OK payload.',
+  responses: { 200: { description: 'Ok', content: { 'application/json': { schema: responseSchema } } } },
+  tags: ['public'],
+});
+````
+
+Re‑generate:
+
+```bash
+npx smoz register
+npm run openapi
+```
+
+## Contributing and local DX
+
+- Run once locally: `npm run stan:build` in the smoz repo so editors resolve
+  `@karmaniverous/smoz` types across templates.
+- Lint & format: ESLint drives Prettier (`prettier/prettier`: error). Use:
+  ```bash
+  npm run lint:fix
+  npm run templates:lint
+  ```
+- Typecheck:
+  ```bash
+  npm run typecheck
+  npm run templates:typecheck
+  ```

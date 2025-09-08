@@ -58,7 +58,8 @@ describe('serverless/buildServerlessFunctions', () => {
     expect(fn.environment).toEqual({
       PROFILE: '${param:PROFILE}',
       DOMAIN_NAME: '${param:DOMAIN_NAME}',
-    });    expect(typeof fn.handler).toBe('string');
+    });
+    expect(typeof fn.handler).toBe('string');
     expect(fn.handler.endsWith('.handler')).toBe(true);
   });
 

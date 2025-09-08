@@ -26,4 +26,3 @@ export const dirFromHere = (metaUrl: string, levelsUp = 1): string => {
   const abs = fileURLToPath(url);
   return toPosixPath(abs);
 };
-

@@ -1,7 +1,7 @@
 /**
  * Registration: GET /openapi (public)
  */
- 
+
 import { join } from 'node:path';
 
 import { z } from 'zod';

@@ -16,6 +16,7 @@ export type {
 } from './customization/types';
 export {
   getId,
-  type HttpTransform,  type PhasedArrays,
+  type HttpTransform,
+  type PhasedArrays,
   tagStep,
 } from './transformUtils';

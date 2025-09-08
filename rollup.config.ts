@@ -142,7 +142,8 @@ export const buildTypes = (dest: string): RollupOptions => ({
   // Suppress unresolved warnings for alias imports during DTS bundling.
   // These are harmless with rollup-plugin-dts and keep build output clean.
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
-    try {      const code = (warning as unknown as { code?: string }).code;
+    try {
+      const code = (warning as unknown as { code?: string }).code;
       const source = (warning as unknown as { source?: unknown }).source;
       if (
         code === 'UNRESOLVED_IMPORT' &&
@@ -158,4 +159,7 @@ export const buildTypes = (dest: string): RollupOptions => ({
   },
 });
 
-export default [buildLibrary(outputPath, 'tsconfig.rollup.json'), buildTypes(outputPath)];
+export default [
+  buildLibrary(outputPath, 'tsconfig.rollup.json'),
+  buildTypes(outputPath),
+];

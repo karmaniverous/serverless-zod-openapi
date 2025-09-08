@@ -17,7 +17,8 @@ import { z } from 'zod';
  */
 export const deriveAllKeys = (
   globalEnv: readonly PropertyKey[],
-  stageEnv: readonly PropertyKey[],  fnEnv: readonly PropertyKey[] = [],
+  stageEnv: readonly PropertyKey[],
+  fnEnv: readonly PropertyKey[] = [],
 ): ReadonlySet<PropertyKey> => {
   const out = new Set<PropertyKey>();
   globalEnv.forEach((k) => out.add(k));
@@ -39,7 +40,8 @@ export const deriveAllKeys = (
  */
 export const splitKeysBySchema = <
   G extends ZodObject<ZodRawShape>,
-  S extends ZodObject<ZodRawShape>,>(
+  S extends ZodObject<ZodRawShape>,
+>(
   allKeys: ReadonlySet<PropertyKey>,
   globalParamsSchema: G,
   stageParamsSchema: S,
@@ -75,7 +77,8 @@ export const splitKeysBySchema = <
  */
 export const buildEnvSchema = <
   G extends ZodObject<ZodRawShape>,
-  S extends ZodObject<ZodRawShape>,>(
+  S extends ZodObject<ZodRawShape>,
+>(
   globalPick: readonly (keyof z.infer<G>)[],
   stagePick: readonly (keyof z.infer<S>)[],
   globalParamsSchema: G,

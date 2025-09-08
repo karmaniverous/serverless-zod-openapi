@@ -105,7 +105,8 @@ describe('wrapHandler: HEAD short-circuit', () => {
     process.env.REGION = 'testRegion';
     const fn = app.defineFunction({
       functionName: 'test_head',
-      eventType: 'rest',      httpContexts: ['public'],
+      eventType: 'rest',
+      httpContexts: ['public'],
       method: 'head',
       basePath: 'test',
       contentType: 'application/json',
@@ -145,7 +146,8 @@ describe('wrapHandler: POST payload', () => {
     process.env.REGION = 'testRegion';
 
     const fn = app.defineFunction({
-      functionName: 'test_post',      eventType: 'rest',
+      functionName: 'test_post',
+      eventType: 'rest',
       httpContexts: ['public'],
       method: 'post',
       basePath: 'test',

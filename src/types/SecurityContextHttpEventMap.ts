@@ -13,7 +13,8 @@ import type { PropFromUnion } from '@/src/types/PropFromUnion';
 export type SecurityContextHttpEventMap = Record<
   HttpContext,
   Partial<
-    PropFromUnion<      PropFromUnion<PropFromUnion<AWS['functions'], string>['events'], number>,
+    PropFromUnion<
+      PropFromUnion<PropFromUnion<AWS['functions'], string>['events'], number>,
       'http'
     >
   >

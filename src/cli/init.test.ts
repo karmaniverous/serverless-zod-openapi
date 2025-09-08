@@ -15,19 +15,22 @@ describe('CLI: init', () => {
   it('copies template files, seeds register placeholders, and merges package manifest additively', async () => {
     const root = mkdtempSync(join(tmpdir(), 'smoz-init-'));
     try {
-      const { created, examples, installed } = await runInit(
-        root,
-        'minimal',
-        { init: true, install: false, yes: true },
-      );
+      const { created, examples, installed } = await runInit(root, 'minimal', {
+        init: true,
+        install: false,
+        yes: true,
+      });
       // Placeholders for registers exist
-      const genDir = join(root, 'app', 'generated');      expect(existsSync(join(genDir, 'register.functions.ts'))).toBe(true);
+      const genDir = join(root, 'app', 'generated');
+      expect(existsSync(join(genDir, 'register.functions.ts'))).toBe(true);
       expect(existsSync(join(genDir, 'register.openapi.ts'))).toBe(true);
       expect(existsSync(join(genDir, 'register.serverless.ts'))).toBe(true);
       // No install performed
-      expect(installed === 'skipped' || installed === 'failed' || installed === 'unknown-pm').toBe(
-        true,
-      );
+      expect(
+        installed === 'skipped' ||
+          installed === 'failed' ||
+          installed === 'unknown-pm',
+      ).toBe(true);
       // Some files were created or examples produced
       expect(created.length + examples.length).toBeGreaterThan(0);
     } finally {
@@ -36,4 +39,3 @@ describe('CLI: init', () => {
     }
   });
 });
-

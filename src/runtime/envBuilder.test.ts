@@ -13,7 +13,8 @@ import {
 
 import {
   buildEnvSchema,
-  deriveAllKeys,  isHead,
+  deriveAllKeys,
+  isHead,
   parseTypedEnv,
   splitKeysBySchema,
 } from './envBuilder';

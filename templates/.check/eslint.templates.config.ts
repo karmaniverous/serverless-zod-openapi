@@ -6,19 +6,18 @@ import { dirname } from 'path';
 import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
+// Unified ESLint config for all templates under templates/*
+// - Uses projectService so type info is picked up from each template's tsconfig.json
+// - ESLint drives Prettier via 'prettier/prettier': 'error'
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
+
 export default tseslint.config(
   {
     ignores: [
-      '.serverless/**',
-      '.stan/**',
+      '**/node_modules/**',
+      '**/dist/**',
       '**/.tsbuild/**',
       '**/generated/**',
-      'coverage/**',
-      'dist/**',
-      'docs/**',
-      'templates/**',
-      'node_modules/**',
     ],
   },
   eslint.configs.recommended,
@@ -26,32 +25,29 @@ export default tseslint.config(
   prettierConfig,
   {
     languageOptions: {
-      // Important: set the TS parser here, otherwise this block replaces the
-      // parser from strictTypeChecked and the CLI falls back to espree.
       parser: tseslint.parser,
       parserOptions: {
-        // Be explicit so the CLI loads type info from the root project.
-        project: ['./tsconfig.json'],
+        // Let typescript-eslint discover individual template projects
+        projectService: true,
         tsconfigRootDir,
       },
     },
-    // eslint: flat config plugin registry
     plugins: {
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
-      // Code-quality and sorting
+      // Formatting via Prettier
       'prettier/prettier': 'error',
+      // Code-quality and sorting
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/require-await': 'off',
       'no-unused-vars': 'off',
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
+      // Keep strictness reasonable for templates
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',

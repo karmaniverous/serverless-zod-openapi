@@ -8,7 +8,8 @@ import { stagesFactory } from '@/src/serverless/stagesFactory';
  * Extracted from App.ts to keep the class focused on orchestration.
  */
 export function buildStageArtifacts<
-  GlobalParamsSchema extends ZodObject<ZodRawShape>,  StageParamsSchema extends ZodObject<ZodRawShape>,
+  GlobalParamsSchema extends ZodObject<ZodRawShape>,
+  StageParamsSchema extends ZodObject<ZodRawShape>,
 >(
   globalParamsSchema: GlobalParamsSchema,
   stageParamsSchema: StageParamsSchema,
@@ -24,15 +25,17 @@ export function buildStageArtifacts<
   const effectiveStageParamsSchema = globalParamsSchema
     .partial()
     .extend(
-      (stageParamsSchema as unknown as ZodObject<ZodRawShape>)
-        .shape as Record<string, z.ZodType>,
+      (stageParamsSchema as unknown as ZodObject<ZodRawShape>).shape as Record<
+        string,
+        z.ZodType
+      >,
     );
 
   const typedStages = Object.fromEntries(
     Object.entries(stage.params).map(([name, params]) => {
-      const parsed = (
-        effectiveStageParamsSchema as unknown as z.ZodType
-      ).parse(params) as z.infer<typeof effectiveStageParamsSchema>;
+      const parsed = (effectiveStageParamsSchema as unknown as z.ZodType).parse(
+        params,
+      ) as z.infer<typeof effectiveStageParamsSchema>;
       return [name, parsed];
     }),
   ) as Record<string, z.infer<StageParamsSchema>>;
