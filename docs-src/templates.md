@@ -25,6 +25,34 @@ Generate/update:
 npx smoz register
 ```
 
+### Template register imports (TypeScript)
+
+Templates do not commit generated files under `app/generated/` (including
+`register.*.ts`). Instead, each template ships an ambient declarations file
+that declares the three register modules so TypeScript can typecheck without
+artifacts:
+
+- `@/app/generated/register.functions`
+- `@/app/generated/register.openapi`
+- `@/app/generated/register.serverless`
+
+For the minimal template this file is:
+`templates/minimal/types/registers.d.ts`.
+
+When a template needs to ensure register side effects are evaluated at runtime
+(e.g., in `serverless.ts` or the OpenAPI builder), import the register module
+as a namespace and reference it via `void`. This satisfies TypeScript’s
+`noUncheckedSideEffectImports` while still executing module side effects:
+
+```ts
+import * as __register_functions from '@/app/generated/register.functions';
+void __register_functions;
+```
+
+In real apps, `smoz init` seeds empty placeholders in `app/generated/` and
+`smoz register` keeps them up to date. Teams often commit the generated
+`register.*.ts` files so CI typecheck remains stable.
+
 ## OpenAPI document
 
 The template includes a script to build `app/generated/openapi.json`:
@@ -40,21 +68,23 @@ It imports `register.openapi.ts`, collects paths, and writes the document.
 Always normalize file system separators when deriving paths from `import.meta.url`
 or from Node helpers. Example:
 
-````ts
+```ts
 import { fileURLToPath } from 'node:url';
 import { toPosixPath } from '@karmaniverous/smoz';
 
 export const APP_ROOT_ABS = toPosixPath(
   fileURLToPath(new URL('..', import.meta.url)),
 );
-````
+```
 
 ## Lint & typecheck (unified for all templates)
 
 - Lint (ESLint drives Prettier):
+
   ```bash
   npm run templates:lint
   ```
+
   A single ESLint flat config discovers all templates (no per‑template wiring).
 
 - Typecheck:
@@ -81,5 +111,17 @@ will pick it up automatically via the unified config and the typecheck script.
 
 ## Commit registers?
 
-Teams often commit `app/generated/register.*.ts` so typecheck is stable without
-running the CLI. `openapi.json` can remain untracked.
+Yes—this can still be a good practice for downstream apps.
+
+- If your CI/local scripts always run `smoz register` before
+  typecheck/build/package, you don’t need to commit `app/generated/register.*.ts`.
+- If you want typecheck/IDE and CI stability without relying on a prior CLI
+  step, many teams commit `app/generated/register.*.ts`.
+
+Note: The ambient declarations file included in the template
+(`templates/minimal/types/registers.d.ts`) exists only to let the template
+itself typecheck without generated artifacts. In a real app, you may adopt a
+similar ambient `d.ts` if you prefer not to commit generated files—but you must
+still run `smoz register` before any runtime that imports
+`app/generated/register.*` (e.g., OpenAPI generation, packaging), otherwise
+you’ll get module‑not‑found at runtime.

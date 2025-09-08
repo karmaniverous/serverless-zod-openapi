@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T17:05:00Z
+When updated: 2025-09-08T17:15:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a
-     small, targeted mapping fallback per template; otherwise keep the current
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current
      unified config.
 2. Templates:typecheck (minimal) — investigate failure
    - Re-run with local tsc to capture diagnostics:
@@ -19,10 +18,16 @@ When updated: 2025-09-08T17:05:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Docs & templates: document register import pattern
+  - End-user docs (docs-src/templates.md): add “Template register imports”
+    section describing ambient declarations and the namespace+void import
+    pattern (no side-effect imports) with example.
+  - Inline comments in templates/minimal/serverless.ts and
+    templates/minimal/app/config/openapi.ts explaining the pattern and why
+    templates don’t commit generated register files.
 - Templates (minimal): eliminate bare side‑effect register imports
   - Replaced `import '@/app/generated/register.*'` with namespace imports and
-    explicit `void` usage to satisfy TypeScript’s `noUncheckedSideEffectImports`
-    while preserving evaluation ordering:
+    explicit `void` usage to satisfy TypeScript’s `noUncheckedSideEffectImports`    while preserving evaluation ordering:
     - serverless.ts, app/config/openapi.ts.
   - Re‑run `npx tsc -p templates/minimal/tsconfig.json --noEmit` and share diagnostics if any remain.
 - Templates: register placeholders policy
