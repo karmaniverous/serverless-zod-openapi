@@ -1,18 +1,22 @@
 # Development Plan
 
-When updated: 2025-09-08T14:38:00Z
+When updated: 2025-09-08T14:46:00Z
 
 ## Next up (near‑term, actionable)
 1. README slimming - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
    - If residual warnings remain, consider further tuning (non‑blocking).
 
 ## Completed (recent)
+- Lint coverage (templates config)
+  - Updated `templates:lint` to add a second pass with `--no-ignore` for
+    `templates/.check/eslint.templates.config.ts`, ensuring the config file
+    itself is always linted/fixed under stan run. Normal template files still
+    respect the unified `.check` ignores via the first pass.
 - Templates: lint mapping (project discovery)
   - Switched templates ESLint parser to `project: true` with `projectService`
     and `allowDefaultProject` so the nearest tsconfig.json is discovered per
     file on Windows/macOS/Linux. This resolves remaining “not found by the
-    project service” errors.
-- Templates: lint mapping fallback
+    project service” errors.- Templates: lint mapping fallback
   - Added an explicit fallback project reference to
     `templates/.check/tsconfig.minimal.json` in the unified templates ESLint
     config to help the project service map files reliably on Windows while
