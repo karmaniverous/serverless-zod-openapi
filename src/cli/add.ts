@@ -101,15 +101,34 @@ export const handler = fn.handler(async (): Promise<Response> => {
 });
 `;
 
-const openapiTemplate = () => `/* REQUIREMENTS
+const openapiTemplate = ({
+  params,
+  pathTemplate,
+}: {
+  params: string[];
+  pathTemplate: string;
+}) => {
+  const paramsBlock =
+    params.length > 0
+      ? `  parameters: [
+${params
+  .map(
+    (p) =>
+      `    { name: '${p}', in: 'path', required: true, schema: { type: 'string' }, description: 'Path parameter: ${p}' },`,
+  )
+  .join('\n')}
+  ],
+`
+      : '';
+  return `/* REQUIREMENTS
 - Define OpenAPI Path Item for the new endpoint.
 */
 import { eventSchema, fn, responseSchema } from './lambda';
 
 fn.openapi({
   summary: 'Describe your endpoint',
-  description: 'Describe your endpoint.',
-  requestBody: {
+  description: 'Describe your endpoint. Path template: ${pathTemplate}.',
+${paramsBlock}  requestBody: {
     description: 'Request payload.',
     content: { 'application/json': { schema: eventSchema } },
   },
@@ -124,6 +143,7 @@ fn.openapi({
 
 export {};
 `;
+};
 
 const lambdaInternalTemplate = (token: string) => `/**
  * Registration: internal ${token} function.
@@ -133,7 +153,6 @@ import { join } from 'node:path';
 import { z } from 'zod';
 
 import { app, APP_ROOT_ABS } from '@/app/config/app.config';
-
 export const eventSchema = z.any();
 export const responseSchema = z.any();
 
@@ -182,6 +201,13 @@ export const runAdd = async (
   }
   const method = isHttp ? tail : undefined;
   const basePathPosix = toPosix(baseParts.join('/'));
+  // Derive path template and param names for OpenAPI hints (convert :param -> {param})
+  const paramNames = baseParts
+    .filter((s) => s.startsWith(':'))
+    .map((s) => s.slice(1));
+  const pathTemplate =
+    '/' +
+    baseParts.map((s) => (s.startsWith(':') ? `{${s.slice(1)}}` : s)).join('/');
 
   const dir = join(
     root,
@@ -214,7 +240,7 @@ export const runAdd = async (
     });
     files.push({
       path: openapiPath,
-      content: openapiTemplate(),
+      content: openapiTemplate({ params: paramNames, pathTemplate }),
       enabled: true,
     });
   } else {

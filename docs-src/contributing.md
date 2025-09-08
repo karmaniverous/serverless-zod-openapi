@@ -84,3 +84,28 @@ Stable step IDs and transforms ensure correctness:
 - Validation before/after when schemas provided
 
 See the middleware page for customization and invariants.
+
+## Optional pre‑commit recipe (lefthook)
+
+If your team uses lefthook, you can add an optional pre‑commit command to
+refresh registers when endpoint files change. This is not enforced by the
+toolkit and is safe to omit.
+
+Example snippet (add to your `lefthook.yml`):
+
+```yaml
+pre-commit:
+  scripts:
+    smoz-register:
+      runner: bash
+      script: |
+        # If staged changes include app/functions/**/*.{ts,tsx}, refresh registers
+        if git diff --cached --name-only | grep -E '^app/functions/.*\.(ts|tsx)$' >/dev/null; then
+          npx smoz register
+          git add app/generated/register.functions.ts \
+                  app/generated/register.openapi.ts \
+                  app/generated/register.serverless.ts
+        fi
+```
+
+Keep this commented or opt‑in according to your team’s workflow.
