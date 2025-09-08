@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-08T15:38:00Z
+When updated: 2025-09-08T15:45:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -15,14 +15,15 @@ When updated: 2025-09-08T15:38:00Z
      `npx tsc -p templates/minimal/tsconfig.json --noEmit`
    - Address the first concrete error (likely a missing type mapping or
      dependency types) without relaxing rules.
-   - With placeholder registers added under templates/minimal/app/generated,
-     expect typecheck to pass.
+   - With ambient declarations in templates/minimal/types/registers.d.ts,
+     typecheck should pass without requiring generated files on disk.
 
 ## Completed (recent)
 
-- Templates: minimal placeholder registers
-  - Seeded app/generated/register.{functions,openapi,serverless}.ts in the
-  - minimal template to satisfy TS module resolution during typecheck.
+- Templates: minimal register ambient declarations
+  - Added templates/minimal/types/registers.d.ts declaring the three register
+  - imports so TS resolves them during template typecheck without needing
+  - generated files (avoids gitignore/STAN exclude issues).
 - Templates: lint config coverage (second pass)
   - Added templates/.check/tsconfig.eslintconfig.json and included it in the
   - root ESLint parser projects so the second pass can type‑lint the unified
