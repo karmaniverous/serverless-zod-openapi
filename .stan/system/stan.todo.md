@@ -1,8 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T20:12:00Z
+When updated: 2025-09-08T20:25:00Z
 
 ## Next up (near‑term, actionable)
+
 1. Examples & recipes (after plugin lands)
    - Seed an examples area (or separate repo) with three tiny apps:
      - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP).
@@ -21,12 +22,13 @@ When updated: 2025-09-08T20:12:00Z
 - Docs site plumbing:
   - Front matter added to overview/getting-started/middleware/templates/cli/contributing.
   - typedoc.json projectDocuments reordered; CHANGELOG last.
-  - CLI code excluded from API reference ("src/cli/**").
+  - CLI code excluded from API reference ("src/cli/\*\*").
 - CLI: add — path parameters
   - Specs like `rest/users/:id/get` supported.
   - Scaffolded openapi.ts includes path template hint and basic path parameters.
   - CLI docs updated with example and notes.
-  - Implementation landed in src/cli/add.ts (scaffold now emits hints).
+  - Normalization: accepts `:id`, `{id}`, `[id]`; creates `[id]` on disk; emits `{id}` in basePath/OpenAPI.
+  - Docs updated with consumption examples and portability notes.
 - Optional pre‑commit recipe (docs)
   - Documented a lefthook snippet to run `smoz register` on staged endpoint changes
     and re‑stage generated registers (not enforced).

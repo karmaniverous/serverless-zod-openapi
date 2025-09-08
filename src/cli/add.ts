@@ -15,6 +15,7 @@
 import { existsSync } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { dirname, join, posix, sep } from 'node:path';
+
 const HTTP_METHODS = new Set([
   'get',
   'post',
@@ -52,6 +53,27 @@ const writeIfAbsent = async (
   await fs.writeFile(outFile, content, 'utf8');
   return { created: true };
 };
+
+/** True if a segment encodes a path param (:id | {id} | [id]). */
+const isParamSeg = (s: string): boolean =>
+  s.startsWith(':') ||
+  (s.startsWith('{') && s.endsWith('}')) ||
+  (s.startsWith('[') && s.endsWith(']'));
+
+/** Extract the bare param name from a param segment. */
+const getParamName = (s: string): string => {
+  if (s.startsWith(':')) return s.slice(1);
+  if (s.startsWith('{') && s.endsWith('}')) return s.slice(1, -1);
+  if (s.startsWith('[') && s.endsWith(']')) return s.slice(1, -1);
+  return s;
+};
+
+/** Normalize a segment for the filesystem (Windows‑safe). */
+const toDirSeg = (s: string): string =>
+  isParamSeg(s) ? `[${getParamName(s)}]` : s;
+/** Normalize a segment for API paths (Serverless/OpenAPI‑native). */
+const toPathSeg = (s: string): string =>
+  isParamSeg(s) ? `{${getParamName(s)}}` : s;
 
 const lambdaHttpTemplate = ({
   token,
@@ -153,6 +175,7 @@ import { join } from 'node:path';
 import { z } from 'zod';
 
 import { app, APP_ROOT_ABS } from '@/app/config/app.config';
+
 export const eventSchema = z.any();
 export const responseSchema = z.any();
 
@@ -200,21 +223,24 @@ export const runAdd = async (
     throw new Error('Provide at least one path segment after the eventType.');
   }
   const method = isHttp ? tail : undefined;
-  const basePathPosix = toPosix(baseParts.join('/'));
-  // Derive path template and param names for OpenAPI hints (convert :param -> {param})
-  const paramNames = baseParts
-    .filter((s) => s.startsWith(':'))
-    .map((s) => s.slice(1));
-  const pathTemplate =
-    '/' +
-    baseParts.map((s) => (s.startsWith(':') ? `{${s.slice(1)}}` : s)).join('/');
+
+  // Normalize param segments for path and filesystem
+  const dirSegs = baseParts.map(toDirSeg);
+  const pathSegs = baseParts.map(toPathSeg);
+
+  // Base path (Serverless/OpenAPI native, uses {param})
+  const basePathPosix = toPosix(pathSegs.join('/'));
+
+  // Derive path template and param names for OpenAPI hints
+  const paramNames = baseParts.filter(isParamSeg).map(getParamName);
+  const pathTemplate = '/' + pathSegs.join('/');
 
   const dir = join(
     root,
     'app',
     'functions',
     token,
-    ...baseParts,
+    ...dirSegs,
     ...(method ? [method] : []),
   );
   const lambdaPath = join(dir, 'lambda.ts');
