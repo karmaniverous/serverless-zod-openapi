@@ -29,12 +29,17 @@ export default tseslint.config(
       parser: tseslint.parser,
       parserOptions: {
         // Discover individual template projects explicitly
-        project: ['../*/tsconfig.json', '../project/tsconfig.json'],
+        project: [
+          '../*/tsconfig.json',
+          '../project/tsconfig.json',
+          './tsconfig.minimal.json',
+        ],
         projectService: true,
         allowDefaultProject: true,
         tsconfigRootDir,
       },
-    },    plugins: {
+    },
+    plugins: {
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
     },

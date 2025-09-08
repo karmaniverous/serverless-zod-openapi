@@ -1,18 +1,21 @@
 # Development Plan
 
-When updated: 2025-09-08T14:05:00Z
+When updated: 2025-09-08T14:18:00Z
 
 ## Next up (near‑term, actionable)
-1. README slimming - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
-2. Optional: build noise
+1. README slimming - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).2. Optional: build noise
    - If residual warnings remain, consider further tuning (non‑blocking).
 
 ## Completed (recent)
 
+- Templates: lint mapping fallback
+  - Added an explicit fallback project reference to
+    `templates/.check/tsconfig.minimal.json` in the unified templates ESLint
+    config to help the project service map files reliably on Windows while
+    retaining typed linting where projects match.
 - Templates: lint fallback
   - Enabled `allowDefaultProject: true` in the unified templates ESLint config
-    so files not mapped to a specific tsconfig by the project service still
-    lint cleanly. Typed analysis remains for files matched to a template
+    so files not mapped to a specific tsconfig by the project service still    lint cleanly. Typed analysis remains for files matched to a template
     project.
 - Templates: lint follow‑up
   - Updated unified templates ESLint config to ignore templates/.check/\*\*
