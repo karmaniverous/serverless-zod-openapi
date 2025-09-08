@@ -49,7 +49,7 @@ describe('CLI: add', () => {
       expect(oaiBody).toMatch(/Path template:\s*\/users\/\{id\}/);
       // Parameters array contains id in: path
       expect(oaiBody).toMatch(
-        /\{\s*name:\s*['"]id['"],\s*in:\s*['"]path['"],\s*required:\s*true,\s*schema:\s*\{\s*type:\s*['"]string['"]\s*\}\s*\}/,
+        /\{\s*name:\s*['"]id['"],\s*in:\s*['"]path['"],\s*required:\s*true,\s*schema:\s*\{\s*type:\s*['"]string['"]\s*\}/,
       );
       // handler.ts exists as usual
       expect(existsSync(join(ppBase, 'handler.ts'))).toBe(true);

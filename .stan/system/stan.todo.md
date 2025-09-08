@@ -1,11 +1,12 @@
 # Development Plan
 
-When updated: 2025-09-08T20:38:00Z
+When updated: 2025-09-08T20:22:00Z
 
 ## Next up (near‑term, actionable)
+
 1. Examples & recipes (after plugin lands)
    - Seed an examples area (or separate repo) with three tiny apps:
-     - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP).   - Author recipe pages:
+     - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP). - Author recipe pages:
      - SQS function example; contexts + Cognito authorizer; custom middleware insertion
        (insertAfter 'shape'); per‑function env (fnEnvKeys); observability (pino + requestId);
        troubleshooting (register lifecycle, Windows TS errors, serverless‑offline loop).
@@ -31,6 +32,6 @@ When updated: 2025-09-08T20:38:00Z
   - Added a path-parameters test to src/cli/add.test.ts covering [id] directory, basePath 'users/{id}', and OpenAPI parameter hints.
   - Adjusted assertions to accept both single and double quotes in
     generated files (formatter-agnostic).
-- Optional pre‑commit recipe (docs)
+  - Refined parameters-array regex to match through the inner schema brace only, tolerating additional fields (e.g., description).- Optional pre‑commit recipe (docs)
   - Documented a lefthook snippet to run `smoz register` on staged endpoint changes
     and re‑stage generated registers (not enforced).
