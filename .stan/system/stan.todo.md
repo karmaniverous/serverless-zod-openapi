@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-08T20:25:00Z
+When updated: 2025-09-08T20:33:00Z
 
 ## Next up (near‑term, actionable)
-
 1. Examples & recipes (after plugin lands)
    - Seed an examples area (or separate repo) with three tiny apps:
      - rest‑only, rest + sqs (non‑HTTP), rest + step (non‑HTTP).
@@ -29,6 +28,8 @@ When updated: 2025-09-08T20:25:00Z
   - CLI docs updated with example and notes.
   - Normalization: accepts `:id`, `{id}`, `[id]`; creates `[id]` on disk; emits `{id}` in basePath/OpenAPI.
   - Docs updated with consumption examples and portability notes.
+- Tests
+  - Added a path-parameters test to src/cli/add.test.ts covering [id] directory, basePath 'users/{id}', and OpenAPI parameter hints.
 - Optional pre‑commit recipe (docs)
   - Documented a lefthook snippet to run `smoz register` on staged endpoint changes
     and re‑stage generated registers (not enforced).
