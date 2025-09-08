@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-08T15:45:00Z
+When updated: 2025-09-08T15:58:00Z
 
 ## Next up (near‑term, actionable)
-
 1. Templates lint (Windows verification)
    - Re-run templates:lint on Windows to confirm the new
      templates/minimal/tsconfig.json resolves projectService mapping.
@@ -17,9 +16,12 @@ When updated: 2025-09-08T15:45:00Z
      dependency types) without relaxing rules.
    - With ambient declarations in templates/minimal/types/registers.d.ts,
      typecheck should pass without requiring generated files on disk.
+   - Adjusted CommonJS‑style imports in templates/minimal/app/config/openapi.ts
+     to namespace imports; re‑run templates:typecheck to confirm green.
+3. Loop guard: verify install
+   - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
-
 - Templates: minimal register ambient declarations
   - Added templates/minimal/types/registers.d.ts declaring the three register
   - imports so TS resolves them during template typecheck without needing

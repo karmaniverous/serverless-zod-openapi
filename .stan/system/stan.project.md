@@ -500,6 +500,7 @@ Acceptance criteria for hygiene
 - Only intrinsics flagged for future use (e.g., serverless/intrinsic.ts) remain as deliberately retained forward‑compatibility helpers.
 
 ## 8.5) App-level function defaults (env key defaults)
+
 Purpose
 
 - Reduce repetition of common per-function environment keys by allowing the App
@@ -613,3 +614,23 @@ Contributor note
 
 - Run `npm run stan:build` once locally so `@karmaniverous/smoz` types resolve
   across the workspace (templates use the bundled d.ts).
+
+## 14) Install guard (operator may miss "npm install")
+
+Context
+
+- STAN loops often run on fresh or reset worktrees where dependencies have not yet been installed.
+- Missing installs can cascade into spurious typecheck/lint/build errors (e.g., “Cannot find module 'zod'”, missing @types, etc.).
+
+Policy (assistant behavior)
+
+- On every loop, check for evidence that npm install was not run:
+  - Absence of root node_modules/ or key dependency folders (e.g., node_modules/zod).
+  - Recent logs showing module‑not‑found errors for known runtime/dev deps (zod, @middy/core, typescript, eslint, vitest, typedoc, etc.).
+- If suspected, prompt the user explicitly to run:
+  - npm install (or their PM equivalent) at repo root before re‑evaluating failures.
+- Do not add workaround code for missing installs. If any workaround was added mistakenly (e.g., ad‑hoc ambient shims that duplicate library types), remove it once install is confirmed.
+
+Rationale
+
+- Keeps loops focused on real issues and avoids adding complexity to mask missing dependencies.
