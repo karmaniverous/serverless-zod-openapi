@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T17:50:00Z
+When updated: 2025-09-08T17:55:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure   - Re-run with local tsc to capture diagnostics:     `npx tsc -p templates/minimal/tsconfig.json --noEmit`
-   - Address the first concrete error (likely a missing type mapping or
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure   - Re-run with local tsc to capture diagnostics:     `npx tsc -p templates/minimal/tsconfig.json --noEmit`   - Address the first concrete error (likely a missing type mapping or
      dependency types) without relaxing rules.
    - With ambient declarations in templates/minimal/types/registers.d.ts,
      typecheck should pass without requiring generated files on disk.
@@ -14,10 +13,16 @@ When updated: 2025-09-08T17:50:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Templates:typecheck Windows spawn fix
+  - Runner now prefers the workspace-local tsc (node_modules/.bin/tsc) and
+    only falls back to npx when missing, using shell:true on Windows to avoid
+    EINVAL. Keeps robust stdout/stderr capture and full diagnostics.
+  - Combined with narrowed template tsconfig include/typeRoots, this prevents
+    accidental traversal into node_modules/@serverless/typescript/tsconfig.json
+    and eliminates Windows spawn crashes.
 - Templates:typecheck robustness
   - Updated runner to safely convert stdout/stderr to text (string/Buffer/undefined)
-    and print any spawn error, preventing crashes on environments where streams
-    are undefined while still emitting full diagnostics on failure.
+    and print any spawn error, preventing crashes on environments where streams    are undefined while still emitting full diagnostics on failure.
 - Templates:typecheck focus — avoid stray config pickup
   - Narrowed templates/minimal/tsconfig.json includes to TS sources only and
     constrained typeRoots to "./node_modules/@types" so tsc doesn’t traverse    unrelated package configs during template checks.
