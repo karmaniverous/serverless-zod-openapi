@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-07T17:20:00Z
+When updated: 2025-09-07T17:30:00Z
 
 ## Next up (near‑term, actionable)
-
 1. Template/Docs polish
    - Run templates:typecheck and templates:lint to re‑verify the template
      workspaces after helper refactors. Address any drift (lint rules,
@@ -33,3 +32,7 @@ When updated: 2025-09-07T17:20:00Z
     types to .stan/dist/index.d.ts. Keep strict rules; fix template code
     (import sort, require-await, non-null assertion, unused var) and resolve
     d.ts alias imports during build.
+  - Follow-up (strict): remove exported aliases from app.config.ts and use
+    app.* directly in serverless.ts; type fn usages in handler/openapi to avoid
+    unsafe-call/member-access; sort imports where flagged. No rule relaxations
+    in templates/.check.

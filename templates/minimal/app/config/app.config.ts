@@ -45,9 +45,6 @@ export const app = App.create({
   },
 });
 
-export const stages = app.stages;
-export const environment = app.environment;
-export const buildFnEnv = app.buildFnEnv;
 export const ENDPOINTS_ROOT_REST = toPosixPath(
   join(APP_ROOT_ABS, 'functions', 'rest'),
 );
