@@ -1,28 +1,22 @@
 # Development Plan
 
-When updated: 2025-09-08T18:20:00Z
+When updated: 2025-09-08T18:30:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Templates lint (Windows verification) - Re-run templates:lint on Windows to confirm the new templates/minimal/tsconfig.json resolves projectService mapping. - If any residual “not found by the project service” errors remain, add a small, targeted mapping fallback per template; otherwise keep the current unified config.2. Templates:typecheck (minimal) — re-run now that rootDir/typeRoots are fixed - Re-run with local tsc to confirm green: `npx tsc -p templates/minimal/tsconfig.json --noEmit`
-   - Address the first concrete error (likely a missing type mapping or
-     dependency types) without relaxing rules.
-   - With ambient declarations in templates/minimal/types/registers.d.ts,
-     typecheck should pass without requiring generated files on disk.
-   - Adjusted CommonJS‑style imports in templates/minimal/app/config/openapi.ts
-     to namespace imports; re‑run templates:typecheck to confirm green.
-2. Loop guard: verify install
+1. Loop guard: verify install
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
 
+- Templates:lint (Windows verification): unified templates config stable; run completed without issues.
+- Templates:typecheck (minimal): now green on Windows after rootDir/typeRoots fix; runner reports “All templates typecheck OK.”
 - Templates:typecheck (minimal): fix TS2688 & TS6059 by overriding rootDir to "." and setting typeRoots to include the repo root's @types alongside local. Re-run templates:typecheck to confirm green on Windows.
 - Templates:typecheck Windows exec-path fix
   - Prefer executing TypeScript via Node: `node node_modules/typescript/lib/tsc.js`
     to avoid .cmd shim issues on Windows. If missing, fall back to the local
     tsc binary or npx with shell:true, preserving full diagnostics and avoiding
-    EINVAL. Combined with narrowed template tsconfig include/typeRoots, this
-    prevents tsc from traversing unrelated package configs.
+    EINVAL. Combined with narrowed template tsconfig include/typeRoots, this    prevents tsc from traversing unrelated package configs.
 - Templates:typecheck Windows spawn fix
   - Runner now prefers the workspace-local tsc (node_modules/.bin/tsc) and
     only falls back to npx when missing, using shell:true on Windows to avoid
