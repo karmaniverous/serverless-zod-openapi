@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "outDir": ".tsbuild",
     "paths": {
       "@/*": ["*"],
       "@karmaniverous/smoz": ["../../.stan/dist/index.d.ts"]
     },
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
   "exclude": [

@@ -1,10 +1,10 @@
 # Development Plan
 
-When updated: 2025-09-08T18:00:00Z
+When updated: 2025-09-08T18:20:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Templates lint (Windows verification) - Re-run templates:lint on Windows to confirm the new templates/minimal/tsconfig.json resolves projectService mapping. - If any residual “not found by the project service” errors remain, add a small, targeted mapping fallback per template; otherwise keep the current unified config.2. Templates:typecheck (minimal) — investigate failure - Re-run with local tsc to capture diagnostics: `npx tsc -p templates/minimal/tsconfig.json --noEmit`
+1. Templates lint (Windows verification) - Re-run templates:lint on Windows to confirm the new templates/minimal/tsconfig.json resolves projectService mapping. - If any residual “not found by the project service” errors remain, add a small, targeted mapping fallback per template; otherwise keep the current unified config.2. Templates:typecheck (minimal) — re-run now that rootDir/typeRoots are fixed - Re-run with local tsc to confirm green: `npx tsc -p templates/minimal/tsconfig.json --noEmit`
    - Address the first concrete error (likely a missing type mapping or
      dependency types) without relaxing rules.
    - With ambient declarations in templates/minimal/types/registers.d.ts,
@@ -16,6 +16,7 @@ When updated: 2025-09-08T18:00:00Z
 
 ## Completed (recent)
 
+- Templates:typecheck (minimal): fix TS2688 & TS6059 by overriding rootDir to "." and setting typeRoots to include the repo root's @types alongside local. Re-run templates:typecheck to confirm green on Windows.
 - Templates:typecheck Windows exec-path fix
   - Prefer executing TypeScript via Node: `node node_modules/typescript/lib/tsc.js`
     to avoid .cmd shim issues on Windows. If missing, fall back to the local
