@@ -5,7 +5,8 @@
  *
  * Notes:
  * - This file is bundled to dist/cjs/serverless-plugin.js and exported via the "./serverless-plugin" subpath.
- * - Serverless v4 loads CJS plugins via `require`, so we export a class with `hooks`.
+ * - Serverless v4 loads CJS plugins via `require`; exporting a default class allows
+ *   rollup to wrap it for CJS while preserving the ESM entry for completeness.
  */
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -18,14 +19,14 @@ const runRegister = (): void => {
     stdio: 'inherit',
     shell: false,
   });
-  if (res.status !== 0) {
-    const code = typeof res.status === 'number' ? res.status : 'unknown';
+  const code: string =
+    typeof res.status === 'number' ? String(res.status) : 'unknown';
+  if (res.status !== 0)
     throw new Error(`smoz register failed (exit code ${code})`);
-  }
 };
 
 // Minimal Serverless v4 plugin: register hooks that run before package/deploy.
-module.exports = class SmozRegisterPlugin {
+export default class SmozRegisterPlugin {
   hooks: Record<string, () => void>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,4 +41,4 @@ module.exports = class SmozRegisterPlugin {
       'before:deploy:deploy': runRegister,
     };
   }
-};
+}
