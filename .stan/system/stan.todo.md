@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T16:50:00Z
+When updated: 2025-09-08T17:05:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.
-   - If any residual “not found by the project service” errors remain, add a
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a
      small, targeted mapping fallback per template; otherwise keep the current
      unified config.
 2. Templates:typecheck (minimal) — investigate failure
@@ -20,10 +19,15 @@ When updated: 2025-09-08T16:50:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Templates (minimal): eliminate bare side‑effect register imports
+  - Replaced `import '@/app/generated/register.*'` with namespace imports and
+    explicit `void` usage to satisfy TypeScript’s `noUncheckedSideEffectImports`
+    while preserving evaluation ordering:
+    - serverless.ts, app/config/openapi.ts.
+  - Re‑run `npx tsc -p templates/minimal/tsconfig.json --noEmit` and share diagnostics if any remain.
 - Templates: register placeholders policy
   - Do not commit generated register placeholders under templates/*/app/generated.
-  - Use a single ambient declarations file per template (e.g., templates/minimal/types/registers.d.ts)
-    declaring the three register modules so templates typecheck without artifacts.
+  - Use a single ambient declarations file per template (e.g., templates/minimal/types/registers.d.ts)    declaring the three register modules so templates typecheck without artifacts.
 - Project prompt: compressed without losing detail; removed redundancy; kept section anchors.
 - Templates: minimal register ambient declarations
   - Added templates/minimal/types/registers.d.ts declaring the three register  - imports so TS resolves them during template typecheck without needing  - generated files (avoids gitignore/STAN exclude issues).

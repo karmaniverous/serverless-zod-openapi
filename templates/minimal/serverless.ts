@@ -1,9 +1,10 @@
-import '@/app/generated/register.functions';
-import '@/app/generated/register.serverless';
-
 import type { AWS } from '@serverless/typescript';
 
 import { app } from '@/app/config/app.config';
+import * as __register_functions from '@/app/generated/register.functions';
+import * as __register_serverless from '@/app/generated/register.serverless';
+void __register_functions;
+void __register_serverless;
 
 const config: AWS = {
   service: '${param:SERVICE_NAME}',

@@ -1,5 +1,3 @@
-import '@/app/generated/register.openapi';
-
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
@@ -7,6 +5,8 @@ import { packageDirectorySync } from 'pkg-dir';
 import { createDocument } from 'zod-openapi';
 
 import { app } from '@/app/config/app.config';
+import * as __register_openapi from '@/app/generated/register.openapi';
+void __register_openapi;
 console.log('Generating OpenAPI document...');
 
 const paths = app.buildAllOpenApiPaths();
