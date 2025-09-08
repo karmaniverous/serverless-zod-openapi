@@ -48,18 +48,7 @@ may remain untracked.</p>
 refresh registers when endpoint files change. This is not enforced by the
 toolkit and is safe to omit.</p>
 <p>Example snippet (add to your <code>lefthook.yml</code>):</p>
-<pre><code class="yaml">pre-commit:
-  scripts:
-    smoz-register:
-      runner: bash
-      script: |
-        # If staged changes include app/functions/**/*.{ts,tsx}, refresh registers
-        if git diff --cached --name-only | grep -E '^app/functions/.*\.(ts|tsx)$' >/dev/null; then
-          npx smoz register
-          git add app/generated/register.functions.ts \
-                  app/generated/register.openapi.ts \
-                  app/generated/register.serverless.ts
-        fi
+<pre><code class="yaml"><span class="hl-12">pre-commit</span><span class="hl-1">:</span><br/><span class="hl-1">  </span><span class="hl-12">scripts</span><span class="hl-1">:</span><br/><span class="hl-1">    </span><span class="hl-12">smoz-register</span><span class="hl-1">:</span><br/><span class="hl-1">      </span><span class="hl-12">runner</span><span class="hl-1">: </span><span class="hl-13">bash</span><br/><span class="hl-1">      </span><span class="hl-12">script</span><span class="hl-1">: </span><span class="hl-7">|</span><br/><span class="hl-13">        # If staged changes include app/functions/**/*.{ts,tsx}, refresh registers</span><br/><span class="hl-13">        if git diff --cached --name-only | grep -E &#39;^app/functions/.*\.(ts|tsx)$&#39; &gt;/dev/null; then</span><br/><span class="hl-13">          npx smoz register</span><br/><span class="hl-13">          git add app/generated/register.functions.ts \</span><br/><span class="hl-13">                  app/generated/register.openapi.ts \</span><br/><span class="hl-13">                  app/generated/register.serverless.ts</span><br/><span class="hl-13">        fi</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Keep this commented or opt‑in according to your team’s workflow.</p>
