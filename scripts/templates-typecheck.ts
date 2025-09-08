@@ -39,7 +39,14 @@ const run = () => {
   }
   for (const t of targets) {
     console.log(`Typechecking template: ${t.name}`);
-    // Prefer the workspace-local TypeScript binary over npx to avoid Windows spawn issues.
+    // Prefer Node + local tsc.js to avoid .cmd shims and EINVAL on Windows.
+    const tscJs = path.join(
+      repoRoot,
+      'node_modules',
+      'typescript',
+      'lib',
+      'tsc.js',
+    );
     const tscBin = path.join(
       repoRoot,
       'node_modules',
@@ -49,14 +56,21 @@ const run = () => {
     let cmd: string;
     let args: string[];
     let useShell = false;
-    if (existsSync(tscBin)) {
-      cmd = tscBin;
-      args = ['-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
+    if (existsSync(tscJs)) {
+      // node <repo>/node_modules/typescript/lib/tsc.js ...
+      cmd = process.execPath;
+      args = [tscJs, '-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
     } else {
-      cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-      args = ['tsc', '-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
-      // Some Windows shells require shell:true for .cmd resolution with arguments.
-      useShell = process.platform === 'win32';
+      if (existsSync(tscBin)) {
+        cmd = tscBin;
+        args = ['-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
+        // Some Windows shells require shell:true when invoking .cmd directly.
+        useShell = process.platform === 'win32';
+      } else {
+        cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+        args = ['tsc', '-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
+        useShell = process.platform === 'win32'; // robust .cmd resolution
+      }
     }
     // Capture both stdout and stderr so we can print them on failure to stdout,
     // ensuring downstream log collectors (that may ignore stderr) still see diagnostics.
@@ -65,7 +79,8 @@ const run = () => {
       shell: useShell,
       stdio: ['ignore', 'pipe', 'pipe'],
       encoding: 'utf8',
-    }); // Convert stdout/stderr safely across platforms (string | Buffer | undefined).
+    });
+    // Convert stdout/stderr safely across platforms (string | Buffer | undefined).
     const toText = (x: unknown): string => {
       if (typeof x === 'string') return x;
       if (x && typeof x === 'object' && Buffer.isBuffer(x)) {
@@ -81,7 +96,7 @@ const run = () => {
       if (res.error) {
         console.log('--- spawn error ---');
         console.log(String(res.error));
-        if (!existsSync(tscBin)) {
+        if (!existsSync(tscJs) && !existsSync(tscBin)) {
           console.log(
             'Note: local TypeScript binary not found. Ensure dev deps are installed (e.g., "npm i") or add TypeScript to devDependencies.',
           );

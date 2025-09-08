@@ -1,18 +1,27 @@
 # Development Plan
 
-When updated: 2025-09-08T17:55:00Z
+When updated: 2025-09-08T18:00:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure   - Re-run with local tsc to capture diagnostics:     `npx tsc -p templates/minimal/tsconfig.json --noEmit`   - Address the first concrete error (likely a missing type mapping or
+
+1. Templates lint (Windows verification) - Re-run templates:lint on Windows to confirm the new templates/minimal/tsconfig.json resolves projectService mapping. - If any residual “not found by the project service” errors remain, add a small, targeted mapping fallback per template; otherwise keep the current unified config.2. Templates:typecheck (minimal) — investigate failure - Re-run with local tsc to capture diagnostics: `npx tsc -p templates/minimal/tsconfig.json --noEmit`
+   - Address the first concrete error (likely a missing type mapping or
      dependency types) without relaxing rules.
    - With ambient declarations in templates/minimal/types/registers.d.ts,
      typecheck should pass without requiring generated files on disk.
    - Adjusted CommonJS‑style imports in templates/minimal/app/config/openapi.ts
      to namespace imports; re‑run templates:typecheck to confirm green.
-3. Loop guard: verify install
+2. Loop guard: verify install
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+
+- Templates:typecheck Windows exec-path fix
+  - Prefer executing TypeScript via Node: `node node_modules/typescript/lib/tsc.js`
+    to avoid .cmd shim issues on Windows. If missing, fall back to the local
+    tsc binary or npx with shell:true, preserving full diagnostics and avoiding
+    EINVAL. Combined with narrowed template tsconfig include/typeRoots, this
+    prevents tsc from traversing unrelated package configs.
 - Templates:typecheck Windows spawn fix
   - Runner now prefers the workspace-local tsc (node_modules/.bin/tsc) and
     only falls back to npx when missing, using shell:true on Windows to avoid
@@ -22,39 +31,48 @@ When updated: 2025-09-08T17:55:00Z
     and eliminates Windows spawn crashes.
 - Templates:typecheck robustness
   - Updated runner to safely convert stdout/stderr to text (string/Buffer/undefined)
-    and print any spawn error, preventing crashes on environments where streams    are undefined while still emitting full diagnostics on failure.
+    and print any spawn error, preventing crashes on environments where streams
+    are undefined while still emitting full diagnostics on failure.
 - Templates:typecheck focus — avoid stray config pickup
   - Narrowed templates/minimal/tsconfig.json includes to TS sources only and
-    constrained typeRoots to "./node_modules/@types" so tsc doesn’t traverse    unrelated package configs during template checks.
+    constrained typeRoots to "./node_modules/@types" so tsc doesn’t traverse
+    unrelated package configs during template checks.
 - Templates:typecheck diagnostics polish
   - Fixed ESLint warnings in the runner and added "--pretty false" for plain
     diagnostics; continue to emit both stdout/stderr on failure along with
     the invoked command for easy local reproduction.
 - Templates:typecheck diagnostics
   - Updated scripts/templates-typecheck.ts to capture tsc stdout/stderr and
-    print both on failure (to stdout), ensuring STAN logs include complete TS    diagnostics even if stderr is not captured separately.
+    print both on failure (to stdout), ensuring STAN logs include complete TS
+    diagnostics even if stderr is not captured separately.
   - Also prints the invoked command for easy local reproduction.
 - CI ergonomics: register before typecheck
   - Updated package.json "typecheck" to run "npm run register && tsc -p
-    tsconfig.json --noEmit" so fresh clones typecheck without relying on    committed app/generated/register.*.ts.
+    tsconfig.json --noEmit" so fresh clones typecheck without relying on
+    committed app/generated/register.\*.ts.
   - openapi/package already chain register; no change needed there.
 - Docs & templates: document register import pattern
   - End-user docs (docs-src/templates.md): add “Template register imports”
-    section describing ambient declarations and the namespace+void import    pattern (no side-effect imports) with example.
+    section describing ambient declarations and the namespace+void import
+    pattern (no side-effect imports) with example.
   - Inline comments in templates/minimal/serverless.ts and
     templates/minimal/app/config/openapi.ts explaining the pattern and why
     templates don’t commit generated register files.
 - Templates (minimal): eliminate bare side‑effect register imports
   - Replaced `import '@/app/generated/register.*'` with namespace imports and
-    explicit `void` usage to satisfy TypeScript’s `noUncheckedSideEffectImports`    while preserving evaluation ordering:
+    explicit `void` usage to satisfy TypeScript’s `noUncheckedSideEffectImports`
+    while preserving evaluation ordering:
     - serverless.ts, app/config/openapi.ts.
   - Re‑run `npx tsc -p templates/minimal/tsconfig.json --noEmit` and share diagnostics if any remain.
 - Templates: register placeholders policy
-  - Do not commit generated register placeholders under templates/*/app/generated.
-  - Use a single ambient declarations file per template (e.g., templates/minimal/types/registers.d.ts)    declaring the three register modules so templates typecheck without artifacts.
+  - Do not commit generated register placeholders under templates/\*/app/generated.
+  - Use a single ambient declarations file per template (e.g., templates/minimal/types/registers.d.ts)
+    declaring the three register modules so templates typecheck without artifacts.
 - Project prompt: compressed without losing detail; removed redundancy; kept section anchors.
 - Templates: minimal register ambient declarations
-  - Added templates/minimal/types/registers.d.ts declaring the three register  - imports so TS resolves them during template typecheck without needing  - generated files (avoids gitignore/STAN exclude issues).
+  - Added templates/minimal/types/registers.d.ts declaring the three register
+    imports so TS resolves them during template typecheck without needing
+    generated files (avoids gitignore/STAN exclude issues).
 - Templates: lint config coverage (second pass)
   - Added templates/.check/tsconfig.eslintconfig.json and included it in the
   - root ESLint parser projects so the second pass can type‑lint the unified
@@ -92,8 +110,7 @@ When updated: 2025-09-08T17:55:00Z
   - lint cleanly. Typed analysis remains for files matched to a template
   - project.
 - Templates: lint follow‑up
-  - Updated unified templates ESLint config to ignore templates/.check/\*\*
-  - so config files aren’t linted.
+  - Updated unified templates ESLint config to ignore templates/.check/\*\* so config files aren’t linted.
   - Enabled parserOptions.projectService to correctly map files to the
   - appropriate template tsconfig.json and resolve typed‑project parsing
   - errors on Windows. `npm run templates:lint` should now be green across
