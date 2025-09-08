@@ -50,12 +50,23 @@ const run = () => {
       stdio: ['ignore', 'pipe', 'pipe'],
       encoding: 'utf8',
     });
-    // With encoding:'utf8', stdout/stderr are strings.
-    const out = res.stdout.trim();
-    const err = res.stderr.trim();
+    // Convert stdout/stderr safely across platforms (string | Buffer | undefined).
+    const toText = (x: unknown): string => {
+      if (typeof x === 'string') return x;
+      if (x && typeof x === 'object' && Buffer.isBuffer(x)) {
+        return x.toString('utf8');
+      }
+      return '';
+    };
+    const out = toText(res.stdout).trim();
+    const err = toText(res.stderr).trim();
     // On failure: print a clear header, the full stdout/stderr, and exit.
     if (res.status !== 0) {
       console.log(`Typecheck failed for template: ${t.name}`);
+      if (res.error) {
+        console.log('--- spawn error ---');
+        console.log(String(res.error));
+      }
       if (out.length) {
         console.log('--- tsc stdout ---');
         console.log(out);

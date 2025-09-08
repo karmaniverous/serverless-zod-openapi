@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T17:45:00Z
+When updated: 2025-09-08T17:50:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure   - Re-run with local tsc to capture diagnostics:
-     `npx tsc -p templates/minimal/tsconfig.json --noEmit`
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure   - Re-run with local tsc to capture diagnostics:     `npx tsc -p templates/minimal/tsconfig.json --noEmit`
    - Address the first concrete error (likely a missing type mapping or
      dependency types) without relaxing rules.
    - With ambient declarations in templates/minimal/types/registers.d.ts,
@@ -15,10 +14,13 @@ When updated: 2025-09-08T17:45:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Templates:typecheck robustness
+  - Updated runner to safely convert stdout/stderr to text (string/Buffer/undefined)
+    and print any spawn error, preventing crashes on environments where streams
+    are undefined while still emitting full diagnostics on failure.
 - Templates:typecheck focus — avoid stray config pickup
   - Narrowed templates/minimal/tsconfig.json includes to TS sources only and
-    constrained typeRoots to "./node_modules/@types" so tsc doesn’t traverse
-    unrelated package configs during template checks.
+    constrained typeRoots to "./node_modules/@types" so tsc doesn’t traverse    unrelated package configs during template checks.
 - Templates:typecheck diagnostics polish
   - Fixed ESLint warnings in the runner and added "--pretty false" for plain
     diagnostics; continue to emit both stdout/stderr on failure along with
