@@ -56,10 +56,9 @@ Order (must remain):
 ## 6) Repository intent and publishing
 
 - lib/: publishable toolkit (wrapper, middleware, Serverless/OpenAPI helpers, config typing).
-- src/: consumer/demo stack to exercise the toolkit.
+- app/: integration fixture to exercise the toolkit end‑to‑end (register → OpenAPI → package). See “16) Integration fixture (/app)”.
 
 ## 7) Config model (direction)
-
 - Per‑function config inlines `eventSchema`/`responseSchema`.
 - App config = event map schema + unified app settings (serverless defaults, env exposure).
 - Builders consume the app + per‑function config directly.
@@ -162,3 +161,54 @@ Conventions
 - Runtime placeholders are created in actual apps by smoz init and maintained
   by smoz register; templates should not ship runtime placeholders in
   app/generated.
+
+## 16) Integration fixture (/app)
+
+- Purpose: keep a small, in‑tree application under /app to validate the end‑to‑end flow in CI
+  (register → OpenAPI → package). This fixture is not intended for deployment.
+- Policy:
+  - Keep /app in main. Do not move it to a long‑lived branch (avoid bitrot and loss of CI coverage).
+  - Rebrand to neutral identifiers:
+    - service: smoz-sample
+    - domains: api.example.test / api.dev.example.test
+    - ARNs: placeholder strings (non‑sensitive)
+  - Add /app/README.md stating:
+    - “Integration fixture used by CI to exercise register → OpenAPI → package.”
+    - “Not part of the published package; not intended for deployment.”
+  - Ensure repository scripts continue to run against the fixture without deploy (package only).
+  - The fixture must not affect the published npm package (files whitelist remains “dist”, “templates”).
+
+## 17) Register freshness & enforcement
+
+- Goal: eliminate stale register footguns without burdening teams’ hook setups.
+- Preferred mechanism: Serverless Framework plugin
+  - Provide a lightweight plugin that runs `smoz register` before Serverless package/deploy flows
+    (v4: before:package:initialize and deploy‑related hooks).
+  - Ship as a subpath export (e.g., `@karmaniverous/smoz/serverless-plugin`) and document adding it
+    to `plugins` in serverless.ts.
+- Optional mechanism: pre‑commit recipe
+  - Offer a commented lefthook snippet that runs `smoz register` when files under `app/functions/**`
+    changed, and stages updated `app/generated/register.*.ts`. Do not enforce; document as opt‑in
+    to avoid conflicts with existing hook managers (husky/lefthook).
+- Continue chaining `npm run register` into scripts that depend on fresh registers
+  (typecheck/openapi/package) as an additional guard.
+
+## 18) Documentation structure and navigation
+
+- External doc pages (docs-src/*.md) include a front matter block to provide titles and sidebar labels:
+  ---
+  title: Page Title
+  sidebar_label: Short Label
+  sidebar_position: N
+  ---
+- Typedoc ordering is explicitly set via typedoc.json “projectDocuments”:
+  1) docs-src/overview.md
+  2) docs-src/getting-started.md
+  3) docs-src/middleware.md
+  4) docs-src/templates.md
+  5) docs-src/cli.md
+  6) docs-src/contributing.md
+  7) CHANGELOG.md (last)
+- Exclude CLI source symbols from the API reference to avoid confusion:
+  - typedoc.json “exclude”: add "src/cli/**"
+  - Keep CLI usage documented on docs-src/cli.md.
