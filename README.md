@@ -30,12 +30,12 @@ Quick links
 - Middleware: https://docs.karmanivero.us/smoz/middleware
 - Templates: https://docs.karmanivero.us/smoz/templates
 - Recipes: https://docs.karmanivero.us/smoz/recipes
+- Examples (repo): https://github.com/karmaniverous/smoz/tree/main/examples
 - Contributing: https://docs.karmanivero.us/smoz/contributing
 Install
 
 ```bash
-npm i smoz zod zod-openapi @middy/core \
-  @middy/http-header-normalizer \
+npm i smoz zod zod-openapi @middy/core \  @middy/http-header-normalizer \
   @middy/http-event-normalizer \
   @middy/http-json-body-parser \
   @middy/http-content-negotiation \

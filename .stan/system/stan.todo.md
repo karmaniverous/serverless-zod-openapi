@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-08T21:25:00Z
+When updated: 2025-09-08T21:30:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -18,11 +18,12 @@ When updated: 2025-09-08T21:25:00Z
   - examples/rest-sqs/README.md
   - examples/rest-step/README.md
 - Docs: cross-linked examples from Recipes index
+- Docs: added Examples link to README quick links
 - Docs: added navigation pages and initial recipes
   - Why smoz? (docs-src/why-smoz.md)
   - 10‑minute tour (docs-src/tour-10-minutes.md)
   - Recipes index + subpages:
-    - sqs, contexts-auth, custom-middleware, per-function-env, observability, troubleshooting  - typedoc.json updated to include new docs in order.
+    - sqs, contexts-auth, custom-middleware, per-function-env, observability, troubleshooting - typedoc.json updated to include new docs in order.
   - README quick links updated.- Docs site plumbing:
   - Front matter added to overview/getting-started/middleware/templates/cli/contributing.
   - typedoc.json projectDocuments reordered; CHANGELOG last.
@@ -30,8 +31,7 @@ When updated: 2025-09-08T21:25:00Z
   - Specs like `rest/users/:id/get` supported.
   - Scaffolded openapi.ts includes path template hint and basic path parameters.
   - CLI docs updated with example and notes.
-  - Normalization: accepts `:id`, `{id}`, `[id]`; creates `[id]` on disk; emits `{id}` in basePath/OpenAPI.
-  - Docs updated with consumption examples and portability notes.
+  - Normalization: accepts `:id`, `{id}`, `[id]`; creates `[id]` on disk; emits `{id}` in basePath/OpenAPI).
 - Tests
   - Added a path-parameters test to src/cli/add.test.ts covering [id] directory, basePath 'users/{id}', and OpenAPI parameter hints.
   - Adjusted assertions to accept both single and double quotes in
