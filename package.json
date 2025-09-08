@@ -23,7 +23,8 @@
     "package-directory": "^8.1.0",
     "radash": "^12.1.1",
     "zod": "^4.1.5"
-  },  "description": "John Galt Services back end.",
+  },
+  "description": "John Galt Services back end.",
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.49.0",
     "@eslint/js": "^9.34.0",
@@ -40,7 +41,8 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "fs-extra": "^11.3.1",
-    "knip": "^5.63.0",    "lefthook": "^1.12.3",
+    "knip": "^5.63.0",
+    "lefthook": "^1.12.3",
     "orval": "^7.11.2",
     "pkg-dir": "^9.0.0",
     "prettier": "^3.6.2",
@@ -80,7 +82,8 @@
       "require": "./dist/cjs/serverless-plugin.js"
     },
     "./package.json": "./package.json"
-  },  "files": [
+  },
+  "files": [
     "dist",
     "templates"
   ],
@@ -154,7 +157,9 @@
     "register:watch": "tsx src/cli/index.ts register --watch",
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "changelog": "auto-changelog",
-    "deploy": "npm run register && serverless deploy",    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",    "docs": "typedoc",
+    "deploy": "npm run register && serverless deploy",
+    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
+    "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
     "generate": "cd services/activecampaign && orval",
@@ -165,13 +170,15 @@
     "package": "npm run register && serverless package",
     "release": "dotenvx run -f .env.local -- release-it",
     "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
-    "remove": "serverless remove",    "stan:build": "rimraf stan.dist && rollup --config stan.rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf stan.dist",
+    "remove": "serverless remove",
+    "stan:build": "rimraf stan.dist && rollup --config stan.rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf stan.dist",
     "stan:docs": "typedoc --emit none",
     "cli:build": "rollup --config cli.rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "test": "vitest run",
     "typecheck": "npm run register && tsc -p tsconfig.json --noEmit",
     "templates:typecheck": "tsx scripts/templates-typecheck.ts",
     "templates:lint": "eslint --fix -c templates/.check/eslint.templates.config.ts \"templates/**/*.{ts,tsx,js,jsx}\" && eslint --fix --no-ignore templates/.check/eslint.templates.config.ts"
-  },  "type": "module",
+  },
+  "type": "module",
   "version": "0.0.0"
 }
