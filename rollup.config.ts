@@ -84,7 +84,13 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
     // See external() below where '@/' and '@@/' are treated as external.
     try {
       const code = (warning as unknown as { code?: string }).code;
-      const source = (warning as unknown as { source?: unknown }).source;
+      // Some plugins (e.g., rollup-plugin-dts) may not set `source`; check id/exporter too.
+      const anyWarn = warning as unknown as {
+        source?: unknown;
+        id?: unknown;
+        exporter?: unknown;
+      };
+      const source = anyWarn.source ?? anyWarn.id ?? anyWarn.exporter;
       if (
         code === 'UNRESOLVED_IMPORT' &&
         typeof source === 'string' &&
@@ -144,7 +150,13 @@ export const buildTypes = (dest: string): RollupOptions => ({
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
     try {
       const code = (warning as unknown as { code?: string }).code;
-      const source = (warning as unknown as { source?: unknown }).source;
+      // rollup-plugin-dts may provide id/exporter instead of source
+      const anyWarn = warning as unknown as {
+        source?: unknown;
+        id?: unknown;
+        exporter?: unknown;
+      };
+      const source = anyWarn.source ?? anyWarn.id ?? anyWarn.exporter;
       if (
         code === 'UNRESOLVED_IMPORT' &&
         typeof source === 'string' &&
@@ -158,7 +170,6 @@ export const buildTypes = (dest: string): RollupOptions => ({
     defaultHandler(warning);
   },
 });
-
 export default [
   buildLibrary(outputPath, 'tsconfig.rollup.json'),
   buildTypes(outputPath),
