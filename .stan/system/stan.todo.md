@@ -1,16 +1,20 @@
 # Development Plan
 
-When updated: 2025-09-08T14:46:00Z
+When updated: 2025-09-08T15:00:00Z
 
 ## Next up (near‑term, actionable)
-1. README slimming - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
-   - If residual warnings remain, consider further tuning (non‑blocking).
+1. Templates lint (Windows project mapping)
+   - Verify project discovery fixes land across shells; if not, add a targeted
+     mapping pass per template, or fall back to non‑typed lint for unmatched
+     files (retain typed lint where projects match).
 
 ## Completed (recent)
+- README slimming
+  - Trimmed the README to essentials and linked to the docs pages (overview,
+    getting started, CLI, middleware, templates, contributing).
 - Lint coverage (templates config)
   - Updated `templates:lint` to add a second pass with `--no-ignore` for
-    `templates/.check/eslint.templates.config.ts`, ensuring the config file
-    itself is always linted/fixed under stan run. Normal template files still
+    `templates/.check/eslint.templates.config.ts`, ensuring the config file    itself is always linted/fixed under stan run. Normal template files still
     respect the unified `.check` ignores via the first pass.
 - Templates: lint mapping (project discovery)
   - Switched templates ESLint parser to `project: true` with `projectService`
