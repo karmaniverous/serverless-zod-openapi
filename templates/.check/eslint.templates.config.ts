@@ -27,15 +27,14 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        // Let typescript-eslint discover individual template projects
-        projectService: true,
+        // Discover individual template projects explicitly
+        project: ['../*/tsconfig.json', '../project/tsconfig.json'],
         tsconfigRootDir,
       },
     },
     plugins: {
       prettier: prettierPlugin,
-      'simple-import-sort': simpleImportSortPlugin,
-    },
+      'simple-import-sort': simpleImportSortPlugin,    },
     rules: {
       // Formatting via Prettier
       'prettier/prettier': 'error',

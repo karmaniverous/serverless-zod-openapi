@@ -1,9 +1,8 @@
 # Development Plan
 
-When updated: 2025-09-08T12:00:00Z
+When updated: 2025-09-08T12:30:00Z
 
 ## Next up (near‑term, actionable)
-
 1. README slimming
    - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
 2. Optional: build noise
@@ -11,10 +10,14 @@ When updated: 2025-09-08T12:00:00Z
 
 ## Completed (recent)
 
+- Templates scripts/config stabilization:
+  - Fixed templates:typecheck script comment terminator that broke TS parsing.
+  - Switched unified templates ESLint config to explicit project globs and
+    updated templates:lint target to exclude templates/.check.
+  - Added root CONTRIBUTING.md stub for GitHub discoverability.
 - Docs: split authored pages under docs-src/ and wired into TypeDoc:
   - overview, getting-started, cli, middleware, templates, contributing.
-- Lint/format policy: ESLint drives Prettier
-  - Added 'prettier/prettier': 'error' in root and template ESLint configs.
+- Lint/format policy: ESLint drives Prettier  - Added 'prettier/prettier': 'error' in root and template ESLint configs.
   - Unified template lint config at templates/.check/eslint.templates.config.ts.
 - Template typecheck scalability:
   - Added scripts/templates-typecheck.ts and updated npm scripts to discover
