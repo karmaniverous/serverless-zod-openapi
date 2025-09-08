@@ -18,6 +18,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/.tsbuild/**',
       '**/generated/**',
+      '**/.check/**',
     ],
   },
   eslint.configs.recommended,
@@ -29,12 +30,14 @@ export default tseslint.config(
       parserOptions: {
         // Discover individual template projects explicitly
         project: ['../*/tsconfig.json', '../project/tsconfig.json'],
+        projectService: true,
         tsconfigRootDir,
       },
     },
     plugins: {
       prettier: prettierPlugin,
-      'simple-import-sort': simpleImportSortPlugin,    },
+      'simple-import-sort': simpleImportSortPlugin,
+    },
     rules: {
       // Formatting via Prettier
       'prettier/prettier': 'error',

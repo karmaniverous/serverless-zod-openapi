@@ -1,14 +1,22 @@
 # Development Plan
 
-When updated: 2025-09-08T12:50:00Z
+When updated: 2025-09-08T13:30:00Z
 
 ## Next up (near‑term, actionable)
-1. README slimming   - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
+
+1. README slimming - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
 2. Optional: build noise
    - If residual warnings remain, consider further tuning (non‑blocking).
 
 ## Completed (recent)
 
+- Templates: lint follow‑up
+  - Updated unified templates ESLint config to ignore templates/.check/\*\*
+    so config files aren’t linted.
+  - Enabled parserOptions.projectService to correctly map files to the
+    appropriate template tsconfig.json and resolve typed‑project parsing
+    errors on Windows. `npm run templates:lint` should now be green across
+    templates/\* and templates/project.
 - Templates scripts/config stabilization (follow‑up):
   - Adjusted templates:lint to use a files glob so ESLint doesn’t report “No files matching the pattern” on Windows shells.
 - Templates scripts/config stabilization:
@@ -18,7 +26,7 @@ When updated: 2025-09-08T12:50:00Z
   - Added root CONTRIBUTING.md stub for GitHub discoverability.
 - Docs: split authored pages under docs-src/ and wired into TypeDoc:
   - overview, getting-started, cli, middleware, templates, contributing.
-- Lint/format policy: ESLint drives Prettier  - Added 'prettier/prettier': 'error' in root and template ESLint configs.
+- Lint/format policy: ESLint drives Prettier - Added 'prettier/prettier': 'error' in root and template ESLint configs.
   - Unified template lint config at templates/.check/eslint.templates.config.ts.
 - Template typecheck scalability:
   - Added scripts/templates-typecheck.ts and updated npm scripts to discover
@@ -28,7 +36,7 @@ When updated: 2025-09-08T12:50:00Z
 - Project prompt updated to memorialize lint/format + template scalability policy.
 - CLI & aggregators tests green:
   - register/add/init happy paths, idempotency, POSIX sorting (register).
-  - watch debounce with coalescing; injectable watcher tests.  - Serverless/OpenAPI aggregators: contexts → events/paths, operationId and
+  - watch debounce with coalescing; injectable watcher tests. - Serverless/OpenAPI aggregators: contexts → events/paths, operationId and
     tags; env extras mapping validated.
 - Docs/OpenAPI/build/package exercised:
   - openapi document generation ok; packaging ok; lint/typecheck/tests ok.
