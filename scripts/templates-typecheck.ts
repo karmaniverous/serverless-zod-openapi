@@ -39,14 +39,38 @@ const run = () => {
   }
   for (const t of targets) {
     console.log(`Typechecking template: ${t.name}`);
-    const res = spawnSync(
-      process.platform === 'win32' ? 'npx.cmd' : 'npx',
-      ['tsc', '-p', t.tsconfig, '--noEmit'],
-      { stdio: 'inherit', cwd: repoRoot, shell: false },
-    );
+    const cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const args = ['tsc', '-p', t.tsconfig, '--noEmit'];
+    // Capture both stdout and stderr so we can print them on failure to stdout,
+    // ensuring downstream log collectors (that may ignore stderr) still see diagnostics.
+    const res = spawnSync(cmd, args, {
+      cwd: repoRoot,
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: 'utf8',
+    });
+    const out = (res.stdout ?? '').trim();
+    const err = (res.stderr ?? '').trim();
+    // On failure: print a clear header, the full stdout/stderr, and exit.
     if (res.status !== 0) {
-      console.error(`Typecheck failed for template: ${t.name}`);
+      console.log(`Typecheck failed for template: ${t.name}`);
+      if (out.length) {
+        console.log('--- tsc stdout ---');
+        console.log(out);
+      }
+      if (err.length) {
+        console.log('--- tsc stderr ---');
+        console.log(err);
+      }
+      // Also print the invoked command to help local reproduction.
+      console.log(`--- invoked ---`);
+      console.log([cmd, ...args].join(' '));
       process.exit(res.status ?? 1);
+    }
+    // Optional: surface non-empty stdout in success cases to aid debugging
+    // without overwhelming logs (tsc is generally quiet on success).
+    if (out.length) {
+      console.log(out);
     }
   }
   console.log('All templates typecheck OK.');

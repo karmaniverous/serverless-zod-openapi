@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T17:25:00Z
+When updated: 2025-09-08T17:35:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.
-2. Templates:typecheck (minimal) — investigate failure
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure
    - Re-run with local tsc to capture diagnostics:
      `npx tsc -p templates/minimal/tsconfig.json --noEmit`
    - Address the first concrete error (likely a missing type mapping or
@@ -17,10 +16,14 @@ When updated: 2025-09-08T17:25:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Templates:typecheck diagnostics
+  - Updated scripts/templates-typecheck.ts to capture tsc stdout/stderr and
+    print both on failure (to stdout), ensuring STAN logs include complete TS
+    diagnostics even if stderr is not captured separately.
+  - Also prints the invoked command for easy local reproduction.
 - CI ergonomics: register before typecheck
   - Updated package.json "typecheck" to run "npm run register && tsc -p
-    tsconfig.json --noEmit" so fresh clones typecheck without relying on
-    committed app/generated/register.*.ts.
+    tsconfig.json --noEmit" so fresh clones typecheck without relying on    committed app/generated/register.*.ts.
   - openapi/package already chain register; no change needed there.
 - Docs & templates: document register import pattern
   - End-user docs (docs-src/templates.md): add “Template register imports”
