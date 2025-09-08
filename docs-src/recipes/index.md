@@ -3,7 +3,6 @@ title: Recipes
 sidebar_label: Recipes
 sidebar_position: 6
 ---
-
 # Recipes
 
 Concrete patterns you can lift into your app. Each recipe links to a focused
@@ -16,8 +15,13 @@ page with short snippets.
 - [Observability (requestId header)](./observability.md)
 - [Troubleshooting](./troubleshooting.md)
 
-Tip: Keep endpoint modules small and focused:
+Examples (in repository)
 
+- REST only: https://github.com/karmaniverous/smoz/tree/main/examples/rest-only
+- REST + SQS (non‑HTTP): https://github.com/karmaniverous/smoz/tree/main/examples/rest-sqs
+- REST + Step Functions (non‑HTTP): https://github.com/karmaniverous/smoz/tree/main/examples/rest-step
+
+Tip: Keep endpoint modules small and focused:
 ```
 lambda.ts       // define/register function
 handler.ts      // business handler

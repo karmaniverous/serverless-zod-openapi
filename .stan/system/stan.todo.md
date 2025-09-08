@@ -1,13 +1,13 @@
 # Development Plan
 
-When updated: 2025-09-08T21:15:00Z
+When updated: 2025-09-08T21:25:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Cross‑link examples from the Recipes index (docs) and keep them minimal.
-
-2. Loop guard: verify install (standing)
+1. Loop guard: verify install (standing)
    - Each loop, check for evidence of missed npm install; prompt if needed.
+
+2. (Reserved)
 
 ## Completed (recent)
 
@@ -17,6 +17,7 @@ When updated: 2025-09-08T21:15:00Z
 - Examples: added rest‑sqs and rest‑step guides
   - examples/rest-sqs/README.md
   - examples/rest-step/README.md
+- Docs: cross-linked examples from Recipes index
 - Docs: added navigation pages and initial recipes
   - Why smoz? (docs-src/why-smoz.md)
   - 10‑minute tour (docs-src/tour-10-minutes.md)
@@ -25,8 +26,7 @@ When updated: 2025-09-08T21:15:00Z
   - README quick links updated.- Docs site plumbing:
   - Front matter added to overview/getting-started/middleware/templates/cli/contributing.
   - typedoc.json projectDocuments reordered; CHANGELOG last.
-  - CLI code excluded from API reference ("src/cli/\*\*").
-- CLI: add — path parameters
+  - CLI code excluded from API reference ("src/cli/\*\*").- CLI: add — path parameters
   - Specs like `rest/users/:id/get` supported.
   - Scaffolded openapi.ts includes path template hint and basic path parameters.
   - CLI docs updated with example and notes.
