@@ -2,11 +2,17 @@
 title: Recipes
 sidebar_label: Recipes
 sidebar_position: 6
+children:
+  - ./sqs.md
+  - ./contexts-auth.md
+  - ./custom-middleware.md
+  - ./per-function-env.md
+  - ./observability.md
+  - ./troubleshooting.md
 ---
 # Recipes
 
-Concrete patterns you can lift into your app. Each recipe links to a focused
-page with short snippets.
+Concrete patterns you can lift into your app. Each recipe links to a focusedpage with short snippets.
 
 - [SQS function](./sqs.md)
 - [Contexts + Cognito authorizer](./contexts-auth.md)
