@@ -1,7 +1,12 @@
+---
+title: Getting started
+sidebar_label: Getting started
+sidebar_position: 2
+---
+
 # Getting started
 
 ## Install
-
 ```bash
 npm i smoz zod zod-openapi @middy/core \
   @middy/http-header-normalizer \

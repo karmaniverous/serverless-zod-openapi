@@ -1,3 +1,9 @@
+---
+title: CLI
+sidebar_label: CLI
+sidebar_position: 5
+---
+
 # CLI
 
 The `smoz` CLI maintains registers, scaffolds functions, and initializes apps.
@@ -53,6 +59,7 @@ messages are expected.
 ```bash
 npx smoz add rest/foo/get
 npx smoz add step/activecampaign/contacts/getContact
+npx smoz add rest/users/:id/get
 ```
 
 Scaffold:
@@ -61,6 +68,15 @@ Scaffold:
 - non‑HTTP: lambda.ts, handler.ts
 
 Paths must follow the convention under `app/functions/<eventType>/...`.
+
+Path parameters
+
+- HTTP specs may include colon-prefixed segments (e.g., `:id`). Example:
+  `npx smoz add rest/users/:id/get`.
+- The scaffolded `openapi.ts` will include:
+  - A short “Path template” hint (e.g., `/users/{id}`) in the description.
+  - A `parameters` array with minimal path parameter entries (string type,
+    required) you can further refine as needed.
 
 ## Tips
 

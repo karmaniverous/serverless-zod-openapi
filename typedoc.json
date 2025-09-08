@@ -1,11 +1,10 @@
 {
   "entryPoints": ["./src"],
   "entryPointStrategy": "expand",
-  "exclude": ["**/*.test.ts", "src/test/**", "**/generated/**", "**/*.d.ts"],
+  "exclude": ["**/*.test.ts", "src/test/**", "src/cli/**", "**/generated/**", "**/*.d.ts"],
   "excludeInternal": false,
   "highlightLanguages": [
-    "bash",
-    "console",
+    "bash",    "console",
     "css",
     "html",
     "javascript",
@@ -30,18 +29,17 @@
     "typedoc-plugin-zod"
   ],
   "projectDocuments": [
-    "./CHANGELOG.md",
     "./docs-src/overview.md",
     "./docs-src/getting-started.md",
+    "./docs-src/middleware.md",
     "./docs-src/templates.md",
-    "./docs-src/contributing.md",
     "./docs-src/cli.md",
-    "./docs-src/middleware.md"
+    "./docs-src/contributing.md",
+    "./CHANGELOG.md"
   ],
   "replaceText": {
     "replacements": [
-      {
-        "flags": "gis",
+      {        "flags": "gis",
         "pattern": "<!-- TYPEDOC_EXCLUDE -->.*?<!-- /TYPEDOC_EXCLUDE -->",
         "replace": ""
       }

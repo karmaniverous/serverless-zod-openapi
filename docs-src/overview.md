@@ -1,7 +1,12 @@
+---
+title: Overview
+sidebar_label: Overview
+sidebar_position: 1
+---
+
 # SMOZ overview
 
 SMOZ is a tiny, pragmatic toolkit:
-
 - Author Lambda handlers with Middy and first‑class Zod validation
 - Define your app once and generate:
   - Serverless functions (handler strings, HTTP events, env mapping)

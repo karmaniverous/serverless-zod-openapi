@@ -1,3 +1,9 @@
+---
+title: Contributing
+sidebar_label: Contributing
+sidebar_position: 6
+---
+
 # Contributing
 
 ## Environment
@@ -59,14 +65,14 @@ may remain untracked.
 
 Normalize separators when deriving paths:
 
-````ts
+```ts
 import { fileURLToPath } from 'node:url';
 import { toPosixPath } from '@karmaniverous/smoz';
 
 export const APP_ROOT_ABS = toPosixPath(
   fileURLToPath(new URL('..', import.meta.url)),
 );
-````
+```
 
 ## Middleware invariants (HTTP)
 

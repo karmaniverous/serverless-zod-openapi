@@ -15,7 +15,6 @@
 import { existsSync } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { dirname, join, posix, sep } from 'node:path';
-
 const HTTP_METHODS = new Set([
   'get',
   'post',

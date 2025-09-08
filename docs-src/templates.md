@@ -1,7 +1,12 @@
+---
+title: Templates
+sidebar_label: Templates
+sidebar_position: 4
+---
+
 # Templates
 
 The package ships a minimal app template and a shared “project” baseline.
-
 ## Layout
 
 - templates/project — shared boilerplate (tsconfig/eslint/prettier/vitest/typedoc)

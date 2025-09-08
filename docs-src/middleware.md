@@ -1,7 +1,12 @@
+---
+title: HTTP middleware
+sidebar_label: Middleware
+sidebar_position: 3
+---
+
 # HTTP middleware
 
-SMOZ builds a robust Middy stack around HTTP handlers. Non‑HTTP flows bypass
-Middy entirely.
+SMOZ builds a robust Middy stack around HTTP handlers. Non‑HTTP flows bypassMiddy entirely.
 
 ## Defaults (in order)
 
