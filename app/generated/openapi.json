@@ -3,11 +3,11 @@
   "servers": [
     {
       "description": "Production",
-      "url": "https://api.johngalt.id"
+      "url": "https://api.example.test"
     },
     {
-      "description": "Local dev",
-      "url": "http://api.dev.johngalt.id"
+      "description": "Dev",
+      "url": "https://api.dev.example.test"
     }
   ],
   "info": {

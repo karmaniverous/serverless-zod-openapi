@@ -75,9 +75,12 @@
         "default": "./dist/cjs/index.js"
       }
     },
+    "./serverless-plugin": {
+      "import": "./dist/mjs/serverless-plugin.js",
+      "require": "./dist/cjs/serverless-plugin.js"
+    },
     "./package.json": "./package.json"
-  },
-  "files": [
+  },  "files": [
     "dist",
     "templates"
   ],

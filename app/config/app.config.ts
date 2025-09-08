@@ -45,9 +45,9 @@ export const app = App.create({
     params: {
       ESB_MINIFY: false,
       ESB_SOURCEMAP: true,
-      PROFILE: 'JGS-SSO',
-      REGION: 'ap-southeast-1',
-      SERVICE_NAME: 'api-johngalt-id',
+      PROFILE: 'dev',
+      REGION: 'us-east-1',
+      SERVICE_NAME: 'smoz-sample',
     },
     envKeys: ['REGION', 'SERVICE_NAME'],
   },
@@ -55,14 +55,14 @@ export const app = App.create({
     params: {
       dev: {
         DOMAIN_CERTIFICATE_ARN:
-          'arn:aws:acm:us-east-1:343218212471:certificate/8a668260-e9ec-4fde-9b48-d2be8aedb489',
-        DOMAIN_NAME: 'api.dev.johngalt.id',
+          'arn:aws:acm:us-east-1:000000000000:certificate/dev-placeholder',
+        DOMAIN_NAME: 'api.dev.example.test',
         STAGE: 'dev',
       },
       prod: {
         DOMAIN_CERTIFICATE_ARN:
-          'arn:aws:acm:us-east-1:343218212471:certificate/6505cd50-6d57-43f7-a199-02f3e4a08683',
-        DOMAIN_NAME: 'api.johngalt.id',
+          'arn:aws:acm:us-east-1:000000000000:certificate/prod-placeholder',
+        DOMAIN_NAME: 'api.example.test',
         STAGE: 'prod',
         ESB_MINIFY: true,
         ESB_SOURCEMAP: false,

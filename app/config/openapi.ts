@@ -24,8 +24,8 @@ const paths = app.buildAllOpenApiPaths();
 export const doc = createDocument({
   openapi: '3.1.0',
   servers: [
-    { description: 'Production', url: 'https://api.johngalt.id' },
-    { description: 'Local dev', url: 'http://api.dev.johngalt.id' },
+    { description: 'Production', url: 'https://api.example.test' },
+    { description: 'Dev', url: 'https://api.dev.example.test' },
   ],
   info: {
     // Read the package name and version from `package.json` via environment variables.

@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-08T18:45:00Z
+When updated: 2025-09-08T19:05:00Z
 
 ## Next up (near‑term, actionable)
 

@@ -25,10 +25,12 @@ const outputPath = 'dist';
 // Multi-entry mapping to produce subpath bundles for JS and DTS.
 const entryPoints = {
   index: 'src/index.ts',
+  // Serverless plugin entry (CJS/ESM build + DTS). The plugin is intended to be
+  // loaded via CJS by Serverless; we still emit both formats for completeness.
+  'serverless-plugin': 'src/serverless/plugin.ts',
 };
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-// Collect runtime dependency names (dependencies + peerDependencies) to mark as external.
+const __dirname = path.dirname(__filename); // Collect runtime dependency names (dependencies + peerDependencies) to mark as external.
 let runtimeExternalPkgs = new Set<string>();
 try {
   const pkgJsonText = readFileSync(
