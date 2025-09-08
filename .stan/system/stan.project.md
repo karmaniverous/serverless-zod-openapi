@@ -144,3 +144,21 @@ Conventions
   - Recent logs with module‑not‑found for known deps (zod, @middy/core, typescript, eslint, vitest, typedoc, etc.).
 - If suspected, prompt user to `npm install` (or equivalent) at repo root, then re‑evaluate.
 - Do not add code to paper over missing deps; remove any accidental shims after install.
+
+## 15) Templates: register placeholders policy
+
+- Do not commit generated register placeholder files under templates
+  (e.g., templates/*/app/generated/register.*.ts). Generated paths are
+  excluded in this repo and invisible to STAN and other contributors pulling
+  the repo.
+- Templates must typecheck in a clean clone without running CLI steps.
+  Provide a single ambient declarations file per template that declares the
+  three side‑effect modules so imports typecheck:
+  - '@/app/generated/register.functions'
+  - '@/app/generated/register.openapi'
+  - '@/app/generated/register.serverless'
+  For the minimal template this lives at:
+  templates/minimal/types/registers.d.ts.
+- Runtime placeholders are created in actual apps by smoz init and maintained
+  by smoz register; templates should not ship runtime placeholders in
+  app/generated.

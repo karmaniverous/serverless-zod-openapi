@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T16:10:00Z
+When updated: 2025-09-08T16:50:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new
-     templates/minimal/tsconfig.json resolves projectService mapping.
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.
    - If any residual “not found by the project service” errors remain, add a
      small, targeted mapping fallback per template; otherwise keep the current
      unified config.
@@ -21,10 +20,13 @@ When updated: 2025-09-08T16:10:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Templates: register placeholders policy
+  - Do not commit generated register placeholders under templates/*/app/generated.
+  - Use a single ambient declarations file per template (e.g., templates/minimal/types/registers.d.ts)
+    declaring the three register modules so templates typecheck without artifacts.
 - Project prompt: compressed without losing detail; removed redundancy; kept section anchors.
 - Templates: minimal register ambient declarations
-  - Added templates/minimal/types/registers.d.ts declaring the three register
-  - imports so TS resolves them during template typecheck without needing  - generated files (avoids gitignore/STAN exclude issues).
+  - Added templates/minimal/types/registers.d.ts declaring the three register  - imports so TS resolves them during template typecheck without needing  - generated files (avoids gitignore/STAN exclude issues).
 - Templates: lint config coverage (second pass)
   - Added templates/.check/tsconfig.eslintconfig.json and included it in the
   - root ESLint parser projects so the second pass can type‑lint the unified
