@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
     "rootDir": ".",
     "emitDeclarationOnly": false,
-    "exactOptionalPropertyTypes": true,
-    "module": "esnext",
+    "exactOptionalPropertyTypes": true,    "module": "esnext",
     "moduleDetection": "force",    "moduleResolution": "bundler",
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
@@ -15,6 +15,11 @@
     "stripInternal": true,
     "target": "esnext",
     "types": ["node"],
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "@/*": ["*"],
+      "@@/*": ["services/activecampaign/*"],
+      "@karmaniverous/smoz": [".stan/dist/index.d.ts", "dist/index.d.ts"]
+    }
   }
 }
