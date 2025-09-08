@@ -1,10 +1,9 @@
 # Development Plan
 
-When updated: 2025-09-08T17:35:00Z
+When updated: 2025-09-08T17:45:00Z
 
 ## Next up (near‑term, actionable)
-1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure
-   - Re-run with local tsc to capture diagnostics:
+1. Templates lint (Windows verification)   - Re-run templates:lint on Windows to confirm the new     templates/minimal/tsconfig.json resolves projectService mapping.   - If any residual “not found by the project service” errors remain, add a     small, targeted mapping fallback per template; otherwise keep the current     unified config.2. Templates:typecheck (minimal) — investigate failure   - Re-run with local tsc to capture diagnostics:
      `npx tsc -p templates/minimal/tsconfig.json --noEmit`
    - Address the first concrete error (likely a missing type mapping or
      dependency types) without relaxing rules.
@@ -16,10 +15,17 @@ When updated: 2025-09-08T17:35:00Z
    - Each loop, check for evidence of missed npm install; prompt if needed.
 
 ## Completed (recent)
+- Templates:typecheck focus — avoid stray config pickup
+  - Narrowed templates/minimal/tsconfig.json includes to TS sources only and
+    constrained typeRoots to "./node_modules/@types" so tsc doesn’t traverse
+    unrelated package configs during template checks.
+- Templates:typecheck diagnostics polish
+  - Fixed ESLint warnings in the runner and added "--pretty false" for plain
+    diagnostics; continue to emit both stdout/stderr on failure along with
+    the invoked command for easy local reproduction.
 - Templates:typecheck diagnostics
   - Updated scripts/templates-typecheck.ts to capture tsc stdout/stderr and
-    print both on failure (to stdout), ensuring STAN logs include complete TS
-    diagnostics even if stderr is not captured separately.
+    print both on failure (to stdout), ensuring STAN logs include complete TS    diagnostics even if stderr is not captured separately.
   - Also prints the invoked command for easy local reproduction.
 - CI ergonomics: register before typecheck
   - Updated package.json "typecheck" to run "npm run register && tsc -p

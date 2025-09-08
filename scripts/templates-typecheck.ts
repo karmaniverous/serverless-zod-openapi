@@ -1,6 +1,7 @@
 // templates:typecheck
 // Discover template tsconfig.json files under templates/* and run
 // "tsc -p --noEmit" for each. Fail fast with a readable template name on error.
+// Emits both stdout and stderr on failure (to stdout) for complete diagnostics.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -40,7 +41,7 @@ const run = () => {
   for (const t of targets) {
     console.log(`Typechecking template: ${t.name}`);
     const cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    const args = ['tsc', '-p', t.tsconfig, '--noEmit'];
+    const args = ['tsc', '-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
     // Capture both stdout and stderr so we can print them on failure to stdout,
     // ensuring downstream log collectors (that may ignore stderr) still see diagnostics.
     const res = spawnSync(cmd, args, {
@@ -49,8 +50,9 @@ const run = () => {
       stdio: ['ignore', 'pipe', 'pipe'],
       encoding: 'utf8',
     });
-    const out = (res.stdout ?? '').trim();
-    const err = (res.stderr ?? '').trim();
+    // With encoding:'utf8', stdout/stderr are strings.
+    const out = res.stdout.trim();
+    const err = res.stderr.trim();
     // On failure: print a clear header, the full stdout/stderr, and exit.
     if (res.status !== 0) {
       console.log(`Typecheck failed for template: ${t.name}`);
