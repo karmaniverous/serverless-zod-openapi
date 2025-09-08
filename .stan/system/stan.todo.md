@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-08T15:20:00Z
+When updated: 2025-09-08T15:30:00Z
 
 ## Next up (near‑term, actionable)
 1. Templates lint (Windows verification)
@@ -9,13 +9,21 @@ When updated: 2025-09-08T15:20:00Z
    - If any residual “not found by the project service” errors remain, add a
      small, targeted mapping fallback per template; otherwise keep the current
      unified config.
+2. Templates:typecheck (minimal) — investigate failure
+   - Re-run with local tsc to capture diagnostics:
+     `npx tsc -p templates/minimal/tsconfig.json --noEmit`
+   - Address the first concrete error (likely a missing type mapping or
+     dependency types) without relaxing rules.
 
 ## Completed (recent)
+- Templates: lint config coverage (second pass)
+  - Added templates/.check/tsconfig.eslintconfig.json and included it in the
+    root ESLint parser projects so the second pass can type‑lint the unified
+    templates ESLint config on Windows without project‑service errors.
 - Templates: minimal tsconfig + typecheck discovery
   - Added templates/minimal/tsconfig.json so ESLint’s projectService can map
     files on Windows and scripts/templates-typecheck.ts discovers the template.
-    Expect templates:lint to pass on Windows and templates:typecheck to run.
-- README slimming
+    Expect templates:lint to pass on Windows and templates:typecheck to run.- README slimming
   - Trimmed the README to essentials and linked to the docs pages (overview,
     getting started, CLI, middleware, templates, contributing).- Lint coverage (templates config)
   - Updated `templates:lint` to add a second pass with `--no-ignore` for
