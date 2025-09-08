@@ -1,15 +1,16 @@
 # Development Plan
 
-When updated: 2025-09-08T12:30:00Z
+When updated: 2025-09-08T12:50:00Z
 
 ## Next up (near‑term, actionable)
-1. README slimming
-   - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
+1. README slimming   - Trim README to essentials and link to new docs pages (overview/getting‑started/cli/middleware/templates/contributing).
 2. Optional: build noise
    - If residual warnings remain, consider further tuning (non‑blocking).
 
 ## Completed (recent)
 
+- Templates scripts/config stabilization (follow‑up):
+  - Adjusted templates:lint to use a files glob so ESLint doesn’t report “No files matching the pattern” on Windows shells.
 - Templates scripts/config stabilization:
   - Fixed templates:typecheck script comment terminator that broke TS parsing.
   - Switched unified templates ESLint config to explicit project globs and

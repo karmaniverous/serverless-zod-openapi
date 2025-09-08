@@ -168,7 +168,7 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "templates:typecheck": "tsx scripts/templates-typecheck.ts",
-    "templates:lint": "eslint --fix -c templates/.check/eslint.templates.config.ts \"templates/*\" \"templates/project\""
+    "templates:lint": "eslint --fix -c templates/.check/eslint.templates.config.ts \"templates/**/*.{ts,tsx,js,jsx}\""
   },
   "type": "module",
   "version": "0.0.0"
