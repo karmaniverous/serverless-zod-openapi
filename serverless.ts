@@ -13,6 +13,7 @@ const config: AWS = {
     'serverless-deployment-bucket',
     'serverless-domain-manager',
     'serverless-plugin-common-excludes',
+    'serverless-offline',
   ],
   package: {
     individually: true,
