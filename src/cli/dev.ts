@@ -11,7 +11,6 @@ import { launchOffline, type OfflineRunner } from './local/offline';
 import { runOpenapi } from './openapi';
 import { runRegister } from './register';
 export type LocalMode = false | 'inline' | 'offline';
-
 export const runDev = async (
   root: string,
   opts: {
@@ -52,6 +51,40 @@ export const runDev = async (
   let timer: ReturnType<typeof setTimeout> | undefined;
   let running = false;
   let pending = false;
+  // Small executor we can use for both pre-flight and queued runs
+  const executeOnce = async (): Promise<{
+    wrote: boolean;
+    openapiChanged: boolean;
+  }> => {
+    if (running) return { wrote: false, openapiChanged: false };
+    running = true;
+    pending = false;
+    try {
+      let wrote = false;
+      if (opts.register) {
+        const res = await runRegister(root);
+        wrote = res.wrote.length > 0;
+        console.log(
+          res.wrote.length
+            ? `Updated:\n - ${res.wrote.join('\n - ')}`
+            : 'No changes.',
+        );
+      }
+      let openapiChanged = false;
+      if (opts.openapi) {
+        openapiChanged = await runOpenapi(root, { verbose });
+      }
+      return { wrote, openapiChanged };
+    } catch (e) {
+      console.error('[dev] task error:', (e as Error).message);
+      return { wrote: false, openapiChanged: false };
+    } finally {
+      running = false;
+      // If a burst arrived while we were running, schedule again
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (pending) schedule();
+    }
+  };
   // Local child (if any)
   let offline: OfflineRunner | undefined;
   let inlineChild: Awaited<ReturnType<typeof launchInline>> | undefined;
@@ -60,64 +93,37 @@ export const runDev = async (
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       void (async () => {
-        if (running) {
-          pending = true;
-          return;
-        }
-        running = true;
         pending = false;
-        try {
-          let wrote = false;
-          if (opts.register) {
-            const res = await runRegister(root);
-            wrote = res.wrote.length > 0;
-            console.log(
-              res.wrote.length
-                ? `Updated:\n - ${res.wrote.join('\n - ')}`
-                : 'No changes.',
-            );
+        const { wrote, openapiChanged } = await executeOnce();
+        // Local backend refresh
+        if (mode === 'offline') {
+          // Restart only when route-surface can change (register wrote)
+          if (wrote && offline) {
+            if (verbose)
+              console.log(
+                '[dev] restarting serverless-offline (register changed)...',
+              );
+            await offline.restart();
           }
-          if (opts.openapi) {
-            await runOpenapi(root, { verbose });
-          }
-          // Local backend refresh
-          if (mode === 'offline') {
-            // Restart only when route-surface can change (register wrote)
-            if (wrote && offline) {
-              if (verbose)
-                console.log(
-                  '[dev] restarting serverless-offline (register changed)...',
-                );
-              await offline.restart();
-            }
-          } else if (mode === 'inline') {
-            // For simplicity restart on any queue execution; cheap in practice.
+        } else if (mode === 'inline') {
+          // Restart inline only if something material changed
+          if (wrote || openapiChanged) {
             if (verbose) console.log('[dev] restarting inline server...');
             await inlineChild?.restart();
           }
-        } catch (e) {
-          console.error('[dev] task error:', (e as Error).message);
-        } finally {
-          running = false;
-          // False positive: pending can be flipped by burst events enqueued
-          // while `running` was true, so this guard is not statically
-          // determinable. Keep the check and suppress the rule here.
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (pending) schedule();
         }
       })();
     }, 250);
   };
-  // Pre-flight run
-  schedule();
+  // Pre-flight: run tasks before launching the local backend to avoid an immediate restart
+  await executeOnce();
 
   // Local serving
   if (mode === 'offline') {
     offline = await launchOffline(root, { stage, port, verbose });
   } else if (mode === 'inline') {
     inlineChild = await launchInline(root, { stage, port, verbose });
-  }
-  // Watch sources
+  } // Watch sources
   const globs = [
     path.join(root, 'app', 'functions', '**', 'lambda.ts'),
     path.join(root, 'app', 'functions', '**', 'openapi.ts'),

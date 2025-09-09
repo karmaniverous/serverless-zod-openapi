@@ -2,11 +2,10 @@
 
 # Development Plan
 
-When updated: 2025-09-09T00:30:00Z
+When updated: 2025-09-09T00:45:00Z
 
 ## Next up (near‑term, actionable)
-1. Keep knip as-is (two expected “unused” files).
-2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
+1. Keep knip as-is (two expected “unused” files).2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
    for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 
 ## 20) Types hygiene — reuse public platform types (aws‑lambda) and SMOZ contracts
@@ -81,10 +80,18 @@ Acceptance
   - Note: Knip remains with 2 expected unused files
     (src/serverless/plugin.ts, src/cli/local/inline.server.ts).
 
+- Dev loop: single-start inline + conditional restart
+  - Run the initial register/openapi pass before launching the inline server so
+    we don’t immediately restart on first boot (no double “listening” lines).
+  - Restart inline only when something material changes:
+    • registers wrote (route surface), or
+    • openapi.json content changed.
+  - Keep offline restart gated on registers (route surface) as before.
+  - Improves UX without changing semantics; pinned ports (-p) remain honored.
+
 - CLI dev: restore debouncer timer and simplify inline restart
   - Reintroduce and type `timer` as `ReturnType<typeof setTimeout>` to fix
-    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout.
-  - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.
+    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout.  - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.
 
 - CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
   - Stringify non-string template values to satisfy restrict-template-expressions.

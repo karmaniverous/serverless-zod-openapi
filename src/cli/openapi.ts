@@ -3,7 +3,7 @@
  * - Keeps CLI responsibilities minimal; errors bubble via non-zero exit.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const findTsxCli = (
@@ -26,7 +26,17 @@ const findTsxCli = (
 export const runOpenapi = async (
   root: string,
   opts?: { verbose?: boolean },
-): Promise<void> => {
+): Promise<boolean> => {
+  // Detect changes by comparing the pre/post content of app/generated/openapi.json.
+  const outFile = path.resolve(root, 'app', 'generated', 'openapi.json');
+  let before: string | undefined;
+  try {
+    if (existsSync(outFile)) before = readFileSync(outFile, 'utf8');
+  } catch {
+    // ignore read errors; treat as absent
+    before = undefined;
+  }
+
   const { cmd, args, shell } = findTsxCli(root);
   if (opts?.verbose) {
     console.log(`[openapi] ${[cmd, ...args].join(' ')}`);
@@ -40,5 +50,15 @@ export const runOpenapi = async (
     const code =
       typeof res.status === 'number' ? String(res.status) : 'unknown';
     throw new Error(`openapi failed (exit ${code})`);
+  }
+
+  // Determine whether the file content changed
+  try {
+    if (!existsSync(outFile)) return before !== undefined; // deleted vs existed
+    const after = readFileSync(outFile, 'utf8');
+    return before === undefined ? true : after !== before;
+  } catch {
+    // If we cannot read, conservatively report "changed" so callers can refresh.
+    return true;
   }
 };
