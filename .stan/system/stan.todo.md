@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-09-08T22:25:00Z
+When updated: 2025-09-09T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -29,7 +29,7 @@ When updated: 2025-09-08T22:25:00Z
        - cliDefaults.dev loader:
          - Parse JSON/YAML config (stan.config.yml or smoz.config.\*) to read cliDefaults.dev and merge with flags (flags win).
        - Watcher + queue:
-         - Chokidar over app/functions/\*\*/{lambda.ts,openapi.ts,serverless.ts}.
+         - Chokidar over app/functions/\*_/_/{lambda.ts,openapi.ts,serverless.ts}.
          - Single debounced queue (~250 ms). Never overlap runs. Always execute in order: register → openapi.
          - On completion, print per‑task “Updated” vs “No changes”.
        - Offline mode:
@@ -72,3 +72,51 @@ When updated: 2025-09-08T22:25:00Z
        - Do not export any private event/result interfaces from CLI modules.
      - Acceptance
        - Lint/typecheck/build succeed; no private HttpEvent
+
+   - Acceptance
+     - Minimal server responds for mounted routes; HEAD behavior covered by wrapper.
+
+   - Tests
+     - Add minimal integration tests (route mounting, 200/404, HEAD).
+   - Default & docs
+     - Make inline the default --local backend in dev; offline becomes opt‑in.
+     - Update docs/examples accordingly.
+
+## 20) Types hygiene — reuse public platform types (aws‑lambda) and SMOZ contracts
+
+Policy
+
+- NEVER privately redeclare types that already exist in public dependencies we ship or require (e.g., AWS Lambda events/results). Prefer importing well‑known types (from 'aws-lambda') or SMOZ’s exported contracts.
+- Allowed: small, file‑local structural helpers for interim data (not exported), when no public type fits. Prefer narrowing with existing public types whenever possible.
+
+Inline dev server (HTTP)
+
+- Event/result types:
+  - Use APIGatewayProxyEvent (v1) and APIGatewayProxyResult for the inline HTTP adapter’s request/response surface. Do not re‑declare these as local interfaces.
+  - If/when v2 is supported, use APIGatewayProxyEventV2 and APIGatewayProxyStructuredResultV2 accordingly.
+- Context:
+  - Use Context from 'aws-lambda' when fabricating a minimal context object for handler invocation.
+- Mapping guidance:
+  - The inline adapter maps Node HTTP request → APIGatewayProxyEvent (v1), then calls the wrapped handler. The handler returns an APIGatewayProxyResult‑compatible envelope (statusCode/headers/body).
+  - HEAD, content‑type, and JSON serialization semantics remain the responsibility of the SMOZ HTTP middleware; the adapter must pass the envelope through unaltered.
+
+Other tokens (future adapters)
+
+- For non‑HTTP tokens (e.g., SQS, SNS, EventBridge, Step), use the corresponding aws‑lambda types (SQSEvent, SNSEvent, EventBridgeEvent<…>, etc.) when a “smoz invoke” or other adapters are introduced. Never re‑declare local equivalents.
+
+Acceptance
+
+- Code under src/cli/\*\* must import AWS event/result/context types instead of defining local equivalents whenever those shapes are the intended surface.
+- Reviewers should reject PRs that introduce local redeclarations of publicly available platform types.
+
+## Completed (recent)
+
+- CLI dev: fix typing and lint in src/cli/dev.ts
+  - Store awaited inline launcher (Awaited<ReturnType<...>>).
+  - Avoid passing async functions to setTimeout/process.on (wrappers).
+  - Coerce log template expressions to strings; remove unused imports.
+- Inline server: src/cli/local/inline.server.ts
+  - Import aws-lambda types; remove private event/result types.
+  - Fix TS1003 parse error; complete response writing; print route table and port.
+- Offline runner hygiene: src/cli/local/offline.ts
+  - Replace nullish-coalescing with explicit checks; add restart/close; prefix logs.

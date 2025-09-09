@@ -1,228 +1,304 @@
-/* Inline HTTP dev server (run via tsx)
- * - Discovers HTTP routes from app.buildAllServerlessFunctions().
- * - For each route, maps Node HTTP request → APIGatewayProxyEvent (v1) and invokes the handler.
- * - Prints the route table and the actual port in use.
+/**
+ * Inline HTTP dev server (default local backend once stable).
+ *
+ * Requirements addressed:
+ * - Import aws-lambda types; do not redeclare platform event/result interfaces.
+ * - Build route table from app.buildAllServerlessFunctions().
+ * - Map Node HTTP → APIGatewayProxyEvent (v1), call handler, write APIGatewayProxyResult.
+ * - Normalize headers/query; respect JSON/+json content types.
+ * - Print route table and chosen port.
  */
+// Ensure function registry is populated
+import '@/app/generated/register.functions';
+
 import http from 'node:http';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
-import { packageDirectorySync } from 'package-directory';
+import { pathToFileURL } from 'node:url';
 
-type HttpEvent = {
-  httpMethod: string;
-  headers: Record<string, string | undefined>;
-  multiValueHeaders: Record<string, string[] | undefined>;
-  body: string | undefined;
-  isBase64Encoded: boolean;
-  path: string;
-  queryStringParameters: Record<string, string | undefined>;
-  pathParameters: Record<string, string | undefined>;
-  multiValueQueryStringParameters: Record<string, string[] | undefined>;
-  stageVariables: Record<string, string> | null;
-  resource: string;
-  requestContext: Record<string, unknown>;
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
+
+import { app } from '@/app/config/app.config';
+
+type Route = {
+  method: string; // UPPER
+  pattern: string; // e.g., /users/{id}
+  segs: Array<{ literal?: string; key?: string }>;
+  handlerRef: string; // module.export (from handler string)
+  handler: (
+    e: APIGatewayProxyEvent,
+    c: Context,
+  ) => Promise<APIGatewayProxyResult>;
 };
 
-type HttpResponse = {
-  statusCode: number;
-  headers?: Record<string, string>;
-  body?: string;
-};
+const isJsonContent = (ct?: string): boolean =>
+  typeof ct === 'string' &&
+  /^application\/(?:[a-z0-9.+-]*\+)?json$/i.test(ct.trim());
 
-const SMOZ_PORT = Number(process.env.SMOZ_PORT ?? '0');
-const SMOZ_STAGE = process.env.SMOZ_STAGE ?? 'dev';
-const SMOZ_VERBOSE = !!process.env.SMOZ_VERBOSE;
+const splitPattern = (p: string): Array<{ literal?: string; key?: string }> =>
+  p
+    .replace(/\\/g, '/')
+    .replace(/^\/+|\/+$/g, '')
+    .split('/')
+    .filter(Boolean)
+    .map((s) =>
+      s.startsWith('{') && s.endsWith('}')
+        ? { key: s.slice(1, -1) }
+        : { literal: s },
+    );
 
-const repoRoot = packageDirectorySync() ?? process.cwd();
+const loadHandlers = async (root: string): Promise<Route[]> => {
+  const fns = app.buildAllServerlessFunctions() as Record<string, unknown>;
+  const routes: Route[] = [];
+  for (const [, defUnknown] of Object.entries(fns)) {
+    const def = defUnknown as {
+      handler?: string;
+      events?: Array<{ http?: { method?: string; path?: string } }>;
+    };
+    if (!def || typeof def.handler !== 'string' || !Array.isArray(def.events))
+      continue;
 
-const importApp = async () => {
-  const appConfigTs = path.resolve(repoRoot, 'app', 'config', 'app.config.ts');
-  if (!existsSync(appConfigTs)) {
-    throw new Error('app/config/app.config.ts not found');
-  }
-  const mod = await import(pathToFileURL(appConfigTs).href);
-  const app = mod.app as {
-    buildAllServerlessFunctions: () => Record<
-      string,
-      { events: Array<{ http?: { method: string; path: string } }>; handler: string }
-    >;
-  };
-  if (!app || typeof app.buildAllServerlessFunctions !== 'function') {
-    throw new Error('app.config.ts did not export a valid app instance');
-  }
-  return app;
-};
+    const [moduleRel, exportName] = (() => {
+      const lastDot = def.handler.lastIndexOf('.');
+      if (lastDot < 0) return [def.handler, 'handler'] as const;
+      return [
+        def.handler.slice(0, lastDot),
+        def.handler.slice(lastDot + 1),
+      ] as const;
+    })();
 
-const compilePath = (pattern: string): { re: RegExp; keys: string[]; raw: string } => {
-  // Convert '/users/{id}' to /^\/users\/(?<id>[^/]+)$/
-  const keys: string[] = [];
-  const esc = (s: string) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const segs = pattern.split('/').filter(Boolean);
-  const out = segs
-    .map((seg) => {
-      const m = seg.match(/^\{([^}]+)\}$/);
-      if (m) {
-        const k = m[1]!;
-        keys.push(k);
-        return `(?<${k}>[^/]+)`;
-      }
-      return esc(seg);
-    })
-    .join('/');
-  const re = new RegExp(`^/${out}$`);
-  return { re, keys, raw: pattern };
-};
+    // Resolve TS source module; dev runs via tsx so TS imports are OK
+    const candidates = [
+      path.resolve(root, `${moduleRel}.ts`),
+      path.resolve(root, `${moduleRel}.mts`),
+      path.resolve(root, `${moduleRel}.js`),
+      path.resolve(root, `${moduleRel}.mjs`),
+    ];
+    const modUrl = pathToFileURL(candidates[0]!).href;
+    // Always try the first candidate; tsx will resolve TS files
 
-const toLowerHeaders = (h: http.IncomingHttpHeaders): Record<string, string> => {
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(h)) {
-    if (Array.isArray(v)) {
-      if (v.length) out[k.toLowerCase()] = v[0]!;
-    } else if (typeof v === 'string') {
-      out[k.toLowerCase()] = v;
+    const mod = (await import(modUrl)) as Record<string, unknown>;
+    const handler = mod[exportName];
+    if (typeof handler !== 'function') continue;
+
+    for (const evt of def.events) {
+      const httpEvt = evt?.http ?? {};
+      const method = String(httpEvt.method ?? '').toUpperCase();
+      const pattern = `/${String(httpEvt.path ?? '').replace(/^\/+/, '')}`;
+      if (!method || !pattern) continue;
+      routes.push({
+        method,
+        pattern,
+        segs: splitPattern(pattern),
+        handlerRef: `${moduleRel}.${exportName}`,
+        handler: handler as Route['handler'],
+      });
     }
   }
-  return out;
+  return routes;
 };
 
-const parseQuery = (url: URL): {
-  single: Record<string, string | undefined>;
-  multi: Record<string, string[] | undefined>;
-} => {
-  const single: Record<string, string | undefined> = {};
-  const multi: Record<string, string[] | undefined> = {};
-  url.searchParams.forEach((value, key) => {
-    if (single[key] === undefined) single[key] = value;
-    const all = url.searchParams.getAll(key);
-    if (all.length) multi[key] = all;
-  });
+const firstVal = (v: string | string[] | undefined): string | undefined =>
+  Array.isArray(v) ? v[0] : v;
+const arrVal = (v: string | string[] | undefined): string[] | undefined =>
+  typeof v === 'string' ? [v] : Array.isArray(v) ? v : undefined;
+
+const toHeaders = (
+  raw: http.IncomingHttpHeaders,
+): { single: Record<string, string>; multi: Record<string, string[]> } => {
+  const single: Record<string, string> = {};
+  const multi: Record<string, string[]> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    const key = k;
+    const fv = firstVal(v);
+    const av = arrVal(v);
+    if (typeof fv === 'string') single[key] = fv;
+    if (Array.isArray(av)) multi[key] = av;
+  }
   return { single, multi };
 };
 
-const importHandler = async (handler: string): Promise<(evt: HttpEvent) => Promise<HttpResponse>> => {
-  // handler example: 'app/functions/rest/openapi/get/handler.handler'
-  const idx = handler.lastIndexOf('.');
-  if (idx < 0) throw new Error(`Invalid handler string: ${handler}`);
-  const rel = handler.slice(0, idx);
-  const exportName = handler.slice(idx + 1);
-  const absNoExt = path.resolve(repoRoot, rel);
-  const tryPaths = [
-    `${absNoExt}.ts`,
-    `${absNoExt}.mts`,
-    `${absNoExt}.js`,
-    `${absNoExt}.mjs`,
-    absNoExt, // let tsx try resolving if possible
-  ];
-  let mod: Record<string, unknown> | undefined;
-  for (const p of tryPaths) {
-    try {
-      if (existsSync(p) || p === absNoExt) {
-        mod = await import(pathToFileURL(p).href);
-        break;
-      }
-    } catch {
-      // continue
+const readBody = (req: http.IncomingMessage): Promise<string> =>
+  new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (c) =>
+      chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(String(c))),
+    );
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks).toString('utf8'));
+    });
+    req.on('error', () => {
+      resolve('');
+    });
+  });
+
+const now = () => Date.now();
+
+const makeContext = (): Context =>
+  ({
+    awsRequestId: `${now()}`,
+    callbackWaitsForEmptyEventLoop: false,
+    functionName: 'inline',
+    functionVersion: '$LATEST',
+    invokedFunctionArn: 'arn:inline',
+    logGroupName: 'lg',
+    logStreamName: 'ls',
+    memoryLimitInMB: '256',
+    getRemainingTimeInMillis: () => 30000,
+    done: () => undefined,
+    fail: () => undefined,
+    succeed: () => undefined,
+  }) as unknown as Context;
+
+const match = (
+  segs: Route['segs'],
+  pathName: string,
+): { ok: boolean; params: Record<string, string> } => {
+  const parts = pathName
+    .replace(/^\/+|\/+$/g, '')
+    .split('/')
+    .filter(Boolean);
+  if (parts.length !== segs.length) return { ok: false, params: {} };
+  const params: Record<string, string> = {};
+  for (let i = 0; i < segs.length; i += 1) {
+    const seg = segs[i]!;
+    const p = parts[i]!;
+    if (seg.literal) {
+      if (seg.literal !== p) return { ok: false, params: {} };
+    } else if (seg.key) {
+      params[seg.key] = p;
     }
   }
-  if (!mod) throw new Error(`Cannot resolve module for handler: ${handler}`);
-  const fn = (mod as Record<string, unknown>)[exportName];
-  if (typeof fn !== 'function') {
-    throw new Error(`Export "${exportName}" not found in ${rel}`);
-  }
-  return fn as (evt: HttpEvent) => Promise<HttpResponse>;
+  return { ok: true, params };
 };
 
-const main = async (): Promise<void> => {
-  const app = await importApp();
-  const fns = app.buildAllServerlessFunctions() as Record<
-    string,
-    { events: Array<{ http?: { method: string; path: string } }>; handler: string }
-  >;
-  type Route = {
-    method: string;
-    pattern: string;
-    re: RegExp;
-    keys: string[];
-    handler: (evt: HttpEvent) => Promise<HttpResponse>;
-  };
-  const routes: Route[] = [];
-  for (const [, def] of Object.entries(fns)) {
-    const { events, handler } = def;
-    for (const e of events) {
-      if (!e.http) continue;
-      const method = String(e.http.method || '').toUpperCase();
-      const pattern = String(e.http.path || '/');
-      const { re, keys } = compilePath(pattern);
-      const h = await importHandler(handler);
-      routes.push({ method, pattern, re, keys, handler: h });
+const toEvent = async (
+  req: http.IncomingMessage,
+  route: Route,
+  params: Record<string, string>,
+): Promise<APIGatewayProxyEvent> => {
+  const url = new URL(
+    req.url ?? '/',
+    `http://${req.headers.host ?? 'localhost'}`,
+  );
+  const { single, multi } = toHeaders(req.headers);
+  const method = String(req.method ?? '').toUpperCase();
+  const stage = process.env.SMOZ_STAGE ?? 'dev';
+  const search = new URLSearchParams(url.search);
+  const query: Record<string, string> = {};
+  const mquery: Record<string, string[]> = {};
+  for (const key of Array.from(new Set(search.keys()))) {
+    const vals = search.getAll(key);
+    if (vals.length > 0) {
+      query[key] = vals[0]!;
+      mquery[key] = vals;
     }
   }
+
+  let body = '';
+  if (method !== 'GET' && method !== 'HEAD') {
+    body = await readBody(req);
+  }
+  return {
+    httpMethod: method,
+    headers: single,
+    multiValueHeaders: multi,
+    body,
+    isBase64Encoded: false,
+    path: url.pathname,
+    queryStringParameters: Object.keys(query).length ? query : {},
+    multiValueQueryStringParameters: Object.keys(mquery).length ? mquery : {},
+    pathParameters: Object.keys(params).length ? params : {},
+    stageVariables: null,
+    resource: route.pattern,
+    requestContext: {
+      accountId: 'acc',
+      apiId: 'inline',
+      httpMethod: method,
+      identity: {},
+      path: url.pathname,
+      stage,
+      requestId: `${now()}`,
+      requestTimeEpoch: now(),
+      resourceId: 'res',
+      resourcePath: route.pattern,
+      authorizer: {},
+      protocol: 'HTTP/1.1',
+    } as unknown,
+  } as unknown as APIGatewayProxyEvent;
+};
+
+const writeResult = (
+  res: http.ServerResponse,
+  result: APIGatewayProxyResult,
+) => {
+  const status =
+    typeof result.statusCode === 'number' ? result.statusCode : 200;
+  const headers = result.headers ?? {};
+  const body = typeof result.body === 'string' ? result.body : '';
+  Object.entries(headers).forEach(([k, v]) => {
+    if (typeof v === 'string') res.setHeader(k, v);
+  });
+  res.statusCode = status;
+  res.end(body);
+};
+
+const start = async () => {
+  const root = process.cwd();
+  const routes = await loadHandlers(root);
+  const portEnv = process.env.SMOZ_PORT;
+  const port =
+    typeof portEnv === 'string' && portEnv.length > 0 ? Number(portEnv) : 0;
 
   const server = http.createServer(async (req, res) => {
     try {
-      const method = String(req.method || '').toUpperCase();
-      const url = new URL(req.url ?? '/', `http://localhost`);
-      const pathname = url.pathname;
-      const match = routes.find((r) => r.method === method && r.re.test(pathname));
-      if (!match) {
+      const method = String(req.method ?? '').toUpperCase();
+      const url = new URL(
+        req.url ?? '/',
+        `http://${req.headers.host ?? 'localhost'}`,
+      );
+      const route = routes.find(
+        (r) => r.method === method && match(r.segs, url.pathname).ok,
+      );
+      if (!route) {
         res.statusCode = 404;
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.end('Not found');
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Not Found' }));
         return;
       }
-      const m = match.re.exec(pathname);
-      const params: Record<string, string | undefined> = {};
-      if (m && m.groups) {
-        for (const k of match.keys) params[k] = m.groups[k];
-      }
-      // Collect body
-      const chunks: Buffer[] = [];
-      await new Promise<void>((resolve, reject) => {
-        req.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
-        req.on('end', () => resolve());
-        req.on('error', (e) => reject(e));
-      });
-      const raw = Buffer.concat(chunks);
-      const lower = toLowerHeaders(req.headers);
-      const contentType = lower['content-type'] ?? '';
-      const isText =
-        /^text\//i.test(contentType) ||
-        /^application\/(?:json|[a-z0-9.+-]*\+json)$/i.test(contentType) ||
-        contentType.length === 0;
-      const bodyStr = raw.length ? (isText ? raw.toString('utf8') : raw.toString('base64')) : undefined;
-      const isBase64Encoded = raw.length > 0 && !isText;
-      const { single: qs, multi: qsm } = parseQuery(url);
+      const { params } = match(route.segs, url.pathname);
+      const evt = await toEvent(req, route, params);
+      const ctx = makeContext();
+      const result = await route.handler(evt, ctx);
+      writeResult(res, result);
+    } catch (e) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: (e as Error).message }));
+    }
+  });
 
-      const evt: HttpEvent = {
-        httpMethod: method,
-        headers: lower,
-        multiValueHeaders: Object.fromEntries(
-          Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v : v ? [v] : undefined]),
-        ),
-        body: bodyStr,
-        isBase64Encoded,
-        path: pathname,
-        queryStringParameters: qs,
-        pathParameters: params,
-        multiValueQueryStringParameters: qsm,
-        stageVariables: null,
-        resource: pathname,
-        requestContext: {
-          accountId: 'local',
-          apiId: 'local',
-          httpMethod: method,
-          identity: {},
-          path: pathname,
-          stage: SMOZ_STAGE,
-          requestId: 'local',
-          requestTimeEpoch: Date.now(),
-          resourceId: 'local',
-          resourcePath: pathname,
-          authorizer: {},
-          protocol: 'HTTP/1.1',
-        },
-      };
-      const resp = await match.handler(evt);
-      res.statusCode = resp?.statusCode ?? 200;
-      const headers = resp?.
+  server.listen(port, () => {
+    const addr = server.address();
+    const resolved =
+      typeof addr === 'object' && addr && 'port' in addr
+        ? (addr as { port: number }).port
+        : port;
+    // Print route table
+    console.log('[inline] listening on http://localhost:' + String(resolved));
+    console.log(
+      '[inline] routes:\n' +
+        routes
+          .map(
+            (r) => `  ${r.method.padEnd(6)} ${r.pattern}  ->  ${r.handlerRef}`,
+          )
+          .join('\n'),
+    );
+  });
+};
+
+// Start immediately when run via tsx
+void start();
