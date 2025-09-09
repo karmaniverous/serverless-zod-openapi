@@ -67,7 +67,7 @@ export const launchOffline = async (
 
   const close = async (): Promise<void> =>
     new Promise<void>((resolve) => {
-      if (!child || child.killed) {
+      if (child.killed) {
         resolve();
         return;
       }
@@ -111,10 +111,12 @@ const spawnOffline = (
     process.stderr.write(prefix + text);
   };
 
-  if (child.stdout) child.stdout.on('data', emit);
-  if (child.stderr) child.stderr.on('data', emitErr);
+  // With stdio: 'pipe', these streams are present
+  child.stdout.on('data', emit);
+  child.stderr.on('data', emitErr);
   child.on('error', (err) => {
     process.stderr.write(`${prefix}${err.message}\n`);
   });
+
   return child;
 };

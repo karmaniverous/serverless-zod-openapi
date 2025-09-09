@@ -9,6 +9,5 @@
 *.tsbuildinfo
 **/.tsbuild/
 dist/
-local/
 node_modules/
 stan/

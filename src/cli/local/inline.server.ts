@@ -1,14 +1,12 @@
 /**
- * Inline HTTP dev server (default local backend once stable).
+ * Inline HTTP dev server (local backend).
  *
- * Requirements addressed:
- * - Import aws-lambda types; do not redeclare platform event/result interfaces.
- * - Build route table from app.buildAllServerlessFunctions().
- * - Map Node HTTP → APIGatewayProxyEvent (v1), call handler, write APIGatewayProxyResult.
- * - Normalize headers/query; respect JSON/+json content types.
- * - Print route table and chosen port.
+ * - Uses aws-lambda types; no local redeclarations of platform shapes.
+ * - Builds a route table from app.buildAllServerlessFunctions().
+ * - Maps Node HTTP → APIGatewayProxyEvent (v1) → handler → writes APIGatewayProxyResult.
+ * - Normalizes headers/query; prints route table and chosen port.
  */
-// Ensure function registry is populated
+// Ensure function registry is populated prior to building routes
 import '@/app/generated/register.functions';
 
 import http from 'node:http';
@@ -34,10 +32,6 @@ type Route = {
   ) => Promise<APIGatewayProxyResult>;
 };
 
-const isJsonContent = (ct?: string): boolean =>
-  typeof ct === 'string' &&
-  /^application\/(?:[a-z0-9.+-]*\+)?json$/i.test(ct.trim());
-
 const splitPattern = (p: string): Array<{ literal?: string; key?: string }> =>
   p
     .replace(/\\/g, '/')
@@ -53,13 +47,14 @@ const splitPattern = (p: string): Array<{ literal?: string; key?: string }> =>
 const loadHandlers = async (root: string): Promise<Route[]> => {
   const fns = app.buildAllServerlessFunctions() as Record<string, unknown>;
   const routes: Route[] = [];
+
   for (const [, defUnknown] of Object.entries(fns)) {
     const def = defUnknown as {
       handler?: string;
       events?: Array<{ http?: { method?: string; path?: string } }>;
     };
-    if (!def || typeof def.handler !== 'string' || !Array.isArray(def.events))
-      continue;
+
+    if (typeof def.handler !== 'string' || !Array.isArray(def.events)) continue;
 
     const [moduleRel, exportName] = (() => {
       const lastDot = def.handler.lastIndexOf('.');
@@ -85,10 +80,12 @@ const loadHandlers = async (root: string): Promise<Route[]> => {
     if (typeof handler !== 'function') continue;
 
     for (const evt of def.events) {
-      const httpEvt = evt?.http ?? {};
-      const method = String(httpEvt.method ?? '').toUpperCase();
-      const pattern = `/${String(httpEvt.path ?? '').replace(/^\/+/, '')}`;
+      const httpEvt = (evt as { http?: { method?: string; path?: string } })
+        .http;
+      const method = (httpEvt?.method ?? '').toUpperCase();
+      const pattern = '/' + (httpEvt?.path ?? '').replace(/^\/+/, '');
       if (!method || !pattern) continue;
+
       routes.push({
         method,
         pattern,
@@ -98,6 +95,7 @@ const loadHandlers = async (root: string): Promise<Route[]> => {
       });
     }
   }
+
   return routes;
 };
 
@@ -112,11 +110,10 @@ const toHeaders = (
   const single: Record<string, string> = {};
   const multi: Record<string, string[]> = {};
   for (const [k, v] of Object.entries(raw)) {
-    const key = k;
     const fv = firstVal(v);
     const av = arrVal(v);
-    if (typeof fv === 'string') single[key] = fv;
-    if (Array.isArray(av)) multi[key] = av;
+    if (typeof fv === 'string') single[k] = fv;
+    if (Array.isArray(av)) multi[k] = av;
   }
   return { single, multi };
 };
@@ -139,7 +136,7 @@ const now = () => Date.now();
 
 const makeContext = (): Context =>
   ({
-    awsRequestId: `${now()}`,
+    awsRequestId: String(now()),
     callbackWaitsForEmptyEventLoop: false,
     functionName: 'inline',
     functionVersion: '$LATEST',
@@ -185,7 +182,7 @@ const toEvent = async (
     `http://${req.headers.host ?? 'localhost'}`,
   );
   const { single, multi } = toHeaders(req.headers);
-  const method = String(req.method ?? '').toUpperCase();
+  const method = (req.method ?? '').toUpperCase();
   const stage = process.env.SMOZ_STAGE ?? 'dev';
   const search = new URLSearchParams(url.search);
   const query: Record<string, string> = {};
@@ -202,6 +199,7 @@ const toEvent = async (
   if (method !== 'GET' && method !== 'HEAD') {
     body = await readBody(req);
   }
+
   return {
     httpMethod: method,
     headers: single,
@@ -221,7 +219,7 @@ const toEvent = async (
       identity: {},
       path: url.pathname,
       stage,
-      requestId: `${now()}`,
+      requestId: String(now()),
       requestTimeEpoch: now(),
       resourceId: 'res',
       resourcePath: route.pattern,
@@ -239,9 +237,9 @@ const writeResult = (
     typeof result.statusCode === 'number' ? result.statusCode : 200;
   const headers = result.headers ?? {};
   const body = typeof result.body === 'string' ? result.body : '';
-  Object.entries(headers).forEach(([k, v]) => {
+  for (const [k, v] of Object.entries(headers)) {
     if (typeof v === 'string') res.setHeader(k, v);
-  });
+  }
   res.statusCode = status;
   res.end(body);
 };
@@ -253,32 +251,34 @@ const start = async () => {
   const port =
     typeof portEnv === 'string' && portEnv.length > 0 ? Number(portEnv) : 0;
 
-  const server = http.createServer(async (req, res) => {
-    try {
-      const method = String(req.method ?? '').toUpperCase();
-      const url = new URL(
-        req.url ?? '/',
-        `http://${req.headers.host ?? 'localhost'}`,
-      );
-      const route = routes.find(
-        (r) => r.method === method && match(r.segs, url.pathname).ok,
-      );
-      if (!route) {
-        res.statusCode = 404;
+  const server = http.createServer((req, res) => {
+    void (async () => {
+      try {
+        const method = (req.method ?? '').toUpperCase();
+        const url = new URL(
+          req.url ?? '/',
+          `http://${req.headers.host ?? 'localhost'}`,
+        );
+        const route = routes.find(
+          (r) => r.method === method && match(r.segs, url.pathname).ok,
+        );
+        if (!route) {
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Not Found' }));
+          return;
+        }
+        const { params } = match(route.segs, url.pathname);
+        const evt = await toEvent(req, route, params);
+        const ctx = makeContext();
+        const result = await route.handler(evt, ctx);
+        writeResult(res, result);
+      } catch (e) {
+        res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'Not Found' }));
-        return;
+        res.end(JSON.stringify({ error: (e as Error).message }));
       }
-      const { params } = match(route.segs, url.pathname);
-      const evt = await toEvent(req, route, params);
-      const ctx = makeContext();
-      const result = await route.handler(evt, ctx);
-      writeResult(res, result);
-    } catch (e) {
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: (e as Error).message }));
-    }
+    })();
   });
 
   server.listen(port, () => {
@@ -287,13 +287,20 @@ const start = async () => {
       typeof addr === 'object' && addr && 'port' in addr
         ? (addr as { port: number }).port
         : port;
+
     // Print route table
     console.log('[inline] listening on http://localhost:' + String(resolved));
     console.log(
       '[inline] routes:\n' +
         routes
           .map(
-            (r) => `  ${r.method.padEnd(6)} ${r.pattern}  ->  ${r.handlerRef}`,
+            (r) =>
+              '  ' +
+              r.method.padEnd(6) +
+              ' ' +
+              r.pattern +
+              '  ->  ' +
+              r.handlerRef,
           )
           .join('\n'),
     );

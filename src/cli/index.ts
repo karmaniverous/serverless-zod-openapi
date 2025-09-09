@@ -217,7 +217,7 @@ const main = (): void => {
                 : opts.local === false
                   ? false
                   : 'inline',
-            stage: opts.stage,
+            ...(typeof opts.stage === 'string' ? { stage: opts.stage } : {}),
             port: opts.port ?? 0,
             verbose: !!opts.verbose,
           });

@@ -3,16 +3,13 @@
  * - Optional local serving (--local inline|offline).
  * - Stage/env: seeds process.env with concrete values for the selected stage.
  */
-import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import chokidar from 'chokidar';
-import { packageDirectorySync } from 'package-directory';
 
 import { launchOffline, type OfflineRunner } from './local/offline';
 import { runOpenapi } from './openapi';
 import { runRegister } from './register';
-
 export type LocalMode = false | 'inline' | 'offline';
 
 export const runDev = async (
@@ -27,7 +24,10 @@ export const runDev = async (
   },
 ): Promise<void> => {
   const verbose = !!opts.verbose;
-  const stage = opts.stage ?? inferDefaultStage(root, verbose);
+  const stage =
+    typeof opts.stage === 'string'
+      ? opts.stage
+      : inferDefaultStage(root, verbose);
   // Seed env with concrete values for the selected stage.
   try {
     seedEnvForStage(root, stage, verbose);
@@ -40,7 +40,9 @@ export const runDev = async (
 
   if (verbose) {
     console.log(
-      `[dev] options: register=${opts.register} openapi=${opts.openapi} local=${String(mode)} stage=${stage} port=${port}`,
+      `[dev] options: register=${String(opts.register)} openapi=${String(
+        opts.openapi,
+      )} local=${String(mode)} stage=${String(stage)} port=${String(port)}`,
     );
   }
 
@@ -51,54 +53,56 @@ export const runDev = async (
 
   // Local child (if any)
   let offline: OfflineRunner | undefined;
-  let inlineChild: ReturnType<typeof launchInline> | undefined;
+  let inlineChild: Awaited<ReturnType<typeof launchInline>> | undefined;
 
   const schedule = () => {
     if (timer) clearTimeout(timer);
-    timer = setTimeout(async () => {
-      if (running) {
-        pending = true;
-        return;
-      }
-      running = true;
-      pending = false;
-      try {
-        let wrote = false;
-        if (opts.register) {
-          const res = await runRegister(root);
-          wrote = res.wrote.length > 0;
-          console.log(
-            res.wrote.length
-              ? `Updated:\n - ${res.wrote.join('\n - ')}`
-              : 'No changes.',
-          );
+    timer = setTimeout(() => {
+      void (async () => {
+        if (running) {
+          pending = true;
+          return;
         }
-        if (opts.openapi) {
-          await runOpenapi(root, { verbose });
-        }
-        // Local backend refresh
-        if (mode === 'offline') {
-          // Restart only when route-surface can change (register wrote)
-          if (wrote && offline) {
-            if (verbose)
-              console.log(
-                '[dev] restarting serverless-offline (register changed)...',
-              );
-            await offline.restart();
+        running = true;
+        pending = false;
+        try {
+          let wrote = false;
+          if (opts.register) {
+            const res = await runRegister(root);
+            wrote = res.wrote.length > 0;
+            console.log(
+              res.wrote.length
+                ? `Updated:\n - ${res.wrote.join('\n - ')}`
+                : 'No changes.',
+            );
           }
-        } else if (mode === 'inline') {
-          if (inlineChild) {
-            // For simplicity restart on any queue execution; cheap in practice.
-            if (verbose) console.log('[dev] restarting inline server...');
-            await inlineChild.restart();
+          if (opts.openapi) {
+            await runOpenapi(root, { verbose });
           }
+          // Local backend refresh
+          if (mode === 'offline') {
+            // Restart only when route-surface can change (register wrote)
+            if (wrote && offline) {
+              if (verbose)
+                console.log(
+                  '[dev] restarting serverless-offline (register changed)...',
+                );
+              await offline.restart();
+            }
+          } else if (mode === 'inline') {
+            if (inlineChild) {
+              // For simplicity restart on any queue execution; cheap in practice.
+              if (verbose) console.log('[dev] restarting inline server...');
+              await inlineChild.restart();
+            }
+          }
+        } catch (e) {
+          console.error('[dev] task error:', (e as Error).message);
+        } finally {
+          running = false;
+          if (pending) schedule();
         }
-      } catch (e) {
-        console.error('[dev] task error:', (e as Error).message);
-      } finally {
-        running = false;
-        if (pending) schedule();
-      }
+      })();
     }, 250);
   };
 
@@ -111,7 +115,6 @@ export const runDev = async (
   } else if (mode === 'inline') {
     inlineChild = await launchInline(root, { stage, port, verbose });
   }
-
   // Watch sources
   const globs = [
     path.join(root, 'app', 'functions', '**', 'lambda.ts'),
@@ -140,11 +143,14 @@ export const runDev = async (
         resolve();
       }
     };
-    process.on('SIGINT', stop);
-    process.on('SIGTERM', stop);
+    process.on('SIGINT', () => {
+      void stop();
+    });
+    process.on('SIGTERM', () => {
+      void stop();
+    });
   });
 };
-
 const inferDefaultStage = (root: string, verbose: boolean): string => {
   // Prefer “dev”; if app.config.ts is available and we can inspect it cheaply later, expand behavior.
   // For now, return 'dev' (explicit selection via --stage remains available).
@@ -177,7 +183,7 @@ const launchInline = async (
   root: string,
   opts: { stage: string; port: number; verbose: boolean },
 ) => {
-  const { spawnSync, spawn } = await import('node:child_process');
+  const { spawn } = await import('node:child_process');
   const path = await import('node:path');
   const fs = await import('node:fs');
   const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
@@ -203,7 +209,7 @@ const launchInline = async (
       env: {
         ...process.env,
         SMOZ_STAGE: opts.stage,
-        SMOZ_PORT: String(opts.port ?? 0),
+        SMOZ_PORT: String(opts.port),
         SMOZ_VERBOSE: opts.verbose ? '1' : '',
       },
     });
