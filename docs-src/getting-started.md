@@ -7,6 +7,7 @@ sidebar_position: 2
 # Getting started
 
 ## Install
+
 ```bash
 npm i smoz zod zod-openapi @middy/core \
   @middy/http-header-normalizer \
@@ -33,8 +34,8 @@ npx smoz init --template minimal --yes
 This scaffolds:
 
 - app/config/app.config.ts — schemas/config (params, env, http tokens)
-- app/functions/** — endpoints (rest/http and non‑HTTP)
-- app/generated/** — registers and OpenAPI JSON placeholder
+- app/functions/\*\* — endpoints (rest/http and non‑HTTP)
+- app/generated/\*\* — registers and OpenAPI JSON placeholder
 - serverless.ts — uses the app registry to build functions
 - scripts, lint/typecheck/docs configs
 
@@ -47,19 +48,19 @@ npm run openapi
 
 `openapi` will:
 
-1) Import `app/generated/register.openapi.ts`
-2) Call `app.buildAllOpenApiPaths()`
-3) Write `app/generated/openapi.json`
+1. Import `app/generated/register.openapi.ts`
+2. Call `app.buildAllOpenApiPaths()`
+3. Write `app/generated/openapi.json`
 
 ## Live dev loop (optional)
 
 Use the dev loop to keep registers/OpenAPI fresh and (optionally) serve HTTP:
 
 ```bash
-npx smoz dev --local inline
+npx smoz dev
 ```
 
-See the CLI page for flags and inline/offline details.
+See the CLI page for flags and inline/offline details. Inline is the default backend for --local; use `--local offline` to run serverless-offline instead.
 
 ## Package or deploy with Serverless
 
@@ -68,6 +69,7 @@ npm run package   # no deploy
 # or
 npm run deploy
 ```
+
 Serverless picks up:
 
 - `functions` from `app.buildAllServerlessFunctions()`
@@ -76,7 +78,7 @@ Serverless picks up:
 
 ## Author an endpoint (HTTP)
 
-````ts
+```ts
 // app/functions/rest/hello/get/lambda.ts
 import { dirname, join } from 'node:path'; // example for path helpers
 import { z } from 'zod';
@@ -95,27 +97,34 @@ export const fn = app.defineFunction({
   callerModuleUrl: import.meta.url,
   endpointsRootAbs: dirname(new URL('../..', import.meta.url).pathname),
 });
-````
+```
 
-````ts
+```ts
 // app/functions/rest/hello/get/handler.ts
 import type { z } from 'zod';
 import type { responseSchema } from './lambda';
 import { fn } from './lambda';
 type Response = z.infer<typeof responseSchema>;
-export const handler = fn.handler(async () => ({ ok: true }) satisfies Response);
-````
+export const handler = fn.handler(
+  async () => ({ ok: true }) satisfies Response,
+);
+```
 
-````ts
+```ts
 // app/functions/rest/hello/get/openapi.ts
 import { fn, responseSchema } from './lambda';
 fn.openapi({
   summary: 'Hello',
   description: 'Return a simple OK payload.',
-  responses: { 200: { description: 'Ok', content: { 'application/json': { schema: responseSchema } } } },
+  responses: {
+    200: {
+      description: 'Ok',
+      content: { 'application/json': { schema: responseSchema } },
+    },
+  },
   tags: ['public'],
 });
-````
+```
 
 Re‑generate:
 
