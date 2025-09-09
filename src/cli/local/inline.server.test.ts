@@ -1,22 +1,15 @@
-/**
- * Inline HTTP dev server — minimal integration tests
- *
- * Covers:
- * - Route mounting + 200 JSON (GET /openapi)
- * - HEAD short-circuit (200 with Content-Type)
- * - 404 for unknown routes
- *
- * Notes:
- * - Spawns the inline server via tsx to mirror real dev usage.
- * - Expects app/generated/register.*.ts to exist (kept fresh by the CLI).
- */
-import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
+import { type ChildProcess, spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+/**
+ * Wait for the inline server to print its listening port.
+ * Resolves with the selected port (number) or rejects on timeout/early exit.
+ */
 const waitForListening = async (
-  child: ChildProcessWithoutNullStreams,
+  child: ChildProcess,
   timeoutMs = 15000,
 ): Promise<number> => {
   return await new Promise<number>((resolve, reject) => {
@@ -30,11 +23,11 @@ const waitForListening = async (
       const m = buf.match(/listening on http:\/\/localhost:(\d+)/i);
       if (m) {
         clearTimeout(timer);
-        child.stdout.off('data', onData);
+        child.stdout?.off('data', onData);
         resolve(Number(m[1]));
       }
     };
-    child.stdout.on('data', onData);
+    child.stdout?.on('data', onData);
 
     child.once('exit', (code) => {
       clearTimeout(timer);
@@ -43,11 +36,15 @@ const waitForListening = async (
   });
 };
 
+/**
+ * Launch the inline server via tsx.
+ * - Prefer the project-local JS entry (node node_modules/tsx/dist/cli.js <entry>)
+ * - Fallback to PATH resolution of "tsx" (or "tsx.cmd" on Windows)
+ */
 const startInline = async (): Promise<{
   port: number;
   close: () => Promise<void>;
 }> => {
-  // Resolve project-local tsx CLI if present; fallback to PATH.
   const repoRoot = process.cwd();
   const tsxCli = path.resolve(
     repoRoot,
@@ -67,8 +64,8 @@ const startInline = async (): Promise<{
   const args: string[] = [];
   let cmd: string;
   let shell = false;
-  if (tsxCli) {
-    // Prefer Node + js entry to avoid .cmd issues on Windows
+  if (existsSync(tsxCli)) {
+    // Prefer Node + JS CLI to avoid .cmd quirks on Windows
     cmd = process.execPath;
     args.push(tsxCli, entry);
   } else {
@@ -77,23 +74,23 @@ const startInline = async (): Promise<{
     shell = true;
   }
 
-  const child = spawn(cmd, args, {
+  const child: ChildProcess = spawn(cmd, args, {
     cwd: repoRoot,
     shell,
     stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...process.env,
-      // Use random free port; server prints the chosen port.
+      // Use OS-assigned free port; the server logs the resolved port.
       SMOZ_PORT: '0',
-      // Keep output visible for diagnostics if needed
+      // Verbose server output helps with diagnostics in CI.
       SMOZ_VERBOSE: '1',
-      // Stage name for context; inline adapter only prints the route table.
+      // Stage visible to the inline adapter (route table print).
       SMOZ_STAGE: 'dev',
     },
-  }) as ChildProcessWithoutNullStreams;
+  });
 
-  // Prefix errors to stderr for easier debugging
-  child.stderr.on('data', (d) => {
+  // Prefix stderr for easier triage in CI logs
+  child.stderr?.on('data', (d: Buffer) => {
     const t = d.toString('utf8');
     process.stderr.write(`[inline.test] ${t}`);
   });
@@ -135,7 +132,7 @@ describe('inline server (integration)', () => {
   });
 
   it('GET /openapi returns 200 JSON with openapi 3.1.0', async () => {
-    const res = await fetch(`http://localhost:${port}/openapi`, {
+    const res = await fetch(`http://localhost:${String(port)}/openapi`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
     });
@@ -147,7 +144,7 @@ describe('inline server (integration)', () => {
   });
 
   it('HEAD /openapi returns 200 with Content-Type', async () => {
-    const res = await fetch(`http://localhost:${port}/openapi`, {
+    const res = await fetch(`http://localhost:${String(port)}/openapi`, {
       method: 'HEAD',
       headers: { Accept: 'application/json' },
     });
@@ -157,7 +154,7 @@ describe('inline server (integration)', () => {
   });
 
   it('GET /no-such returns 404 Not Found', async () => {
-    const res = await fetch(`http://localhost:${port}/no-such`, {
+    const res = await fetch(`http://localhost:${String(port)}/no-such`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
     });
