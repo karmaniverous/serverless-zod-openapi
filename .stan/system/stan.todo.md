@@ -2,10 +2,9 @@
 
 # Development Plan
 
-When updated: 2025-09-09T00:00:00Z
+When updated: 2025-09-09T00:30:00Z
 
 ## Next up (near‑term, actionable)
-
 1. Keep knip as-is (two expected “unused” files).
 2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
    for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
@@ -64,10 +63,18 @@ Acceptance
   - Keeps the test robust across platforms and CI environments where local
     node_modules paths may differ.
 
+- Offline adapter: widen env fallbacks and add diagnostics; ignore stray dirs; add offline guardrails
+  - Add HOME (POSIX) and USERPROFILE/LOCALAPPDATA (Windows) fallbacks to os.tmpdir()
+    in addition to existing TMPDIR/TEMP/TMP. Helps nested toolchains derive sane
+    cache roots and prevents “undefined\\temp\\tsx-*” paths.
+  - Print a one-time “[offline] env snapshot” with { TMPDIR, TEMP, TMP, HOME,
+    USERPROFILE, LOCALAPPDATA } when --verbose is set.
+  - Add .gitignore pattern for “undefined/temp/tsx-*”.
+  - Add ‘custom.serverless-offline’ guardrails in serverless.ts (httpPort, noPrependStageInUrl).
+
 - CLI dev: Phase 2 — finalize inline as default backend and add inline server tests
   - Tests: added src/cli/local/inline.server.test.ts to exercise the inline
-    server end-to-end (route mounting 200 JSON at /openapi, HEAD 200 with
-    Content-Type, and 404 for unknown routes). - Docs: updated Getting Started and 10-minute Tour to recommend
+    server end-to-end (route mounting 200 JSON at /openapi, HEAD 200 with    Content-Type, and 404 for unknown routes). - Docs: updated Getting Started and 10-minute Tour to recommend
     `npx smoz dev` (inline is default) and note `--local offline` as opt-in.
   - Examples: added “Dev loop (optional)” to examples/README.md with the same
     guidance.

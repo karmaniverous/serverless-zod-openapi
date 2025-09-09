@@ -15,7 +15,6 @@ export type OfflineRunner = {
   restart: () => Promise<void>;
   close: () => Promise<void>;
 };
-
 type LaunchOpts = {
   stage: string;
   port: number;
@@ -108,6 +107,25 @@ const spawnOffline = (
   if (process.platform === 'win32') {
     if (!baseEnv.TEMP) baseEnv.TEMP = tmp;
     if (!baseEnv.TMP) baseEnv.TMP = tmp;
+    // Some nested toolchains derive cache roots from these when TMP/TEMP are absent
+    if (!baseEnv.LOCALAPPDATA) baseEnv.LOCALAPPDATA = tmp;
+    if (!baseEnv.USERPROFILE) baseEnv.USERPROFILE = tmp;
+  } else {
+    // POSIX: some tools fall back to HOME for caches when TMPDIR isn't used
+    if (!baseEnv.HOME) baseEnv.HOME = tmp;
+  }
+
+  // Optional diagnostics to verify the child sees sane temp-related envs
+  if (verbose) {
+    const snap = {
+      TMPDIR: baseEnv.TMPDIR,
+      TEMP: baseEnv.TEMP,
+      TMP: baseEnv.TMP,
+      HOME: baseEnv.HOME,
+      USERPROFILE: baseEnv.USERPROFILE,
+      LOCALAPPDATA: baseEnv.LOCALAPPDATA,
+    };
+    process.stdout.write(`[offline] env snapshot: ${JSON.stringify(snap)}\n`);
   }
 
   const child = spawn(cmd.cmd, cmd.args, {

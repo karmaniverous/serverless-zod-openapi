@@ -40,6 +40,11 @@ const config: AWS = {
       accelerate: true,
       blockPublicAccess: true,
     },
+    // Local emulation defaults (serverless-offline)
+    'serverless-offline': {
+      httpPort: 3000,
+      noPrependStageInUrl: true,
+    },
   },
   stages,
   provider: {
