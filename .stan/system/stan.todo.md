@@ -5,7 +5,6 @@
 When updated: 2025-09-09T00:00:00Z
 
 ## Next up (near‑term, actionable)
-
 1. Keep knip as-is (two expected “unused” files).
 2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
    for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
@@ -46,10 +45,13 @@ Acceptance
   - Keeps behavior consistent across CI/local where provider-level env may not
     be present by default.
 
+- Docs: CLI page reflects inline default
+  - Primary example now uses `npx smoz dev`.
+  - Note added that inline is default; `--local offline` is opt-in.
+
 - Inline server test fixes (typing, CLI detection, lint)
   - Use existsSync to prefer project-local tsx only when available; fallback to
-    PATH “tsx” on other systems.
-  - Remove invalid cast to ChildProcessWithoutNullStreams; rely on ChildProcess.  - Type stderr ‘data’ as Buffer; avoid any/unsafe member access.
+    PATH “tsx” on other systems.  - Remove invalid cast to ChildProcessWithoutNullStreams; rely on ChildProcess.  - Type stderr ‘data’ as Buffer; avoid any/unsafe member access.
   - Address template literal type complaints by coercing numbers with String().
   - Keeps the test robust across platforms and CI environments where local
     node_modules paths may differ.

@@ -112,15 +112,16 @@ Portability
 ## dev
 
 ```bash
-npx smoz dev --local inline
+npx smoz dev
 ```
 
 Long‑running dev loop that watches source files and runs, in order:
 
+Inline is the default local backend; use `--local offline` to run serverless-offline.
+
 1. `register` (if enabled)
 2. `openapi` (if enabled)
 3. local HTTP backend actions (restart/refresh if applicable)
-
 Flags (CLI wins over config defaults):
 
 - `-r, --register` / `-R, --no-register` (default: on)
