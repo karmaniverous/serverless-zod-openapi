@@ -123,10 +123,13 @@ Acceptance
   - Use `offline?.close()` and `inlineChild?.close()` to satisfy
     no-unnecessary-condition while preserving behavior.
 
+- CLI dev: suppress false-positive lint on re-run guard
+  - Add an inline `@typescript-eslint/no-unnecessary-condition` disable on the
+    `pending` check; pending can flip during debounced bursts.
+
 - CLI dev: resolve remaining ESLint issues in src/cli/dev.ts
   - Remove unnecessary nullish coalescing on opts.local.
-  - Drop unnecessary String() conversions in logs.
-  - Simplify always‑falsy conditional in child process close guard.- CLI dev: fix typing and lint in src/cli/dev.ts
+  - Drop unnecessary String() conversions in logs.  - Simplify always‑falsy conditional in child process close guard.- CLI dev: fix typing and lint in src/cli/dev.ts
   - Store awaited inline launcher (Awaited<ReturnType<...>>).
   - Avoid passing async functions to setTimeout/process.on (wrappers).
   - Coerce log template expressions to strings; remove unused imports.

@@ -99,12 +99,15 @@ export const runDev = async (
           console.error('[dev] task error:', (e as Error).message);
         } finally {
           running = false;
+          // False positive: pending can be flipped by burst events enqueued
+          // while `running` was true, so this guard is not statically
+          // determinable. Keep the check and suppress the rule here.
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (pending) schedule();
         }
       })();
     }, 250);
   };
-
   // Pre-flight run
   schedule();
 
