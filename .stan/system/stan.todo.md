@@ -38,11 +38,18 @@ Acceptance
 
 ## Completed (recent)
 
+- Inline server fixes: HEAD fallback and test env seeding
+  - Server: allow HEAD to match GET routes so middleware can short-circuit to
+    200 {} with Content-Type, aligning with production semantics.
+  - Tests: seed SERVICE_NAME, REGION, and STAGE before spawning the inline
+    server so the wrapped handler’s env parsing succeeds (avoids 500s).
+  - Keeps behavior consistent across CI/local where provider-level env may not
+    be present by default.
+
 - Inline server test fixes (typing, CLI detection, lint)
   - Use existsSync to prefer project-local tsx only when available; fallback to
     PATH “tsx” on other systems.
-  - Remove invalid cast to ChildProcessWithoutNullStreams; rely on ChildProcess.
-  - Type stderr ‘data’ as Buffer; avoid any/unsafe member access.
+  - Remove invalid cast to ChildProcessWithoutNullStreams; rely on ChildProcess.  - Type stderr ‘data’ as Buffer; avoid any/unsafe member access.
   - Address template literal type complaints by coercing numbers with String().
   - Keeps the test robust across platforms and CI environments where local
     node_modules paths may differ.

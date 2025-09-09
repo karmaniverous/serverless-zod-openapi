@@ -122,11 +122,16 @@ describe('inline server (integration)', () => {
   let shutdown: (() => Promise<void>) | undefined;
 
   beforeAll(async () => {
+    // Seed required env for the wrapped HTTP handler (env parsing):
+    // REGION, SERVICE_NAME, STAGE are required by the app’s env exposure.
+    if (!process.env.SERVICE_NAME) process.env.SERVICE_NAME = 'testService';
+    if (!process.env.REGION) process.env.REGION = 'us-east-1';
+    if (!process.env.STAGE) process.env.STAGE = 'dev';
+
     const { port: p, close } = await startInline();
     port = p;
     shutdown = close;
   }, 20000);
-
   afterAll(async () => {
     if (shutdown) await shutdown();
   });

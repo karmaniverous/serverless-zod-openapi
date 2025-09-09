@@ -259,8 +259,11 @@ const start = async () => {
           req.url ?? '/',
           `http://${req.headers.host ?? 'localhost'}`,
         );
+        // Allow HEAD to match GET routes; the wrapped handler/middleware will
+        // short-circuit HEAD requests to 200 {} and set Content-Type.
+        const searchMethod = method === 'HEAD' ? 'GET' : method;
         const route = routes.find(
-          (r) => r.method === method && match(r.segs, url.pathname).ok,
+          (r) => r.method === searchMethod && match(r.segs, url.pathname).ok,
         );
         if (!route) {
           res.statusCode = 404;
