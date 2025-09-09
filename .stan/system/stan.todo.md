@@ -110,10 +110,14 @@ Acceptance
 
 ## Completed (recent)
 
+- CLI dev: restore debouncer timer and simplify inline restart
+  - Reintroduce and type `timer` as `ReturnType<typeof setTimeout>` to fix
+    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout.
+  - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.
+
 - CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
   - Stringify non-string template values to satisfy restrict-template-expressions.
   - Use exitCode check in inline close() to avoid unnecessary-condition warning.
-
 - CLI dev: resolve remaining ESLint issues in src/cli/dev.ts
   - Remove unnecessary nullish coalescing on opts.local.
   - Drop unnecessary String() conversions in logs.

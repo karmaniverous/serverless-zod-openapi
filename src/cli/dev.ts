@@ -48,7 +48,8 @@ export const runDev = async (
     );
   }
 
-  // Single debounced queue  let timer: NodeJS.Timeout | undefined;
+  // Single debounced queue
+  let timer: ReturnType<typeof setTimeout> | undefined;
   let running = false;
   let pending = false;
   // Local child (if any)
@@ -90,11 +91,9 @@ export const runDev = async (
               await offline.restart();
             }
           } else if (mode === 'inline') {
-            if (inlineChild) {
-              // For simplicity restart on any queue execution; cheap in practice.
-              if (verbose) console.log('[dev] restarting inline server...');
-              await inlineChild.restart();
-            }
+            // For simplicity restart on any queue execution; cheap in practice.
+            if (verbose) console.log('[dev] restarting inline server...');
+            await inlineChild?.restart();
           }
         } catch (e) {
           console.error('[dev] task error:', (e as Error).message);
