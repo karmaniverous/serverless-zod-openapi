@@ -316,3 +316,30 @@ Docs expectations
   - Flag tables and examples for local inline (default) and offline (opt‑in).
   - Examples updated to recommend “npx smoz dev --local”.
   - Note that non‑HTTP flows are not served by --local in v0.
+
+## 20) Types hygiene — reuse public platform types (aws‑lambda) and SMOZ contracts
+
+Policy
+
+- NEVER privately redeclare types that already exist in public dependencies we ship or require (e.g., AWS Lambda events/results). Prefer importing well‑known types (from 'aws-lambda') or SMOZ’s exported contracts.
+- Allowed: small, file‑local structural helpers for interim data (not exported), when no public type fits. Prefer narrowing with existing public types whenever possible.
+
+Inline dev server (HTTP)
+
+- Event/result types:
+  - Use APIGatewayProxyEvent (v1) and APIGatewayProxyResult for the inline HTTP adapter’s request/response surface. Do not re‑declare these as local interfaces.
+  - If/when v2 is supported, use APIGatewayProxyEventV2 and APIGatewayProxyStructuredResultV2 accordingly.
+- Context:
+  - Use Context from 'aws-lambda' when fabricating a minimal context object for handler invocation.
+- Mapping guidance:
+  - The inline adapter maps Node HTTP request → APIGatewayProxyEvent (v1), then calls the wrapped handler. The handler returns an APIGatewayProxyResult‑compatible envelope (statusCode/headers/body).
+  - HEAD, content‑type, and JSON serialization semantics remain the responsibility of the SMOZ HTTP middleware; the adapter must pass the envelope through unaltered.
+
+Other tokens (future adapters)
+
+- For non‑HTTP tokens (e.g., SQS, SNS, EventBridge, Step), use the corresponding aws‑lambda types (SQSEvent, SNSEvent, EventBridgeEvent<…>, etc.) when a “smoz invoke” or other adapters are introduced. Never re‑declare local equivalents.
+
+Acceptance
+
+- Code under src/cli/\*\* must import AWS event/result/context types instead of defining local equivalents whenever those shapes are the intended surface.
+- Reviewers should reject PRs that introduce local redeclarations of publicly available platform types.
