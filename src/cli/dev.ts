@@ -40,13 +40,15 @@ export const runDev = async (
 
   if (verbose) {
     console.log(
-      `[dev] options: register=${opts.register} openapi=${opts.openapi} ` +
-        `local=${mode} stage=${stage} port=${port}`,
+      `[dev] options: register=${String(opts.register)} ` +
+        `openapi=${String(opts.openapi)} ` +
+        `local=${String(mode)} ` +
+        `stage=${stage} ` +
+        `port=${String(port)}`,
     );
   }
 
-  // Single debounced queue
-  let timer: NodeJS.Timeout | undefined;
+  // Single debounced queue  let timer: NodeJS.Timeout | undefined;
   let running = false;
   let pending = false;
   // Local child (if any)
@@ -214,7 +216,8 @@ const launchInline = async (
   let child = spawnChild();
   const close = async () =>
     new Promise<void>((resolve) => {
-      if (child.killed) {
+      // If the process has already exited (exitCode set), resolve immediately.
+      if (child.exitCode !== null) {
         resolve();
         return;
       }

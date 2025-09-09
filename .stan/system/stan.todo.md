@@ -110,11 +110,14 @@ Acceptance
 
 ## Completed (recent)
 
+- CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
+  - Stringify non-string template values to satisfy restrict-template-expressions.
+  - Use exitCode check in inline close() to avoid unnecessary-condition warning.
+
 - CLI dev: resolve remaining ESLint issues in src/cli/dev.ts
   - Remove unnecessary nullish coalescing on opts.local.
   - Drop unnecessary String() conversions in logs.
-  - Simplify always‑falsy conditional in child process close guard.
-- CLI dev: fix typing and lint in src/cli/dev.ts
+  - Simplify always‑falsy conditional in child process close guard.- CLI dev: fix typing and lint in src/cli/dev.ts
   - Store awaited inline launcher (Awaited<ReturnType<...>>).
   - Avoid passing async functions to setTimeout/process.on (wrappers).
   - Coerce log template expressions to strings; remove unused imports.
