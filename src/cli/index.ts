@@ -3,7 +3,9 @@
  * SMOZ CLI — version/signature + register/add
  *
  * - Default: print project signature (version, Node, repo root, stanPath, config presence)
- * - register: generate app/generated/register.*.ts from app/functions/**
+ * - register: one-shot — generate app/generated/register.*.ts from app/functions/**
+ * - openapi: one-shot — run the project’s OpenAPI builder
+ * - dev: watch loop orchestrator for register/openapi and optional local serving
  * - add: scaffold a new function skeleton under app/functions
  */
 import { existsSync, readFileSync } from 'node:fs';
@@ -13,7 +15,9 @@ import { Command } from 'commander';
 import { packageDirectorySync } from 'package-directory';
 
 import { runAdd } from './add';
+import { runDev } from './dev';
 import { runInit } from './init';
+import { runOpenapi } from './openapi';
 import { runRegister } from './register';
 
 type Pkg = { name?: string; version?: string };
@@ -160,27 +164,69 @@ const main = (): void => {
   program
     .command('register')
     .description(
-      'Scan app/functions/** and generate app/generated/register.*.ts',
+      'Scan app/functions/** and generate app/generated/register.*.ts (one-shot)',
     )
-    .option('-w, --watch', 'Watch for changes and regenerate registers')
-    .action(async (opts: { watch?: boolean }) => {
-      const runOnce = async () => {
-        const { wrote } = await runRegister(root);
-        console.log(
-          wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
-        );
-      };
-      if (!opts.watch) {
-        await runOnce();
-        return;
-      }
-      await runOnce();
-      const { watchRegister } = await import('./register.watch');
-      void (await watchRegister(root, runOnce));
-      console.log('Watching for function registration changes...');
-      // Keep process alive
-      await new Promise<void>(() => {});
+    .action(async () => {
+      const { wrote } = await runRegister(root);
+      console.log(
+        wrote.length ? `Updated:\n - ${wrote.join('\n - ')}` : 'No changes.',
+      );
     });
+
+  program
+    .command('openapi')
+    .description('Generate app/generated/openapi.json (one-shot)')
+    .action(async () => {
+      try {
+        await runOpenapi(root, { verbose: true });
+      } catch (e) {
+        console.error((e as Error).message);
+        process.exitCode = 1;
+      }
+    });
+
+  program
+    .command('dev')
+    .description(
+      'Watch loop: keep registers/openapi fresh; optionally serve HTTP locally',
+    )
+    .option('-r, --register', 'Enable register step on change', true)
+    .option('-R, --no-register', 'Disable register step on change')
+    .option('-o, --openapi', 'Enable openapi step on change', true)
+    .option('-O, --no-openapi', 'Disable openapi step on change')
+    .option('-l, --local [mode]', 'Local server mode: inline|offline', 'inline')
+    .option('-s, --stage <name>', 'Stage name (default inferred)')
+    .option('-p, --port <n>', 'Port (0=random)', (v) => Number(v), 0)
+    .option('-v, --verbose', 'Verbose logging', false)
+    .action(
+      async (opts: {
+        register?: boolean;
+        openapi?: boolean;
+        local?: string | boolean;
+        stage?: string;
+        port?: number;
+        verbose?: boolean;
+      }) => {
+        try {
+          await runDev(root, {
+            register: opts.register !== false,
+            openapi: opts.openapi !== false,
+            local:
+              typeof opts.local === 'string'
+                ? (opts.local as 'inline' | 'offline')
+                : opts.local === false
+                  ? false
+                  : 'inline',
+            stage: opts.stage,
+            port: opts.port ?? 0,
+            verbose: !!opts.verbose,
+          });
+        } catch (e) {
+          console.error((e as Error).message);
+          process.exitCode = 1;
+        }
+      },
+    );
   // Default action (no subcommand): print version + signature block
   program.action(() => {
     printSignature();
