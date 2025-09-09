@@ -136,8 +136,8 @@ export const runDev = async (
     const stop = async () => {
       try {
         await watcher.close();
-        if (offline) await offline.close();
-        if (inlineChild) await inlineChild.close();
+        await offline?.close();
+        await inlineChild?.close();
       } finally {
         resolve();
       }

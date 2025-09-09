@@ -3,6 +3,7 @@
 When updated: 2025-09-09T00:00:00Z
 
 ## Next up (near‑term, actionable)
+
 1. CLI: Phase 1 — dev loop (offline backend), remove “register --watch”, add “openapi”
    - Goals
      - Make “register” one‑shot (remove --watch).
@@ -118,6 +119,10 @@ Acceptance
 - CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
   - Stringify non-string template values to satisfy restrict-template-expressions.
   - Use exitCode check in inline close() to avoid unnecessary-condition warning.
+- CLI dev: remove unnecessary conditionals in stop()
+  - Use `offline?.close()` and `inlineChild?.close()` to satisfy
+    no-unnecessary-condition while preserving behavior.
+
 - CLI dev: resolve remaining ESLint issues in src/cli/dev.ts
   - Remove unnecessary nullish coalescing on opts.local.
   - Drop unnecessary String() conversions in logs.
@@ -125,7 +130,7 @@ Acceptance
   - Store awaited inline launcher (Awaited<ReturnType<...>>).
   - Avoid passing async functions to setTimeout/process.on (wrappers).
   - Coerce log template expressions to strings; remove unused imports.
-- Inline server: src/cli/local/inline.server.ts  - Import aws-lambda types; remove private event/result types.
+- Inline server: src/cli/local/inline.server.ts - Import aws-lambda types; remove private event/result types.
   - Fix TS1003 parse error; complete response writing; print route table and port.
 - Offline runner hygiene: src/cli/local/offline.ts
   - Replace nullish-coalescing with explicit checks; add restart/close; prefix logs.
