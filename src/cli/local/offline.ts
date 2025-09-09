@@ -1,12 +1,14 @@
 /**
  * serverless-offline runner (dev-only).
  *
+ * - Provides sane TMP/TEMP/TMPDIR fallbacks to avoid "undefined\\temp\\..." paths.
  * - Spawns the local Serverless CLI to run "offline start".
  * - Provides restart/close helpers for the dev orchestrator.
  * - Avoids unnecessary nullish-coalescing so ESLint doesn't flag conditions.
  */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 export type OfflineRunner = {
@@ -94,11 +96,25 @@ const spawnOffline = (
   cmd: { cmd: string; args: string[]; shell: boolean },
   verbose: boolean,
 ) => {
+  // Inherit the parent env, but ensure temp variables are present.
+  // Some toolchains (e.g., tsx/esbuild invoked under offline) interpolate TEMP/TMP,
+  // and if they are undefined, they may create literal "undefined\\temp\\..." paths
+  // relative to CWD. Use os.tmpdir() as a safe fallback.
+  const baseEnv: NodeJS.ProcessEnv = { ...process.env };
+  const tmp = os.tmpdir();
+  // Cross-platform default
+  if (!baseEnv.TMPDIR) baseEnv.TMPDIR = tmp;
+  // Windows defaults
+  if (process.platform === 'win32') {
+    if (!baseEnv.TEMP) baseEnv.TEMP = tmp;
+    if (!baseEnv.TMP) baseEnv.TMP = tmp;
+  }
+
   const child = spawn(cmd.cmd, cmd.args, {
     cwd: root,
     shell: cmd.shell,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
+    env: baseEnv,
   });
 
   const prefix = '[offline] ';

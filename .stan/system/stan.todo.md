@@ -5,9 +5,11 @@
 When updated: 2025-09-09T00:00:00Z
 
 ## Next up (near‑term, actionable)
+
 1. Keep knip as-is (two expected “unused” files).
 2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
    for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
+
 ## 20) Types hygiene — reuse public platform types (aws‑lambda) and SMOZ contracts
 
 Policy
@@ -37,6 +39,12 @@ Acceptance
 
 ## Completed (recent)
 
+- Offline adapter: temp env fallback to avoid "undefined\\temp\\..." cache paths
+  - Provide TMPDIR on all platforms and TEMP/TMP on Windows using os.tmpdir().
+  - Prevents toolchains (tsx/esbuild) invoked by serverless-offline from writing
+    cache files under a literal "undefined\\temp\\..." path relative to the repo.
+  - No behavior change otherwise; logs and restart semantics are unchanged.
+
 - Inline server fixes: HEAD fallback and test env seeding
   - Server: allow HEAD to match GET routes so middleware can short-circuit to
     200 {} with Content-Type, aligning with production semantics.
@@ -51,7 +59,7 @@ Acceptance
 
 - Inline server test fixes (typing, CLI detection, lint)
   - Use existsSync to prefer project-local tsx only when available; fallback to
-    PATH “tsx” on other systems.  - Remove invalid cast to ChildProcessWithoutNullStreams; rely on ChildProcess.  - Type stderr ‘data’ as Buffer; avoid any/unsafe member access.
+    PATH “tsx” on other systems. - Remove invalid cast to ChildProcessWithoutNullStreams; rely on ChildProcess. - Type stderr ‘data’ as Buffer; avoid any/unsafe member access.
   - Address template literal type complaints by coercing numbers with String().
   - Keeps the test robust across platforms and CI environments where local
     node_modules paths may differ.
@@ -59,7 +67,7 @@ Acceptance
 - CLI dev: Phase 2 — finalize inline as default backend and add inline server tests
   - Tests: added src/cli/local/inline.server.test.ts to exercise the inline
     server end-to-end (route mounting 200 JSON at /openapi, HEAD 200 with
-    Content-Type, and 404 for unknown routes).  - Docs: updated Getting Started and 10-minute Tour to recommend
+    Content-Type, and 404 for unknown routes). - Docs: updated Getting Started and 10-minute Tour to recommend
     `npx smoz dev` (inline is default) and note `--local offline` as opt-in.
   - Examples: added “Dev loop (optional)” to examples/README.md with the same
     guidance.
