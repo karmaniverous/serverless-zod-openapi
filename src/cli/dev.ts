@@ -35,14 +35,13 @@ export const runDev = async (
     if (verbose)
       console.warn('[dev] env seeding warning:', (e as Error).message);
   }
-  const mode: LocalMode = opts.local ?? 'inline';
+  const mode: LocalMode = opts.local;
   const port = typeof opts.port === 'number' ? opts.port : 0;
 
   if (verbose) {
     console.log(
-      `[dev] options: register=${String(opts.register)} openapi=${String(
-        opts.openapi,
-      )} local=${String(mode)} stage=${String(stage)} port=${String(port)}`,
+      `[dev] options: register=${opts.register} openapi=${opts.openapi} ` +
+        `local=${mode} stage=${stage} port=${port}`,
     );
   }
 
@@ -50,7 +49,6 @@ export const runDev = async (
   let timer: NodeJS.Timeout | undefined;
   let running = false;
   let pending = false;
-
   // Local child (if any)
   let offline: OfflineRunner | undefined;
   let inlineChild: Awaited<ReturnType<typeof launchInline>> | undefined;
@@ -216,7 +214,7 @@ const launchInline = async (
   let child = spawnChild();
   const close = async () =>
     new Promise<void>((resolve) => {
-      if (!child || child.killed) {
+      if (child.killed) {
         resolve();
         return;
       }
