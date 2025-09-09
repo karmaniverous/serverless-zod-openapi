@@ -1,7 +1,9 @@
----
+## /// Front matter
+
 title: CLI
 sidebar_label: CLI
 sidebar_position: 5
+
 ---
 
 # CLI
@@ -40,7 +42,6 @@ Options:
 
 ```bash
 npx smoz register
-npx smoz register --watch
 ```
 
 Scans `app/functions/**` for:
@@ -49,10 +50,9 @@ Scans `app/functions/**` for:
 - `openapi.ts` → register.openapi.ts
 - `serverless.ts` → register.serverless.ts (non‑HTTP)
 
-Idempotent, POSIX‑sorted, formatted when Prettier is available.
-
-`--watch` uses chokidar with a small debounce; “Updated” vs “No changes”
-messages are expected.
+One‑shot, idempotent, POSIX‑sorted, formatted when Prettier is available.
+For a live authoring loop that keeps registers (and OpenAPI) fresh, use `smoz dev`
+instead of a register watcher.
 
 ## add
 
@@ -108,3 +108,33 @@ export const eventSchema = z.object({
 Portability
 
 - `:` is not allowed in Windows paths. The CLI uses `[id]` on disk and `{id}` in code/docs to remain portable while staying native to API Gateway/OpenAPI.
+
+## dev
+
+```bash
+npx smoz dev --local inline
+```
+
+Long‑running dev loop that watches source files and runs, in order:
+
+1. `register` (if enabled)
+2. `openapi` (if enabled)
+3. local HTTP backend actions (restart/refresh if applicable)
+
+Flags (CLI wins over config defaults):
+
+- `-r, --register` / `-R, --no-register` (default: on)
+- `-o, --openapi` / `-O, --no-openapi` (default: on)
+- `-l, --local [mode]` — `inline` (default) or `offline`
+- `-s, --stage <name>` — stage name (default inferred, typically `dev`)
+- `-p, --port <n>` — port (0 = random free port)
+- `-v, --verbose` — verbose logging
+
+Notes:
+
+- Inline backend maps Node HTTP → API Gateway v1 event → wrapped handler → response.
+  It prints a route table and the selected port at startup.
+- Offline backend runs `serverless offline` in a child process; when the route surface
+  changes (register writes), the child is restarted automatically.
+- The loop seeds basic env (e.g., `STAGE`) and prints “Updated” vs “No changes”
+  per task run; bursts are debounced.

@@ -51,6 +51,16 @@ npm run openapi
 2) Call `app.buildAllOpenApiPaths()`
 3) Write `app/generated/openapi.json`
 
+## Live dev loop (optional)
+
+Use the dev loop to keep registers/OpenAPI fresh and (optionally) serve HTTP:
+
+```bash
+npx smoz dev --local inline
+```
+
+See the CLI page for flags and inline/offline details.
+
 ## Package or deploy with Serverless
 
 ```bash
@@ -58,7 +68,6 @@ npm run package   # no deploy
 # or
 npm run deploy
 ```
-
 Serverless picks up:
 
 - `functions` from `app.buildAllServerlessFunctions()`

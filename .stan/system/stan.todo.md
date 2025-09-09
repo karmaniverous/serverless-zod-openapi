@@ -1,3 +1,5 @@
+/// Development Plan
+
 # Development Plan
 
 When updated: 2025-09-09T00:00:00Z
@@ -129,7 +131,8 @@ Acceptance
 
 - CLI dev: resolve remaining ESLint issues in src/cli/dev.ts
   - Remove unnecessary nullish coalescing on opts.local.
-  - Drop unnecessary String() conversions in logs.  - Simplify always‑falsy conditional in child process close guard.- CLI dev: fix typing and lint in src/cli/dev.ts
+  - Drop unnecessary String() conversions in logs.
+  - Simplify always‑falsy conditional in child process close guard.- CLI dev: fix typing and lint in src/cli/dev.ts
   - Store awaited inline launcher (Awaited<ReturnType<...>>).
   - Avoid passing async functions to setTimeout/process.on (wrappers).
   - Coerce log template expressions to strings; remove unused imports.
@@ -137,3 +140,9 @@ Acceptance
   - Fix TS1003 parse error; complete response writing; print route table and port.
 - Offline runner hygiene: src/cli/local/offline.ts
   - Replace nullish-coalescing with explicit checks; add restart/close; prefix logs.
+
+- Docs: update CLI and quickstart for dev loop
+  - Remove deprecated `register --watch` from CLI docs.
+  - Add `dev` command section with flags and behavior.
+  - Add a short “Live dev loop” snippet to Getting Started and Tour pages
+    recommending `npx smoz dev --local inline`.

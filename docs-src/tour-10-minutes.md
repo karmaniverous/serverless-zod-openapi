@@ -1,7 +1,9 @@
----
+## /// Front matter
+
 title: 10‑minute tour
 sidebar_label: 10‑minute tour
 sidebar_position: 3
+
 ---
 
 # 10‑minute tour
@@ -71,6 +73,14 @@ npm run openapi
 
 This imports `register.openapi.ts`, collects paths via
 `app.buildAllOpenApiPaths()`, and writes `app/generated/openapi.json`.
+
+Alternative: run a live loop that keeps registers/OpenAPI fresh and serves HTTP:
+
+```bash
+npx smoz dev --local inline
+```
+
+Use `--local offline` to drive serverless-offline instead.
 
 ## 5) Package with Serverless
 
