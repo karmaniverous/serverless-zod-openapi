@@ -110,7 +110,10 @@ export const runDev = async (
           // Restart inline only if something material changed
           if (wrote || openapiChanged) {
             if (verbose) console.log('[dev] restarting inline server...');
-            await inlineChild?.restart();
+            // inlineChild is created when mode === 'inline'; guard for safety
+            if (inlineChild) {
+              await inlineChild.restart();
+            }
           }
         }
       })();
@@ -193,27 +196,46 @@ const seedEnvForStage = async (
           [k: string]: unknown;
         }
       | undefined;
-    const globalKeys = app?.global?.envKeys ?? [];
-    const stageKeys = app?.stage?.envKeys ?? [];
+    const globalKeys: readonly unknown[] = Array.isArray(app?.global?.envKeys)
+      ? app.global.envKeys
+      : [];
+    const stageKeys: readonly unknown[] = Array.isArray(app?.stage?.envKeys)
+      ? app.stage.envKeys
+      : [];
     const globalParams =
-      (stages?.default as { params?: Record<string, unknown> })?.params ?? {};
+      (stages?.default as { params?: Record<string, unknown> }).params ?? {};
     const stageParams =
-      (stages?.[stage] as { params?: Record<string, unknown> })?.params ?? {};
+      (stages?.[stage] as { params?: Record<string, unknown> }).params ?? {};
 
     const seedPair = (key: string, from: Record<string, unknown>) => {
       if (key in process.env) return;
       const val = from[key];
       if (val === undefined) return;
-      process.env[key] = String(val);
-      if (verbose) console.log(`[dev] env: ${key}=${process.env[key]}`);
+      if (typeof val === 'string') {
+        process.env[key] = val;
+        if (verbose) console.log(`[dev] env: ${key}=${val}`);
+        return;
+      }
+      if (typeof val === 'number' || typeof val === 'boolean') {
+        const v = String(val);
+        process.env[key] = v;
+        if (verbose) console.log(`[dev] env: ${key}=${v}`);
+        return;
+      }
+      // Non-primitive; skip to avoid [object Object] surprise.
+      if (verbose) console.log(`[dev] env: skip ${key} (non-primitive)`);
     };
 
-    globalKeys.forEach((k) => {
-      seedPair(String(k), globalParams);
-    });
-    stageKeys.forEach((k) => {
-      seedPair(String(k), stageParams);
-    });
+    for (const k of globalKeys) {
+      if (typeof k === 'string') {
+        seedPair(k, globalParams);
+      }
+    }
+    for (const k of stageKeys) {
+      if (typeof k === 'string') {
+        seedPair(k, stageParams);
+      }
+    }
     // Ensure STAGE itself is present as a last resort
     if (!process.env.STAGE) {
       process.env.STAGE = stage;
