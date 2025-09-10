@@ -20,19 +20,25 @@ OpenAPI 3.1 paths from a single, schema‑first application definition.
 - HTTP middleware with validation, shaping, errors, CORS, negotiation, and HEAD
 - Non‑HTTP flows stay lean (no middleware overhead)
 
-Quick links
+## Quick links
 
 - [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)
 - [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
 - [Getting started](https://docs.karmanivero.us/smoz/documents/Getting_started.html)
-- 10-minute tour: https://docs.karmanivero.us/smoz/documents/docs-src_tour-10-minutes.html
-- CLI: https://docs.karmanivero.us/smoz/cli
-- Middleware: https://docs.karmanivero.us/smoz/middleware
-- Templates: https://docs.karmanivero.us/smoz/templates
-- Recipes: https://docs.karmanivero.us/smoz/recipes
-- Examples (repo): https://github.com/karmaniverous/smoz/tree/main/examples
-- Contributing: https://docs.karmanivero.us/smoz/contributing
-  Install
+- [10-minute tour](https://docs.karmanivero.us/smoz/documents/10%E2%80%91minute_tour.html)
+- [HTTP MIddleware](https://docs.karmanivero.us/smoz/documents/HTTP_middleware.html)
+- [Recipes](https://docs.karmanivero.us/smoz/documents/Recipes.html)
+  - [SQS function](https://docs.karmanivero.us/smoz/documents/Recipes.SQS_function.html)
+  - [Contexts + Cognito authorizer](https://docs.karmanivero.us/smoz/documents/Recipes.Contexts_+_Cognito_authorizer.html)
+  - [Custom middleware insertion](https://docs.karmanivero.us/smoz/documents/Recipes.Custom_middleware_insertion.html)
+  - [Per‑function env](<https://docs.karmanivero.us/smoz/documents/Recipes.Per%E2%80%91function_env_(fnEnvKeys).html>)
+  - [Observability](<https://docs.karmanivero.us/smoz/documents/Recipes.Observability_(requestId_header).html>)
+  - [Troubleshooting](https://docs.karmanivero.us/smoz/documents/Recipes.Troubleshooting.html)
+- [Templates](https://docs.karmanivero.us/smoz/documents/Templates.html)
+- [CLI](https://docs.karmanivero.us/smoz/documents/CLI.html)
+- [Contributing](https://docs.karmanivero.us/smoz/documents/Contributing.html)
+
+## Install
 
 ```bash
 npm i @karmaniverous/smoz zod zod-openapi @middy/core \
@@ -45,17 +51,17 @@ npm i @karmaniverous/smoz zod zod-openapi @middy/core \
   @middy/http-response-serializer
 ```
 
-Dev tooling (recommended):
+## Dev tooling (recommended):
 
 ```bash
 npm i -D typescript typescript-eslint eslint prettier typedoc
 ```
 
-Docs and reference
+## Docs and reference
 
 - Docs site: https://docs.karmanivero.us/smoz
 - Changelog: https://github.com/karmaniverous/smoz/tree/main/CHANGELOG.md
 - License: BSD‑3‑Clause © Jason Williscroft
 
-[Middy]: https://middy.js.org/
-[Zod]: https://zod.dev/
+[Middy](https://middy.js.org/)
+[Zod](https://zod.dev/)
