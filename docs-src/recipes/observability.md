@@ -8,11 +8,10 @@ sidebar_label: Observability
 Propagate a request id from API Gateway into responses for traceability.
 
 ```ts
-import { insertAfter } from 'smoz';
+import { insertAfter } from '@karmaniverous/smoz';
 
 const echoRequestId = {
-  after: (req: unknown) => {
-    const r = req as {
+  after: (req: unknown) => {    const r = req as {
       event?: { requestContext?: { requestId?: string } };
       response?: { headers?: Record<string, string> };
     };

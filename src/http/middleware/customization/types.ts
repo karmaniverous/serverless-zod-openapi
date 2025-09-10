@@ -1,5 +1,5 @@
 /**
- + HTTP customization types and aliases.
+ * HTTP customization types and aliases.
  */
 import type { MiddlewareObj } from '@middy/core';
 import type httpContentNegotiation from '@middy/http-content-negotiation';

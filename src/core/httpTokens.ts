@@ -1,13 +1,10 @@
 import type { BaseEventTypeMap } from '@/src/core/baseEventTypeMapSchema';
 
-/** Default base tokens treated as HTTP by the runtime. */
-/** * Default HTTP event tokens used by the runtime.
- */
+/** Default HTTP event tokens used by the runtime. */
 export const defaultHttpEventTypeTokens = [
   'rest',
   'http',
 ] as const satisfies readonly (keyof BaseEventTypeMap)[];
-
 /** Base event type keys that MUST be present in any extended map schema. */
 const BASE_EVENT_TYPE_KEYS = ['rest', 'http', 'sqs'] as const;
 

@@ -1,7 +1,7 @@
 /**
  * SMOZ — Serverless + Middy + OpenAPI + Zod
  *
- * Public entry point for the toolkit. Import from 'smoz' in application code.
+ * Public entry point for the toolkit. Import from '@karmaniverous/smoz' in application code.
  *
  * Exposes:
  * - App orchestrator (schema‑first) to register functions and aggregate

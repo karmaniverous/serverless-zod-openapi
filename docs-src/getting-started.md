@@ -9,11 +9,10 @@ sidebar_position: 2
 ## Install
 
 ```bash
-npm i smoz zod zod-openapi @middy/core \
+npm i @karmaniverous/smoz zod zod-openapi @middy/core \
   @middy/http-header-normalizer \
   @middy/http-event-normalizer \
-  @middy/http-json-body-parser \
-  @middy/http-content-negotiation \
+  @middy/http-json-body-parser \  @middy/http-content-negotiation \
   @middy/http-error-handler \
   @middy/http-cors \
   @middy/http-response-serializer

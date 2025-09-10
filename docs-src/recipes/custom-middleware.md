@@ -8,11 +8,10 @@ sidebar_label: Custom middleware
 Add a header after the response is shaped:
 
 ```ts
-import { insertAfter } from 'smoz';
+import { insertAfter } from '@karmaniverous/smoz';
 
 const addHeader = {
-  after: (req: unknown) => {
-    const r = req as { response?: { headers?: Record<string, string> } };
+  after: (req: unknown) => {    const r = req as { response?: { headers?: Record<string, string> } };
     if (!r.response) return;
     r.response.headers = {
       ...(r.response.headers ?? {}),

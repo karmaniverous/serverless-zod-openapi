@@ -47,27 +47,40 @@ SMOZ builds a robust Middy stack around HTTP handlers. Non‑HTTP flows bypassMi
 
 Choose a profile and override content type:
 
-````ts
+```ts
 app.defineFunction({
   // ...
-  http: { profile: 'publicJson', options: { contentType: 'application/vnd.my+json' } },
+  http: {
+    profile: 'publicJson',
+    options: { contentType: 'application/vnd.my+json' },
+  },
 });
-````
+```
 
 Insert a header after the response shaper:
 
-````ts
-import { insertAfter } from 'smoz';
-const mw = { after: (req: any) => { req.response.headers['X-My'] = 'yes'; } };
+```ts
+import { insertAfter } from '@karmaniverous/smoz';
+const mw = {
+  after: (req: any) => {
+    req.response.headers['X-My'] = 'yes';
+  },
+};
 app.defineFunction({
   // ...
-  http: { transform: ({ before, after, onError }) => ({ before, after: insertAfter(after, 'shape', mw as any), onError }) },
+  http: {
+    transform: ({ before, after, onError }) => ({
+      before,
+      after: insertAfter(after, 'shape', mw as any),
+      onError,
+    }),
+  },
 });
-````
+```
 
 Replace (advanced):
 
-````ts
+```ts
 app.defineFunction({
   // ...
   http: {
@@ -80,4 +93,4 @@ app.defineFunction({
     },
   },
 });
-````
+```

@@ -32,10 +32,11 @@ Quick links
 - Recipes: https://docs.karmanivero.us/smoz/recipes
 - Examples (repo): https://github.com/karmaniverous/smoz/tree/main/examples
 - Contributing: https://docs.karmanivero.us/smoz/contributing
-Install
+  Install
 
-```bash
-npm i smoz zod zod-openapi @middy/core \  @middy/http-header-normalizer \
+````bash
+npm i @karmaniverous/smoz zod zod-openapi @middy/core \
+  @middy/http-header-normalizer \
   @middy/http-event-normalizer \
   @middy/http-json-body-parser \
   @middy/http-content-negotiation \
@@ -48,7 +49,7 @@ Dev tooling (recommended):
 
 ```bash
 npm i -D typescript typescript-eslint eslint prettier typedoc
-```
+````
 
 Docs and reference
 
