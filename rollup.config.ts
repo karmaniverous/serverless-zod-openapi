@@ -135,6 +135,16 @@ export const buildTypes = (dest: string): RollupOptions => ({
   // - dist/mutators/orval.d.ts
   // - dist/mutators/index.d.ts
   output: { dir: dest, format: 'es' },
+  // Treat alias and known externals explicitly as external during the DTS pass
+  // to avoid "Unresolved dependencies" warnings. The dts plugin will inline
+  // what it can based on the provided paths mapping.
+  external: (id) =>
+    id.startsWith('@/') ||
+    id.startsWith('@@/') ||
+    nodeExternals.has(id) ||
+    Array.from(runtimeExternalPkgs).some(
+      (p) => id === p || id.startsWith(`${p}/`),
+    ),
   plugins: [
     dtsPlugin({
       // Help the DTS bundler resolve our alias imports so it can inline types

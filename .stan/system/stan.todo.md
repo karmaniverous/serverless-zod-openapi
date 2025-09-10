@@ -2,42 +2,26 @@
 
 # Development Plan
 
-When updated: 2025-09-10T06:50:00Z
+When updated: 2025-09-10T07:25:00Z
 
 ## Next up (near‑term, actionable)
-1. Keep knip as-is (two expected “unused” files).2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”   for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
-## 20) Types hygiene — reuse public platform types (aws‑lambda) and SMOZ contracts
 
-Policy
-
-- NEVER privately redeclare types that already exist in public dependencies we ship or require (e.g., AWS Lambda events/results). Prefer importing well‑known types (from 'aws-lambda') or SMOZ’s exported contracts.
-- Allowed: small, file‑local structural helpers for interim data (not exported), when no public type fits. Prefer narrowing with existing public types whenever possible.
-
-Inline dev server (HTTP)
-
-- Event/result types:
-  - Use APIGatewayProxyEvent (v1) and APIGatewayProxyResult for the inline HTTP adapter’s request/response surface. Do not re‑declare these as local interfaces.
-  - If/when v2 is supported, use APIGatewayProxyEventV2 and APIGatewayProxyStructuredResultV2 accordingly.
-- Context:
-  - Use Context from 'aws-lambda' when fabricating a minimal context object for handler invocation.
-- Mapping guidance:
-  - The inline adapter maps Node HTTP request → APIGatewayProxyEvent (v1), then calls the wrapped handler. The handler returns an APIGatewayProxyResult‑compatible envelope (statusCode/headers/body).
-  - HEAD, content‑type, and JSON serialization semantics remain the responsibility of the SMOZ HTTP middleware; the adapter must pass the envelope through unaltered.
-
-Other tokens (future adapters)
-
-- For non‑HTTP tokens (e.g., SQS, SNS, EventBridge, Step), use the corresponding aws‑lambda types (SQSEvent, SNSEvent, EventBridgeEvent<…>, etc.) when a “smoz invoke” or other adapters are introduced. Never re‑declare local equivalents.
-
-Acceptance
-
-- Code under src/cli/\*\* must import AWS event/result/context types instead of defining local equivalents whenever those shapes are the intended surface.
-- Reviewers should reject PRs that introduce local redeclarations of publicly available platform types.
+1. Keep knip as-is (two expected “unused” files).
+2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
+   for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 
 ## Completed (recent)
 
+- Build banner: treat “@/” and “@@/” as externals in rollup.config.ts so the
+  stan:build banner no longer lists alias imports (only legitimate externals).
+  Also mark aliases external in the DTS build to fully silence the unresolved
+  banner during type bundling.
+
+- Knip: ignore serverless-offline devDependency (spawned via CLI in dev loop)
+  to avoid a false-positive “unused devDependency” report.
+
 - Offline adapter: temp env fallback to avoid "undefined\\temp\\..." cache paths
-  - Provide TMPDIR on all platforms and TEMP/TMP on Windows using os.tmpdir().
-  - Prevents toolchains (tsx/esbuild) invoked by serverless-offline from writing
+  - Provide TMPDIR on all platforms and TEMP/TMP on Windows using os.tmpdir().  - Prevents toolchains (tsx/esbuild) invoked by serverless-offline from writing
     cache files under a literal "undefined\\temp\\..." path relative to the repo.
   - No behavior change otherwise; logs and restart semantics are unchanged.
 
@@ -63,15 +47,15 @@ Acceptance
 - Offline adapter: widen env fallbacks and add diagnostics; ignore stray dirs; add offline guardrails
   - Add HOME (POSIX) and USERPROFILE/LOCALAPPDATA (Windows) fallbacks to os.tmpdir()
     in addition to existing TMPDIR/TEMP/TMP. Helps nested toolchains derive sane
-    cache roots and prevents “undefined\\temp\\tsx-*” paths.
+    cache roots and prevents “undefined\\temp\\tsx-\*” paths.
   - Print a one-time “[offline] env snapshot” with { TMPDIR, TEMP, TMP, HOME,
     USERPROFILE, LOCALAPPDATA } when --verbose is set.
-  - Add .gitignore pattern for “undefined/temp/tsx-*”.
+  - Add .gitignore pattern for “undefined/temp/tsx-\*”.
   - Add ‘custom.serverless-offline’ guardrails in serverless.ts (httpPort, noPrependStageInUrl).
 
 - CLI dev: Phase 2 — finalize inline as default backend and add inline server tests
   - Tests: added src/cli/local/inline.server.test.ts to exercise the inline
-    server end-to-end (route mounting 200 JSON at /openapi, HEAD 200 with    Content-Type, and 404 for unknown routes). - Docs: updated Getting Started and 10-minute Tour to recommend
+    server end-to-end (route mounting 200 JSON at /openapi, HEAD 200 with Content-Type, and 404 for unknown routes). - Docs: updated Getting Started and 10-minute Tour to recommend
     `npx smoz dev` (inline is default) and note `--local offline` as opt-in.
   - Examples: added “Dev loop (optional)” to examples/README.md with the same
     guidance.
@@ -81,7 +65,7 @@ Acceptance
 - Dev loop: single-start inline + conditional restart
   - Run the initial register/openapi pass before launching the inline server so
     we don’t immediately restart on first boot (no double “listening” lines).
-  - Restart inline only when something material changes:
+  - Restart inline only when something material changed:
     • registers wrote (route surface), or
     • openapi.json content changed.
   - Keep offline restart gated on registers (route surface) as before.
@@ -103,6 +87,6 @@ Acceptance
 
 - CLI dev: restore debouncer timer and simplify inline restart
   - Reintroduce and type `timer` as `ReturnType<typeof setTimeout>` to fix
-    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout.  - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.- CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
+    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout. - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.- CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
   - Stringify non-string template values to satisfy restrict-template-expressions.
   - Use exitCode check in inline close() to avoid unnecessary-condition warning.

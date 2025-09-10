@@ -1,8 +1,5 @@
 {
-  "entry": [
-    "serverless.ts",
-    "services/activecampaign/src/index.ts"
-  ],
+  "entry": ["serverless.ts", "services/activecampaign/src/index.ts"],
   "project": [
     "src/**",
     "app/**",
@@ -10,7 +7,8 @@
     "!**/generated/**",
     "!docs/**"
   ],
-  "ignore": [    "lib/test/**",
+  "ignore": [
+    "lib/test/**",
     "app/**/handler.ts",
     "app/functions/**/lambda.ts",
     "app/functions/**/openapi.ts",
@@ -24,11 +22,13 @@
   "ignoreDependencies": [
     "http-errors",
     "@types/http-errors",
-    "@types/serverless",    "@vitest/coverage-v8",
+    "@types/serverless",
+    "@vitest/coverage-v8",
     "serverless-apigateway-log-retention",
     "serverless-deployment-bucket",
     "serverless-domain-manager",
-    "serverless-plugin-common-excludes"
+    "serverless-plugin-common-excludes",
+    "serverless-offline"
   ],
   "rules": { "exports": "off", "types": "off" }
 }
