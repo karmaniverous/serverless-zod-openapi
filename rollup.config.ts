@@ -106,7 +106,8 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
     defaultHandler(warning);
   },
   external: (id) =>
-    // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.    id.startsWith('@/') ||
+    // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.
+    id.startsWith('@/') ||
     id.startsWith('@@/') ||
     nodeExternals.has(id) ||
     Array.from(runtimeExternalPkgs).some(
