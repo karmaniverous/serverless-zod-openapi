@@ -4,6 +4,7 @@
  * - Stage/env: seeds process.env with concrete values for the selected stage.
  */
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import chokidar from 'chokidar';
 
@@ -29,7 +30,7 @@ export const runDev = async (
       : inferDefaultStage(root, verbose);
   // Seed env with concrete values for the selected stage.
   try {
-    seedEnvForStage(root, stage, verbose);
+    await seedEnvForStage(root, stage, verbose);
   } catch (e) {
     if (verbose)
       console.warn('[dev] env seeding warning:', (e as Error).message);
@@ -167,21 +168,62 @@ const inferDefaultStage = (root: string, verbose: boolean): string => {
   return 'dev';
 };
 
-const seedEnvForStage = (
+const seedEnvForStage = async (
   root: string,
   stage: string,
   verbose: boolean,
-): void => {
-  // Best-effort: import app/config/app.config.ts via tsx is costly here; instead,
-  // seed well-known keys if present in process.env, leaving existing values intact.
-  // Teams can export additional keys in their shell if desired.
-  const defaults: Record<string, string> = {
-    STAGE: stage,
-  };
-  for (const [k, v] of Object.entries(defaults)) {
-    if (!(k in process.env)) {
-      process.env[k] = v;
-      if (verbose) console.log(`[dev] env: ${k}=${v}`);
+): Promise<void> => {
+  // Best effort: import the app config to read declared env keys and concrete values.
+  // Preserve existing process.env values; only seed when unset.
+  try {
+    const appConfigUrl = pathToFileURL(
+      path.resolve(root, 'app', 'config', 'app.config.ts'),
+    ).href;
+    // Dynamically import the TS module under tsx
+    const mod = (await import(appConfigUrl)) as Record<string, unknown>;
+    const app = mod.app as
+      | {
+          global?: { envKeys?: readonly string[] };
+          stage?: { envKeys?: readonly string[] };
+        }
+      | undefined;
+    const stages = mod.stages as
+      | {
+          default?: { params?: Record<string, unknown> };
+          [k: string]: unknown;
+        }
+      | undefined;
+    const globalKeys = app?.global?.envKeys ?? [];
+    const stageKeys = app?.stage?.envKeys ?? [];
+    const globalParams =
+      (stages?.default as { params?: Record<string, unknown> })?.params ?? {};
+    const stageParams =
+      (stages?.[stage] as { params?: Record<string, unknown> })?.params ?? {};
+
+    const seedPair = (key: string, from: Record<string, unknown>) => {
+      if (key in process.env) return;
+      const val = from[key];
+      if (val === undefined) return;
+      process.env[key] = String(val);
+      if (verbose) console.log(`[dev] env: ${key}=${process.env[key]}`);
+    };
+
+    globalKeys.forEach((k) => {
+      seedPair(String(k), globalParams);
+    });
+    stageKeys.forEach((k) => {
+      seedPair(String(k), stageParams);
+    });
+    // Ensure STAGE itself is present as a last resort
+    if (!process.env.STAGE) {
+      process.env.STAGE = stage;
+      if (verbose) console.log(`[dev] env: STAGE=${stage}`);
+    }
+  } catch {
+    // Fallback: seed STAGE only
+    if (!process.env.STAGE) {
+      process.env.STAGE = stage;
+      if (verbose) console.log(`[dev] env: STAGE=${stage}`);
     }
   }
 };

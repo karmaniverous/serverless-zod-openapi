@@ -139,3 +139,9 @@ Notes:
   changes (register writes), the child is restarted automatically.
 - The loop seeds basic env (e.g., `STAGE`) and prints “Updated” vs “No changes”
   per task run; bursts are debounced.
+- Env seeding:
+  - The dev loop imports `app/config/app.config.ts` and seeds `process.env` for
+    keys declared in your app’s `global.envKeys` and `stage.envKeys`, using the
+    concrete values from `stages.default.params` (global) and `stages[<stage>].params`
+    (selected stage). Existing `process.env` entries are not overridden. This provides
+    parity with provider-level env in production so handlers validate cleanly in dev.
