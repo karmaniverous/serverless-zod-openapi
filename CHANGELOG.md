@@ -2,7 +2,9 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### [Unreleased](https://github.com/karmaniverous/smoz/compare/0.1.0...HEAD)
+#### [0.1.1](https://github.com/karmaniverous/smoz/compare/0.1.0...0.1.1)
+
+- updated changelog settings [`199fb8a`](https://github.com/karmaniverous/smoz/commit/199fb8a4ff4afb508b2952fa54f6b6c57e152a41)
 
 #### 0.1.0
 
