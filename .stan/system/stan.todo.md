@@ -2,11 +2,10 @@
 
 # Development Plan
 
-When updated: 2025-09-09T01:00:00Z
+When updated: 2025-09-10T06:50:00Z
 
 ## Next up (near‑term, actionable)
 1. Keep knip as-is (two expected “unused” files).2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”   for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
-
 ## 20) Types hygiene — reuse public platform types (aws‑lambda) and SMOZ contracts
 
 Policy
@@ -95,9 +94,15 @@ Acceptance
   - Do not override existing env; log seeded keys under --verbose.
   - Fallback to seeding STAGE only if import fails (keeps dev robust).
 
+- Dev loop: lint fixes and minor guard adjustments
+  - Guard inlineChild before restart (avoid unnecessary optional chaining).
+  - Seed only primitive env values (string/number/boolean); skip non‑primitives
+    to avoid “[object Object]” stringification and satisfy lint.
+  - Remove unnecessary String() conversions on already‑string values to satisfy
+    @typescript-eslint rules.
+
 - CLI dev: restore debouncer timer and simplify inline restart
   - Reintroduce and type `timer` as `ReturnType<typeof setTimeout>` to fix
-    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout.  - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.
-- CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
+    TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout.  - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.- CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
   - Stringify non-string template values to satisfy restrict-template-expressions.
   - Use exitCode check in inline close() to avoid unnecessary-condition warning.
