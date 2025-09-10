@@ -1,9 +1,7 @@
-## /// Front matter
-
+---
 title: CLI
 sidebar_label: CLI
 sidebar_position: 5
-
 ---
 
 # CLI
@@ -122,7 +120,7 @@ Inline is the default local backend; use `--local offline` to run serverless-off
 1. `register` (if enabled)
 2. `openapi` (if enabled)
 3. local HTTP backend actions (restart/refresh if applicable)
-Flags (CLI wins over config defaults):
+   Flags (CLI wins over config defaults):
 
 - `-r, --register` / `-R, --no-register` (default: on)
 - `-o, --openapi` / `-O, --no-openapi` (default: on)

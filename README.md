@@ -22,10 +22,10 @@ OpenAPI 3.1 paths from a single, schema‑first application definition.
 
 Quick links
 
-- Overview: https://docs.karmanivero.us/smoz/overview
-- Why smoz?: https://docs.karmanivero.us/smoz/why-smoz
-- Getting started: https://docs.karmanivero.us/smoz/getting-started
-- 10-minute tour: https://docs.karmanivero.us/smoz/tour-10-minutes
+- Overview: https://docs.karmanivero.us/smoz/documents/Overview.html
+- Why smoz?: https://docs.karmanivero.us/smoz/documents/Why_smoz_.html
+- Getting started: https://docs.karmanivero.us/smoz/documents/Getting_started.html
+- 10-minute tour: https://docs.karmanivero.us/smoz/documents/docs-src_tour-10-minutes.html
 - CLI: https://docs.karmanivero.us/smoz/cli
 - Middleware: https://docs.karmanivero.us/smoz/middleware
 - Templates: https://docs.karmanivero.us/smoz/templates

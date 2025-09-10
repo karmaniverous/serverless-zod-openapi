@@ -1,9 +1,7 @@
-## /// Front matter
-
+---
 title: 10‑minute tour
 sidebar_label: 10‑minute tour
 sidebar_position: 3
-
 ---
 
 # 10‑minute tour
