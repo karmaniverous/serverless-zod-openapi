@@ -13,6 +13,8 @@
     "app/functions/**/lambda.ts",
     "app/functions/**/openapi.ts",
     "src/serverless/intrinsic.ts",
+    "src/serverless/plugin.ts",
+    "src/cli/local/inline.server.ts",
     "services/**/src/openapi.json",
     "services/activecampaign/orval.config.ts",
     "services/activecampaign/src/wrapped/field-values.ts",
