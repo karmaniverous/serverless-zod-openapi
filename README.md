@@ -34,7 +34,7 @@ Quick links
 - Contributing: https://docs.karmanivero.us/smoz/contributing
   Install
 
-````bash
+```bash
 npm i @karmaniverous/smoz zod zod-openapi @middy/core \
   @middy/http-header-normalizer \
   @middy/http-event-normalizer \
@@ -49,7 +49,7 @@ Dev tooling (recommended):
 
 ```bash
 npm i -D typescript typescript-eslint eslint prettier typedoc
-````
+```
 
 Docs and reference
 
