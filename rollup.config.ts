@@ -19,7 +19,6 @@ import type {
   RollupOptions,
 } from 'rollup';
 import dtsPlugin from 'rollup-plugin-dts';
-
 const outputPath = 'dist';
 
 // Multi-entry mapping to produce subpath bundles for JS and DTS.
@@ -183,7 +182,28 @@ export const buildTypes = (dest: string): RollupOptions => ({
     defaultHandler(warning);
   },
 });
+
+/**
+ * CLI build (CJS bin with shebang).
+ * - Output: dist/cli/index.cjs
+ * - Externalization: reuse commonInputOptions to keep built-ins/deps external.
+ */
+export const buildCli = (
+  dest: string,
+  tsconfigPath?: string,
+): RollupOptions => ({
+  input: 'src/cli/index.ts',
+  output: {
+    file: `${dest}/cli/index.cjs`,
+    format: 'cjs',
+    banner: '#!/usr/bin/env node',
+    sourcemap: false,
+  },
+  ...commonInputOptions(tsconfigPath),
+});
+
 export default [
   buildLibrary(outputPath, 'tsconfig.rollup.json'),
   buildTypes(outputPath),
+  buildCli(outputPath, 'tsconfig.rollup.json'),
 ];

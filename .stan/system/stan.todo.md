@@ -2,12 +2,12 @@
 
 # Development Plan
 
-When updated: 2025-09-11T00:15:00Z
+When updated: 2025-09-11T00:35:00Z
 
 ## Next up (near‑term, actionable)
 
 1. Keep knip as-is (two expected “unused” files).
-2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”   for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
+2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 
 ## Completed (recent)
 
@@ -15,15 +15,15 @@ When updated: 2025-09-11T00:15:00Z
   resolves TS2305 and runtime TypeError in ESLint/Knip/Typedoc builds.
 - Lint: migrate deprecated tseslint.config to ESLint core defineConfig in
   root and template ESLint configs; clears @typescript-eslint/no-deprecated.
-- Docs: align install/import instructions to use @karmaniverous/smoz, fix recipe  imports, and clean minor TypeDoc glitches (http tokens, customization types).
-- Build banner: treat “@/” and “@@/” as externals in rollup.config.ts so the  stan:build banner no longer lists alias imports (only legitimate externals).
-  Also mark aliases external in the DTS build to fully silence the unresolved  banner during type bundling.
+- Docs: align install/import instructions to use @karmaniverous/smoz, fix recipe imports, and clean minor TypeDoc glitches (http tokens, customization types).
+- Build banner: treat “@/” and “@@/” as externals in rollup.config.ts so the stan:build banner no longer lists alias imports (only legitimate externals).
+  Also mark aliases external in the DTS build to fully silence the unresolved banner during type bundling.
 
 - Knip: ignore serverless-offline devDependency (spawned via CLI in dev loop)
   to avoid a false-positive “unused devDependency” report.
 
 - Offline adapter: temp env fallback to avoid "undefined\\temp\\..." cache paths
-  - Provide TMPDIR on all platforms and TEMP/TMP on Windows using os.tmpdir().  - Prevents toolchains (tsx/esbuild) invoked by serverless-offline from writing
+  - Provide TMPDIR on all platforms and TEMP/TMP on Windows using os.tmpdir(). - Prevents toolchains (tsx/esbuild) invoked by serverless-offline from writing
     cache files under a literal "undefined\\temp\\..." path relative to the repo.
   - No behavior change otherwise; logs and restart semantics are unchanged.
 
@@ -92,3 +92,7 @@ When updated: 2025-09-11T00:15:00Z
     TS2304 and satisfy no-unsafe-argument in clearTimeout/setTimeout. - Use `inlineChild?.restart()` to avoid unnecessary-condition warning.- CLI dev: tidy verbose logging and close guard in src/cli/dev.ts
   - Stringify non-string template values to satisfy restrict-template-expressions.
   - Use exitCode check in inline close() to avoid unnecessary-condition warning.
+
+- Build: unify library and CLI under a single Rollup config
+  - Add buildCli() to rollup.config.ts and include it in default export so
+    `npm run build` emits dist/cli/index.cjs alongside library JS/DTS.

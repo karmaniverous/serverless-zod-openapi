@@ -161,11 +161,9 @@
   },
   "scripts": {
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "build:cli": "rollup --config cli.rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "changelog": "auto-changelog",
     "deploy": "tsx src/cli/index.ts register && serverless deploy",
-    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",
-    "docs": "typedoc",
+    "diagrams": "cd diagrams/src && plantuml -tpng -o ../out -r .",    "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
     "generate": "cd services/activecampaign && orval",
