@@ -3,15 +3,15 @@ import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import { dirname } from 'path';
+import { defineConfig } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
-export default tseslint.config(
+export default defineConfig([
   {
     ignores: [
-      '.serverless/**',
-      '.stan/**',
+      '.serverless/**',      '.stan/**',
       '**/.tsbuild/**',
       '**/generated/**',
       'coverage/**',
@@ -22,12 +22,11 @@ export default tseslint.config(
     ],
   },
   eslint.configs.recommended,
-  tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.strictTypeChecked,
   prettierConfig,
   {
     languageOptions: {
-      // Important: set the TS parser here, otherwise this block replaces the
-      // parser from strictTypeChecked and the CLI falls back to espree.
+      // Important: set the TS parser here, otherwise this block replaces the      // parser from strictTypeChecked and the CLI falls back to espree.
       parser: tseslint.parser,
       parserOptions: {
         // Be explicit so the CLI loads type info from the root project.
@@ -41,11 +40,10 @@ export default tseslint.config(
         ],
         tsconfigRootDir,
       },
-    }, // eslint: flat config plugin registry
+    },
     plugins: {
       prettier: prettierPlugin,
-      'simple-import-sort': simpleImportSortPlugin,
-    },
+      'simple-import-sort': simpleImportSortPlugin,    },
     rules: {
       // Code-quality and sorting
       'prettier/prettier': 'error',
@@ -63,4 +61,4 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'error',
     },
   },
-);
+]);

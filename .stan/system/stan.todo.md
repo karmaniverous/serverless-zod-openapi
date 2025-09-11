@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-10T07:40:00Z
+When updated: 2025-09-11T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -12,10 +12,11 @@ When updated: 2025-09-10T07:40:00Z
 
 ## Completed (recent)
 
+- Lint: migrate deprecated tseslint.config to ESLint core defineConfig in
+  root and template ESLint configs; clears @typescript-eslint/no-deprecated.
 - Docs: align install/import instructions to use @karmaniverous/smoz, fix recipe
   imports, and clean minor TypeDoc glitches (http tokens, customization types).
-- Build banner: treat “@/” and “@@/” as externals in rollup.config.ts so the
-  stan:build banner no longer lists alias imports (only legitimate externals).
+- Build banner: treat “@/” and “@@/” as externals in rollup.config.ts so the  stan:build banner no longer lists alias imports (only legitimate externals).
   Also mark aliases external in the DTS build to fully silence the unresolved  banner during type bundling.
 
 - Knip: ignore serverless-offline devDependency (spawned via CLI in dev loop)

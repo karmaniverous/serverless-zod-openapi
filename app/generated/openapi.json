@@ -11,8 +11,8 @@
     }
   ],
   "info": {
-    "title": "smoz",
-    "version": "0.0.0"
+    "title": "@karmaniverous/smoz",
+    "version": "0.1.1"
   },
   "paths": {
     "/event/activecampaign": {
