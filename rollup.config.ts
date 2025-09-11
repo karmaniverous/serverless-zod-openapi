@@ -108,6 +108,8 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
     // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.
     id.startsWith('@/') ||
     id.startsWith('@@/') ||
+    // Optional formatter used via dynamic import in the CLI; do not bundle.
+    id === 'prettier' ||
     nodeExternals.has(id) ||
     Array.from(runtimeExternalPkgs).some(
       (p) => id === p || id.startsWith(`${p}/`),

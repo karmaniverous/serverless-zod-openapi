@@ -2,13 +2,12 @@
 
 # Development Plan
 
-When updated: 2025-09-11T00:35:00Z
+When updated: 2025-09-11T00:46:00Z
 
 ## Next up (near‑term, actionable)
 
 1. Keep knip as-is (two expected “unused” files).
 2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
-
 ## Completed (recent)
 
 - Lint: export flat configs as plain arrays instead of using defineConfig;
@@ -96,3 +95,6 @@ When updated: 2025-09-11T00:35:00Z
 - Build: unify library and CLI under a single Rollup config
   - Add buildCli() to rollup.config.ts and include it in default export so
     `npm run build` emits dist/cli/index.cjs alongside library JS/DTS.
+- Build: suppress Prettier unresolved warnings in CLI bundle
+  - Treat 'prettier' as external in rollup.config.ts (dynamic import in CLI),
+    keeping build banners clean while preserving runtime behavior.
