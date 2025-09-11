@@ -2,20 +2,20 @@
 
 # Development Plan
 
-When updated: 2025-09-11T00:00:00Z
+When updated: 2025-09-11T00:15:00Z
 
 ## Next up (near‑term, actionable)
 
 1. Keep knip as-is (two expected “unused” files).
-2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”
-   for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
+2. (Optional) Consider expanding inline server coverage or adding “smoz invoke”   for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 
 ## Completed (recent)
 
+- Lint: export flat configs as plain arrays instead of using defineConfig;
+  resolves TS2305 and runtime TypeError in ESLint/Knip/Typedoc builds.
 - Lint: migrate deprecated tseslint.config to ESLint core defineConfig in
   root and template ESLint configs; clears @typescript-eslint/no-deprecated.
-- Docs: align install/import instructions to use @karmaniverous/smoz, fix recipe
-  imports, and clean minor TypeDoc glitches (http tokens, customization types).
+- Docs: align install/import instructions to use @karmaniverous/smoz, fix recipe  imports, and clean minor TypeDoc glitches (http tokens, customization types).
 - Build banner: treat “@/” and “@@/” as externals in rollup.config.ts so the  stan:build banner no longer lists alias imports (only legitimate externals).
   Also mark aliases external in the DTS build to fully silence the unresolved  banner during type bundling.
 

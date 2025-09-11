@@ -3,7 +3,6 @@ import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import { dirname } from 'path';
-import { defineConfig } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
@@ -12,10 +11,11 @@ import { fileURLToPath } from 'url';
 // - ESLint drives Prettier via 'prettier/prettier': 'error'
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig([
+export default [
   {
     ignores: [
-      '**/node_modules/**',      '**/dist/**',
+      '**/node_modules/**',
+      '**/dist/**',
       '**/.tsbuild/**',
       '**/generated/**',
       '**/.check/**',
@@ -26,7 +26,8 @@ export default defineConfig([
   prettierConfig,
   {
     languageOptions: {
-      parser: tseslint.parser,      parserOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
         // Let the project service discover the nearest tsconfig.json per file
         // (typed where possible; falls back to default project when unmatched).
         project: true,
@@ -56,4 +57,4 @@ export default defineConfig([
       '@typescript-eslint/no-unsafe-return': 'error',
     },
   },
-]);
+];
