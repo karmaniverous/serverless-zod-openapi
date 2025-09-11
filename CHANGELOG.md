@@ -2,8 +2,20 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.2](https://github.com/karmaniverous/smoz/compare/0.1.1...0.1.2)
+
+- updated dependencies [`24669a0`](https://github.com/karmaniverous/smoz/commit/24669a0f164d71e9a276de5f5287c3fd5730e1ee)
+- fix(lint): replace tseslint.config with defineConfig [`1a2a34f`](https://github.com/karmaniverous/smoz/commit/1a2a34fbdf9cf563f0b1f098e407def910e9b882)
+- fix(eslint): export flat configs as arrays (no defineConfig) [`17d4921`](https://github.com/karmaniverous/smoz/commit/17d49219d76a75d7a1dbded29504900c38d4783e)
+- regressed dotenvx [`1ce657d`](https://github.com/karmaniverous/smoz/commit/1ce657d53a09d57b4aa7e68706e4e37b6765ec06)
+- added template [`bf6c96b`](https://github.com/karmaniverous/smoz/commit/bf6c96b67cfd3f78801c0038553d2c364cb26f25)
+- updated package name [`3603179`](https://github.com/karmaniverous/smoz/commit/3603179a30e57d44232d2bad69f022a567809683)
+
 #### [0.1.1](https://github.com/karmaniverous/smoz/compare/0.1.0...0.1.1)
 
+> 10 September 2025
+
+- chore: release v0.1.1 [`599c9df`](https://github.com/karmaniverous/smoz/commit/599c9df30ba89681e0aaef64e4784dc68e19b55d)
 - updated changelog settings [`199fb8a`](https://github.com/karmaniverous/smoz/commit/199fb8a4ff4afb508b2952fa54f6b6c57e152a41)
 
 #### 0.1.0

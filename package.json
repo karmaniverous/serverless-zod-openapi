@@ -186,5 +186,5 @@
     "templates:lint": "eslint --fix -c templates/.check/eslint.templates.config.ts \"templates/**/*.{ts,tsx,js,jsx}\" && eslint --fix --no-ignore templates/.check/eslint.templates.config.ts"
   },
   "type": "module",
-  "version": "0.1.1"
+  "version": "0.1.2"
 }
