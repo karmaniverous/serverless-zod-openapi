@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.6](https://github.com/karmaniverous/smoz/compare/0.1.5...0.1.6)
+
+- templates(project): add default .gitignore to project template [`3cec9f2`](https://github.com/karmaniverous/smoz/commit/3cec9f21063ffc69cc6f0ccdacf83c3dbe4fb4c9)
+
 #### [0.1.5](https://github.com/karmaniverous/smoz/compare/0.1.4...0.1.5)
 
+> 12 September 2025
+
+- chore: release v0.1.5 [`e02192b`](https://github.com/karmaniverous/smoz/commit/e02192b6f6158557c90d3f05033f4afc1b25fc5c)
 - feat(templates+cli): add full template, publish /openapi in minimal, and fix init template resolution [`49062e7`](https://github.com/karmaniverous/smoz/commit/49062e7675eeee7fa391ebb35d5d96888ffce21d)
 - templates: use canonical app/generated/openapi.json; remove local stub [`8b5319a`](https://github.com/karmaniverous/smoz/commit/8b5319a04be8fdad095cebbf53eceea733cc650a)
 - templates: add openapi placeholders and fix handler return types [`2c236b1`](https://github.com/karmaniverous/smoz/commit/2c236b1532902347ddacb555ee2d5a9102dc9d8d)
