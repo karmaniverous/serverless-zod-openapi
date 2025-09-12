@@ -46,10 +46,9 @@ const resolveTemplatesBase = (): string => {
   // consistently whether smoz is run from a consuming app or this repo.
   // Anchor discovery to this module’s directory.
   const here = dirname(fileURLToPath(import.meta.url));
-  const pkgRoot = packageDirectorySync(here) ?? process.cwd(); // conservative fallback
+  const pkgRoot = packageDirectorySync({ cwd: here }) ?? process.cwd(); // conservative fallback
   return resolve(pkgRoot, 'templates');
 };
-
 const readJson = async <T = unknown>(file: string): Promise<T | undefined> => {
   try {
     const data = await fs.readFile(file, 'utf8');

@@ -14,5 +14,6 @@ const reg = fn as unknown as FnHandlerApi<Response>;
 export const handler = reg.handler(async () => {
   // Tip: after you generate OpenAPI (npm run openapi), you may
   // import the JSON and return it instead of {}.
+  await Promise.resolve(); // satisfy require-await
   return {} as Response;
 });

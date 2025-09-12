@@ -2,22 +2,26 @@
 
 # Development Plan
 
-When updated: 2025-09-12T00:50:00Z
+When updated: 2025-09-12T09:30:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Keep knip as-is (two expected “unused” files).
-2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
+1. Keep knip as-is (two expected “unused” files).2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 
 ## Completed (recent)
 
 - CLI init: resolve templates base from the installed smoz package root
   instead of the caller project, so `--template <name>` works consistently
   (fixes “Template not found under <app>/templates”).
+- CLI init: fix TS2559 by passing options to packageDirectorySync
+  (`{ cwd }` instead of a bare string).
+- Templates: replace `z.any()` with `z.unknown()` for OpenAPI response schema
+  to avoid unsafe return of any in handler stubs.
+- Templates: satisfy `require-await` by adding a trivial await in OpenAPI
+  handlers and making the SQS example handler non‑async.
 - Templates (minimal): publish a public GET `/openapi` endpoint alongside
   `/hello` to make the OpenAPI doc accessible in dev (without importing
-  generated files in the template).
-- Templates (full): add a new “full” template showcasing:
+  generated files in the template).- Templates (full): add a new “full” template showcasing:
   - REST hello and /openapi endpoints, and
   - a non‑HTTP SQS example (tick with sample serverless extras).
 - Docs: update CLI and Templates pages to advertise minimal and full, and
