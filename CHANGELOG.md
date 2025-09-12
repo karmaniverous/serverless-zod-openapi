@@ -2,9 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.3](https://github.com/karmaniverous/smoz/compare/0.1.2...0.1.3)
+
+- Unify library and CLI builds under one Rollup config [`ec19628`](https://github.com/karmaniverous/smoz/commit/ec1962832ae580361d9c09323475c50577ed8496)
+- Remove obsolete standalone CLI rollup config [`e48e517`](https://github.com/karmaniverous/smoz/commit/e48e5176239f75bfc4c438b603c0c87ece84b816)
+- Clean CLI build banner by externalizing Prettier [`398b557`](https://github.com/karmaniverous/smoz/commit/398b55737e07a1e46d77eb843ce864b5c317d013)
+
 #### [0.1.2](https://github.com/karmaniverous/smoz/compare/0.1.1...0.1.2)
 
+> 11 September 2025
+
 - updated dependencies [`24669a0`](https://github.com/karmaniverous/smoz/commit/24669a0f164d71e9a276de5f5287c3fd5730e1ee)
+- chore: release v0.1.2 [`2cbf5f2`](https://github.com/karmaniverous/smoz/commit/2cbf5f22163593b14847b5b2b6279092aa6f892d)
 - fix(lint): replace tseslint.config with defineConfig [`1a2a34f`](https://github.com/karmaniverous/smoz/commit/1a2a34fbdf9cf563f0b1f098e407def910e9b882)
 - fix(eslint): export flat configs as arrays (no defineConfig) [`17d4921`](https://github.com/karmaniverous/smoz/commit/17d49219d76a75d7a1dbded29504900c38d4783e)
 - regressed dotenvx [`1ce657d`](https://github.com/karmaniverous/smoz/commit/1ce657d53a09d57b4aa7e68706e4e37b6765ec06)
