@@ -9,16 +9,6 @@ import { fileURLToPath } from 'url';
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default [
-  {
-    ignores: [
-      '.serverless/**',
-      '.tsbuild/**',
-      'coverage/**',
-      'dist/**',
-      'docs/**',
-      'node_modules/**',
-    ],
-  },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   prettierConfig,
@@ -26,7 +16,7 @@ export default [
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.eslint.json'],
         tsconfigRootDir,
       },
     },
@@ -36,12 +26,13 @@ export default [
     },
     rules: {
       'prettier/prettier': 'error',
-      '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/no-unused-expressions': 'off',
-      '@typescript-eslint/no-unused-vars': 'error',
-      'no-unused-vars': 'off',
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
     },
   },
 ];

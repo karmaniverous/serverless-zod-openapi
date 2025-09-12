@@ -2,12 +2,10 @@
 
 # Development Plan
 
-When updated: 2025-09-12T19:28:00Z
+When updated: 2025-09-12T19:43:00Z
 
 ## Next up (near‑term, actionable)
-1. smoz init UX:
-   - Add external template dir support.
-   - Implement conflict handling (overwrite/example/skip) with apply‑to‑all.
+1. smoz init UX:   - Add external template dir support.   - Implement conflict handling (overwrite/example/skip) with apply‑to‑all.
    - -y implies install (overridable).
    - Read cliDefaults from smoz.config.json (optional).
 2. smoz init UX:
@@ -17,10 +15,13 @@ When updated: 2025-09-12T19:28:00Z
 
 ## Completed (recent)
 
-- Lint: remove unnecessary optional chaining in init.ts to satisfy
+- Templates:lint — add "@/..." alias to templates/default/tsconfig.eslint.json so
+  ESLint resolves template-local imports; remaining errors should clear.
+- Templates:lint — point ESLint at templates/default/tsconfig.eslint.json with
+  local @karmaniverous/smoz mapping and set tsconfigRootDir in the template
+  eslint.config.ts to resolve the project correctly.- Lint: remove unnecessary optional chaining in init.ts to satisfy
   @typescript-eslint/no-unnecessary-condition.
-- CLI (init): fix parse/TS errors in init.ts (uncomment try for gitignore
-  conversion; properly declare `installed` union; ensure function returns
+- CLI (init): fix parse/TS errors in init.ts (uncomment try for gitignore  conversion; properly declare `installed` union; ensure function returns
   object).- Templates script: make templates:typecheck inject typed compilerOptions.paths
   mapping without unsafe assignments; lint/docs unblock.
 - Templates: collapse to single “default”; fold project baseline into template root.
