@@ -12,10 +12,11 @@ When updated: 2025-09-12T19:43:00Z
 ## Completed (recent)
 
 - CLI: fix TypeScript exactOptionalPropertyTypes in init options (conditional spreads for install/conflict) and remove unnecessary optional chain in dev defaults; lint/typecheck clean.
+- Default template DX: during init, ensure '@karmaniverous/smoz' is added to
+  dependencies (using the running CLI version) so first-time 'npx smoz init' compiles cleanly.
 - Templates:lint — add "@/..." alias to templates/default/tsconfig.eslint.json so
   ESLint resolves template-local imports; remaining errors should clear.
-- Templates:lint — point ESLint at templates/default/tsconfig.eslint.json with
-  local @karmaniverous/smoz mapping and set tsconfigRootDir in the template
+- Templates:lint — point ESLint at templates/default/tsconfig.eslint.json with  local @karmaniverous/smoz mapping and set tsconfigRootDir in the template
   eslint.config.ts to resolve the project correctly.- Lint: remove unnecessary optional chaining in init.ts to satisfy
   @typescript-eslint/no-unnecessary-condition.
 - CLI (init): fix parse/TS errors in init.ts (uncomment try for gitignore conversion; properly declare `installed` union; ensure function returns

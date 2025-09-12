@@ -394,15 +394,38 @@ export const runInit = async (
     : await readJson<Record<string, unknown>>(
         resolve(templatesBase, '.manifests', `package.${template}.json`),
       );
+  let pkgChanged = false;
   if (manifest) {
     const before = JSON.stringify(pkg);
     const added = mergeAdditive(pkg, manifest);
+    if (added.length > 0) pkgChanged = true;
     merged.push(...added);
-    const dryRun = Boolean(optAll.dryRun);
-    if (!dryRun && before !== JSON.stringify(pkg)) {
-      await writeJson(pkgPath, pkg);
-    }
   }
+
+  // 4.5) Ensure runtime dependency on @karmaniverous/smoz is present
+  try {
+    // templatesBase = <pkgRoot>/templates → toolkitRoot = <pkgRoot>
+    const toolkitRoot = dirname(templatesBase);
+    const toolkitPkg = await readJson<Record<string, unknown>>(
+      join(toolkitRoot, 'package.json'),
+    );
+    const verRaw = (toolkitPkg?.version as string | undefined)?.trim();
+    const depVersion = verRaw ? `^${verRaw}` : '^0.0.0';
+    const currentDeps =
+      (pkg.dependencies as Record<string, string> | undefined) ?? {};
+    if (!currentDeps['@karmaniverous/smoz']) {
+      // Ensure dependencies exists and inject the dependency
+      (pkg as { dependencies?: Record<string, string> }).dependencies ??= {};
+      (pkg.dependencies as Record<string, string>)['@karmaniverous/smoz'] =
+        depVersion;
+      merged.push(`dependencies:@karmaniverous/smoz@${depVersion}`);
+      pkgChanged = true;
+    }
+  } catch {
+    // best-effort; do not fail init if we cannot infer the toolkit version
+  }
+  const dryRun = Boolean(optAll.dryRun);
+  if (!dryRun && pkgChanged) await writeJson(pkgPath, pkg);
 
   // 5) Optional install
   let installed:
