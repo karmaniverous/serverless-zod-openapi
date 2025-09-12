@@ -3,7 +3,7 @@
 </code><button type="button">Copy</button></pre>
 
 <p>Prints version, repo root, detected PM, and presence of key files.</p>
-<h2 id="init" class="tsd-anchor-link">init<a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">init</span><span class="hl-1"> </span><span class="hl-4">--template</span><span class="hl-1"> </span><span class="hl-2">minimal</span><span class="hl-1"> </span><span class="hl-4">--yes</span>
+<h2 id="init" class="tsd-anchor-link">init<a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">init</span><span class="hl-1"> </span><span class="hl-3">--template</span><span class="hl-1"> </span><span class="hl-2">minimal</span><span class="hl-1"> </span><span class="hl-3">--yes</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Scaffolds a new app:</p>
@@ -22,7 +22,8 @@
 </li>
 <li><code>--init</code> — write a minimal package.json if missing</li>
 <li><code>--install [pm]</code> — install deps with npm|pnpm|yarn|bun</li>
-<li><code>--yes</code> — no prompts- <code>--dry-run</code> — show actions without writing</li>
+<li><code>--yes</code> — no prompts</li>
+<li><code>--dry-run</code> — show actions without writing</li>
 </ul>
 <h2 id="register" class="tsd-anchor-link">register<a href="#register" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">register</span>
 </code><button type="button">Copy</button></pre>
@@ -33,9 +34,7 @@
 <li><code>openapi.ts</code> → register.openapi.ts</li>
 <li><code>serverless.ts</code> → register.serverless.ts (non‑HTTP)</li>
 </ul>
-<p>One‑shot, idempotent, POSIX‑sorted, formatted when Prettier is available.
-For a live authoring loop that keeps registers (and OpenAPI) fresh, use <code>smoz dev</code>
-instead of a register watcher.</p>
+<p>One‑shot, idempotent, POSIX‑sorted, formatted when Prettier is available. For a live authoring loop that keeps registers (and OpenAPI) fresh, use <code>smoz dev</code> instead of a register watcher.</p>
 <h2 id="add" class="tsd-anchor-link">add<a href="#add" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">rest/foo/get</span><br/><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">step/activecampaign/contacts/getContact</span><br/><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">rest/users/:id/get</span>
 </code><button type="button">Copy</button></pre>
 
@@ -61,13 +60,13 @@ instead of a register watcher.</p>
 <li>Validate only what you need; the HTTP stack normalizes v1 events so <code>pathParameters</code> is an object before validation.</li>
 <li>String id (e.g., UUID):</li>
 </ul>
-<pre><code class="ts"><span class="hl-7">export</span><span class="hl-1"> </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-8">eventSchema</span><span class="hl-1"> = </span><span class="hl-5">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-5">pathParameters:</span><span class="hl-1"> </span><span class="hl-5">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-5">id:</span><span class="hl-1"> </span><span class="hl-5">z</span><span class="hl-1">.</span><span class="hl-0">string</span><span class="hl-1">().</span><span class="hl-0">uuid</span><span class="hl-1">(), </span><span class="hl-6">// or z.string().min(1)</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-7">export</span><span class="hl-1"> </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-8">handler</span><span class="hl-1"> = </span><span class="hl-5">fn</span><span class="hl-1">.</span><span class="hl-0">handler</span><span class="hl-1">(</span><span class="hl-4">async</span><span class="hl-1"> (</span><span class="hl-5">event</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-8">id</span><span class="hl-1"> = </span><span class="hl-5">event</span><span class="hl-1">.</span><span class="hl-5">pathParameters</span><span class="hl-1">.</span><span class="hl-5">id</span><span class="hl-1">; </span><span class="hl-6">// typed via ShapedEvent</span><br/><span class="hl-1">  </span><span class="hl-7">return</span><span class="hl-1"> { </span><span class="hl-5">ok:</span><span class="hl-1"> </span><span class="hl-4">true</span><span class="hl-1"> } </span><span class="hl-7">as</span><span class="hl-1"> </span><span class="hl-4">const</span><span class="hl-1">;</span><br/><span class="hl-1">});</span>
+<pre><code class="ts"><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-7">eventSchema</span><span class="hl-1"> = </span><span class="hl-4">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">pathParameters:</span><span class="hl-1"> </span><span class="hl-4">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-4">id:</span><span class="hl-1"> </span><span class="hl-4">z</span><span class="hl-1">.</span><span class="hl-0">string</span><span class="hl-1">().</span><span class="hl-0">uuid</span><span class="hl-1">(), </span><span class="hl-5">// or z.string().min(1)</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-7">handler</span><span class="hl-1"> = </span><span class="hl-4">fn</span><span class="hl-1">.</span><span class="hl-0">handler</span><span class="hl-1">(</span><span class="hl-3">async</span><span class="hl-1"> (</span><span class="hl-4">event</span><span class="hl-1">) </span><span class="hl-3">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-7">id</span><span class="hl-1"> = </span><span class="hl-4">event</span><span class="hl-1">.</span><span class="hl-4">pathParameters</span><span class="hl-1">.</span><span class="hl-4">id</span><span class="hl-1">; </span><span class="hl-5">// typed via ShapedEvent</span><br/><span class="hl-1">  </span><span class="hl-6">return</span><span class="hl-1"> { </span><span class="hl-4">ok:</span><span class="hl-1"> </span><span class="hl-3">true</span><span class="hl-1"> } </span><span class="hl-6">as</span><span class="hl-1"> </span><span class="hl-3">const</span><span class="hl-1">;</span><br/><span class="hl-1">});</span>
 </code><button type="button">Copy</button></pre>
 
 <ul>
 <li>Numeric id (coerce to number for handler convenience):</li>
 </ul>
-<pre><code class="ts"><span class="hl-7">export</span><span class="hl-1"> </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-8">eventSchema</span><span class="hl-1"> = </span><span class="hl-5">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-5">pathParameters:</span><span class="hl-1"> </span><span class="hl-5">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-5">id:</span><span class="hl-1"> </span><span class="hl-5">z</span><span class="hl-1">.</span><span class="hl-5">coerce</span><span class="hl-1">.</span><span class="hl-0">number</span><span class="hl-1">().</span><span class="hl-0">int</span><span class="hl-1">().</span><span class="hl-0">positive</span><span class="hl-1">(),</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">});</span>
+<pre><code class="ts"><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-7">eventSchema</span><span class="hl-1"> = </span><span class="hl-4">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">pathParameters:</span><span class="hl-1"> </span><span class="hl-4">z</span><span class="hl-1">.</span><span class="hl-0">object</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-4">id:</span><span class="hl-1"> </span><span class="hl-4">z</span><span class="hl-1">.</span><span class="hl-4">coerce</span><span class="hl-1">.</span><span class="hl-0">number</span><span class="hl-1">().</span><span class="hl-0">int</span><span class="hl-1">().</span><span class="hl-0">positive</span><span class="hl-1">(),</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">});</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Portability</p>
@@ -77,37 +76,29 @@ instead of a register watcher.</p>
 <h2 id="dev" class="tsd-anchor-link">dev<a href="#dev" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">dev</span>
 </code><button type="button">Copy</button></pre>
 
-<p>Long‑running dev loop that watches source files and runs, in order:</p>
-<p>Inline is the default local backend; use <code>--local offline</code> to run serverless-offline.</p>
+<p>Long‑running dev loop that watches source files and runs, in order. Inline is the default local backend; use <code>--local offline</code> to run serverless-offline.</p>
 <ol>
 <li><code>register</code> (if enabled)</li>
 <li><code>openapi</code> (if enabled)</li>
-<li>local HTTP backend actions (restart/refresh if applicable)
-Flags (CLI wins over config defaults):</li>
+<li>local HTTP backend actions (restart/refresh if applicable)</li>
 </ol>
+<p>Flags (CLI wins over config defaults):</p>
 <ul>
 <li><code>-r, --register</code> / <code>-R, --no-register</code> (default: on)</li>
 <li><code>-o, --openapi</code> / <code>-O, --no-openapi</code> (default: on)</li>
 <li><code>-l, --local [mode]</code> — <code>inline</code> (default) or <code>offline</code></li>
-<li><code>-s, --stage &lt;name&gt;</code> — stage name (default inferred, typically <code>dev</code>)</li>
-<li><code>-p, --port &lt;n&gt;</code> — port (0 = random free port)</li>
+<li><code>-s, --stage &lt;name&gt;</code> — stage name (default inferred)</li>
+<li><code>-p, --port &lt;n&gt;</code> — port (0=random)</li>
 <li><code>-v, --verbose</code> — verbose logging</li>
 </ul>
 <p>Notes:</p>
 <ul>
-<li>Inline backend maps Node HTTP → API Gateway v1 event → wrapped handler → response.
-It prints a route table and the selected port at startup.</li>
-<li>Offline backend runs <code>serverless offline</code> in a child process; when the route surface
-changes (register writes), the child is restarted automatically.</li>
-<li>The loop seeds basic env (e.g., <code>STAGE</code>) and prints “Updated” vs “No changes”
-per task run; bursts are debounced.</li>
+<li>Inline backend maps Node HTTP → API Gateway v1 event → wrapped handler → response. It prints a route table and the selected port at startup.</li>
+<li>Offline backend runs <code>serverless offline</code> in a child process; when the route surface changes (register writes), the child is restarted automatically.</li>
+<li>The loop seeds basic env (e.g., <code>STAGE</code>) and prints “Updated” vs “No changes” per task run; bursts are debounced.</li>
 <li>Env seeding:
 <ul>
-<li>The dev loop imports <code>app/config/app.config.ts</code> and seeds <code>process.env</code> for
-keys declared in your app’s <code>global.envKeys</code> and <code>stage.envKeys</code>, using the
-concrete values from <code>stages.default.params</code> (global) and <code>stages[&lt;stage&gt;].params</code>
-(selected stage). Existing <code>process.env</code> entries are not overridden. This provides
-parity with provider-level env in production so handlers validate cleanly in dev.</li>
+<li>The dev loop imports <code>app/config/app.config.ts</code> and seeds <code>process.env</code> for keys declared in your app’s <code>global.envKeys</code> and <code>stage.envKeys</code>, using the concrete values from <code>stages.default.params</code> (global) and <code>stages[&lt;stage&gt;].params</code> (selected stage). Existing <code>process.env</code> entries are not overridden. This provides parity with provider-level env in production so handlers validate cleanly in dev.</li>
 </ul>
 </li>
 </ul>

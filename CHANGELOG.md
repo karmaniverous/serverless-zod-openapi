@@ -2,8 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.7](https://github.com/karmaniverous/smoz/compare/0.1.6...0.1.7)
+
+- docs: condense requirements; prune dev plan; unwrap prose [`5fdd6cd`](https://github.com/karmaniverous/smoz/commit/5fdd6cd47f8d40dc974e3950093e7d175005c2bb)
+- docs: unwrap prose in READMEs and docs pages [`646ee25`](https://github.com/karmaniverous/smoz/commit/646ee25fce421a3ddb6625ede9f7d6cc8a4360ba)
+- templates/init: deliver .gitignore via template ‘gitignore’ and convert on init [`b9bf3bc`](https://github.com/karmaniverous/smoz/commit/b9bf3bc6eb6b3f5e5b228ddb576fe7a16c182809)
+
 #### [0.1.6](https://github.com/karmaniverous/smoz/compare/0.1.5...0.1.6)
 
+> 12 September 2025
+
+- chore: release v0.1.6 [`9c4a098`](https://github.com/karmaniverous/smoz/commit/9c4a09874b7cda6546b5ebfd04c187e343e33ee4)
 - templates(project): add default .gitignore to project template [`3cec9f2`](https://github.com/karmaniverous/smoz/commit/3cec9f21063ffc69cc6f0ccdacf83c3dbe4fb4c9)
 
 #### [0.1.5](https://github.com/karmaniverous/smoz/compare/0.1.4...0.1.5)

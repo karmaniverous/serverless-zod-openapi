@@ -38,23 +38,21 @@
 </li>
 </ul>
 <h2 id="quick-mental-model" class="tsd-anchor-link">Quick mental model<a href="#quick-mental-model" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
-<li>You register endpoints with <code>app.defineFunction({ ... })</code> in small
-per‑endpoint modules (lambda.ts, handler.ts, optional openapi.ts).</li>
-<li>A tiny CLI keeps “register” files up to date:<pre><code><span class="hl-5">npx</span><span class="hl-1"> </span><span class="hl-5">smoz</span><span class="hl-1"> </span><span class="hl-5">register</span>
+<li>You register endpoints with <code>app.defineFunction({ ... })</code> in small per‑endpoint modules (lambda.ts, handler.ts, optional openapi.ts).</li>
+<li>A tiny CLI keeps “register” files up to date:<pre><code><span class="hl-4">npx</span><span class="hl-1"> </span><span class="hl-4">smoz</span><span class="hl-1"> </span><span class="hl-4">register</span>
 </code><button>Copy</button></pre>
 
 </li>
-<li>Serverless and OpenAPI aggregate from the registry:<pre><code><span class="hl-6">// serverless.ts</span><br/><span class="hl-7">import</span><span class="hl-1"> </span><span class="hl-2">&#39;@/app/generated/register.functions&#39;</span><span class="hl-1">;</span><br/><span class="hl-7">import</span><span class="hl-1"> </span><span class="hl-2">&#39;@/app/generated/register.serverless&#39;</span><span class="hl-1">;</span><br/><span class="hl-7">export</span><span class="hl-1"> </span><span class="hl-7">default</span><span class="hl-1"> { </span><span class="hl-5">functions:</span><span class="hl-1"> </span><span class="hl-5">app</span><span class="hl-1">.</span><span class="hl-0">buildAllServerlessFunctions</span><span class="hl-1">() };</span>
-</code><button>Copy</button></pre>
+<li>Serverless and OpenAPI aggregate from the registry:<pre><code class="ts"><span class="hl-5">// serverless.ts</span><br/><span class="hl-6">import</span><span class="hl-1"> </span><span class="hl-2">&#39;@/app/generated/register.functions&#39;</span><span class="hl-1">;</span><br/><span class="hl-6">import</span><span class="hl-1"> </span><span class="hl-2">&#39;@/app/generated/register.serverless&#39;</span><span class="hl-1">;</span><br/><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-6">default</span><span class="hl-1"> { </span><span class="hl-4">functions:</span><span class="hl-1"> </span><span class="hl-4">app</span><span class="hl-1">.</span><span class="hl-0">buildAllServerlessFunctions</span><span class="hl-1">() };</span>
+</code><button type="button">Copy</button></pre>
 
-<pre><code><span class="hl-6">// app/config/openapi.ts</span><br/><span class="hl-7">import</span><span class="hl-1"> </span><span class="hl-2">&#39;@/app/generated/register.openapi&#39;</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-8">paths</span><span class="hl-1"> = </span><span class="hl-5">app</span><span class="hl-1">.</span><span class="hl-0">buildAllOpenApiPaths</span><span class="hl-1">();</span>
-</code><button>Copy</button></pre>
+<pre><code class="ts"><span class="hl-5">// app/config/openapi.ts</span><br/><span class="hl-6">import</span><span class="hl-1"> </span><span class="hl-2">&#39;@/app/generated/register.openapi&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-7">paths</span><span class="hl-1"> = </span><span class="hl-4">app</span><span class="hl-1">.</span><span class="hl-0">buildAllOpenApiPaths</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
 
 </li>
 </ol>
-<h2 id="path-hygiene-crossplatform" class="tsd-anchor-link">Path hygiene (cross‑platform)<a href="#path-hygiene-crossplatform" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Windows uses backslashes, which can leak into string comparisons and generated
-artifacts. Normalize consistently:</p>
-<pre><code class="ts"><span class="hl-7">import</span><span class="hl-1"> { </span><span class="hl-5">toPosixPath</span><span class="hl-1"> } </span><span class="hl-7">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/smoz&#39;</span><span class="hl-1">;</span>
+<h2 id="path-hygiene-crossplatform" class="tsd-anchor-link">Path hygiene (cross‑platform)<a href="#path-hygiene-crossplatform" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Windows uses backslashes, which can leak into string comparisons and generated artifacts. Normalize consistently:</p>
+<pre><code class="ts"><span class="hl-6">import</span><span class="hl-1"> { </span><span class="hl-4">toPosixPath</span><span class="hl-1"> } </span><span class="hl-6">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/smoz&#39;</span><span class="hl-1">;</span>
 </code><button type="button">Copy</button></pre>
 
 <h2 id="where-next" class="tsd-anchor-link">Where next<a href="#where-next" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
