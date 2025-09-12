@@ -2,17 +2,22 @@
 
 # Development Plan
 
-When updated: 2025-09-12T09:45:00Z
+When updated: 2025-09-12T10:05:00Z
 
 ## Next up (near‑term, actionable)
 
 1. Keep knip as-is (two expected “unused” files).2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 ## Completed (recent)
 
+- Templates: /openapi handlers now import the canonical
+  '@/app/generated/openapi.json' path. Ship a placeholder
+  'app/generated/openapi.json' in both minimal and full templates so the
+  endpoint returns a document out of the box. Remove the prior local
+  openapi.stub.json in the minimal template to avoid diverging paths.
+
 - CLI init: resolve templates base from the installed smoz package root
   instead of the caller project, so `--template <name>` works consistently
-  (fixes “Template not found under <app>/templates”).
-- CLI init: fix TS2559 by passing options to packageDirectorySync
+  (fixes “Template not found under <app>/templates”).- CLI init: fix TS2559 by passing options to packageDirectorySync
   (`{ cwd }` instead of a bare string).
 - Templates: replace `z.any()` with `z.unknown()` for OpenAPI response schema
   to avoid unsafe return of any in handler stubs.
@@ -20,13 +25,13 @@ When updated: 2025-09-12T09:45:00Z
   handlers and making the SQS example handler non‑async.
 - Templates (minimal): publish a public GET `/openapi` endpoint alongside
   `/hello` to make the OpenAPI doc accessible in dev (without importing
-  generated files in the template).- Templates (full): add a new “full” template showcasing:
+  generated files in the template).
+- Templates (full): add a new “full” template showcasing:
   - Minimal /openapi handler now imports a local `openapi.stub.json` so users
     see a JSON response without editing code.
   - REST hello and /openapi endpoints, and
   - a non‑HTTP SQS example (tick with sample serverless extras).
 - Docs: update CLI and Templates pages to advertise minimal and full, and  note minimal’s `/openapi` endpoint.
-
 - Lint: export flat configs as plain arrays instead of using defineConfig;
   resolves TS2305 and runtime TypeError in ESLint/Knip/Typedoc builds.
 - Lint: migrate deprecated tseslint.config to ESLint core defineConfig in

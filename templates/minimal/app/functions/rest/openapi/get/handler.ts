@@ -1,9 +1,11 @@
 import type { z } from 'zod';
 
+// Import the document from its real generated location.
+// The template ships a placeholder at app/generated/openapi.json.
+import openapiDoc from '@/app/generated/openapi.json';
+
 import type { responseSchema } from './lambda';
 import { fn } from './lambda';
-// Trivial JSON stub so the endpoint returns something useful out of the box.
-import doc from './openapi.stub.json';
 
 type Response = z.infer<typeof responseSchema>;
 type FnHandlerApi<T> = {
@@ -13,9 +15,8 @@ type FnHandlerApi<T> = {
 const reg = fn as unknown as FnHandlerApi<Response>;
 
 export const handler = reg.handler(async () => {
-  // Tip: after you generate OpenAPI (npm run openapi), you may
-  // import the JSON and return it instead of {}.
-  await Promise.resolve(); // satisfy require-await
-  const payload: unknown = doc;
-  return payload;
+  // Tip: run `npm run openapi` to regenerate this file.
+  // Trivial await keeps parity with prior style.
+  await Promise.resolve();
+  return openapiDoc as unknown;
 });

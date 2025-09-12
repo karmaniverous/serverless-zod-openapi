@@ -1,5 +1,7 @@
 import type { z } from 'zod';
 
+import openapiDoc from '@/app/generated/openapi.json';
+
 import type { responseSchema } from './lambda';
 import { fn } from './lambda';
 
@@ -12,7 +14,7 @@ type FnHandlerApi<T> = {
 const reg = fn as unknown as FnHandlerApi<Response>;
 
 export const handler = reg.handler(async () => {
-  await Promise.resolve(); // satisfy require-await
-  // After generating OpenAPI, you can import and return the JSON here.
-  return {} as Response;
+  // Trivial await to mirror minimal template style
+  await Promise.resolve();
+  return openapiDoc as unknown;
 });
