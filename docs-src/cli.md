@@ -30,11 +30,12 @@ Scaffolds a new app:
 
 Options:
 
-- `--template <name>` — minimal|full (future)
+- `--template <name>` — minimal|full
+  - minimal: hello + /openapi endpoints
+  - full: hello + /openapi + a non‑HTTP SQS example
 - `--init` — write a minimal package.json if missing
 - `--install [pm]` — install deps with npm|pnpm|yarn|bun
-- `--yes` — no prompts
-- `--dry-run` — show actions without writing
+- `--yes` — no prompts- `--dry-run` — show actions without writing
 
 ## register
 

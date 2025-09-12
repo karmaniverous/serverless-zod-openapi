@@ -13,13 +13,21 @@ The package ships a minimal app template and a shared “project” baseline.
 - templates/minimal — a small app:
   - app/config/app.config.ts
   - app/functions/rest/hello/get/{lambda,handler,openapi}.ts
+  - app/functions/rest/openapi/get/{lambda,handler,openapi}.ts
   - serverless.ts
   - app/config/openapi.ts
+
+- templates/full — a fuller app:
+  - app/config/app.config.ts
+  - serverless.ts
+  - app/config/openapi.ts
+  - app/functions/rest/hello/get/{lambda,handler,openapi}.ts
+  - app/functions/rest/openapi/get/{lambda,handler,openapi}.ts
+  - app/functions/sqs/tick/{lambda,handler,serverless}.ts (non‑HTTP example)
 
 ## Register files (generated)
 
 SMOZ keeps side‑effect registers in `app/generated/`:
-
 - register.functions.ts — imports all `lambda.ts`
 - register.openapi.ts — imports all `openapi.ts`
 - register.serverless.ts — imports all per‑function `serverless.ts` (non‑HTTP)

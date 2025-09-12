@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": ".tsbuild",
+    "paths": {
+      "@/*": ["*"],
+      "@karmaniverous/smoz": ["../../.stan/dist/index.d.ts"]
+    },
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
+    "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
+  },
+  "exclude": [
+    ".serverless/**",
+    "node_modules/**",
+    "app/generated/**",
+    "dist/**"
+  ],
+  "extends": "../project/tsconfig.base.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts"
+  ]
+}

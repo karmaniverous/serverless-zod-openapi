@@ -13,9 +13,9 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { dirname, join, posix, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { packageDirectorySync } from 'package-directory';
-
 const toPosix = (p: string): string => p.split(sep).join('/');
 
 const writeIfAbsent = async (
@@ -41,8 +41,12 @@ const walk = async (dir: string, out: string[] = []): Promise<string[]> => {
 };
 
 const resolveTemplatesBase = (): string => {
-  // Resolve the package root (works both in dev and when installed)
-  const pkgRoot = packageDirectorySync() ?? process.cwd();
+  // Resolve the templates folder from the CLI package install root,
+  // not the caller’s project root. This makes --template <name> work
+  // consistently whether smoz is run from a consuming app or this repo.
+  // Anchor discovery to this module’s directory.
+  const here = dirname(fileURLToPath(import.meta.url));
+  const pkgRoot = packageDirectorySync(here) ?? process.cwd(); // conservative fallback
   return resolve(pkgRoot, 'templates');
 };
 

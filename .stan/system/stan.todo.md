@@ -2,12 +2,26 @@
 
 # Development Plan
 
-When updated: 2025-09-11T00:50:00Z
+When updated: 2025-09-12T00:50:00Z
 
 ## Next up (near‑term, actionable)
 
 1. Keep knip as-is (two expected “unused” files).
-2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.## Completed (recent)
+2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
+
+## Completed (recent)
+
+- CLI init: resolve templates base from the installed smoz package root
+  instead of the caller project, so `--template <name>` works consistently
+  (fixes “Template not found under <app>/templates”).
+- Templates (minimal): publish a public GET `/openapi` endpoint alongside
+  `/hello` to make the OpenAPI doc accessible in dev (without importing
+  generated files in the template).
+- Templates (full): add a new “full” template showcasing:
+  - REST hello and /openapi endpoints, and
+  - a non‑HTTP SQS example (tick with sample serverless extras).
+- Docs: update CLI and Templates pages to advertise minimal and full, and
+  note minimal’s `/openapi` endpoint.
 
 - Lint: export flat configs as plain arrays instead of using defineConfig;
   resolves TS2305 and runtime TypeError in ESLint/Knip/Typedoc builds.
@@ -20,9 +34,9 @@ When updated: 2025-09-11T00:50:00Z
 - Knip: ignore serverless-offline devDependency (spawned via CLI in dev loop)
   to avoid a false-positive “unused devDependency” report.
 
-- Offline adapter: temp env fallback to avoid "undefined\\temp\\..." cache paths
+- Offline adapter: temp env fallback to avoid "undefined\temp\..." cache paths
   - Provide TMPDIR on all platforms and TEMP/TMP on Windows using os.tmpdir(). - Prevents toolchains (tsx/esbuild) invoked by serverless-offline from writing
-    cache files under a literal "undefined\\temp\\..." path relative to the repo.
+    cache files under a literal "undefined\temp\..." path relative to the repo.
   - No behavior change otherwise; logs and restart semantics are unchanged.
 
 - Inline server fixes: HEAD fallback and test env seeding
@@ -47,7 +61,7 @@ When updated: 2025-09-11T00:50:00Z
 - Offline adapter: widen env fallbacks and add diagnostics; ignore stray dirs; add offline guardrails
   - Add HOME (POSIX) and USERPROFILE/LOCALAPPDATA (Windows) fallbacks to os.tmpdir()
     in addition to existing TMPDIR/TEMP/TMP. Helps nested toolchains derive sane
-    cache roots and prevents “undefined\\temp\\tsx-\*” paths.
+    cache roots and prevents “undefined\temp\tsx-\*” paths.
   - Print a one-time “[offline] env snapshot” with { TMPDIR, TEMP, TMP, HOME,
     USERPROFILE, LOCALAPPDATA } when --verbose is set.
   - Add .gitignore pattern for “undefined/temp/tsx-\*”.
@@ -75,6 +89,7 @@ When updated: 2025-09-11T00:50:00Z
   - Import `app/config/app.config.ts` and seed process.env for declared keys:
     • app.global.envKeys from stages.default.params (global),
     • app.stage.envKeys from stages[<stage>].params (selected stage).
+  - Do NOT use Serverless “${param:…}” placeholders in dev; handlers must see real strings so Zod validation passes.
   - Do not override existing env; log seeded keys under --verbose.
   - Fallback to seeding STAGE only if import fails (keeps dev robust).
 
