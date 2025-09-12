@@ -2,8 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.5](https://github.com/karmaniverous/smoz/compare/0.1.4...0.1.5)
+
+- feat(templates+cli): add full template, publish /openapi in minimal, and fix init template resolution [`49062e7`](https://github.com/karmaniverous/smoz/commit/49062e7675eeee7fa391ebb35d5d96888ffce21d)
+- templates: use canonical app/generated/openapi.json; remove local stub [`8b5319a`](https://github.com/karmaniverous/smoz/commit/8b5319a04be8fdad095cebbf53eceea733cc650a)
+- templates: add openapi placeholders and fix handler return types [`2c236b1`](https://github.com/karmaniverous/smoz/commit/2c236b1532902347ddacb555ee2d5a9102dc9d8d)
+- fix(init+templates): resolve templates from package with typed options and clean template lint (unknown/await) [`9229b8c`](https://github.com/karmaniverous/smoz/commit/9229b8cd0d274e3c533808cbc9042442b37da2d5)
+- chore(templates/minimal): serve stub JSON in /openapi handler out of the box [`277f633`](https://github.com/karmaniverous/smoz/commit/277f633acb045a707a5c8375544e2624530dcf80)
+
 #### [0.1.4](https://github.com/karmaniverous/smoz/compare/0.1.3...0.1.4)
 
+> 12 September 2025
+
+- chore: release v0.1.4 [`e089f61`](https://github.com/karmaniverous/smoz/commit/e089f619c18d43f539c1f59898930206abe940c9)
 - fix(cli): remove duplicate shebang in built CJS [`83486c6`](https://github.com/karmaniverous/smoz/commit/83486c6b5090e855b4dea70085184f5995c13001)
 
 #### [0.1.3](https://github.com/karmaniverous/smoz/compare/0.1.2...0.1.3)
