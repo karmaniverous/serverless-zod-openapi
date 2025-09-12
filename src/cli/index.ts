@@ -194,10 +194,11 @@ const main = (): void => {
             typeof opts.conflict === 'string' ? opts.conflict : cfg.onConflict;
           const { created, skipped, examples, merged, installed } =
             await runInit(root, tpl, {
-              install,
+              // Include only when defined to satisfy exactOptionalPropertyTypes
+              ...(install !== undefined ? { install } : {}),
+              ...(typeof conflict === 'string' ? { conflict } : {}),
               yes: opts.yes === true,
               noInstall: opts.noInstall === true,
-              conflict,
               dryRun: opts.dryRun === true,
             });
           console.log(
@@ -279,7 +280,7 @@ const main = (): void => {
               ? (opts.local as 'inline' | 'offline')
               : opts.local === false
                 ? false
-                : (cfg?.local ?? 'inline');
+                : (cfg.local ?? 'inline');
           await runDev(root, {
             register: opts.register !== false,
             openapi: opts.openapi !== false,

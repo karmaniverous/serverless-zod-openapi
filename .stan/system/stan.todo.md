@@ -2,21 +2,25 @@
 
 # Development Plan
 
-When updated: 2025-09-12T21:55:00Z
+When updated: 2025-09-12T19:43:00Z
 
 ## Next up (near‑term, actionable)
 
 1. smoz init UX:
-   - (Optional) Expand smoz.config.json docs (examples) and add a short link from README.
-2. CLI polish:
-   - Consider reconciling root `-v/--version` with `dev -v/--verbose` in a future minor (non‑breaking) update.
+
+- Add external template dir support.
+- Implement conflict handling (overwrite/example/skip) with apply‑to‑all.
+- -y implies install (overridable).
+- Read cliDefaults from smoz.config.json (optional).
+
+2. smoz init UX:
+   - Remove --init option wiring in CLI help (keep behavior as implemented).
+   - Add -t/-y aliases and -v to CLI help where missing.
+3. Update docs (CLI/Templates) and tests (init) to the new defaults.
 
 ## Completed (recent)
 
-- CLI (init/dev): read optional smoz.config.json defaults (`cliDefaults.init` and `cliDefaults.dev.local`); honor when CLI flags omitted.
-- CLI (root): add `-v, --version` alias for version output.
-- CLI (init): remove legacy `--init` help option; add `-t, --template` and `-y, --yes` aliases; add `--no-install` override; default `--template` to `default`.
-- Docs: update CLI/getting-started/templates and examples to reflect default template and new flags; mention smoz.config.json defaults.
+- CLI: fix TypeScript exactOptionalPropertyTypes in init options (conditional spreads for install/conflict) and remove unnecessary optional chain in dev defaults; lint/typecheck clean.
 - Templates:lint — add "@/..." alias to templates/default/tsconfig.eslint.json so
   ESLint resolves template-local imports; remaining errors should clear.
 - Templates:lint — point ESLint at templates/default/tsconfig.eslint.json with
