@@ -2,16 +2,14 @@
  * smoz init
  *
  * Scaffolds a new project from packaged templates.
- * - Copies ./templates/project/ into the target root (shared boilerplate)
- * - Copies ./templates/<template>/ into the target root (default: minimal)
+ * - Copies ./templates/<template>/ into the target root (default: default)
  * - Seeds app/generated/register.*.ts (empty modules) if missing * - Idempotent: copy-if-absent; if a file exists, writes <name>.example alongside
  * - Additive merge of template manifest (deps/devDeps/scripts) into package.json
  * - Optional dependency installation via --install[=<pm>]
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { promises as fs } from 'node:fs';
-import { dirname, join, posix, relative, resolve, sep } from 'node:path';
+import { promises as fs } from 'node:fs';import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
@@ -90,7 +88,6 @@ const writeJson = async (file: string, obj: unknown): Promise<void> => {
   await fs.mkdir(dirname(file), { recursive: true });
   await fs.writeFile(file, JSON.stringify(obj, null, 2), 'utf8');
 };
-
 const detectPm = (
   root: string,
 ): 'pnpm' | 'yarn' | 'npm' | 'bun' | undefined => {
@@ -269,7 +266,7 @@ export const runInit = async (
     existsSync(template) && (await fs.stat(template)).isDirectory();
   const srcBase = templateIsPath
     ? resolve(template)
-    : resolve(templatesBase, template === 'default' ? 'minimal' : template);
+    : resolve(templatesBase, template);
   const projectBase = resolve(templatesBase, 'project');
   if (!existsSync(srcBase)) {
     throw new Error(
@@ -279,35 +276,34 @@ export const runInit = async (
 
   // 1) Copy shared boilerplate (project) first (idempotent)
   if (existsSync(projectBase)) {
-    const rl = opts?.yes
-      ? undefined
-      : createInterface({ input, output, terminal: true });
-    const policy: ConflictPolicy =
-      (opts?.conflict as ConflictPolicy) ?? (opts?.yes ? 'example' : 'ask');
-    await copyDirWithConflicts(projectBase, root, created, skipped, examples, {
-      conflict: policy,
-      rl,
-    });
+    const rl =
+      opts?.yes ? undefined : createInterface({ input, output, terminal: true });
+    let policy: ConflictPolicy;
+    const c = opts?.conflict;
+    if (c === 'overwrite' || c === 'example' || c === 'skip' || c === 'ask')
+      policy = c;
+    else policy = opts?.yes ? 'example' : 'ask';
+    const copyOpts = rl ? ({ conflict: policy, rl } as const) : ({ conflict: policy } as const);
+    await copyDirWithConflicts(projectBase, root, created, skipped, examples, copyOpts);
     if (rl) rl.close();
   }
   // 2) Copy selected template
   {
-    const rl = opts?.yes
-      ? undefined
-      : createInterface({ input, output, terminal: true });
-    const policy: ConflictPolicy =
-      (opts?.conflict as ConflictPolicy) ?? (opts?.yes ? 'example' : 'ask');
-    await copyDirWithConflicts(srcBase, root, created, skipped, examples, {
-      conflict: policy,
-      rl,
-    });
+    const rl =
+      opts?.yes ? undefined : createInterface({ input, output, terminal: true });
+    let policy: ConflictPolicy;
+    const c = opts?.conflict;
+    if (c === 'overwrite' || c === 'example' || c === 'skip' || c === 'ask')
+      policy = c;
+    else policy = opts?.yes ? 'example' : 'ask';
+    const copyOpts = rl ? ({ conflict: policy, rl } as const) : ({ conflict: policy } as const);
+    await copyDirWithConflicts(srcBase, root, created, skipped, examples, copyOpts);
     if (rl) rl.close();
   }
 
   // 2.5) Convert template 'gitignore' into real '.gitignore'
   // NPM often excludes '.gitignore' from published packages; shipping 'gitignore'
-  // and converting here ensures downstream projects get a proper .gitignore.
-  try {
+  // and converting here ensures downstream projects get a proper .gitignore.  try {
     const giSrc = join(root, 'gitignore');
     const giDot = join(root, '.gitignore');
     if (existsSync(giSrc)) {
@@ -352,48 +348,40 @@ export const runInit = async (
     else skipped.push(posix.normalize(s.path));
   }
 
-  // 3) package.json presence (guard or create with --init)
+  // 3) package.json presence (create when missing)
   const pkgPath = join(root, 'package.json');
   let pkg = await readJson<Record<string, unknown>>(pkgPath);
   if (!pkg) {
-    const shouldInit = !!(opts && opts.init);
-    if (shouldInit) {
-      const name = toPosix(root).split('/').pop() ?? 'smoz-app';
-      pkg = {
-        name,
-        private: true,
-        type: 'module',
-        version: '0.0.0',
-        scripts: {},
-      };
-      // Avoid optional chain to satisfy no-unnecessary-condition; normalize to boolean.
-      const dryRunCreate = !!opts.dryRun;
-      if (!dryRunCreate) await writeJson(pkgPath, pkg);
-      created.push(posix.normalize(pkgPath));
-    } else {
-      // If a package.json exists, proceed with merge below.
-    }
+    const name = toPosix(root).split('/').pop() ?? 'smoz-app';
+    pkg = {
+      name,
+      private: true,
+      type: 'module',
+      version: '0.0.0',
+      scripts: {},
+    };
+    const dryRunCreate = !!opts?.dryRun;
+    if (!dryRunCreate) await writeJson(pkgPath, pkg);
+    created.push(posix.normalize(pkgPath));
   }
   // 4) Merge manifest (deps/devDeps/scripts) additively
   // Prefer a real package.json in the template; fallback to legacy manifests if absent.
   const templatePkgPath = resolve(srcBase, 'package.json');
   const manifest = existsSync(templatePkgPath)
     ? await readJson<Record<string, unknown>>(templatePkgPath)
-    : await readJson<Record<string, unknown>>(
-        resolve(templatesBase, '.manifests', `package.${template}.json`),
+    : await readJson<Record<string, unknown>>(        resolve(templatesBase, '.manifests', `package.${template}.json`),
       );
   if (manifest) {
     const before = JSON.stringify(pkg);
-    const added = mergeAdditive(pkg, manifest);
+    const added = mergeAdditive(pkg as Record<string, unknown>, manifest);
     merged.push(...added);
-    const dryRun = !!(opts && opts.dryRun);
+    const dryRun = !!opts?.dryRun;
     if (!dryRun && before !== JSON.stringify(pkg)) {
       await writeJson(pkgPath, pkg);
     }
   }
 
-  // 5) Optional install
-  let installed:
+  // 5) Optional install  let installed:
     | 'skipped'
     | 'ran (npm)'
     | 'ran (pnpm)'

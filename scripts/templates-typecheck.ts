@@ -3,7 +3,14 @@
 // "tsc -p --noEmit" for each. Fail fast with a readable template name on error.
 // Emits both stdout and stderr on failure (to stdout) for complete diagnostics.
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 const repoRoot = process.cwd();
 const templatesDir = path.join(repoRoot, 'templates');
@@ -40,6 +47,33 @@ const run = () => {
   for (const t of targets) {
     console.log(`Typechecking template: ${t.name}`);
     // Prefer Node + local tsc.js to avoid .cmd shims and EINVAL on Windows.
+    // Create a temporary tsconfig that injects path mapping for '@karmaniverous/smoz'
+    // so template code can resolve toolkit types without publishing artifacts.
+    let tmpConfig = t.tsconfig;
+    try {
+      const raw = readFileSync(t.tsconfig, 'utf8');
+      const cfg = JSON.parse(raw) as Record<string, unknown>;
+      const co = (cfg.compilerOptions ??= {} as Record<string, unknown>);
+      const paths = (co['paths'] ??= {} as Record<string, string[]>);
+      const mapping: string[] = Array.isArray(
+        (paths as Record<string, unknown>)['@karmaniverous/smoz'],
+      )
+        ? ((paths as Record<string, string[]>)[
+            '@karmaniverous/smoz'
+          ] as string[])
+        : ['../../.stan/dist/index.d.ts', '../../dist/index.d.ts'];
+      (paths as Record<string, string[]>)['@karmaniverous/smoz'] = mapping;
+      tmpConfig = path.join(
+        path.dirname(t.tsconfig),
+        'tsconfig.__smoz.tmp.json',
+      );
+      writeFileSync(tmpConfig, JSON.stringify(cfg, null, 2), 'utf8');
+    } catch {
+      // Fall back to original config if we cannot read/parse/write
+      tmpConfig = t.tsconfig;
+    }
+
+    // Resolve local TypeScript binary
     const tscJs = path.join(
       repoRoot,
       'node_modules',
@@ -59,20 +93,19 @@ const run = () => {
     if (existsSync(tscJs)) {
       // node <repo>/node_modules/typescript/lib/tsc.js ...
       cmd = process.execPath;
-      args = [tscJs, '-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
+      args = [tscJs, '-p', tmpConfig, '--noEmit', '--pretty', 'false'];
     } else {
       if (existsSync(tscBin)) {
         cmd = tscBin;
-        args = ['-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
+        args = ['-p', tmpConfig, '--noEmit', '--pretty', 'false'];
         // Some Windows shells require shell:true when invoking .cmd directly.
         useShell = process.platform === 'win32';
       } else {
         cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-        args = ['tsc', '-p', t.tsconfig, '--noEmit', '--pretty', 'false'];
+        args = ['tsc', '-p', tmpConfig, '--noEmit', '--pretty', 'false'];
         useShell = process.platform === 'win32'; // robust .cmd resolution
       }
-    }
-    // Capture both stdout and stderr so we can print them on failure to stdout,
+    } // Capture both stdout and stderr so we can print them on failure to stdout,
     // ensuring downstream log collectors (that may ignore stderr) still see diagnostics.
     const res = spawnSync(cmd, args, {
       cwd: repoRoot,
@@ -115,6 +148,15 @@ const run = () => {
       console.log([cmd, ...args].join(' '));
       process.exit(res.status ?? 1);
     }
+    // Clean up temporary config if we wrote one
+    if (tmpConfig !== t.tsconfig) {
+      try {
+        unlinkSync(tmpConfig);
+      } catch {
+        /* noop */
+      }
+    }
+
     // Optional: surface non-empty stdout in success cases to aid debugging
     // without overwhelming logs (tsc is generally quiet on success).
     if (out.length) {

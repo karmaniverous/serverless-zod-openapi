@@ -2,14 +2,15 @@
 
 # Development Plan
 
-When updated: 2025-09-12T17:30:00Z
+When updated: 2025-09-12T18:25:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Collapse templates to a single default (REST‑only):
-   - Ship real package.json in template (remove templates/.manifests).
-   - Include minimal serverless plugin set and mirror root serverless.ts blocks.
-   - Add dev scripts: register/openapi/package/dev/dev:offline.
+1. smoz init UX:
+   - Add external template dir support.
+   - Implement conflict handling (overwrite/example/skip) with apply‑to‑all.
+   - -y implies install (overridable).
+   - Read cliDefaults from smoz.config.json (optional).
 2. smoz init UX:
    - Remove --init; add -t/-y aliases and -v.
    - Add external template dir support.
@@ -20,7 +21,11 @@ When updated: 2025-09-12T17:30:00Z
 
 ## Completed (recent)
 
-- Templates/CLI: add @serverless/typescript and @types/node to template
+- Templates: collapse to single “default”; fold project baseline into template root.
+- CLI (init): resolve 'default' directly (no minimal mapping); create package.json when missing (no --init); fix optional rl typing; robust conflict policy resolution.
+- Scripts: update templates:lint to use templates/default; inject temp tsconfig in templates:typecheck to map @karmaniverous/smoz.
+- Tests: update init test to remove deprecated init option.
+- Templates/CLI: add @serverless/typescript and @types.node to template
   devDependencies; prepare single default template migration; confirm caret
   version ranges pinned to majors.
 - Templates: add jiti to devDependencies in full/minimal so ESLint can load TS flat configs downstream.

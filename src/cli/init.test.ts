@@ -16,7 +16,6 @@ describe('CLI: init', () => {
     const root = mkdtempSync(join(tmpdir(), 'smoz-init-'));
     try {
       const { created, examples, installed } = await runInit(root, 'default', {
-        init: true,
         install: false,
         yes: true,
       });
