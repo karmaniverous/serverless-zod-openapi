@@ -12,6 +12,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { dirname, join, posix, relative, resolve, sep } from 'node:path';
+import { stdin as input, stdout as output } from 'node:process';
+import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
 import { packageDirectorySync } from 'package-directory';
@@ -25,6 +27,34 @@ const writeIfAbsent = async (
   await fs.mkdir(dirname(outFile), { recursive: true });
   await fs.writeFile(outFile, content, 'utf8');
   return { created: true };
+};
+
+type ConflictPolicy = 'overwrite' | 'example' | 'skip' | 'ask';
+
+const askConflict = async (
+  rl: ReturnType<typeof createInterface>,
+  filePath: string,
+): Promise<
+  | 'overwrite'
+  | 'example'
+  | 'skip'
+  | 'all-overwrite'
+  | 'all-example'
+  | 'all-skip'
+> => {
+  const q =
+    `File exists: ${toPosix(filePath)}\n` +
+    `Choose: [o]verwrite, [e]xample, [s]kip, [O]verwrite all, [E]xample all, [S]kip all: `;
+  // Single key selection for simplicity
+
+  const ans = (await rl.question(q)).trim();
+  if (/^o$/.test(ans)) return 'overwrite';
+  if (/^e$/.test(ans)) return 'example';
+  if (/^s$/.test(ans)) return 'skip';
+  if (/^O$/.test(ans)) return 'all-overwrite';
+  if (/^E$/.test(ans)) return 'all-example';
+  if (/^S$/.test(ans)) return 'all-skip';
+  return 'example';
 };
 const walk = async (dir: string, out: string[] = []): Promise<string[]> => {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -56,7 +86,6 @@ const readJson = async <T = unknown>(file: string): Promise<T | undefined> => {
     return undefined;
   }
 };
-
 const writeJson = async (file: string, obj: unknown): Promise<void> => {
   await fs.mkdir(dirname(file), { recursive: true });
   await fs.writeFile(file, JSON.stringify(obj, null, 2), 'utf8');
@@ -98,7 +127,6 @@ const runInstall = (
     cwd: root,
     shell: true,
   });
-
   if (res.status === 0) {
     const tag: 'ran (pnpm)' | 'ran (yarn)' | 'ran (bun)' | 'ran (npm)' =
       pm === 'pnpm'
@@ -161,41 +189,66 @@ const mergeAdditive = (
   return merged;
 };
 
-const copyDirIdempotent = async (
+const copyDirWithConflicts = async (
   srcDir: string,
   dstRoot: string,
   created: string[],
   skipped: string[],
   examples: string[],
+  opts: {
+    conflict: ConflictPolicy;
+    rl?: ReturnType<typeof createInterface>;
+  },
 ) => {
   const files = await walk(srcDir);
+  let sticky: 'overwrite' | 'example' | 'skip' | undefined;
   for (const abs of files) {
     const rel = relative(srcDir, abs);
     const dest = resolve(dstRoot, rel);
     const data = await fs.readFile(abs, 'utf8');
-    if (existsSync(dest)) {
-      const ex = `${dest}.example`;
-      if (!existsSync(ex)) {
-        await writeIfAbsent(ex, data);
-        examples.push(posix.normalize(ex));
-      } else {
-        skipped.push(posix.normalize(dest));
-      }
-    } else {
+    if (!existsSync(dest)) {
       const { created: c } = await writeIfAbsent(dest, data);
       if (c) created.push(posix.normalize(dest));
       else skipped.push(posix.normalize(dest));
+      continue;
+    }
+    // Conflict
+    let decision: 'overwrite' | 'example' | 'skip' =
+      opts.conflict === 'ask' ? 'example' : opts.conflict;
+    if (opts.conflict === 'ask' && opts.rl && !sticky) {
+      const ans = await askConflict(opts.rl, dest);
+      if (ans === 'all-overwrite') {
+        sticky = 'overwrite';
+      } else if (ans === 'all-example') {
+        sticky = 'example';
+      } else if (ans === 'all-skip') {
+        sticky = 'skip';
+      } else {
+        decision = ans;
+      }
+    }
+    if (sticky) decision = sticky;
+    if (decision === 'overwrite') {
+      await fs.writeFile(dest, data, 'utf8');
+      created.push(posix.normalize(dest));
+    } else if (decision === 'example') {
+      const ex = `${dest}.example`;
+      await writeIfAbsent(ex, data);
+      examples.push(posix.normalize(ex));
+    } else {
+      skipped.push(posix.normalize(dest));
     }
   }
 };
 
 export const runInit = async (
   root: string,
-  template = 'minimal',
+  template = 'default',
   opts?: {
-    init?: boolean;
     install?: string | boolean;
     yes?: boolean;
+    noInstall?: boolean;
+    conflict?: string;
     dryRun?: boolean;
   },
 ): Promise<{
@@ -211,20 +264,45 @@ export const runInit = async (
   const merged: string[] = [];
 
   const templatesBase = resolveTemplatesBase();
-  const srcBase = resolve(templatesBase, template);
+  // Resolve template source: named template (default/minimal/full) or filesystem path
+  const templateIsPath =
+    existsSync(template) && (await fs.stat(template)).isDirectory();
+  const srcBase = templateIsPath
+    ? resolve(template)
+    : resolve(templatesBase, template === 'default' ? 'minimal' : template);
   const projectBase = resolve(templatesBase, 'project');
   if (!existsSync(srcBase)) {
     throw new Error(
-      `Template "${template}" not found under ${toPosix(templatesBase)}.`,
+      `Template "${template}" not found (path or name). Tried: ${toPosix(srcBase)}.`,
     );
   }
 
   // 1) Copy shared boilerplate (project) first (idempotent)
   if (existsSync(projectBase)) {
-    await copyDirIdempotent(projectBase, root, created, skipped, examples);
+    const rl = opts?.yes
+      ? undefined
+      : createInterface({ input, output, terminal: true });
+    const policy: ConflictPolicy =
+      (opts?.conflict as ConflictPolicy) ?? (opts?.yes ? 'example' : 'ask');
+    await copyDirWithConflicts(projectBase, root, created, skipped, examples, {
+      conflict: policy,
+      rl,
+    });
+    if (rl) rl.close();
   }
   // 2) Copy selected template
-  await copyDirIdempotent(srcBase, root, created, skipped, examples);
+  {
+    const rl = opts?.yes
+      ? undefined
+      : createInterface({ input, output, terminal: true });
+    const policy: ConflictPolicy =
+      (opts?.conflict as ConflictPolicy) ?? (opts?.yes ? 'example' : 'ask');
+    await copyDirWithConflicts(srcBase, root, created, skipped, examples, {
+      conflict: policy,
+      rl,
+    });
+    if (rl) rl.close();
+  }
 
   // 2.5) Convert template 'gitignore' into real '.gitignore'
   // NPM often excludes '.gitignore' from published packages; shipping 'gitignore'
@@ -293,18 +371,17 @@ export const runInit = async (
       if (!dryRunCreate) await writeJson(pkgPath, pkg);
       created.push(posix.normalize(pkgPath));
     } else {
-      throw new Error(
-        'No package.json found. Run "npm init -y" (or re-run with --init) and then "smoz init" again.',
-      );
+      // If a package.json exists, proceed with merge below.
     }
   }
   // 4) Merge manifest (deps/devDeps/scripts) additively
-  const manifestPath = resolve(
-    templatesBase,
-    '.manifests',
-    `package.${template}.json`,
-  );
-  const manifest = await readJson<Record<string, unknown>>(manifestPath);
+  // Prefer a real package.json in the template; fallback to legacy manifests if absent.
+  const templatePkgPath = resolve(srcBase, 'package.json');
+  const manifest = existsSync(templatePkgPath)
+    ? await readJson<Record<string, unknown>>(templatePkgPath)
+    : await readJson<Record<string, unknown>>(
+        resolve(templatesBase, '.manifests', `package.${template}.json`),
+      );
   if (manifest) {
     const before = JSON.stringify(pkg);
     const added = mergeAdditive(pkg, manifest);
@@ -324,14 +401,18 @@ export const runInit = async (
     | 'ran (bun)'
     | 'unknown-pm'
     | 'failed' = 'skipped';
+  // Install policy:
+  // -y implies auto install unless --no-install
   const installOpt = opts ? opts.install : false;
+  const impliedAuto =
+    opts?.yes === true && opts?.noInstall !== true && installOpt !== false;
   // Derive package manager to use (explicit string or detected when true),
   // then set installed based on presence of a PM.
   const hasInstallString =
     typeof installOpt === 'string' && installOpt.trim() !== '';
   const pm = hasInstallString
     ? installOpt
-    : installOpt === true
+    : installOpt === true || impliedAuto
       ? detectPm(root)
       : undefined;
   installed = pm ? runInstall(root, pm) : installed;

@@ -1,6 +1,0 @@
-{
-  "extends": "../project/tsconfig.base.json",
-  "include": [
-    "./eslint.templates.config.ts"
-  ]
-}
