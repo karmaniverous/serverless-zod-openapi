@@ -6,17 +6,8 @@ When updated: 2025-09-12T19:43:00Z
 
 ## Next up (near‑term, actionable)
 
-1. smoz init UX:
-
-- Add external template dir support.
-- Implement conflict handling (overwrite/example/skip) with apply‑to‑all.
-- -y implies install (overridable).
-- Read cliDefaults from smoz.config.json (optional).
-
-2. smoz init UX:
-   - Remove --init option wiring in CLI help (keep behavior as implemented).
-   - Add -t/-y aliases and -v to CLI help where missing.
-3. Update docs (CLI/Templates) and tests (init) to the new defaults.
+1. Docs (CLI/Get started): add smoz.config.json examples (init/dev defaults) and note that first‑time use via `npx smoz` requires no install.
+2. CLI polish: evaluate short‑flag overlap between root `-v/--version` and `dev -v` (verbose). Draft a non‑breaking proposal and update help text if needed.
 
 ## Completed (recent)
 
