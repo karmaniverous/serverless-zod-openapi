@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-12T10:58:00Z
+When updated: 2025-09-12T11:25:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -10,10 +10,10 @@ When updated: 2025-09-12T10:58:00Z
 2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 ## Completed (recent)
 
+- Templates: add .gitignore to the project template (ignore node_modules, .serverless, dist, .tsbuild, coverage, local env files, app/generated/openapi.json, and common OS/editor files).
 - Templates: /openapi handlers now import the canonical  '@/app/generated/openapi.json' path. Ship a placeholder
   'app/generated/openapi.json' in both minimal and full templates so the
-  endpoint returns a document out of the box. Remove the prior local
-  openapi.stub.json in the minimal template to avoid diverging paths.
+  endpoint returns a document out of the box. Remove the prior local  openapi.stub.json in the minimal template to avoid diverging paths.
 
 - Templates: add placeholder app/generated/openapi.json to minimal and full,
   and cast handler return to Response; restores templates:typecheck.
