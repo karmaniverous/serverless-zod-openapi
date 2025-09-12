@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.4](https://github.com/karmaniverous/smoz/compare/0.1.3...0.1.4)
+
+- fix(cli): remove duplicate shebang in built CJS [`83486c6`](https://github.com/karmaniverous/smoz/commit/83486c6b5090e855b4dea70085184f5995c13001)
+
 #### [0.1.3](https://github.com/karmaniverous/smoz/compare/0.1.2...0.1.3)
 
+> 12 September 2025
+
+- chore: release v0.1.3 [`1b29e3a`](https://github.com/karmaniverous/smoz/commit/1b29e3a464f33955195fdd294eeeaa8ee447efd6)
 - Unify library and CLI builds under one Rollup config [`ec19628`](https://github.com/karmaniverous/smoz/commit/ec1962832ae580361d9c09323475c50577ed8496)
 - Remove obsolete standalone CLI rollup config [`e48e517`](https://github.com/karmaniverous/smoz/commit/e48e5176239f75bfc4c438b603c0c87ece84b816)
 - Clean CLI build banner by externalizing Prettier [`398b557`](https://github.com/karmaniverous/smoz/commit/398b55737e07a1e46d77eb843ce864b5c317d013)
