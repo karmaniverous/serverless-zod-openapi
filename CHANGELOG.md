@@ -2,8 +2,22 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.0](https://github.com/karmaniverous/smoz/compare/0.1.8...0.2.0)
+
+- Begin template refactor [`a6ccffd`](https://github.com/karmaniverous/smoz/commit/a6ccffd4910e4438ac32fe84fcba5a5275cc7d21)
+- cli(init/dev): config defaults, flags polish, and docs [`acda1bd`](https://github.com/karmaniverous/smoz/commit/acda1bd6ab8b05a3140b70e0fe2bad8e8d47cf88)
+- chore(init+templates): default template path, drop --init, fix lint/typecheck [`e03edbc`](https://github.com/karmaniverous/smoz/commit/e03edbcc0cfe83d57c22cf224c6cc470b9bd7adf)
+- fix(cli/init): repair try/catch block and installed union; type-safe templates:typecheck mapping [`2b4ddfc`](https://github.com/karmaniverous/smoz/commit/2b4ddfca6671b4b169aff39511d2791644e40d47)
+- templates: make templates:lint type-aware via tsconfig.eslint.json [`cda5b13`](https://github.com/karmaniverous/smoz/commit/cda5b133c8b889563bef55652ebe5dc6390c95ea)
+- fix(init): remove unnecessary optional chaining; clean lint [`b381f8b`](https://github.com/karmaniverous/smoz/commit/b381f8bc02103b7c51915b55357d8fdede3d403f)
+- cli: fix exactOptionalPropertyTypes and lint in index.ts [`98e5acd`](https://github.com/karmaniverous/smoz/commit/98e5acd8b900af93ae6494ac4fa97d395bb54ca0)
+- docs(plan): prune completed list and refresh Next up [`e6bc46f`](https://github.com/karmaniverous/smoz/commit/e6bc46fe9e4acd9dbd819f62901b08bbad70dad7)
+
 #### [0.1.8](https://github.com/karmaniverous/smoz/compare/0.1.7...0.1.8)
 
+> 12 September 2025
+
+- chore: release v0.1.8 [`9de83f1`](https://github.com/karmaniverous/smoz/commit/9de83f11103c73dff8a29e57100abbe68c53e23f)
 - templates: add jiti; enable tests; add VS Code + TSDoc [`ddec453`](https://github.com/karmaniverous/smoz/commit/ddec453b1ffcd960fef1a3dd425050c99785179c)
 
 #### [0.1.7](https://github.com/karmaniverous/smoz/compare/0.1.6...0.1.7)

@@ -3,28 +3,31 @@
 </code><button type="button">Copy</button></pre>
 
 <p>Prints version, repo root, detected PM, and presence of key files.</p>
-<h2 id="init" class="tsd-anchor-link">init<a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">init</span><span class="hl-1"> </span><span class="hl-3">--template</span><span class="hl-1"> </span><span class="hl-2">minimal</span><span class="hl-1"> </span><span class="hl-3">--yes</span>
+<p>Tip: you can print the CLI version directly:</p>
+<pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-3">-v</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="init" class="tsd-anchor-link">init<a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">init</span><span class="hl-1"> </span><span class="hl-3">--yes</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Scaffolds a new app:</p>
 <ul>
 <li>Shared “project” boilerplate</li>
-<li>Selected template (default: minimal)</li>
+<li>Selected template (default: default)</li>
 <li>Seeds empty register placeholders in <code>app/generated/</code></li>
 </ul>
 <p>Options:</p>
 <ul>
-<li><code>--template &lt;name&gt;</code> — minimal|full
-<ul>
-<li>minimal: hello + /openapi endpoints</li>
-<li>full: hello + /openapi + a non‑HTTP SQS example</li>
-</ul>
-</li>
-<li><code>--init</code> — write a minimal package.json if missing</li>
+<li><code>-t, --template &lt;nameOrPath&gt;</code> — template name (e.g., <code>default</code>) or a filesystem directory</li>
 <li><code>--install [pm]</code> — install deps with npm|pnpm|yarn|bun</li>
-<li><code>--yes</code> — no prompts</li>
+<li><code>--no-install</code> — skip installation (overrides <code>-y</code>)</li>
+<li><code>-y, --yes</code> — no prompts</li>
 <li><code>--dry-run</code> — show actions without writing</li>
 </ul>
+<p>Defaults via smoz.config.json (optional):</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-10">&quot;cliDefaults&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-10">&quot;init&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">      </span><span class="hl-10">&quot;template&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;default&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      </span><span class="hl-10">&quot;onConflict&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;example&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      </span><span class="hl-10">&quot;install&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;auto&quot;</span><br/><span class="hl-1">    },</span><br/><span class="hl-1">    </span><span class="hl-10">&quot;dev&quot;</span><span class="hl-1">: { </span><span class="hl-10">&quot;local&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;inline&quot;</span><span class="hl-1"> }</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
 <h2 id="register" class="tsd-anchor-link">register<a href="#register" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">smoz</span><span class="hl-1"> </span><span class="hl-2">register</span>
 </code><button type="button">Copy</button></pre>
 
@@ -82,7 +85,7 @@
 <li><code>openapi</code> (if enabled)</li>
 <li>local HTTP backend actions (restart/refresh if applicable)</li>
 </ol>
-<p>Flags (CLI wins over config defaults):</p>
+<p>Flags (CLI wins over config defaults; <code>cliDefaults.dev.local</code> sets the default):</p>
 <ul>
 <li><code>-r, --register</code> / <code>-R, --no-register</code> (default: on)</li>
 <li><code>-o, --openapi</code> / <code>-O, --no-openapi</code> (default: on)</li>
@@ -90,6 +93,10 @@
 <li><code>-s, --stage &lt;name&gt;</code> — stage name (default inferred)</li>
 <li><code>-p, --port &lt;n&gt;</code> — port (0=random)</li>
 <li><code>-v, --verbose</code> — verbose logging</li>
+</ul>
+<p>Root version flag:</p>
+<ul>
+<li><code>-v, --version</code> — print <code>smoz</code> version (use <code>--verbose</code> with <code>dev</code> to control verbosity)</li>
 </ul>
 <p>Notes:</p>
 <ul>
