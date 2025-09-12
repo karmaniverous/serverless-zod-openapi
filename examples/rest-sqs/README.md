@@ -12,7 +12,7 @@ Steps
 1. Create a fresh directory and initialize the template:
    ```bash
    mkdir -p /tmp/smoz-rest-sqs && cd /tmp/smoz-rest-sqs
-   npx smoz init --template minimal --yes
+   npx smoz init --yes
    ```
 2. Add an SQS function (non‑HTTP):
    ```bash

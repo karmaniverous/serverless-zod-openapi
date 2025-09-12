@@ -21,7 +21,7 @@ npm i -D typescript typescript-eslint eslint prettier typedoc
 ## Initialize a new app
 
 ```bash
-npx smoz init --template minimal --yes
+npx smoz init --yes
 ```
 
 This scaffolds:
@@ -31,6 +31,11 @@ This scaffolds:
 - app/generated/\*\* — registers and OpenAPI JSON placeholder
 - serverless.ts — uses the app registry to build functions
 - scripts, lint/typecheck/docs configs
+
+Optional defaults (smoz.config.json):
+
+- `cliDefaults.init` — set `template`, `onConflict`, and `install`
+- `cliDefaults.dev.local` — set default local mode (`inline`|`offline`)
 
 ## Generate registers and OpenAPI
 

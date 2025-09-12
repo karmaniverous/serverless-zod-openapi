@@ -29,6 +29,33 @@ const readPkg = (root: string): Pkg => {
   }
 };
 
+type SmozConfig = {
+  cliDefaults?: {
+    init?: {
+      onConflict?: 'ask' | 'overwrite' | 'example' | 'skip';
+      install?: 'auto' | 'none' | 'npm' | 'pnpm' | 'yarn' | 'bun';
+      template?: string;
+    };
+    dev?: {
+      local?: 'inline' | 'offline';
+    };
+  };
+};
+const readSmozConfig = (root: string): SmozConfig => {
+  try {
+    const p = join(root, 'smoz.config.json');
+    if (!existsSync(p)) return {};
+    const raw = readFileSync(p, 'utf8');
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === 'object') {
+      return parsed as SmozConfig;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
+
 const detectPackageManager = (): string | undefined => {
   const ua = process.env.npm_config_user_agent ?? '';
   if (ua.includes('pnpm')) return 'pnpm';
@@ -80,7 +107,8 @@ const main = (): void => {
   program
     .name('smoz')
     .description('SMOZ CLI')
-    .version(pkg.version ?? '0.0.0');
+    // Add -v alias for version in addition to default --version behavior
+    .version(pkg.version ?? '0.0.0', '-v, --version', 'output the version');
 
   program
     .command('add')
@@ -111,29 +139,67 @@ const main = (): void => {
   program
     .command('init')
     .description(
-      'Scaffold a new SMOZ app from packaged templates (default: minimal)',
+      'Scaffold a new SMOZ app from packaged templates (default: default)',
     )
-    .option('--template <name>', 'Template name (minimal|full)', 'minimal')
-    .option('--init', 'Create a minimal package.json if missing')
+    .option(
+      '-t, --template <nameOrPath>',
+      'Template name or directory path',
+      'default',
+    )
     .option(
       '-i, --install [pm]',
       'Install dependencies (optionally specify pm: npm|pnpm|yarn|bun)',
     )
-    .option('--yes', 'Skip prompts (non-interactive)', false)
+    .option(
+      '--no-install',
+      'Skip dependency installation (overrides -y)',
+      false,
+    )
+    .option('-y, --yes', 'Skip prompts (non-interactive)', false)
     .option('--dry-run', 'Show planned actions without writing', false)
     .action(
       async (opts: {
         template?: string;
-        init?: boolean;
         install?: string | boolean;
+        noInstall?: boolean;
         yes?: boolean;
         dryRun?: boolean;
+        conflict?: string;
       }) => {
         try {
+          const cfg = readSmozConfig(root).cliDefaults?.init ?? {};
+          // Resolve template: CLI > config > default
           const tpl =
-            typeof opts.template === 'string' ? opts.template : 'minimal';
+            typeof opts.template === 'string'
+              ? opts.template
+              : typeof cfg.template === 'string'
+                ? cfg.template
+                : 'default';
+          // Resolve install behavior: CLI > --no-install > config
+          let install: string | boolean | undefined = opts.install;
+          if (opts.noInstall === true) {
+            install = false;
+          } else if (install === undefined) {
+            const d = cfg.install;
+            install =
+              d === 'auto'
+                ? true
+                : d === 'none'
+                  ? false
+                  : typeof d === 'string'
+                    ? d
+                    : undefined;
+          }
+          const conflict =
+            typeof opts.conflict === 'string' ? opts.conflict : cfg.onConflict;
           const { created, skipped, examples, merged, installed } =
-            await runInit(root, tpl, opts);
+            await runInit(root, tpl, {
+              install,
+              yes: opts.yes === true,
+              noInstall: opts.noInstall === true,
+              conflict,
+              dryRun: opts.dryRun === true,
+            });
           console.log(
             [
               created.length
@@ -206,15 +272,18 @@ const main = (): void => {
         verbose?: boolean;
       }) => {
         try {
+          const cfg = readSmozConfig(root).cliDefaults?.dev ?? {};
+          // Resolve local mode default from config if not provided
+          const localResolved: false | 'inline' | 'offline' =
+            typeof opts.local === 'string'
+              ? (opts.local as 'inline' | 'offline')
+              : opts.local === false
+                ? false
+                : (cfg?.local ?? 'inline');
           await runDev(root, {
             register: opts.register !== false,
             openapi: opts.openapi !== false,
-            local:
-              typeof opts.local === 'string'
-                ? (opts.local as 'inline' | 'offline')
-                : opts.local === false
-                  ? false
-                  : 'inline',
+            local: localResolved,
             ...(typeof opts.stage === 'string' ? { stage: opts.stage } : {}),
             port: opts.port ?? 0,
             verbose: !!opts.verbose,

@@ -12,7 +12,7 @@ Steps
 1. Create a fresh directory and initialize the template:
    ```bash
    mkdir -p /tmp/smoz-rest-only && cd /tmp/smoz-rest-only
-   npx smoz init --template minimal --yes
+   npx smoz init --yes
    ```
 2. Add a hello endpoint:
    ```bash

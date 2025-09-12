@@ -6,24 +6,17 @@ sidebar_position: 4
 
 # Templates
 
-The package ships a minimal app template and a shared “project” baseline.
+The package ships a default app template and a shared “project” baseline.
 
 ## Layout
 
 - templates/project — shared boilerplate (tsconfig/eslint/prettier/vitest/typedoc)
-- templates/minimal — a small app:
+- templates/default — a small app:
   - app/config/app.config.ts
   - app/functions/rest/hello/get/{lambda,handler,openapi}.ts
   - app/functions/rest/openapi/get/{lambda,handler,openapi}.ts
   - serverless.ts
   - app/config/openapi.ts
-- templates/full — a fuller app:
-  - app/config/app.config.ts
-  - serverless.ts
-  - app/config/openapi.ts
-  - app/functions/rest/hello/get/{lambda,handler,openapi}.ts
-  - app/functions/rest/openapi/get/{lambda,handler,openapi}.ts
-  - app/functions/sqs/tick/{lambda,handler,serverless}.ts (non‑HTTP example)
 
 ## Register files (generated)
 
@@ -47,7 +40,7 @@ Templates do not commit generated files under `app/generated/` (including `regis
 - `@/app/generated/register.openapi`
 - `@/app/generated/register.serverless`
 
-For the minimal template this file is: `templates/minimal/types/registers.d.ts`.
+For the default template this file is: `templates/default/types/registers.d.ts`.
 
 When a template needs to ensure register side effects are evaluated at runtime (e.g., in `serverless.ts` or the OpenAPI builder), import the register module as a namespace and reference it via `void`. This satisfies TypeScript’s `noUncheckedSideEffectImports` while still executing module side effects:
 
@@ -114,5 +107,3 @@ Yes—this can still be a good practice for downstream apps.
 
 - If your CI/local scripts always run `smoz register` before typecheck/build/package, you don’t need to commit `app/generated/register.*.ts`.
 - If you want typecheck/IDE and CI stability without relying on a prior CLI step, many teams commit `app/generated/register.*.ts`.
-
-Note: The ambient declarations file included in the template (`templates/minimal/types/registers.d.ts`) exists only to let the template itself typecheck without generated artifacts. In a real app, you may adopt a similar ambient `d.ts` if you prefer not to commit generated files—but you must still run `smoz register` before any runtime that imports `app/generated/register.*` (e.g., OpenAPI generation, packaging), otherwise you’ll get module‑not‑found at runtime.

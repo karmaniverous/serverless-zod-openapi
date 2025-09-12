@@ -16,27 +16,46 @@ npx smoz
 
 Prints version, repo root, detected PM, and presence of key files.
 
+Tip: you can print the CLI version directly:
+
+```bash
+npx smoz -v
+```
+
 ## init
 
 ```bash
-npx smoz init --template minimal --yes
+npx smoz init --yes
 ```
 
 Scaffolds a new app:
 
 - Shared “project” boilerplate
-- Selected template (default: minimal)
+- Selected template (default: default)
 - Seeds empty register placeholders in `app/generated/`
 
 Options:
 
-- `--template <name>` — minimal|full
-  - minimal: hello + /openapi endpoints
-  - full: hello + /openapi + a non‑HTTP SQS example
-- `--init` — write a minimal package.json if missing
+- `-t, --template <nameOrPath>` — template name (e.g., `default`) or a filesystem directory
 - `--install [pm]` — install deps with npm|pnpm|yarn|bun
-- `--yes` — no prompts
+- `--no-install` — skip installation (overrides `-y`)
+- `-y, --yes` — no prompts
 - `--dry-run` — show actions without writing
+
+Defaults via smoz.config.json (optional):
+
+```json
+{
+  "cliDefaults": {
+    "init": {
+      "template": "default",
+      "onConflict": "example",
+      "install": "auto"
+    },
+    "dev": { "local": "inline" }
+  }
+}
+```
 
 ## register
 
@@ -119,7 +138,7 @@ Long‑running dev loop that watches source files and runs, in order. Inline is 
 2. `openapi` (if enabled)
 3. local HTTP backend actions (restart/refresh if applicable)
 
-Flags (CLI wins over config defaults):
+Flags (CLI wins over config defaults; `cliDefaults.dev.local` sets the default):
 
 - `-r, --register` / `-R, --no-register` (default: on)
 - `-o, --openapi` / `-O, --no-openapi` (default: on)
@@ -127,6 +146,10 @@ Flags (CLI wins over config defaults):
 - `-s, --stage <name>` — stage name (default inferred)
 - `-p, --port <n>` — port (0=random)
 - `-v, --verbose` — verbose logging
+
+Root version flag:
+
+- `-v, --version` — print `smoz` version (use `--verbose` with `dev` to control verbosity)
 
 Notes:
 
