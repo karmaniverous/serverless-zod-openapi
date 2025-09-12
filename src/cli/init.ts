@@ -4,8 +4,7 @@
  * Scaffolds a new project from packaged templates.
  * - Copies ./templates/project/ into the target root (shared boilerplate)
  * - Copies ./templates/<template>/ into the target root (default: minimal)
- * - Seeds app/generated/register.*.ts (empty modules) if missing
- * - Idempotent: copy-if-absent; if a file exists, writes <name>.example alongside
+ * - Seeds app/generated/register.*.ts (empty modules) if missing * - Idempotent: copy-if-absent; if a file exists, writes <name>.example alongside
  * - Additive merge of template manifest (deps/devDeps/scripts) into package.json
  * - Optional dependency installation via --install[=<pm>]
  */
@@ -226,6 +225,32 @@ export const runInit = async (
   }
   // 2) Copy selected template
   await copyDirIdempotent(srcBase, root, created, skipped, examples);
+
+  // 2.5) Convert template 'gitignore' into real '.gitignore'
+  // NPM often excludes '.gitignore' from published packages; shipping 'gitignore'
+  // and converting here ensures downstream projects get a proper .gitignore.
+  try {
+    const giSrc = join(root, 'gitignore');
+    const giDot = join(root, '.gitignore');
+    if (existsSync(giSrc)) {
+      if (!existsSync(giDot)) {
+        await fs.rename(giSrc, giDot);
+        created.push(posix.normalize(giDot));
+      } else {
+        // Both exist: preserve the template as an example (if not already present),
+        // then remove the extra 'gitignore' to avoid clutter.
+        const example = join(root, 'gitignore.example');
+        if (!existsSync(example)) {
+          const data = await fs.readFile(giSrc, 'utf8');
+          await fs.writeFile(example, data, 'utf8');
+          examples.push(posix.normalize(example));
+        }
+        await fs.rm(giSrc, { force: true });
+      }
+    }
+  } catch {
+    // best-effort; ignore conversion errors
+  }
 
   // Seed app/generated/register.*.ts (empty modules) if missing
   const genDir = resolve(root, 'app', 'generated');
