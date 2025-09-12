@@ -16,5 +16,5 @@ const reg = fn as unknown as FnHandlerApi<Response>;
 export const handler = reg.handler(async () => {
   // Trivial await to mirror minimal template style
   await Promise.resolve();
-  return openapiDoc as unknown;
+  return openapiDoc as Response;
 });

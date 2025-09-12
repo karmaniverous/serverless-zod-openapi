@@ -2,23 +2,25 @@
 
 # Development Plan
 
-When updated: 2025-09-12T10:05:00Z
+When updated: 2025-09-12T10:58:00Z
 
 ## Next up (near‑term, actionable)
 
-1. Keep knip as-is (two expected “unused” files).2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
+1. Keep knip as-is (two expected “unused” files).
+2. (Optional) Consider expanding inline server coverage or adding “smoz invoke” for non‑HTTP tokens (SQS/Step) using aws‑lambda types.
 ## Completed (recent)
 
-- Templates: /openapi handlers now import the canonical
-  '@/app/generated/openapi.json' path. Ship a placeholder
+- Templates: /openapi handlers now import the canonical  '@/app/generated/openapi.json' path. Ship a placeholder
   'app/generated/openapi.json' in both minimal and full templates so the
   endpoint returns a document out of the box. Remove the prior local
   openapi.stub.json in the minimal template to avoid diverging paths.
 
+- Templates: add placeholder app/generated/openapi.json to minimal and full,
+  and cast handler return to Response; restores templates:typecheck.
+
 - CLI init: resolve templates base from the installed smoz package root
   instead of the caller project, so `--template <name>` works consistently
-  (fixes “Template not found under <app>/templates”).- CLI init: fix TS2559 by passing options to packageDirectorySync
-  (`{ cwd }` instead of a bare string).
+  (fixes “Template not found under <app>/templates”).- CLI init: fix TS2559 by passing options to packageDirectorySync  (`{ cwd }` instead of a bare string).
 - Templates: replace `z.any()` with `z.unknown()` for OpenAPI response schema
   to avoid unsafe return of any in handler stubs.
 - Templates: satisfy `require-await` by adding a trivial await in OpenAPI
