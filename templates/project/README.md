@@ -23,34 +23,27 @@ This template provides a minimal, convention‑friendly baseline for new SMOZ ap
 
 1. Install dependencies
    - Run: `npm install`
-
 2. Type checking
    - Run: `npm run typecheck`
-
 3. Linting
    - Run: `npm run lint` (or `npm run lint:fix` to auto‑fix)
-
 4. Tests (baseline suite OK)
    - Run: `npm run test`
-
 5. Docs (TypeDoc baseline loads)
    - Run: `npm run docs`
-
 6. Generate OpenAPI (if your app config and endpoints are present)
    - Run: `npm run openapi`
 
 ## SMOZ CLI — register
 
-The CLI scans `app/functions/**` for `lambda.ts`, `openapi.ts`, and optional `serverless.ts`
-and generates side‑effect registration files under `app/generated/`.
+The CLI scans `app/functions/**` for `lambda.ts`, `openapi.ts`, and optional `serverless.ts` and generates side‑effect registration files under `app/generated/`.
 
 - Build CLI (if packaged locally): `npm run cli:build`
 - Register: `npx smoz register`
   - Idempotent: rewrites files only when content changes
   - Formats output with Prettier when available
 
-Tip: Commit `app/generated/register.*.ts` so typecheck is stable without running the CLI.
-Teams often keep `app/generated/openapi.json` untracked in VCS (optional).
+Tip: Commit `app/generated/register.*.ts` so typecheck is stable without running the CLI. Teams often keep `app/generated/openapi.json` untracked in VCS (optional).
 
 ## Notes
 
@@ -70,9 +63,7 @@ Teams often keep `app/generated/openapi.json` untracked in VCS (optional).
 
 ## Path hygiene (cross‑platform)
 
-Windows uses backslashes in paths, which can leak into string comparisons and
-generated artifacts. Normalize separators consistently using the helper exported
-by the toolkit:
+Windows uses backslashes in paths, which can leak into string comparisons and generated artifacts. Normalize separators consistently using the helper exported by the toolkit:
 
 ```ts
 import { toPosixPath } from '@karmaniverous/smoz';

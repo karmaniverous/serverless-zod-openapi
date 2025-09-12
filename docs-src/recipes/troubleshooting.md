@@ -17,9 +17,7 @@ Fix:
 npx smoz register
 ```
 
-Tip: Commit the generated `register.*.ts` to keep typecheck stable. The
-Serverless plugin (exported as `@karmaniverous/smoz/serverless-plugin`) runs
-`smoz register` before package/deploy.
+Tip: Commit the generated `register.*.ts` to keep typecheck stable. The Serverless plugin (exported as `@karmaniverous/smoz/serverless-plugin`) runs `smoz register` before package/deploy.
 
 ## Windows TypeScript path issues
 
@@ -44,10 +42,8 @@ rimraf .tsbuild .rollup.cache dist
 
 ## Validation 400s
 
-- The HTTP stack maps Zod validation failures to 400. Check your
-  `eventSchema` and `responseSchema`.
+- The HTTP stack maps Zod validation failures to 400. Check your `eventSchema` and `responseSchema`.
 
 ## HEAD routes
 
-- Do not duplicate HEAD; the HTTP stack short‑circuits HEAD to `200 {}` and
-  sets the configured content type.
+- Do not duplicate HEAD; the HTTP stack short‑circuits HEAD to `200 {}` and sets the configured content type.

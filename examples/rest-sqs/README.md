@@ -9,23 +9,22 @@ Prerequisites
 
 Steps
 
-1) Create a fresh directory and initialize the template:
+1. Create a fresh directory and initialize the template:
    ```bash
    mkdir -p /tmp/smoz-rest-sqs && cd /tmp/smoz-rest-sqs
    npx smoz init --template minimal --yes
    ```
-
-2) Add an SQS function (non‑HTTP):
+2. Add an SQS function (non‑HTTP):
    ```bash
    npx smoz add sqs/tick
    ```
    This creates:
    - `app/functions/sqs/tick/lambda.ts`
    - `app/functions/sqs/tick/handler.ts`
-
-3) Attach an SQS event (serverless extras)
+3. Attach an SQS event (serverless extras)
 
    Create `app/functions/sqs/tick/serverless.ts`:
+
    ```ts
    import { fn } from './lambda';
 
@@ -35,24 +34,20 @@ Steps
    ]);
    ```
 
-4) Generate registers and OpenAPI:
+4. Generate registers and OpenAPI:
    ```bash
    npx smoz register
    npm run openapi
    ```
-
-5) Package with Serverless (no deploy):
+5. Package with Serverless (no deploy):
    ```bash
    npm run package
    ```
 
 Notes
 
-- Non‑HTTP flows bypass the HTTP middleware; your handler receives raw events
-  (shaped only by any Zod schemas you provide).
-- The registry aggregates serverless extras from per‑function `serverless.ts`;
-  ensure your top‑level `serverless.ts` imports
-  `@/app/generated/register.serverless`.
+- Non‑HTTP flows bypass the HTTP middleware; your handler receives raw events (shaped only by any Zod schemas you provide).
+- The registry aggregates serverless extras from per‑function `serverless.ts`; ensure your top‑level `serverless.ts` imports `@/app/generated/register.serverless`.
 
 Troubleshooting
 
@@ -60,8 +55,7 @@ Troubleshooting
   ```bash
   npx smoz register
   ```
-- To exercise the HTTP path too, you can additionally add and package a simple
-  endpoint:
+- To exercise the HTTP path too, you can additionally add and package a simple endpoint:
   ```bash
   npx smoz add rest/hello/get
   npx smoz register && npm run openapi && npm run package

@@ -5,8 +5,7 @@ sidebar_label: Per‑function env
 
 # Per‑function env (fnEnvKeys)
 
-Expose only what each function needs. Provider‑level env is built from app‑wide
-exposed keys; add per‑function extras with `fnEnvKeys`.
+Expose only what each function needs. Provider‑level env is built from app‑wide exposed keys; add per‑function extras with `fnEnvKeys`.
 
 ```ts
 export const fn = app.defineFunction({
@@ -22,5 +21,4 @@ export const fn = app.defineFunction({
 At build time:
 
 - Provider `environment` contains globally exposed keys from the app config.
-- Per‑function `environment` contains only the additional keys you list here,
-  excluding anything already globally exposed.
+- Per‑function `environment` contains only the additional keys you list here, excluding anything already globally exposed.

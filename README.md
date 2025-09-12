@@ -12,9 +12,7 @@
 
 </div>
 
-SMOZ is a small, pragmatic toolkit for authoring AWS Lambda handlers with
-[Middy] and [Zod], then aggregating Serverless functions and hand‑crafted
-OpenAPI 3.1 paths from a single, schema‑first application definition.
+SMOZ is a small, pragmatic toolkit for authoring AWS Lambda handlers with [Middy] and [Zod], then aggregating Serverless functions and hand‑crafted OpenAPI 3.1 paths from a single, schema‑first application definition.
 
 - Keep prod code testable and framework‑agnostic
 - HTTP middleware with validation, shaping, errors, CORS, negotiation, and HEAD
@@ -41,14 +39,7 @@ OpenAPI 3.1 paths from a single, schema‑first application definition.
 ## Install
 
 ```bash
-npm i @karmaniverous/smoz zod zod-openapi @middy/core \
-  @middy/http-header-normalizer \
-  @middy/http-event-normalizer \
-  @middy/http-json-body-parser \
-  @middy/http-content-negotiation \
-  @middy/http-error-handler \
-  @middy/http-cors \
-  @middy/http-response-serializer
+npm i @karmaniverous/smoz zod zod-openapi
 ```
 
 ## Dev tooling (recommended):

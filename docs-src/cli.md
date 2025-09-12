@@ -35,7 +35,8 @@ Options:
   - full: hello + /openapi + a non‑HTTP SQS example
 - `--init` — write a minimal package.json if missing
 - `--install [pm]` — install deps with npm|pnpm|yarn|bun
-- `--yes` — no prompts- `--dry-run` — show actions without writing
+- `--yes` — no prompts
+- `--dry-run` — show actions without writing
 
 ## register
 
@@ -49,9 +50,7 @@ Scans `app/functions/**` for:
 - `openapi.ts` → register.openapi.ts
 - `serverless.ts` → register.serverless.ts (non‑HTTP)
 
-One‑shot, idempotent, POSIX‑sorted, formatted when Prettier is available.
-For a live authoring loop that keeps registers (and OpenAPI) fresh, use `smoz dev`
-instead of a register watcher.
+One‑shot, idempotent, POSIX‑sorted, formatted when Prettier is available. For a live authoring loop that keeps registers (and OpenAPI) fresh, use `smoz dev` instead of a register watcher.
 
 ## add
 
@@ -114,33 +113,25 @@ Portability
 npx smoz dev
 ```
 
-Long‑running dev loop that watches source files and runs, in order:
-
-Inline is the default local backend; use `--local offline` to run serverless-offline.
+Long‑running dev loop that watches source files and runs, in order. Inline is the default local backend; use `--local offline` to run serverless-offline.
 
 1. `register` (if enabled)
 2. `openapi` (if enabled)
 3. local HTTP backend actions (restart/refresh if applicable)
-   Flags (CLI wins over config defaults):
+
+Flags (CLI wins over config defaults):
 
 - `-r, --register` / `-R, --no-register` (default: on)
 - `-o, --openapi` / `-O, --no-openapi` (default: on)
 - `-l, --local [mode]` — `inline` (default) or `offline`
-- `-s, --stage <name>` — stage name (default inferred, typically `dev`)
-- `-p, --port <n>` — port (0 = random free port)
+- `-s, --stage <name>` — stage name (default inferred)
+- `-p, --port <n>` — port (0=random)
 - `-v, --verbose` — verbose logging
 
 Notes:
 
-- Inline backend maps Node HTTP → API Gateway v1 event → wrapped handler → response.
-  It prints a route table and the selected port at startup.
-- Offline backend runs `serverless offline` in a child process; when the route surface
-  changes (register writes), the child is restarted automatically.
-- The loop seeds basic env (e.g., `STAGE`) and prints “Updated” vs “No changes”
-  per task run; bursts are debounced.
+- Inline backend maps Node HTTP → API Gateway v1 event → wrapped handler → response. It prints a route table and the selected port at startup.
+- Offline backend runs `serverless offline` in a child process; when the route surface changes (register writes), the child is restarted automatically.
+- The loop seeds basic env (e.g., `STAGE`) and prints “Updated” vs “No changes” per task run; bursts are debounced.
 - Env seeding:
-  - The dev loop imports `app/config/app.config.ts` and seeds `process.env` for
-    keys declared in your app’s `global.envKeys` and `stage.envKeys`, using the
-    concrete values from `stages.default.params` (global) and `stages[<stage>].params`
-    (selected stage). Existing `process.env` entries are not overridden. This provides
-    parity with provider-level env in production so handlers validate cleanly in dev.
+  - The dev loop imports `app/config/app.config.ts` and seeds `process.env` for keys declared in your app’s `global.envKeys` and `stage.envKeys`, using the concrete values from `stages.default.params` (global) and `stages[<stage>].params` (selected stage). Existing `process.env` entries are not overridden. This provides parity with provider-level env in production so handlers validate cleanly in dev.

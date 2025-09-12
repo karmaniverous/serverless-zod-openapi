@@ -9,30 +9,28 @@ Prerequisites
 
 Steps
 
-1) Create a fresh directory and initialize the template:
+1. Create a fresh directory and initialize the template:
    ```bash
    mkdir -p /tmp/smoz-rest-only && cd /tmp/smoz-rest-only
    npx smoz init --template minimal --yes
    ```
-
-2) Add a hello endpoint:
+2. Add a hello endpoint:
    ```bash
    npx smoz add rest/hello/get
    ```
-
-3) Generate registers and OpenAPI:
+3. Generate registers and OpenAPI:
    ```bash
    npx smoz register
    npm run openapi
    ```
    This writes `app/generated/register.*.ts` and `app/generated/openapi.json`.
+4. Package with Serverless (no deploy):
 
-4) Package with Serverless (no deploy):
    ```bash
    npm run package
    ```
 
-5) Next steps (optional)
+5. Next steps (optional)
    - Serve the handler locally with your preferred workflow.
    - Deploy with your infrastructure conventions.
 
@@ -43,6 +41,7 @@ npx smoz add rest/users/:id/get
 ```
 
 This creates:
+
 - `app/functions/rest/users/[id]/get/*` (Windows‑safe)
 - `basePath: 'users/{id}'` (native to API Gateway/OpenAPI)
 - An OpenAPI parameters entry for `id` (string, required)

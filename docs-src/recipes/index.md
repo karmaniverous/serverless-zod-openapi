@@ -10,6 +10,7 @@ children:
   - ./observability.md
   - ./troubleshooting.md
 ---
+
 # Recipes
 
 Concrete patterns you can lift into your app. Each recipe links to a focusedpage with short snippets.
@@ -28,6 +29,7 @@ Examples (in repository)
 - REST + Step Functions (non‑HTTP): https://github.com/karmaniverous/smoz/tree/main/examples/rest-step
 
 Tip: Keep endpoint modules small and focused:
+
 ```
 lambda.ts       // define/register function
 handler.ts      // business handler

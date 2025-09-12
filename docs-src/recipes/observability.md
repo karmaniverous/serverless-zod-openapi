@@ -11,7 +11,8 @@ Propagate a request id from API Gateway into responses for traceability.
 import { insertAfter } from '@karmaniverous/smoz';
 
 const echoRequestId = {
-  after: (req: unknown) => {    const r = req as {
+  after: (req: unknown) => {
+    const r = req as {
       event?: { requestContext?: { requestId?: string } };
       response?: { headers?: Record<string, string> };
     };
@@ -41,5 +42,4 @@ export const fn = app.defineFunction({
 });
 ```
 
-Note: The SMOZ runtime uses a Console‑compatible logger. You can add your own
-structured logs in the business handler or via additional middleware.
+Note: The SMOZ runtime uses a Console‑compatible logger. You can add your own structured logs in the business handler or via additional middleware.

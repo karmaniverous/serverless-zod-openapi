@@ -47,7 +47,5 @@ fn.serverless([
 
 Notes
 
-- Non‑HTTP flows bypass the HTTP middleware; your handler receives raw events
-  (shaped only by any Zod schemas you provide).
-- The app registry aggregates these extras when building functions; import
-  `app/generated/register.serverless.ts` in your top‑level `serverless.ts`.
+- Non‑HTTP flows bypass the HTTP middleware; your handler receives raw events (shaped only by any Zod schemas you provide).
+- The app registry aggregates these extras when building functions; import `app/generated/register.serverless.ts` in your top‑level `serverless.ts`.

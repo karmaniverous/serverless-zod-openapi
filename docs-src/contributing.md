@@ -47,8 +47,7 @@ This repo uses ESLint to drive Prettier formatting:
 ## Templates
 
 - A unified ESLint config covers all templates (no per‑template edits).
-- Typecheck is driven by a small script that finds `templates/*/tsconfig.json`
-  and invokes `tsc -p --noEmit` per template.
+- Typecheck is driven by a small script that finds `templates/*/tsconfig.json` and invokes `tsc -p --noEmit` per template.
 - Adding a new template requires only adding a directory with a `tsconfig.json`.
 
 ## Registers and OpenAPI
@@ -58,8 +57,7 @@ npx smoz register
 npm run openapi
 ```
 
-Commit `app/generated/register.*.ts` to keep typecheck stable. `openapi.json`
-may remain untracked.
+Commit `app/generated/register.*.ts` to keep typecheck stable. `openapi.json` may remain untracked.
 
 ## Path hygiene
 
@@ -87,9 +85,7 @@ See the middleware page for customization and invariants.
 
 ## Optional pre‑commit recipe (lefthook)
 
-If your team uses lefthook, you can add an optional pre‑commit command to
-refresh registers when endpoint files change. This is not enforced by the
-toolkit and is safe to omit.
+If your team uses lefthook, you can add an optional pre‑commit command to refresh registers when endpoint files change. This is not enforced by the toolkit and is safe to omit.
 
 Example snippet (add to your `lefthook.yml`):
 

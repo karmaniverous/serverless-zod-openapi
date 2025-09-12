@@ -69,8 +69,7 @@ Tip: Commit the generated `register.*.ts` so typecheck is stable.
 npm run openapi
 ```
 
-This imports `register.openapi.ts`, collects paths via
-`app.buildAllOpenApiPaths()`, and writes `app/generated/openapi.json`.
+This imports `register.openapi.ts`, collects paths via `app.buildAllOpenApiPaths()`, and writes `app/generated/openapi.json`.
 
 Alternative: run a live loop that keeps registers/OpenAPI fresh and serves HTTP:
 
@@ -142,8 +141,5 @@ fn.serverless([
 
 ## Next
 
-- Read the [Middleware] page to customize the HTTP stack.
-- Explore the [Recipes] for SQS, Cognito auth contexts, custom middleware, per‑function env, and observability helpers.
-
-[Middleware]: ./middleware.md
-[Recipes]: ./recipes/index.md
+- Read the [Middleware](./middleware.md) page to customize the HTTP stack.
+- Explore the [Recipes](./recipes/index.md) for SQS, Cognito auth contexts, custom middleware, per‑function env, and observability helpers.

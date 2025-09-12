@@ -2,8 +2,7 @@
 
 Thanks for your interest in contributing!
 
-The full contributor guide lives in the documentation site and this repo’s
-authored docs:
+The full contributor guide lives in the documentation site and this repo’s authored docs:
 
 - Rendered docs: https://docs.karmanivero.us/smoz
 - Source guide: [docs-src/contributing.md](docs-src/contributing.md)

@@ -9,13 +9,7 @@ sidebar_position: 2
 ## Install
 
 ```bash
-npm i @karmaniverous/smoz zod zod-openapi @middy/core \
-  @middy/http-header-normalizer \
-  @middy/http-event-normalizer \
-  @middy/http-json-body-parser \  @middy/http-content-negotiation \
-  @middy/http-error-handler \
-  @middy/http-cors \
-  @middy/http-response-serializer
+npm i @karmaniverous/smoz zod zod-openapi
 ```
 
 Dev tooling (recommended):
@@ -134,8 +128,7 @@ npm run openapi
 
 ## Contributing and local DX
 
-- Run once locally: `npm run stan:build` in the smoz repo so editors resolve
-  `@karmaniverous/smoz` types across templates.
+- Run once locally: `npm run stan:build` in the smoz repo so editors resolve `@karmaniverous/smoz` types across templates.
 - Lint & format: ESLint drives Prettier (`prettier/prettier`: error). Use:
   ```bash
   npm run lint:fix
