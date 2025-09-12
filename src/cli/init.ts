@@ -261,6 +261,7 @@ export const runInit = async (
   const examples: string[] = [];
   const merged: string[] = [];
 
+  const optAll = opts ?? {};
   const templatesBase = resolveTemplatesBase();
   // Resolve template source: named template (default/minimal/full) or filesystem path
   const templateIsPath =
@@ -277,14 +278,14 @@ export const runInit = async (
 
   // 1) Copy shared boilerplate (project) first (idempotent)
   if (existsSync(projectBase)) {
-    const rl = opts?.yes
+    const rl = optAll.yes
       ? undefined
       : createInterface({ input, output, terminal: true });
     let policy: ConflictPolicy;
-    const c = opts?.conflict;
+    const c = optAll.conflict;
     if (c === 'overwrite' || c === 'example' || c === 'skip' || c === 'ask')
       policy = c;
-    else policy = opts?.yes ? 'example' : 'ask';
+    else policy = optAll.yes ? 'example' : 'ask';
     const copyOpts = rl
       ? ({ conflict: policy, rl } as const)
       : ({ conflict: policy } as const);
@@ -300,14 +301,14 @@ export const runInit = async (
   }
   // 2) Copy selected template
   {
-    const rl = opts?.yes
+    const rl = optAll.yes
       ? undefined
       : createInterface({ input, output, terminal: true });
     let policy: ConflictPolicy;
-    const c = opts?.conflict;
+    const c = optAll.conflict;
     if (c === 'overwrite' || c === 'example' || c === 'skip' || c === 'ask')
       policy = c;
-    else policy = opts?.yes ? 'example' : 'ask';
+    else policy = optAll.yes ? 'example' : 'ask';
     const copyOpts = rl
       ? ({ conflict: policy, rl } as const)
       : ({ conflict: policy } as const);
@@ -382,11 +383,10 @@ export const runInit = async (
       version: '0.0.0',
       scripts: {},
     };
-    const dryRunCreate = !!opts?.dryRun;
+    const dryRunCreate = Boolean(optAll.dryRun);
     if (!dryRunCreate) await writeJson(pkgPath, pkg);
     created.push(posix.normalize(pkgPath));
-  }
-  // 4) Merge manifest (deps/devDeps/scripts) additively
+  } // 4) Merge manifest (deps/devDeps/scripts) additively
   // Prefer a real package.json in the template; fallback to legacy manifests if absent.
   const templatePkgPath = resolve(srcBase, 'package.json');
   const manifest = existsSync(templatePkgPath)
@@ -398,7 +398,7 @@ export const runInit = async (
     const before = JSON.stringify(pkg);
     const added = mergeAdditive(pkg, manifest);
     merged.push(...added);
-    const dryRun = !!opts?.dryRun;
+    const dryRun = Boolean(optAll.dryRun);
     if (!dryRun && before !== JSON.stringify(pkg)) {
       await writeJson(pkgPath, pkg);
     }
@@ -415,9 +415,9 @@ export const runInit = async (
     | 'failed' = 'skipped';
   // Install policy:
   // -y implies auto install unless --no-install
-  const installOpt = opts ? opts.install : false;
+  const installOpt = optAll.install ?? false;
   const impliedAuto =
-    opts?.yes === true && opts?.noInstall !== true && installOpt !== false;
+    optAll.yes === true && optAll.noInstall !== true && installOpt !== false;
   // Derive package manager to use (explicit string or detected when true),
   // then set installed based on presence of a PM.
   const hasInstallString =
@@ -428,7 +428,6 @@ export const runInit = async (
       ? detectPm(root)
       : undefined;
   installed = pm ? runInstall(root, pm) : installed;
-
   return {
     created,
     skipped,
