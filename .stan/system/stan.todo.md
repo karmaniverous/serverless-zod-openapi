@@ -99,3 +99,7 @@ When updated: 2025-09-11T00:50:00Z
     keeping build banners clean while preserving runtime behavior.
 - Chore: remove obsolete cli.rollup.config.ts after unifying builds to keep the
   tree clean and avoid future drift.
+- Fix(cli): duplicate shebang in built CJS caused SyntaxError downstream
+  - Remove source shebang from src/cli/index.ts and rely on Rollup banner in
+    buildCli() so dist/cli/index.cjs contains a single "#!/usr/bin/env node"
+    line.

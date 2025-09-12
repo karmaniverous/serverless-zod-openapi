@@ -1,9 +1,7 @@
-#!/usr/bin/env node
 /**
  * SMOZ CLI — version/signature + register/add
  *
- * - Default: print project signature (version, Node, repo root, stanPath, config presence)
- * - register: one-shot — generate app/generated/register.*.ts from app/functions/**
+ * - Default: print project signature (version, Node, repo root, stanPath, config presence) * - register: one-shot — generate app/generated/register.*.ts from app/functions/**
  * - openapi: one-shot — run the project’s OpenAPI builder
  * - dev: watch loop orchestrator for register/openapi and optional local serving
  * - add: scaffold a new function skeleton under app/functions
