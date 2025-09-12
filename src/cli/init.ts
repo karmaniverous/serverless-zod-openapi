@@ -9,7 +9,8 @@
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { promises as fs } from 'node:fs';import { dirname, join, posix, relative, resolve, sep } from 'node:path';
+import { promises as fs } from 'node:fs';
+import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
@@ -276,34 +277,55 @@ export const runInit = async (
 
   // 1) Copy shared boilerplate (project) first (idempotent)
   if (existsSync(projectBase)) {
-    const rl =
-      opts?.yes ? undefined : createInterface({ input, output, terminal: true });
+    const rl = opts?.yes
+      ? undefined
+      : createInterface({ input, output, terminal: true });
     let policy: ConflictPolicy;
     const c = opts?.conflict;
     if (c === 'overwrite' || c === 'example' || c === 'skip' || c === 'ask')
       policy = c;
     else policy = opts?.yes ? 'example' : 'ask';
-    const copyOpts = rl ? ({ conflict: policy, rl } as const) : ({ conflict: policy } as const);
-    await copyDirWithConflicts(projectBase, root, created, skipped, examples, copyOpts);
+    const copyOpts = rl
+      ? ({ conflict: policy, rl } as const)
+      : ({ conflict: policy } as const);
+    await copyDirWithConflicts(
+      projectBase,
+      root,
+      created,
+      skipped,
+      examples,
+      copyOpts,
+    );
     if (rl) rl.close();
   }
   // 2) Copy selected template
   {
-    const rl =
-      opts?.yes ? undefined : createInterface({ input, output, terminal: true });
+    const rl = opts?.yes
+      ? undefined
+      : createInterface({ input, output, terminal: true });
     let policy: ConflictPolicy;
     const c = opts?.conflict;
     if (c === 'overwrite' || c === 'example' || c === 'skip' || c === 'ask')
       policy = c;
     else policy = opts?.yes ? 'example' : 'ask';
-    const copyOpts = rl ? ({ conflict: policy, rl } as const) : ({ conflict: policy } as const);
-    await copyDirWithConflicts(srcBase, root, created, skipped, examples, copyOpts);
+    const copyOpts = rl
+      ? ({ conflict: policy, rl } as const)
+      : ({ conflict: policy } as const);
+    await copyDirWithConflicts(
+      srcBase,
+      root,
+      created,
+      skipped,
+      examples,
+      copyOpts,
+    );
     if (rl) rl.close();
   }
 
   // 2.5) Convert template 'gitignore' into real '.gitignore'
   // NPM often excludes '.gitignore' from published packages; shipping 'gitignore'
-  // and converting here ensures downstream projects get a proper .gitignore.  try {
+  // and converting here ensures downstream projects get a proper .gitignore.
+  try {
     const giSrc = join(root, 'gitignore');
     const giDot = join(root, '.gitignore');
     if (existsSync(giSrc)) {
@@ -369,11 +391,12 @@ export const runInit = async (
   const templatePkgPath = resolve(srcBase, 'package.json');
   const manifest = existsSync(templatePkgPath)
     ? await readJson<Record<string, unknown>>(templatePkgPath)
-    : await readJson<Record<string, unknown>>(        resolve(templatesBase, '.manifests', `package.${template}.json`),
+    : await readJson<Record<string, unknown>>(
+        resolve(templatesBase, '.manifests', `package.${template}.json`),
       );
   if (manifest) {
     const before = JSON.stringify(pkg);
-    const added = mergeAdditive(pkg as Record<string, unknown>, manifest);
+    const added = mergeAdditive(pkg, manifest);
     merged.push(...added);
     const dryRun = !!opts?.dryRun;
     if (!dryRun && before !== JSON.stringify(pkg)) {
@@ -381,7 +404,8 @@ export const runInit = async (
     }
   }
 
-  // 5) Optional install  let installed:
+  // 5) Optional install
+  let installed:
     | 'skipped'
     | 'ran (npm)'
     | 'ran (pnpm)'
@@ -404,5 +428,12 @@ export const runInit = async (
       ? detectPm(root)
       : undefined;
   installed = pm ? runInstall(root, pm) : installed;
-  return { created, skipped, examples, merged, installed };
+
+  return {
+    created,
+    skipped,
+    examples,
+    merged,
+    installed,
+  };
 };

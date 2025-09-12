@@ -52,17 +52,19 @@ const run = () => {
     let tmpConfig = t.tsconfig;
     try {
       const raw = readFileSync(t.tsconfig, 'utf8');
-      const cfg = JSON.parse(raw) as Record<string, unknown>;
-      const co = (cfg.compilerOptions ??= {} as Record<string, unknown>);
-      const paths = (co['paths'] ??= {} as Record<string, string[]>);
-      const mapping: string[] = Array.isArray(
-        (paths as Record<string, unknown>)['@karmaniverous/smoz'],
-      )
-        ? ((paths as Record<string, string[]>)[
-            '@karmaniverous/smoz'
-          ] as string[])
+      type TsConfig = {
+        compilerOptions?: {
+          paths?: Record<string, string[]>;
+        };
+      };
+      const cfg: TsConfig = JSON.parse(raw) as TsConfig;
+      cfg.compilerOptions ??= {};
+      cfg.compilerOptions.paths ??= {};
+      const current = cfg.compilerOptions.paths['@karmaniverous/smoz'];
+      const mapping = Array.isArray(current)
+        ? current
         : ['../../.stan/dist/index.d.ts', '../../dist/index.d.ts'];
-      (paths as Record<string, string[]>)['@karmaniverous/smoz'] = mapping;
+      cfg.compilerOptions.paths['@karmaniverous/smoz'] = mapping;
       tmpConfig = path.join(
         path.dirname(t.tsconfig),
         'tsconfig.__smoz.tmp.json',
@@ -72,7 +74,6 @@ const run = () => {
       // Fall back to original config if we cannot read/parse/write
       tmpConfig = t.tsconfig;
     }
-
     // Resolve local TypeScript binary
     const tscJs = path.join(
       repoRoot,
