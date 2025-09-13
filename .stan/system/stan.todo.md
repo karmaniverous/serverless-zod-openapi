@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T17:28:00Z
+When updated: 2025-09-13T18:05:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -11,6 +11,12 @@ When updated: 2025-09-13T17:28:00Z
    needed.
 
 ## Completed (recent)
+
+- Templates (lint): re‑run confirmed typed ESLint resolution for the template;
+  consolidated templates:lint to lint the template config with the same config
+  (no ignore warning). The script now invokes ESLint once with
+  `-c templates/default/eslint.config.ts` over both the template files and the
+  config file path.
 
 - Templates (lint): make templates/default/tsconfig.eslint.json extend-only so
   ESLint inherits the dev tsconfig mapping for @karmaniverous/smoz in-repo.

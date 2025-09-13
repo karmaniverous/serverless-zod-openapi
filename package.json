@@ -174,11 +174,12 @@
     "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
     "remove": "serverless remove",
     "smoz": "tsx src/cli/index.ts",
-    "stan:build": "rimraf stan.dist && rollup --config stan.rollup.config.ts --configPlugin @rollup/plugin-typescript && rimraf stan.dist",
     "stan:docs": "typedoc --emit none",
     "test": "vitest run",
     "typecheck": "tsx src/cli/index.ts register && tsc -p tsconfig.json --noEmit",
-    "templates:typecheck": "npm run build && tsx scripts/templates-typecheck.ts",
-    "templates:lint": "npm run build && eslint --fix -c templates/default/eslint.config.ts \"templates/default/**/*.{ts,tsx,js,jsx}\" && eslint --fix templates/default/eslint.config.ts"
-  },  "type": "module",
-  "version": "0.2.1"}
+    "templates:typecheck": "tsx scripts/templates-typecheck.ts",
+    "templates:lint": "eslint --fix -c templates/default/eslint.config.ts \"templates/default/**/*.{ts,tsx,js,jsx}\" \"templates/default/eslint.config.ts\""
+  },
+  "type": "module",
+  "version": "0.2.1"
+}

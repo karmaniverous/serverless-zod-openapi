@@ -19,7 +19,7 @@ scripts:
   openapi: npm run openapi
   test: npm run test
   docs: npm run stan:docs
-  build: npm run stan:build
+  build: npm run build
   package: npm run package
   templates-lint: npm run templates:lint
   templates-typecheck: npm run templates:typecheck
