@@ -10,27 +10,28 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
 import { asApiMiddleware } from '@/src/http/middleware/asApiMiddleware';
+import type { ApiMiddleware } from '@/src/http/middleware/customization/types';
 import { httpZodValidator } from '@/src/http/middleware/httpZodValidator';
 import { shortCircuitHead } from '@/src/http/middleware/shortCircuitHead';
 import { wrapSerializer } from '@/src/http/middleware/wrapSerializer';
 import type { ConsoleLogger } from '@/src/types/Loggable';
 
-type ApiMW = MiddlewareObj<APIGatewayProxyEvent, Context>;
+// Use the exported public alias so TypeDoc includes the type in docs.
 
-export const makeHead = (): ApiMW => shortCircuitHead as ApiMW;
+export const makeHead = (): ApiMiddleware => shortCircuitHead as ApiMiddleware;
 
-export const makeHeaderNormalizer = (): ApiMW =>
+export const makeHeaderNormalizer = (): ApiMiddleware =>
   asApiMiddleware(httpHeaderNormalizer({ canonical: true }));
 
-export const makeEventNormalizer = (): ApiMW =>
+export const makeEventNormalizer = (): ApiMiddleware =>
   asApiMiddleware(httpEventNormalizer());
 
-export const makeJsonBodyParser = (): ApiMW => {
+export const makeJsonBodyParser = (): ApiMiddleware => {
   // Conditional body parse (skip GET/HEAD; parse only when body present)
   const inner = asApiMiddleware(
     httpJsonBodyParser({ disableContentTypeError: true }),
   );
-  const mw: ApiMW = {
+  const mw: ApiMiddleware = {
     before: async (request) => {
       const event = (request as unknown as { event?: APIGatewayProxyEvent })
         .event;
@@ -52,7 +53,7 @@ export const makeJsonBodyParser = (): ApiMW => {
   return mw;
 };
 
-export const makeContentNegotiation = (contentType: string): ApiMW =>
+export const makeContentNegotiation = (contentType: string): ApiMiddleware =>
   asApiMiddleware(
     httpContentNegotiation({
       parseLanguages: false,
@@ -66,7 +67,7 @@ export const makeZodValidator = (
   logger: ConsoleLogger,
   eventSchema?: z.ZodType,
   responseSchema?: z.ZodType,
-): ApiMW =>
+): ApiMiddleware =>
   asApiMiddleware(
     httpZodValidator({
       logger,
@@ -75,7 +76,7 @@ export const makeZodValidator = (
     }),
   );
 
-export const makePreferredMedia = (contentType: string): ApiMW => ({
+export const makePreferredMedia = (contentType: string): ApiMiddleware => ({
   before: (request) => {
     const req = request as { preferredMediaTypes?: string[] };
     if (!Array.isArray(req.preferredMediaTypes)) {
@@ -102,7 +103,7 @@ export const makePreferredMedia = (contentType: string): ApiMW => ({
   },
 });
 
-export const makeHeadFinalize = (contentType: string): ApiMW => ({
+export const makeHeadFinalize = (contentType: string): ApiMiddleware => ({
   after: (request) => {
     const evt = (request as unknown as { event?: APIGatewayProxyEvent }).event;
     if (!evt) return;
@@ -129,12 +130,13 @@ export const makeHeadFinalize = (contentType: string): ApiMW => ({
   },
 });
 
-export const makeShapeAndContentType = (contentType: string): ApiMW => ({
+export const makeShapeAndContentType = (
+  contentType: string,
+): ApiMiddleware => ({
   after: (request) => {
     const container = request as unknown as { response?: unknown };
     const current = container.response;
     if (current === undefined) return;
-
     const looksShaped =
       typeof current === 'object' &&
       current !== null &&
@@ -173,7 +175,7 @@ export const makeShapeAndContentType = (contentType: string): ApiMW => ({
   },
 });
 
-export const makeErrorExposure = (logger: ConsoleLogger): ApiMW => ({
+export const makeErrorExposure = (logger: ConsoleLogger): ApiMiddleware => ({
   onError: (request) => {
     void logger;
     const maybe = (request as { error?: unknown }).error;
@@ -191,7 +193,7 @@ export const makeErrorExposure = (logger: ConsoleLogger): ApiMW => ({
   },
 });
 
-export const makeErrorHandler = (logger: ConsoleLogger): ApiMW =>
+export const makeErrorHandler = (logger: ConsoleLogger): ApiMiddleware =>
   asApiMiddleware(
     httpErrorHandler({
       logger: (o) => {
@@ -200,7 +202,7 @@ export const makeErrorHandler = (logger: ConsoleLogger): ApiMW =>
     }),
   );
 
-export const makeCors = (): ApiMW =>
+export const makeCors = (): ApiMiddleware =>
   asApiMiddleware(
     httpCors({
       credentials: true,
@@ -212,13 +214,12 @@ export const makeCors = (): ApiMW =>
 export const makeResponseSerializer = (
   contentType: string,
   logger: ConsoleLogger,
-): ApiMW =>
+): ApiMiddleware =>
   asApiMiddleware(
     httpResponseSerializer({
       serializers: [
         {
-          // Accept application/json and application/*+json
-          regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
+          // Accept application/json and application/*+json          regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
           serializer: wrapSerializer(
             ({ body }) => {
               return typeof body === 'string' ? body : JSON.stringify(body);
