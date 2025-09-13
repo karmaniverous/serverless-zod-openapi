@@ -1,5 +1,6 @@
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -20,6 +21,7 @@ describe('init/conflicts.copyDirWithConflicts', () => {
     const dst = mkSand('dst');
     try {
       const sub = join(src, 'a', 'b.txt');
+      mkdirSync(dirname(sub), { recursive: true });
       writeFileSync(sub, 'one', 'utf8');
       const created: string[] = [];
       const skipped: string[] = [];
@@ -45,6 +47,8 @@ describe('init/conflicts.copyDirWithConflicts', () => {
       const fileRel = join('a', 'b.txt');
       const srcFile = join(src, fileRel);
       const dstFile = join(dst, fileRel);
+      mkdirSync(dirname(srcFile), { recursive: true });
+      mkdirSync(dirname(dstFile), { recursive: true });
       // prepare src/dst
       writeFileSync(srcFile, 'two', 'utf8');
       writeFileSync(dstFile, 'one', 'utf8');
@@ -71,6 +75,8 @@ describe('init/conflicts.copyDirWithConflicts', () => {
       const fileRel = join('a', 'b.txt');
       const srcFile = join(src, fileRel);
       const dstFile = join(dst, fileRel);
+      mkdirSync(dirname(srcFile), { recursive: true });
+      mkdirSync(dirname(dstFile), { recursive: true });
       // prepare src/dst
       writeFileSync(srcFile, 'new', 'utf8');
       // ensure directory exists and conflicting file present
@@ -96,6 +102,8 @@ describe('init/conflicts.copyDirWithConflicts', () => {
       const fileRel = join('a', 'b.txt');
       const srcFile = join(src, fileRel);
       const dstFile = join(dst, fileRel);
+      mkdirSync(dirname(srcFile), { recursive: true });
+      mkdirSync(dirname(dstFile), { recursive: true });
       // prepare src/dst
       writeFileSync(srcFile, 'incoming', 'utf8');
       writeFileSync(dstFile, 'existing', 'utf8');

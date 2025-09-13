@@ -24,15 +24,18 @@ describe('init/install.detectPm', () => {
     try {
       writeFileSync(join(root, 'yarn.lock'), '', 'utf8');
       expect(detectPm(root)).toBe('yarn');
+      // remove yarn lock before checking npm precedence
+      rmSync(join(root, 'yarn.lock'), { force: true });
       writeFileSync(join(root, 'package-lock.json'), '', 'utf8');
       expect(detectPm(root)).toBe('npm');
+      // remove npm lock before checking bun precedence
+      rmSync(join(root, 'package-lock.json'), { force: true });
       writeFileSync(join(root, 'bun.lockb'), '', 'utf8');
       expect(detectPm(root)).toBe('bun');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
   });
-
   it('returns undefined without hints and empty UA', () => {
     const root = mk();
     const prev = process.env.npm_config_user_agent;
