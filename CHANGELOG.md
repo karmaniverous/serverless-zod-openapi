@@ -2,13 +2,26 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.2](https://github.com/karmaniverous/smoz/compare/0.2.1...0.2.2)
+
+- two-tsconfig template: dev mapping + downstream rename; simplify runner [`19f0ebb`](https://github.com/karmaniverous/smoz/commit/19f0ebb8447b0953ff407349ac53717e131dccf2)
+- templates(dev): editor types without shipping config hacks [`31b2ef7`](https://github.com/karmaniverous/smoz/commit/31b2ef7a1bd99f6ae1030210b5f2b30b2f86bc7b)
+- docs(contributing): switch to ‘npm run build’ (not ‘stan:build’) [`b889e6c`](https://github.com/karmaniverous/smoz/commit/b889e6c8151e4b71a046f4733070eecd96ede38d)
+- templates:lint: lint config with template config [`4a50b70`](https://github.com/karmaniverous/smoz/commit/4a50b70c6905351f4686bcd8b7a131b360eda419)
+- templates(types): fix template resolution of @karmaniverous/smoz [`b350bd8`](https://github.com/karmaniverous/smoz/commit/b350bd8113b298a70478ed7805c10cb847ed80e7)
+- templates: fix ESLint typed resolution via extend-only tsconfig.eslint.json [`e268000`](https://github.com/karmaniverous/smoz/commit/e2680007764e3c868cdbf46989fa94ab18dddd2f)
+- templates(types): fix template type resolution (ambient + paths) [`0ad86e1`](https://github.com/karmaniverous/smoz/commit/0ad86e1f12f2e36fac50bb310bbe1137051acb25)
+
 #### [0.2.1](https://github.com/karmaniverous/smoz/compare/0.2.0...0.2.1)
+
+> 13 September 2025
 
 - Removed activecampaign tooling [`dbe4b03`](https://github.com/karmaniverous/smoz/commit/dbe4b035b3782d4f0a442f289c9699cbc7e46446)
 - updated dependencies [`628dc07`](https://github.com/karmaniverous/smoz/commit/628dc0730691e53aa64ee72460e2f57a65967021)
 - refactor(cli+http): split long modules; preserve paths [`a391c7c`](https://github.com/karmaniverous/smoz/commit/a391c7c623bd50104050f91d23942d877f10a981)
 - updated docs [`2acf5a4`](https://github.com/karmaniverous/smoz/commit/2acf5a4a541dd03dfce35f5aa7ba98507e5fa4fd)
 - updated docs [`0ad24a4`](https://github.com/karmaniverous/smoz/commit/0ad24a453ac8a6d93a131ca1d7e9a3ad96083206)
+- chore: release v0.2.1 [`cfa5afb`](https://github.com/karmaniverous/smoz/commit/cfa5afb0a97c6b63ae09b3bb9eb28d7bbf7ad7a4)
 - test: add coverage for HTTP inference, non‑HTTP bypass, registry, and helpers [`ddeb372`](https://github.com/karmaniverous/smoz/commit/ddeb3726fe033e3b01c86abc0c7c2ebbe11a18e6)
 - test(cli/init): add unit tests for init helpers [`639f958`](https://github.com/karmaniverous/smoz/commit/639f9582a1aae3fb70a67589fc2a237ffd013a93)
 - docs(build): remove TypeDoc warning (use public ApiMiddleware) [`ff698b9`](https://github.com/karmaniverous/smoz/commit/ff698b9e5fd61da63405498c0265efc16f736494)
