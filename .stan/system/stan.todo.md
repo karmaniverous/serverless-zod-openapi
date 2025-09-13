@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-12T19:43:00Z
+When updated: 2025-09-12T20:30:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -11,10 +11,10 @@ When updated: 2025-09-12T19:43:00Z
 
 ## Completed (recent)
 
+- Refactor: split src/cli/init.ts into modules under src/cli/init/* (index.ts, runInit.ts, helpers) and remove original file; preserve import path. Split src/http/middleware/buildHttpMiddlewareStack.ts into directory with index.ts + steps.ts and remove original file. Fixed a minor lint (unused variable) in the init flow during the move.
 - CLI: fix TypeScript exactOptionalPropertyTypes in init options (conditional spreads for install/conflict) and remove unnecessary optional chain in dev defaults; lint/typecheck clean.
 - Default template DX: during init, ensure '@karmaniverous/smoz' is added to
-  dependencies (using the running CLI version) so first-time 'npx smoz init' compiles cleanly.
-- Templates:lint — add "@/..." alias to templates/default/tsconfig.eslint.json so
+  dependencies (using the running CLI version) so first-time 'npx smoz init' compiles cleanly.- Templates:lint — add "@/..." alias to templates/default/tsconfig.eslint.json so
   ESLint resolves template-local imports; remaining errors should clear.
 - Templates:lint — point ESLint at templates/default/tsconfig.eslint.json with  local @karmaniverous/smoz mapping and set tsconfigRootDir in the template
   eslint.config.ts to resolve the project correctly.- Lint: remove unnecessary optional chaining in init.ts to satisfy
