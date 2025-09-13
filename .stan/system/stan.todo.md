@@ -2,20 +2,21 @@
 
 # Development Plan
 
-When updated: 2025-09-13T03:10:00Z
+When updated: 2025-09-13T03:20:00Z
 
 ## Next up (near‑term, actionable)
-
 1. CLI polish: evaluate short‑flag overlap between root `-v/--version` and
    `dev -v` (verbose). Draft a non‑breaking proposal and update help text if
    needed.
 
 ## Completed (recent)
 
+- Fix: restore `APIGatewayProxyEvent` import in
+  `buildHttpMiddlewareStack/steps.ts` to resolve TS2304 in docs/build and the
+  derived ESLint “error typed value” noise.
 - Docs: finish “Why smoz?” page (it was truncated) and add sections that answer
   “How is SMOZ?”, “Is it easy to try & adopt?”, and “Will API devs love it?”.
-- Fix: add missing `regex` property in `buildHttpMiddlewareStack/steps.ts`
-  serializer and remove unused imports to clear Typedoc/typecheck warnings and
+- Fix: add missing `regex` property in `buildHttpMiddlewareStack/steps.ts`  serializer and remove unused imports to clear Typedoc/typecheck warnings and
   ESLint errors reported in `docs`/`lint` outputs.
 
 - Docs build: remove TypeDoc warning by switching steps.ts to use the
