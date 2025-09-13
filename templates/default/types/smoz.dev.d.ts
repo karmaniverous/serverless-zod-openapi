@@ -4,5 +4,5 @@
  * Resolves '@karmaniverous/smoz' to this repo's build output.
  */
 declare module '@karmaniverous/smoz' {
-  export * from '../../../dist/index';
+  export * from '../../../dist/index.d.ts';
 }

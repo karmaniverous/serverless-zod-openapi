@@ -179,8 +179,7 @@
     "test": "vitest run",
     "typecheck": "tsx src/cli/index.ts register && tsc -p tsconfig.json --noEmit",
     "templates:typecheck": "tsx scripts/templates-typecheck.ts",
-    "templates:lint": "eslint --fix -c templates/default/eslint.config.ts \"templates/default/**/*.{ts,tsx,js,jsx}\" && eslint --fix templates/default/eslint.config.ts"
-  },
-  "type": "module",
+    "templates:lint": "npm run build && eslint --fix -c templates/default/eslint.config.ts \"templates/default/**/*.{ts,tsx,js,jsx}\" && eslint --fix templates/default/eslint.config.ts"
+  },  "type": "module",
   "version": "0.2.1"
 }

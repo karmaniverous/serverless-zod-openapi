@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T15:20:00Z
+When updated: 2025-09-13T16:10:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -12,10 +12,14 @@ When updated: 2025-09-13T15:20:00Z
 
 ## Completed (recent)
 
+- Templates (types): resolve @karmaniverous/smoz in the default template by
+  re‑exporting dist/index.d.ts in dev‑only ambient types and removing the
+  template’s local paths override. Prefix templates:lint with “npm run build”
+  so ESLint parses with declarations present. No path mappings leak to
+  downstream apps; init excludes *.dev.d.ts.
 - Docs: replace `npm run stan:build` with `npm run build` in contributor
   guides (root and docs). STAN’s `stan:build` is only for the stan loop;
-  deployment/tooling must not depend on stan.
-- Templates (DX, no downstream leakage):
+  deployment/tooling must not depend on stan.- Templates (DX, no downstream leakage):
   - Add dev-only ambient types at `templates/default/types/smoz.dev.d.ts`
     that re-export from this repo’s `dist/index`. This removes ts2307 in the
     editor without relying on `.stan/dist`.
