@@ -17,6 +17,11 @@ const excludeDev = (rel: string): boolean => {
   const posixRel = rel.replace(/\\/g, '/');
   return /\/types\/[^/]*\.dev\.d\.ts$/i.test(posixRel);
 };
+const excludeTemplate = (rel: string): boolean => {
+  const posixRel = rel.replace(/\\/g, '/');
+  if (posixRel === 'tsconfig.json') return true; // skip dev tsconfig from template
+  return excludeDev(rel);
+};
 
 export const runInit = async (
   root: string,
@@ -81,7 +86,7 @@ export const runInit = async (
       : ({ conflict: policy } as const);
     await copyDirWithConflicts(srcBase, root, created, skipped, examples, {
       ...(copyOpts as object),
-      exclude: excludeDev,
+      exclude: excludeTemplate,
     } as never);
     rl?.close();
   }
@@ -107,13 +112,35 @@ export const runInit = async (
     // best-effort
   }
 
+  // 2.6) Convert 'tsconfig.downstream.json' into 'tsconfig.json'
+  try {
+    const ds = join(root, 'tsconfig.downstream.json');
+    const dst = join(root, 'tsconfig.json');
+    if (existsSync(ds)) {
+      if (!existsSync(dst)) {
+        await fs.rename(ds, dst);
+        created.push(posix.normalize(dst));
+      } else {
+        // If a tsconfig already exists, write an example and remove the source
+        const example = join(root, 'tsconfig.json.example');
+        if (!existsSync(example)) {
+          const data = await fs.readFile(ds, 'utf8');
+          await fs.writeFile(example, data, 'utf8');
+          examples.push(posix.normalize(example));
+        }
+        await fs.rm(ds, { force: true });
+      }
+    }
+  } catch {
+    // best-effort
+  }
+
   // Seed app/generated/register.* placeholders
   {
     const res = await seedRegisterPlaceholders(root);
     created.push(...res.created);
     skipped.push(...res.skipped);
   }
-
   // 3) package.json presence (create when missing)
   const pkgPath = join(root, 'package.json');
   let pkg = await readJson<Record<string, unknown>>(pkgPath);
