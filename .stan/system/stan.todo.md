@@ -2,14 +2,21 @@
 
 # Development Plan
 
-When updated: 2025-09-13T17:20:00Z
+When updated: 2025-09-13T17:28:00Z
 
 ## Next up (near‑term, actionable)
 
 1. CLI polish: evaluate short‑flag overlap between root `-v/--version` and
    `dev -v` (verbose). Draft a non‑breaking proposal and update help text if
    needed.
+
 ## Completed (recent)
+
+- Templates (lint): make templates/default/tsconfig.eslint.json extend-only so
+  ESLint inherits the dev tsconfig mapping for @karmaniverous/smoz in-repo.
+  This removes “Unsafe … error typed value” in template files while keeping
+  downstream clean (downstream tsconfig.json has no mapping, and eslint
+  extends it unchanged).
 
 - Templates (types): adopt two-tsconfig approach for stability without
   leakage. Add tsconfig.downstream.json (copied as tsconfig.json on init)
@@ -18,12 +25,12 @@ When updated: 2025-09-13T17:20:00Z
   injection). Update init to skip copying template tsconfig.json and rename
   tsconfig.downstream.json → tsconfig.json (with .example fallback). Remove
   ambient dev shim (types/smoz.dev.d.ts) and the obsolete
-  tsconfig.__smoz.tmp.json. Confirm templates:lint and templates:typecheck
+  tsconfig.\_\_smoz.tmp.json. Confirm templates:lint and templates:typecheck
   run typed/clean in-repo; downstream apps receive a clean tsconfig.json.
 
 - Templates (types): make in-repo template type resolution robust by
   re-exporting '../../../dist/index' in the dev-only ambient module and
-  expanding the templates:typecheck injected paths to include both 'index'  and 'index.d.ts' under .stan and dist. This fixes TS2305 and typed lint
+  expanding the templates:typecheck injected paths to include both 'index' and 'index.d.ts' under .stan and dist. This fixes TS2305 and typed lint
   “error typed value” without leaking paths downstream.
 - Templates (types): resolve @karmaniverous/smoz in the default template by
   re‑exporting dist/index.d.ts in dev‑only ambient types and removing the
