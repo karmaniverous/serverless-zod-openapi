@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T02:10:00Z
+When updated: 2025-09-13T03:10:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -12,10 +12,15 @@ When updated: 2025-09-13T02:10:00Z
 
 ## Completed (recent)
 
+- Docs: finish “Why smoz?” page (it was truncated) and add sections that answer
+  “How is SMOZ?”, “Is it easy to try & adopt?”, and “Will API devs love it?”.
+- Fix: add missing `regex` property in `buildHttpMiddlewareStack/steps.ts`
+  serializer and remove unused imports to clear Typedoc/typecheck warnings and
+  ESLint errors reported in `docs`/`lint` outputs.
+
 - Docs build: remove TypeDoc warning by switching steps.ts to use the
   exported ApiMiddleware type in public signatures (no private alias).
-- Docs: README Quick links formatting & HTTP Middleware casing; Tour init
-  command updated to default template.
+- Docs: README Quick links formatting & HTTP Middleware casing; Tour init  command updated to default template.
 - Docs: fix “add” examples to use `rest/foo/get` (avoid collision with the  template’s default hello endpoint) across README, Getting started, Tour,
   and examples.- Housekeeping: remove ActiveCampaign services, endpoints, and related config
   (orval/cached-axios, '@@/*' paths, knip entries). Verified build/typecheck/

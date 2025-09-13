@@ -1,4 +1,3 @@
-import type { MiddlewareObj } from '@middy/core';
 import httpContentNegotiation from '@middy/http-content-negotiation';
 import httpCors from '@middy/http-cors';
 import httpErrorHandler from '@middy/http-error-handler';
@@ -6,7 +5,6 @@ import httpEventNormalizer from '@middy/http-event-normalizer';
 import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import httpJsonBodyParser from '@middy/http-json-body-parser';
 import httpResponseSerializer from '@middy/http-response-serializer';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { z } from 'zod';
 
 import { asApiMiddleware } from '@/src/http/middleware/asApiMiddleware';
@@ -219,7 +217,8 @@ export const makeResponseSerializer = (
     httpResponseSerializer({
       serializers: [
         {
-          // Accept application/json and application/*+json          regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
+          // Accept application/json and application/*+json
+          regex: /^application\/(?:[a-z0-9.+-]*\+)?json$/i,
           serializer: wrapSerializer(
             ({ body }) => {
               return typeof body === 'string' ? body : JSON.stringify(body);
