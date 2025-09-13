@@ -63,7 +63,7 @@ const run = () => {
       const current = cfg.compilerOptions.paths['@karmaniverous/smoz'];
       const mapping = Array.isArray(current)
         ? current
-        : ['../../.stan/dist/index.d.ts', '../../dist/index.d.ts'];
+        : ['../../dist/index', '../../dist/index.d.ts'];
       cfg.compilerOptions.paths['@karmaniverous/smoz'] = mapping;
       tmpConfig = path.join(
         path.dirname(t.tsconfig),

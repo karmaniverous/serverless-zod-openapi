@@ -12,18 +12,23 @@ When updated: 2025-09-13T16:10:00Z
 
 ## Completed (recent)
 
+- Templates (types): make in-repo template type resolution robust by
+  re-exporting '../../../dist/index' in the dev-only ambient module and
+  expanding the templates:typecheck injected paths to include both 'index'
+  and 'index.d.ts' under .stan and dist. This fixes TS2305 and typed lint
+  “error typed value” without leaking paths downstream.
 - Templates (types): resolve @karmaniverous/smoz in the default template by
   re‑exporting dist/index.d.ts in dev‑only ambient types and removing the
   template’s local paths override. Prefix templates:lint with “npm run build”
   so ESLint parses with declarations present. No path mappings leak to
-  downstream apps; init excludes *.dev.d.ts.
+  downstream apps; init excludes \*.dev.d.ts.
 - Docs: replace `npm run stan:build` with `npm run build` in contributor
   guides (root and docs). STAN’s `stan:build` is only for the stan loop;
   deployment/tooling must not depend on stan.- Templates (DX, no downstream leakage):
   - Add dev-only ambient types at `templates/default/types/smoz.dev.d.ts`
     that re-export from this repo’s `dist/index`. This removes ts2307 in the
     editor without relying on `.stan/dist`.
-  - Update init copy to exclude `types/*.dev.d.ts`, ensuring the dev    declaration never ships to downstream apps. No tsconfig changes are
+  - Update init copy to exclude `types/*.dev.d.ts`, ensuring the dev declaration never ships to downstream apps. No tsconfig changes are
     transmitted; downstream templates remain “normal”.
 
 - Fix: restore `APIGatewayProxyEvent` import in

@@ -7,7 +7,7 @@
         "*"
       ],
       "@karmaniverous/smoz": [
-        "../../.stan/dist/index.d.ts",
+        "../../dist/index",
         "../../dist/index.d.ts"
       ]
     },
