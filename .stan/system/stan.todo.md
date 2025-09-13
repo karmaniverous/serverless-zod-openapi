@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T03:55:00Z
+When updated: 2025-09-13T15:20:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -12,12 +12,14 @@ When updated: 2025-09-13T03:55:00Z
 
 ## Completed (recent)
 
+- Docs: replace `npm run stan:build` with `npm run build` in contributor
+  guides (root and docs). STAN’s `stan:build` is only for the stan loop;
+  deployment/tooling must not depend on stan.
 - Templates (DX, no downstream leakage):
   - Add dev-only ambient types at `templates/default/types/smoz.dev.d.ts`
     that re-export from this repo’s `dist/index`. This removes ts2307 in the
     editor without relying on `.stan/dist`.
-  - Update init copy to exclude `types/*.dev.d.ts`, ensuring the dev
-    declaration never ships to downstream apps. No tsconfig changes are
+  - Update init copy to exclude `types/*.dev.d.ts`, ensuring the dev    declaration never ships to downstream apps. No tsconfig changes are
     transmitted; downstream templates remain “normal”.
 
 - Fix: restore `APIGatewayProxyEvent` import in

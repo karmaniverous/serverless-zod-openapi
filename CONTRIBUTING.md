@@ -11,11 +11,10 @@ Quick start:
 
 ```bash
 npm i
-npm run stan:build          # one-time: ensures editors resolve path aliases
+npm run build               # one-time: builds dist types so editors resolve path aliases
 npx smoz register          # (re)generate side-effect registers
 npm run openapi            # build app/generated/openapi.json
-npm run lint:fix
-npm run templates:lint
+npm run lint:fixnpm run templates:lint
 npm run typecheck
 npm run templates:typecheck
 npm test

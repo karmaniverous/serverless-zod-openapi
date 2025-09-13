@@ -8,6 +8,8 @@ excludes:
   - '**/*.tsbuildinfo'
   - docs
   - package-lock.json
+includes:
+  - 'templates/**'
 outputPath: .stan
 patchOpenCommand: code -g {file}
 scripts:

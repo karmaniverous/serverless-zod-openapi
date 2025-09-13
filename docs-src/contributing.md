@@ -12,14 +12,14 @@ sidebar_position: 6
 - Install with your preferred PM; scripts assume npm.
 - One‑time: build local types so editors resolve path aliases across templates:
   ```bash
-  npm run stan:build
+  npm run build
   ```
 
 ## Workflow
 
 ```bash
 npm i
-npm run stan:build
+npm run build
 npx smoz register
 npm run openapi
 npm run lint:fix
