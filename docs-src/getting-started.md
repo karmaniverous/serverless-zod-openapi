@@ -6,6 +6,29 @@ sidebar_position: 2
 
 # Getting started
 
+## Quick start (from zero)
+
+```bash
+npx @karmaniverous/smoz init -i
+npx smoz dev -p 3000
+```
+
+- The first command scaffolds a new app and installs dependencies (including a local `smoz` bin).
+- The second command starts the inline local backend and keeps registers + OpenAPI fresh.
+- Browse http://localhost:3000/openapi
+
+Offline option (serverless‑offline):
+
+```bash
+npx smoz dev -l offline -p 3000
+```
+
+Add your first endpoint:
+
+```bash
+npx smoz add rest/hello/get
+```
+
 ## Install
 
 ```bash

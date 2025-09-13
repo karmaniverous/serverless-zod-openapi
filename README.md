@@ -18,10 +18,34 @@ SMOZ is a small, pragmatic toolkit for authoring AWS Lambda handlers with [Middy
 - HTTP middleware with validation, shaping, errors, CORS, negotiation, and HEAD
 - Non‑HTTP flows stay lean (no middleware overhead)
 
+## Quick start (from zero)
+
+From an empty directory:
+
+```bash
+npx @karmaniverous/smoz init -i
+npx smoz dev -p 3000
+```
+
+- The first command scaffolds a new app and installs dependencies (including a local `smoz` bin).
+- The second command starts the inline local backend and keeps registers + OpenAPI fresh.
+- Open http://localhost:3000/openapi in your browser.
+
+Prefer `serverless‑offline`?
+
+```bash
+npx smoz dev -l offline -p 3000
+```
+
+Add your first endpoint:
+
+```bash
+npx smoz add rest/hello/get
+```
+
 ## Quick links
 
-- [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)
-- [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
+- [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)- [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
 - [Getting started](https://docs.karmanivero.us/smoz/documents/Getting_started.html)
 - [10-minute tour](https://docs.karmanivero.us/smoz/documents/10%E2%80%91minute_tour.html)
 - [HTTP MIddleware](https://docs.karmanivero.us/smoz/documents/HTTP_middleware.html)

@@ -6,7 +6,18 @@ sidebar_position: 5
 
 # CLI
 
-The `smoz` CLI maintains registers, scaffolds functions, and initializes apps.
+## From zero in two commands
+
+```bash
+npx @karmaniverous/smoz init -i
+npx smoz dev -p 3000
+```
+
+- The first command scaffolds a new app and installs dependencies (including a local `smoz` bin).
+- The second command starts the inline local backend; open http://localhost:3000/openapi
+- Prefer serverless‑offline? Use `-l offline`: `npx smoz dev -l offline -p 3000`
+
+This mirrors the README quickstart for the fastest path to “it runs.”
 
 ## Signature
 
@@ -27,6 +38,8 @@ npx smoz -v
 ```bash
 npx smoz init --yes
 ```
+
+First‑time npx note: You can also run `npx @karmaniverous/smoz init -i` in an empty directory — this uses the published package and installs template dependencies so subsequent `npx smoz …` commands run from your local bin.
 
 Scaffolds a new app:
 
