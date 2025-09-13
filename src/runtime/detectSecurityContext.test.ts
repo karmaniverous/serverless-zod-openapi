@@ -118,4 +118,28 @@ describe('detectSecurityContext', () => {
     const v2 = createApiGatewayV2Event();
     expect(detectSecurityContext(v2)).toBe('public');
   });
+
+  it('V2: returns "my" when Authorization header contains AWS SigV4', () => {
+    const v2 = createApiGatewayV2Event({
+      authorization:
+        'AWS4-HMAC-SHA256 Credential=AKIA.../20250101/us-east-1/execute-api/aws4_request, SignedHeaders=host;x-amz-date, Signature=...',
+    });
+    expect(detectSecurityContext(v2)).toBe('my');
+  });
+
+  it('V1: returns "my" when identity.accessKey is present (no authorizer)', () => {
+    const base = createApiGatewayV1Event('GET');
+    const identity: APIGatewayProxyEvent['requestContext']['identity'] = {
+      ...base.requestContext.identity,
+      accessKey: 'AKIA...',
+      apiKey: null,
+      apiKeyId: null,
+    } as unknown as APIGatewayProxyEvent['requestContext']['identity'];
+    const requestContext: APIGatewayProxyEvent['requestContext'] = {
+      ...base.requestContext,
+      identity,
+      authorizer: undefined,
+    };
+    expect(detectSecurityContext({ ...base, requestContext })).toBe('my');
+  });
 });

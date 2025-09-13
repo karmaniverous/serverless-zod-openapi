@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-12T21:20:00Z
+When updated: 2025-09-13T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -11,10 +11,10 @@ When updated: 2025-09-12T21:20:00Z
 
 ## Completed (recent)
 
+- Tests: add coverage for resolveHttpFromFunctionConfig (inference/errors), wrapHandler non‑HTTP bypass, registry behaviors (duplicate name, fnEnvKeys merge, serverless extras), buildPath helpers, httpZodValidator edge paths, pojofy serializer, serverless plugin hook registration, and detectSecurityContext (SigV4/v1 accessKey).
 - Tests: fix init helper tests — create parent directories in conflicts tests; remove prior lockfiles before subsequent detectPm assertions.
 - Tests: add unit coverage for init helpers — manifest (mergeAdditive/ensureToolkitDependency), conflicts (overwrite/example/skip), install (detectPm/unknown-pm), and seed (register placeholders). Keeps refactor confidence high.
-- Refactor: split src/cli/init.ts into modules under src/cli/init/\* (index.ts, runInit.ts, helpers) and remove original file; preserve import path. Split src/http/middleware/buildHttpMiddlewareStack.ts into directory with index.ts + steps.ts and remove original file. Fixed a minor lint (unused variable) in the init flow during the move.
-- CLI: fix TypeScript exactOptionalPropertyTypes in init options (conditional spreads for install/conflict) and remove unnecessary optional chain in dev defaults; lint/typecheck clean.
+- Refactor: split src/cli/init.ts into modules under src/cli/init/\* (index.ts, runInit.ts, helpers) and remove original file; preserve import path. Split src/http/middleware/buildHttpMiddlewareStack.ts into directory with index.ts + steps.ts and remove original file. Fixed a minor lint (unused variable) in the init flow during the move.- CLI: fix TypeScript exactOptionalPropertyTypes in init options (conditional spreads for install/conflict) and remove unnecessary optional chain in dev defaults; lint/typecheck clean.
 - Default template DX: during init, ensure '@karmaniverous/smoz' is added to
   dependencies (using the running CLI version) so first-time 'npx smoz init' compiles cleanly.
 - Templates:lint — add "@/..." alias to templates/default/tsconfig.eslint.json so
