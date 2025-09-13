@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
-import { packageDirectorySync } from 'pkg-dir';
+import { packageDirectorySync } from 'package-directory';
 import { createDocument } from 'zod-openapi';
 
 import { app } from '@/app/config/app.config';

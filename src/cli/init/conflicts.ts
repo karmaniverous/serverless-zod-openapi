@@ -5,7 +5,6 @@ import { walk, writeIfAbsent } from './fs';
 import type { ConflictPolicy } from './types';
 
 export type ReadlineLike = { question: (q: string) => Promise<string> };
-
 export const askConflict = async (
   rl: ReadlineLike,
   filePath: string,
@@ -37,13 +36,21 @@ export const copyDirWithConflicts = async (
   created: string[],
   skipped: string[],
   examples: string[],
-  opts: { conflict: ConflictPolicy; rl?: ReadlineLike },
+  opts: {
+    conflict: ConflictPolicy;
+    rl?: ReadlineLike;
+    exclude?: (relPath: string) => boolean;
+  },
 ): Promise<void> => {
   const files = await walk(srcDir);
   let sticky: 'overwrite' | 'example' | 'skip' | undefined;
 
   for (const abs of files) {
     const rel = relative(srcDir, abs);
+    if (opts.exclude && opts.exclude(rel)) {
+      // Skip dev-only or excluded files silently.
+      continue;
+    }
     const dest = resolve(dstRoot, rel);
     const data = await fs.readFile(abs, 'utf8');
     if (!existsSync(dest)) {

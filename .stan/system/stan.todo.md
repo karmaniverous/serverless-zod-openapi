@@ -2,29 +2,38 @@
 
 # Development Plan
 
-When updated: 2025-09-13T03:20:00Z
+When updated: 2025-09-13T03:55:00Z
 
 ## Next up (near‑term, actionable)
+
 1. CLI polish: evaluate short‑flag overlap between root `-v/--version` and
    `dev -v` (verbose). Draft a non‑breaking proposal and update help text if
    needed.
 
 ## Completed (recent)
 
+- Templates (DX, no downstream leakage):
+  - Add dev-only ambient types at `templates/default/types/smoz.dev.d.ts`
+    that re-export from this repo’s `dist/index`. This removes ts2307 in the
+    editor without relying on `.stan/dist`.
+  - Update init copy to exclude `types/*.dev.d.ts`, ensuring the dev
+    declaration never ships to downstream apps. No tsconfig changes are
+    transmitted; downstream templates remain “normal”.
+
 - Fix: restore `APIGatewayProxyEvent` import in
   `buildHttpMiddlewareStack/steps.ts` to resolve TS2304 in docs/build and the
   derived ESLint “error typed value” noise.
 - Docs: finish “Why smoz?” page (it was truncated) and add sections that answer
   “How is SMOZ?”, “Is it easy to try & adopt?”, and “Will API devs love it?”.
-- Fix: add missing `regex` property in `buildHttpMiddlewareStack/steps.ts`  serializer and remove unused imports to clear Typedoc/typecheck warnings and
+- Fix: add missing `regex` property in `buildHttpMiddlewareStack/steps.ts` serializer and remove unused imports to clear Typedoc/typecheck warnings and
   ESLint errors reported in `docs`/`lint` outputs.
 
 - Docs build: remove TypeDoc warning by switching steps.ts to use the
   exported ApiMiddleware type in public signatures (no private alias).
-- Docs: README Quick links formatting & HTTP Middleware casing; Tour init  command updated to default template.
-- Docs: fix “add” examples to use `rest/foo/get` (avoid collision with the  template’s default hello endpoint) across README, Getting started, Tour,
+- Docs: README Quick links formatting & HTTP Middleware casing; Tour init command updated to default template.
+- Docs: fix “add” examples to use `rest/foo/get` (avoid collision with the template’s default hello endpoint) across README, Getting started, Tour,
   and examples.- Housekeeping: remove ActiveCampaign services, endpoints, and related config
-  (orval/cached-axios, '@@/*' paths, knip entries). Verified build/typecheck/
+  (orval/cached-axios, '@@/\*' paths, knip entries). Verified build/typecheck/
   tests/package remain green per latest script outputs.
 - Docs: Lead README and docs (Getting started, CLI) with from‑zero quickstart (`npx @karmaniverous/smoz init -i` → `npx smoz dev -p 3000`), add offline variant, and include a short “add” example; note first‑time npx behavior.
 - Tests: add coverage for resolveHttpFromFunctionConfig (inference/errors), wrapHandler non‑HTTP bypass, registry behaviors (duplicate name, fnEnvKeys merge, serverless extras), buildPath helpers, httpZodValidator edge paths, pojofy serializer, serverless plugin hook registration, and detectSecurityContext (SigV4/v1 accessKey).

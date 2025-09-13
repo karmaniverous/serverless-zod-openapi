@@ -12,6 +12,11 @@ import { seedRegisterPlaceholders } from './seed';
 import type { ConflictPolicy, InitOptions, InitResult } from './types';
 
 const toPosixSep = (p: string): string => p.split(sep).join('/');
+// Exclude dev-only type stubs (not meant for downstream apps).
+const excludeDev = (rel: string): boolean => {
+  const posixRel = rel.replace(/\\/g, '/');
+  return /\/types\/[^/]*\.dev\.d\.ts$/i.test(posixRel);
+};
 
 export const runInit = async (
   root: string,
@@ -54,17 +59,12 @@ export const runInit = async (
     const copyOpts = rl
       ? ({ conflict: policy, rl } as const)
       : ({ conflict: policy } as const);
-    await copyDirWithConflicts(
-      projectBase,
-      root,
-      created,
-      skipped,
-      examples,
-      copyOpts,
-    );
+    await copyDirWithConflicts(projectBase, root, created, skipped, examples, {
+      ...(copyOpts as object),
+      exclude: excludeDev,
+    } as never);
     rl?.close();
   }
-
   // 2) Copy selected template
   {
     const rl =
@@ -79,17 +79,12 @@ export const runInit = async (
     const copyOpts = rl
       ? ({ conflict: policy, rl } as const)
       : ({ conflict: policy } as const);
-    await copyDirWithConflicts(
-      srcBase,
-      root,
-      created,
-      skipped,
-      examples,
-      copyOpts,
-    );
+    await copyDirWithConflicts(srcBase, root, created, skipped, examples, {
+      ...(copyOpts as object),
+      exclude: excludeDev,
+    } as never);
     rl?.close();
   }
-
   // 2.5) Convert template 'gitignore' into a real '.gitignore'
   try {
     const giSrc = join(root, 'gitignore');
