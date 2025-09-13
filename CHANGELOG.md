@@ -2,9 +2,31 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.1](https://github.com/karmaniverous/smoz/compare/0.2.0...0.2.1)
+
+- Removed activecampaign tooling [`dbe4b03`](https://github.com/karmaniverous/smoz/commit/dbe4b035b3782d4f0a442f289c9699cbc7e46446)
+- updated dependencies [`628dc07`](https://github.com/karmaniverous/smoz/commit/628dc0730691e53aa64ee72460e2f57a65967021)
+- refactor(cli+http): split long modules; preserve paths [`a391c7c`](https://github.com/karmaniverous/smoz/commit/a391c7c623bd50104050f91d23942d877f10a981)
+- updated docs [`2acf5a4`](https://github.com/karmaniverous/smoz/commit/2acf5a4a541dd03dfce35f5aa7ba98507e5fa4fd)
+- updated docs [`0ad24a4`](https://github.com/karmaniverous/smoz/commit/0ad24a453ac8a6d93a131ca1d7e9a3ad96083206)
+- test: add coverage for HTTP inference, non‑HTTP bypass, registry, and helpers [`ddeb372`](https://github.com/karmaniverous/smoz/commit/ddeb3726fe033e3b01c86abc0c7c2ebbe11a18e6)
+- test(cli/init): add unit tests for init helpers [`639f958`](https://github.com/karmaniverous/smoz/commit/639f9582a1aae3fb70a67589fc2a237ffd013a93)
+- docs(build): remove TypeDoc warning (use public ApiMiddleware) [`ff698b9`](https://github.com/karmaniverous/smoz/commit/ff698b9e5fd61da63405498c0265efc16f736494)
+- docs: update “add” examples; record AC removal in plan [`a46307b`](https://github.com/karmaniverous/smoz/commit/a46307b9bc59a8a59be6d308e5fb4967f4167036)
+- docs(why): finish page; fix serializer regex and lint [`7022fbf`](https://github.com/karmaniverous/smoz/commit/7022fbfa3cf26b095f5b495a336fd2fdb07a0ad9)
+- docs: lead with from‑zero quickstart; add offline & “add” examples [`bb72241`](https://github.com/karmaniverous/smoz/commit/bb722415024e7259774e584281791ce4edabe103)
+- init: ensure app depends on @karmaniverous/smoz; update plan [`0b5919f`](https://github.com/karmaniverous/smoz/commit/0b5919f7cf919c573d1d28eb7c3a7c2d2a386a97)
+- test: fix non‑HTTP handler and validator tests (type/lint/knip) [`33afb4c`](https://github.com/karmaniverous/smoz/commit/33afb4c03da59c1007016b4b31e15823676d2191)
+- docs: fix Tour init; README quick links & casing [`2161787`](https://github.com/karmaniverous/smoz/commit/2161787515aad13fc86691f03f082800982caebd)
+- test(cli/init): stabilize helper tests (dirs, lockfile precedence) [`f6395e3`](https://github.com/karmaniverous/smoz/commit/f6395e3bce7df83270fe1ebe3348058cc13dffb0)
+- fix(steps): restore APIGatewayProxyEvent import [`30b2044`](https://github.com/karmaniverous/smoz/commit/30b2044874a530961f2c200eea8c5997eff69118)
+
 #### [0.2.0](https://github.com/karmaniverous/smoz/compare/0.1.8...0.2.0)
 
+> 12 September 2025
+
 - Begin template refactor [`a6ccffd`](https://github.com/karmaniverous/smoz/commit/a6ccffd4910e4438ac32fe84fcba5a5275cc7d21)
+- chore: release v0.2.0 [`b8a8298`](https://github.com/karmaniverous/smoz/commit/b8a829858ae2a885caecf6f6bd27f38544b24173)
 - cli(init/dev): config defaults, flags polish, and docs [`acda1bd`](https://github.com/karmaniverous/smoz/commit/acda1bd6ab8b05a3140b70e0fe2bad8e8d47cf88)
 - chore(init+templates): default template path, drop --init, fix lint/typecheck [`e03edbc`](https://github.com/karmaniverous/smoz/commit/e03edbcc0cfe83d57c22cf224c6cc470b9bd7adf)
 - fix(cli/init): repair try/catch block and installed union; type-safe templates:typecheck mapping [`2b4ddfc`](https://github.com/karmaniverous/smoz/commit/2b4ddfca6671b4b169aff39511d2791644e40d47)
