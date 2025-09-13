@@ -26,11 +26,10 @@ npx smoz dev -l offline -p 3000
 Add your first endpoint:
 
 ```bash
-npx smoz add rest/hello/get
+npx smoz add rest/foo/get
 ```
 
 ## Install
-
 ```bash
 npm i @karmaniverous/smoz zod zod-openapi
 ```

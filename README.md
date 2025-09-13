@@ -37,14 +37,13 @@ Prefer `serverless‑offline`?
 npx smoz dev -l offline -p 3000
 ```
 
-Add your first endpoint:
+Add your first endpoint (avoid clashing with the template’s hello):
 
 ```bash
-npx smoz add rest/hello/get
+npx smoz add rest/foo/get
 ```
 
 ## Quick links
-
 - [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)- [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
 - [Getting started](https://docs.karmanivero.us/smoz/documents/Getting_started.html)
 - [10-minute tour](https://docs.karmanivero.us/smoz/documents/10%E2%80%91minute_tour.html)

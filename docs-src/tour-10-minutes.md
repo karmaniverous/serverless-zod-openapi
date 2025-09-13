@@ -24,11 +24,10 @@ This scaffolds:
 ## 2) Add your first endpoint
 
 ```bash
-npx smoz add rest/hello/get
+npx smoz add rest/foo/get
 ```
 
 This creates:
-
 - `app/functions/rest/hello/get/lambda.ts` — registration (method, basePath, schemas)
 - `app/functions/rest/hello/get/handler.ts` — business handler
 - `app/functions/rest/hello/get/openapi.ts` — OpenAPI operation
