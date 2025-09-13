@@ -4,8 +4,10 @@
     "baseUrl": ".",
     "rootDir": ".",
     "emitDeclarationOnly": false,
-    "exactOptionalPropertyTypes": true,    "module": "esnext",
-    "moduleDetection": "force",    "moduleResolution": "bundler",
+    "exactOptionalPropertyTypes": true,
+    "module": "esnext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
@@ -18,7 +20,6 @@
     "verbatimModuleSyntax": true,
     "paths": {
       "@/*": ["*"],
-      "@@/*": ["services/activecampaign/*"],
       "@karmaniverous/smoz": [".stan/dist/index.d.ts", "dist/index.d.ts"]
     }
   }

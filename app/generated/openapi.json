@@ -15,36 +15,6 @@
     "version": "0.2.0"
   },
   "paths": {
-    "/event/activecampaign": {
-      "post": {
-        "summary": "ActiveCampaign events (public)",
-        "description": "Receive ActiveCampaign event webhooks.",
-        "tags": [
-          "public"
-        ],
-        "operationId": "event_activecampaign_post",
-        "requestBody": {
-          "description": "Webhook payload.",
-          "content": {
-            "application/json": {
-              "schema": {}
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Ok",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/openapi": {
       "get": {
         "summary": "Get OpenAPI spec (public)",

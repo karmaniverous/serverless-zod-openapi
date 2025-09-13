@@ -2,20 +2,16 @@ cliDefaults:
   run:
     sequential: true
 excludes:
-  - "**/.tsbuild/**"
-  - "**/generated/**"
-  - "**/node_modules/**"
-  - "**/*.tsbuildinfo"
+  - '**/.tsbuild/**'
+  - '**/generated/**'
+  - '**/node_modules/**'
+  - '**/*.tsbuildinfo'
   - docs
   - package-lock.json
-  - services/activecampaign/src/openapi.json
-includes:
-  - services/**
 outputPath: .stan
 patchOpenCommand: code -g {file}
 scripts:
   knip: npm run knip
-  generate: npm run generate
   typecheck: npm run typecheck
   lint: npm run lint:fix
   openapi: npm run openapi
@@ -26,3 +22,4 @@ scripts:
   templates-lint: npm run templates:lint
   templates-typecheck: npm run templates:typecheck
 stanPath: .stan
+

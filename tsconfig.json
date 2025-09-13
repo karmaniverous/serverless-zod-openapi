@@ -3,8 +3,7 @@
     "baseUrl": ".",
     "outDir": ".tsbuild",
     "paths": {
-      "@/*": ["*"],
-      "@@/*": ["services/activecampaign/*"]
+      "@/*": ["*"]
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },

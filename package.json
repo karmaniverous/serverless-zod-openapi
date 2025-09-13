@@ -13,7 +13,6 @@
     "url": "https://github.com/karmaniverous/smoz/issues"
   },
   "dependencies": {
-    "@karmaniverous/cached-axios": "^0.2.0",
     "@middy/core": "^6.4.5",
     "@middy/http-content-negotiation": "^6.4.5",
     "@middy/http-cors": "^6.4.5",
@@ -49,7 +48,6 @@
     "fs-extra": "^11.3.1",
     "knip": "^5.63.1",
     "lefthook": "^1.12.4",
-    "orval": "^7.11.2",
     "pkg-dir": "^9.0.0",
     "prettier": "^3.6.2",
     "release-it": "^19.0.4",
@@ -167,7 +165,6 @@
     "docs": "typedoc",
     "domain:create": "serverless create_domain",
     "domain:delete": "serverless delete_domain",
-    "generate": "cd services/activecampaign && orval",
     "knip": "knip",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",

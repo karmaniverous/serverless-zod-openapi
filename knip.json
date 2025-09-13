@@ -1,12 +1,6 @@
 {
-  "entry": ["serverless.ts", "services/activecampaign/src/index.ts"],
-  "project": [
-    "src/**",
-    "app/**",
-    "services/**",
-    "!**/generated/**",
-    "!docs/**"
-  ],
+  "entry": ["serverless.ts"],
+  "project": ["src/**", "app/**", "!**/generated/**", "!docs/**"],
   "ignore": [
     "lib/test/**",
     "app/**/handler.ts",
@@ -14,11 +8,7 @@
     "app/functions/**/openapi.ts",
     "src/serverless/intrinsic.ts",
     "src/serverless/plugin.ts",
-    "src/cli/local/inline.server.ts",
-    "services/**/src/openapi.json",
-    "services/activecampaign/orval.config.ts",
-    "services/activecampaign/src/wrapped/field-values.ts",
-    "services/activecampaign/src/api/contacts/format.ts"
+    "src/cli/local/inline.server.ts"
   ],
   "ignoreBinaries": ["plantuml"],
   "ignoreDependencies": [

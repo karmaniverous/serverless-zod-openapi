@@ -82,7 +82,7 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
     // Suppress unresolved import warnings for alias externals that we
     // intentionally mark as external for specialized builds (stan:build).
     // This keeps the build output clean without altering bundling behavior.
-    // See external() below where '@/' and '@@/' are treated as external.
+    // See external() below where '@/' is treated as external.
     try {
       const code = (warning as unknown as { code?: string }).code;
       // Some plugins (e.g., rollup-plugin-dts) may not set `source`; check id/exporter too.
@@ -95,7 +95,7 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
       if (
         code === 'UNRESOLVED_IMPORT' &&
         typeof source === 'string' &&
-        (source.startsWith('@/') || source.startsWith('@@/'))
+        source.startsWith('@/')
       ) {
         return;
       }
@@ -107,7 +107,6 @@ const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
   external: (id) =>
     // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.
     id.startsWith('@/') ||
-    id.startsWith('@@/') ||
     // Optional formatter used via dynamic import in the CLI; do not bundle.
     id === 'prettier' ||
     nodeExternals.has(id) ||
@@ -141,7 +140,6 @@ export const buildTypes = (dest: string): RollupOptions => ({
   // what it can based on the provided paths mapping.
   external: (id) =>
     id.startsWith('@/') ||
-    id.startsWith('@@/') ||
     nodeExternals.has(id) ||
     Array.from(runtimeExternalPkgs).some(
       (p) => id === p || id.startsWith(`${p}/`),
@@ -149,12 +147,11 @@ export const buildTypes = (dest: string): RollupOptions => ({
   plugins: [
     dtsPlugin({
       // Help the DTS bundler resolve our alias imports so it can inline types
-      // instead of leaving unresolved "@/" and "@@/" references.
+      // instead of leaving unresolved "@/" references.
       compilerOptions: {
         baseUrl: '.',
         paths: {
           '@/*': ['src/*'],
-          '@@/*': ['services/activecampaign/*'],
         },
       },
     }),
@@ -174,7 +171,7 @@ export const buildTypes = (dest: string): RollupOptions => ({
       if (
         code === 'UNRESOLVED_IMPORT' &&
         typeof source === 'string' &&
-        (source.startsWith('@/') || source.startsWith('@@/'))
+        source.startsWith('@/')
       ) {
         return;
       }
