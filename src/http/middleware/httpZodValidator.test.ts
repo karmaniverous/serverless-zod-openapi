@@ -14,7 +14,7 @@ describe('httpZodValidator (unit)', () => {
     });
     await expect(
       mw.before?.(
-        mkReq({ httpMethod: 'GET' } as Partial<APIGatewayProxyEvent>),
+        mkReq({ httpMethod: 'GET' } as Partial<APIGatewayProxyEvent>) as never,
       ),
     ).rejects.toMatchObject({ name: 'ZodError', message: 'Invalid event' });
   });
