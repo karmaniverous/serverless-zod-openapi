@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T18:05:00Z
+When updated: 2025-09-13T18:20:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -12,12 +12,16 @@ When updated: 2025-09-13T18:05:00Z
 
 ## Completed (recent)
 
+- Init: remove package.json conflict prompt by excluding the template manifest
+  from the copy step. The manifest is now handled solely by the additive merge
+  (create when missing; never overwrite existing keys). This eliminates the
+  scary/irrelevant “overwrite/example/skip” dialog without changing behavior.
+
 - Templates (lint): re‑run confirmed typed ESLint resolution for the template;
   consolidated templates:lint to lint the template config with the same config
   (no ignore warning). The script now invokes ESLint once with
   `-c templates/default/eslint.config.ts` over both the template files and the
   config file path.
-
 - Templates (lint): make templates/default/tsconfig.eslint.json extend-only so
   ESLint inherits the dev tsconfig mapping for @karmaniverous/smoz in-repo.
   This removes “Unsafe … error typed value” in template files while keeping

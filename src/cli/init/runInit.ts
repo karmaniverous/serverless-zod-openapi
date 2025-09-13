@@ -19,7 +19,13 @@ const excludeDev = (rel: string): boolean => {
 };
 const excludeTemplate = (rel: string): boolean => {
   const posixRel = rel.replace(/\\/g, '/');
-  if (posixRel === 'tsconfig.json') return true; // skip dev tsconfig from template
+  // Do not copy the template's dev tsconfig; downstream apps use
+  // tsconfig.downstream.json (renamed to tsconfig.json) instead.
+  if (posixRel === 'tsconfig.json') return true;
+  // Do not copy the template's package.json; we always handle the manifest
+  // via an additive merge (create when missing, never overwrite existing keys).
+  // Copying would only trigger a scary/irrelevant conflict prompt.
+  if (posixRel === 'package.json') return true;
   return excludeDev(rel);
 };
 
