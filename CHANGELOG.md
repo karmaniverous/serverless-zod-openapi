@@ -2,8 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.3](https://github.com/karmaniverous/smoz/compare/0.2.2...0.2.3)
+
+- docs(project): sync requirements with current state [`de946df`](https://github.com/karmaniverous/smoz/commit/de946dfc5cf5d797f458c899176fce6d9cc49240)
+- init: skip copying template package.json (merge only) [`a5e344a`](https://github.com/karmaniverous/smoz/commit/a5e344ad3be2ba6eabeb28196bedc0fbec92edea)
+
 #### [0.2.2](https://github.com/karmaniverous/smoz/compare/0.2.1...0.2.2)
 
+> 13 September 2025
+
+- chore: release v0.2.2 [`bf92901`](https://github.com/karmaniverous/smoz/commit/bf9290164449e54bf228b625b4853a64152444c6)
 - two-tsconfig template: dev mapping + downstream rename; simplify runner [`19f0ebb`](https://github.com/karmaniverous/smoz/commit/19f0ebb8447b0953ff407349ac53717e131dccf2)
 - templates(dev): editor types without shipping config hacks [`31b2ef7`](https://github.com/karmaniverous/smoz/commit/31b2ef7a1bd99f6ae1030210b5f2b30b2f86bc7b)
 - docs(contributing): switch to ‘npm run build’ (not ‘stan:build’) [`b889e6c`](https://github.com/karmaniverous/smoz/commit/b889e6c8151e4b71a046f4733070eecd96ede38d)
