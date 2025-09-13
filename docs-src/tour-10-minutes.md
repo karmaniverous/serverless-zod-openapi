@@ -11,11 +11,10 @@ End‑to‑end in one sitting: init → add → register → openapi → package
 ## 1) Initialize a new app
 
 ```bash
-npx smoz init --template minimal --yes
+npx smoz init --yes
 ```
 
 This scaffolds:
-
 - `app/config/app.config.ts` — schemas/config (params, env, http tokens)
 - `app/functions/**` — endpoints (rest/http and non‑HTTP)
 - `app/generated/**` — registers + OpenAPI placeholder

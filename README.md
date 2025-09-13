@@ -44,14 +44,15 @@ npx smoz add rest/foo/get
 ```
 
 ## Quick links
-- [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)- [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
+ 
+- [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)
+- [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
 - [Getting started](https://docs.karmanivero.us/smoz/documents/Getting_started.html)
 - [10-minute tour](https://docs.karmanivero.us/smoz/documents/10%E2%80%91minute_tour.html)
-- [HTTP MIddleware](https://docs.karmanivero.us/smoz/documents/HTTP_middleware.html)
+- [HTTP Middleware](https://docs.karmanivero.us/smoz/documents/HTTP_middleware.html)
 - [Recipes](https://docs.karmanivero.us/smoz/documents/Recipes.html)
   - [SQS function](https://docs.karmanivero.us/smoz/documents/Recipes.SQS_function.html)
-  - [Contexts + Cognito authorizer](https://docs.karmanivero.us/smoz/documents/Recipes.Contexts_+_Cognito_authorizer.html)
-  - [Custom middleware insertion](https://docs.karmanivero.us/smoz/documents/Recipes.Custom_middleware_insertion.html)
+  - [Contexts + Cognito authorizer](https://docs.karmanivero.us/smoz/documents/Recipes.Contexts_+_Cognito_authorizer.html)  - [Custom middleware insertion](https://docs.karmanivero.us/smoz/documents/Recipes.Custom_middleware_insertion.html)
   - [Per‑function env](<https://docs.karmanivero.us/smoz/documents/Recipes.Per%E2%80%91function_env_(fnEnvKeys).html>)
   - [Observability](<https://docs.karmanivero.us/smoz/documents/Recipes.Observability_(requestId_header).html>)
   - [Troubleshooting](https://docs.karmanivero.us/smoz/documents/Recipes.Troubleshooting.html)

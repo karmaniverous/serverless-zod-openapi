@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T01:45:00Z
+When updated: 2025-09-13T02:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -12,10 +12,11 @@ When updated: 2025-09-13T01:45:00Z
 
 ## Completed (recent)
 
+- Docs: README Quick links formatting & HTTP Middleware casing; Tour init
+  command updated to default template.
 - Docs: fix “add” examples to use `rest/foo/get` (avoid collision with the
   template’s default hello endpoint) across README, Getting started, Tour,
-  and examples.
-- Housekeeping: remove ActiveCampaign services, endpoints, and related config
+  and examples.- Housekeeping: remove ActiveCampaign services, endpoints, and related config
   (orval/cached-axios, '@@/*' paths, knip entries). Verified build/typecheck/
   tests/package remain green per latest script outputs.
 - Docs: Lead README and docs (Getting started, CLI) with from‑zero quickstart (`npx @karmaniverous/smoz init -i` → `npx smoz dev -p 3000`), add offline variant, and include a short “add” example; note first‑time npx behavior.
