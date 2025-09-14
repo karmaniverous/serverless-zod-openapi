@@ -2,8 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.5](https://github.com/karmaniverous/smoz/compare/0.2.4...0.2.5)
+
+- openapi: align reference/template and fix downstream drift [`1203264`](https://github.com/karmaniverous/smoz/commit/120326473ace7c20d959f6e2fc3b3f4d71399bcd)
+- cleanup [`5fa12fa`](https://github.com/karmaniverous/smoz/commit/5fa12faf34bc54af139be94f2b70fdb2e261c47f)
+- Added change log to stan excludes [`aaab988`](https://github.com/karmaniverous/smoz/commit/aaab988c2d98a0c5feea1f272b3faf3762f5516e)
+
 #### [0.2.4](https://github.com/karmaniverous/smoz/compare/0.2.3...0.2.4)
 
+> 14 September 2025
+
+- chore: release v0.2.4 [`9238b5f`](https://github.com/karmaniverous/smoz/commit/9238b5ff9d7fbb2dd62f94344b9770b7e28104b4)
 - build: resolve "@/..." alias in dist; fix downstream import errors [`8daaba3`](https://github.com/karmaniverous/smoz/commit/8daaba3c820efae133600e2b49b92ac783e8772f)
 - templates: wire esbuild and doc params in template [`2319e8e`](https://github.com/karmaniverous/smoz/commit/2319e8efa2ce777b6e32233a383f14c0d255ad2b)
 - chore: adopt LF line endings repo-wide and in template [`790737d`](https://github.com/karmaniverous/smoz/commit/790737dc844ae249e291036cb56c44e3a77f29ea)
