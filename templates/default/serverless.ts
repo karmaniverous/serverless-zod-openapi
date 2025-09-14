@@ -3,8 +3,7 @@ import type { AWS } from '@serverless/typescript';
 import { app } from '@/app/config/app.config';
 /**
  * Template note:
- * - Templates do NOT commit generated register files under app/generated; they
- *   are declared via ambient types (templates/minimal/types/registers.d.ts) so
+ * - Templates do NOT commit generated register files under app/generated; they *   are declared via ambient types (templates/minimal/types/registers.d.ts) so
  *   TypeScript can typecheck without artifacts.
  * - To ensure side effects still run (endpoint/serverless registration) and to
  *   satisfy noUncheckedSideEffectImports, import register modules as namespaces
@@ -108,6 +107,25 @@ const config: AWS = {
     versionFunctions: false,
   },
   functions: app.buildAllServerlessFunctions() as NonNullable<AWS['functions']>,
+  // Optional esbuild configuration (parity with /app fixture):
+  // These booleans are driven by global params in app.config.ts:
+  //   ESB_MINIFY, ESB_SOURCEMAP
+  build: {
+    esbuild: {
+      bundle: true,
+      // Param placeholders resolve at deploy/package time; assert to boolean for TS.
+      minify: '${param:ESB_MINIFY}' as unknown as boolean,
+      sourcemap: '${param:ESB_SOURCEMAP}' as unknown as boolean,
+      // This keeps the AWS SDK external and trims bundles.
+      exclude: ['@aws-sdk/*'],
+      target: 'node22',
+      platform: 'node',
+      // Avoid bundling require.resolve shims
+      define: {
+        'require.resolve': undefined,
+      },
+    },
+  },
 };
 
 export default config;

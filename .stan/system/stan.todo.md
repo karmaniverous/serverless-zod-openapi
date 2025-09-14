@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-14T00:10:00Z
+When updated: 2025-09-14T00:24:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -17,3 +17,5 @@ When updated: 2025-09-14T00:10:00Z
 2. Templates: align default params referenced by serverless.ts. Added
    ESB_MINIFY/ESB_SOURCEMAP (global) and DOMAIN_NAME/DOMAIN_CERTIFICATE_ARN
    (stage) to templates/default/app/config/app.config.ts with sensible dev defaults.
+3. Templates: wire esbuild block in serverless.ts to use ESB_* params and
+   add README note documenting ESB_* and DOMAIN_* param usage.

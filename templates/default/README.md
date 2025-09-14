@@ -61,10 +61,30 @@ Tip: Commit `app/generated/register.*.ts` so typecheck is stable without running
 - Generate OpenAPI
 - Package or deploy with your preferred toolchain
 
+## Params used by serverless.ts
+
+This template references a few params from your app config:
+
+- Global params (app/config/app.config.ts → global.params)
+  - `ESB_MINIFY` (boolean) — controls `build.esbuild.minify`
+  - `ESB_SOURCEMAP` (boolean) — controls `build.esbuild.sourcemap`
+  - `PROFILE`, `REGION`, `SERVICE_NAME`
+- Stage params (app/config/app.config.ts → stage.params.<stage>)
+  - `DOMAIN_NAME` — used by the custom domain plugin config
+  - `DOMAIN_CERTIFICATE_ARN` — ACM certificate ARN for the domain
+  - `STAGE`
+
+Where these are used:
+
+- The esbuild block in `serverless.ts` reads `ESB_MINIFY` and `ESB_SOURCEMAP`
+  to toggle minification and sourcemaps.
+- The `customDomain` section in `serverless.ts` reads `DOMAIN_NAME` and
+  `DOMAIN_CERTIFICATE_ARN`. Update these with your values or remove the
+  custom domain plugin if not needed.
+
 ## Path hygiene (cross‑platform)
 
 Windows uses backslashes in paths, which can leak into string comparisons and generated artifacts. Normalize separators consistently using the helper exported by the toolkit:
-
 ```ts
 import { toPosixPath } from '@karmaniverous/smoz';
 
