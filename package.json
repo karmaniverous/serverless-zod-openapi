@@ -181,5 +181,5 @@
     "templates:lint": "eslint --fix -c templates/default/eslint.config.ts \"templates/default/**/*.{ts,tsx,js,jsx}\" \"templates/default/eslint.config.ts\""
   },
   "type": "module",
-  "version": "0.2.5"
+  "version": "0.2.6"
 }

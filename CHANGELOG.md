@@ -2,8 +2,24 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.6](https://github.com/karmaniverous/smoz/compare/0.2.5...0.2.6)
+
+- refactor: split inline server into module folder and remove monolith [`4cdf4eb`](https://github.com/karmaniverous/smoz/commit/4cdf4eb2ace03d862f3bcf4ac89a294bc390df47)
+- dev: run packaged inline via tsx; warn/fallback when unavailable [`1269f64`](https://github.com/karmaniverous/smoz/commit/1269f64b16bc68c7400cd5ed5681554aeb27a9b6)
+- fix(dev): resolve inline entry without __dirname; type/lint cleanup; dev -V [`dcce6c9`](https://github.com/karmaniverous/smoz/commit/dcce6c981e4c5db4778bfbaf585dd20aedd2cf9c)
+- fix(inline): restore Route typing, add diagnostics; show empty routes [`042588c`](https://github.com/karmaniverous/smoz/commit/042588cd01fcf6453ef969a60ebe25a6ab86d36b)
+- fix(inline): share App instance with registers to populate routes [`9589c81`](https://github.com/karmaniverous/smoz/commit/9589c81fed190ba866b18d882ec7c4d34f586442)
+- fix(inline): populate routes by generating relative register imports [`f67a836`](https://github.com/karmaniverous/smoz/commit/f67a8367e0cfabd9d6daed81ec2944b542bb6fdd)
+- fix(dev:inline): drop --tsconfig-paths flag; rely on env to fix Windows [`025e2fa`](https://github.com/karmaniverous/smoz/commit/025e2fab4c614f1e044972f806a549a58302fecc)
+- fix(inline): resolve tsconfig paths in tsx and keep TS-friendly register imports [`b6323ea`](https://github.com/karmaniverous/smoz/commit/b6323ea5c3897ac781eda16652c072ba4677b311)
+- fix(inline): use explicit .ts extensions in generated register imports [`02c9032`](https://github.com/karmaniverous/smoz/commit/02c9032fb2ff1cc454a6ba1802c627cfab18bf70)
+- comments [`03ee487`](https://github.com/karmaniverous/smoz/commit/03ee4873da1d442eafb7d93a19bba3bc96c2137d)
+
 #### [0.2.5](https://github.com/karmaniverous/smoz/compare/0.2.4...0.2.5)
 
+> 14 September 2025
+
+- chore: release v0.2.5 [`fdf7781`](https://github.com/karmaniverous/smoz/commit/fdf7781e400403f2d71b6960228bdc450d238636)
 - openapi: align reference/template and fix downstream drift [`1203264`](https://github.com/karmaniverous/smoz/commit/120326473ace7c20d959f6e2fc3b3f4d71399bcd)
 - cleanup [`5fa12fa`](https://github.com/karmaniverous/smoz/commit/5fa12faf34bc54af139be94f2b70fdb2e261c47f)
 - Added change log to stan excludes [`aaab988`](https://github.com/karmaniverous/smoz/commit/aaab988c2d98a0c5feea1f272b3faf3762f5516e)
