@@ -1,0 +1,4 @@
+# Enforce LF line endings for all text files
+# Let Git handle normalization; editors/formatters follow repo policy.
+* text=auto eol=lf
+

@@ -13,6 +13,7 @@
     "typescript",
     "typescriptreact"
   ],
+  "files.eol": "\n",
   "git.autofetch": true,
   "git.enableSmartCommit": true,
   "javascript.preferences.importModuleSpecifierEnding": "minimal",
