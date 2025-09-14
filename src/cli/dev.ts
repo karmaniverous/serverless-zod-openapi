@@ -3,8 +3,7 @@
  * - Watches author sources; debounces bursts; runs tasks in order: register → openapi.
  * - Optional local serving (--local inline|offline).
  * - Stage/env: seeds process.env with concrete values for the selected stage.
- */
-import path from 'node:path';
+ */ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import chokidar from 'chokidar';
@@ -285,12 +284,14 @@ const launchInline = async (
   let args: string[];
   let useShell = false;
   let tsxAvailable = false;
-  const tsxArgsExtra = ['--tsconfig-paths'];
 
   if (fs.existsSync(tsxCli)) {
     tsxAvailable = true;
     cmd = process.execPath;
-    args = [tsxCli, ...tsxArgsExtra, entry];
+    // Pass the TSX CLI script followed by our entry. On Windows, avoid
+    // putting unknown flags before the script to prevent Node from treating
+    // them as its own options. Enable tsconfig-paths via env only.
+    args = [tsxCli, entry];
   } else {
     // Probe PATH: tsx --version
     const probe = spawnSync(
@@ -301,7 +302,9 @@ const launchInline = async (
     if (typeof probe.status === 'number' && probe.status === 0)
       tsxAvailable = true;
     cmd = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
-    args = [...tsxArgsExtra, entry];
+    // Invoke tsx from PATH with just the script entry; rely on
+    // TSX_TSCONFIG_PATHS=1 in the environment for path alias resolution.
+    args = [entry];
     useShell = true;
   }
   if (!tsxAvailable) {
@@ -315,6 +318,9 @@ const launchInline = async (
       cwd: root,
       stdio: 'inherit',
       shell: useShell,
+      // Enable tsconfig paths resolution for "@/..." via environment;
+      // avoids passing CLI flags that can confuse Node on Windows.
+      // Keep additional SMOZ_* env for server configuration.
       env: {
         ...process.env,
         TSX_TSCONFIG_PATHS: '1',
