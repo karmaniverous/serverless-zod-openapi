@@ -34,6 +34,12 @@ const loadRegisters = async (root: string): Promise<void> => {
     try {
       const url = pathToFileURL(p).href;
       await import(url);
+      // Optional diagnostics: confirm which register file was loaded
+      if (process.env.SMOZ_VERBOSE) {
+        const rel = path.relative(root, p).split(path.sep).join('/');
+        console.log('[inline] registers loaded:', rel);
+      }
+      // Loaded one of the candidates successfully
       return;
     } catch {
       // try next candidate
@@ -64,7 +70,9 @@ const loadApp = async (root: string): Promise<AppLike> => {
 type Route = {
   method: string; // UPPER
   pattern: string; // e.g., /users/{id}
-  segs: Segment[]; // parsed path segments  handlerRef: string; // module.export (from handler string)
+  segs: Segment[]; // parsed path segments
+  /** module.export (from handler string) */
+  handlerRef: string;
   handler: (
     e: APIGatewayProxyEvent,
     c: Context,
@@ -344,20 +352,23 @@ const start = async () => {
 
     // Print route table
     console.log('[inline] listening on http://localhost:' + String(resolved));
-    console.log(
-      '[inline] routes:\n' +
-        routes
-          .map(
-            (r) =>
-              '  ' +
-              r.method.padEnd(6) +
-              ' ' +
-              r.pattern +
-              '  ->  ' +
-              r.handlerRef,
-          )
-          .join('\n'),
-    );
+    const header = '[inline] routes:\n';
+    if (routes.length === 0) {
+      console.log(header + '  (none found)');
+    } else {
+      const body = routes
+        .map(
+          (r) =>
+            '  ' +
+            r.method.padEnd(6) +
+            ' ' +
+            r.pattern +
+            '  ->  ' +
+            r.handlerRef,
+        )
+        .join('\n');
+      console.log(header + body);
+    }
   });
 };
 
