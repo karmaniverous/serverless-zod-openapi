@@ -2,8 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.4](https://github.com/karmaniverous/smoz/compare/0.2.3...0.2.4)
+
+- build: resolve "@/..." alias in dist; fix downstream import errors [`8daaba3`](https://github.com/karmaniverous/smoz/commit/8daaba3c820efae133600e2b49b92ac783e8772f)
+- templates: wire esbuild and doc params in template [`2319e8e`](https://github.com/karmaniverous/smoz/commit/2319e8efa2ce777b6e32233a383f14c0d255ad2b)
+- chore: adopt LF line endings repo-wide and in template [`790737d`](https://github.com/karmaniverous/smoz/commit/790737dc844ae249e291036cb56c44e3a77f29ea)
+- templates: drop redundant as const in envKeys [`c35c166`](https://github.com/karmaniverous/smoz/commit/c35c166de52b1ab80dd3e5713093eb0e9aaf19c4)
+- templates: fix ambient types path in comments (default, not minimal) [`fff5399`](https://github.com/karmaniverous/smoz/commit/fff5399e9b44501f2fe5ff4b0b32f1bf97a4d89e)
+- bugfix [`958d73f`](https://github.com/karmaniverous/smoz/commit/958d73ff3edb8992631a7584bf9a5885937deb42)
+- fix typedoc entry point [`acb5b9e`](https://github.com/karmaniverous/smoz/commit/acb5b9efaaf7beb47e4bd061a2812c555da660cd)
+
 #### [0.2.3](https://github.com/karmaniverous/smoz/compare/0.2.2...0.2.3)
 
+> 13 September 2025
+
+- chore: release v0.2.3 [`430ad5b`](https://github.com/karmaniverous/smoz/commit/430ad5befdaf19fbb82f9d075723ae27f8d83f72)
 - docs(project): sync requirements with current state [`de946df`](https://github.com/karmaniverous/smoz/commit/de946dfc5cf5d797f458c899176fce6d9cc49240)
 - init: skip copying template package.json (merge only) [`a5e344a`](https://github.com/karmaniverous/smoz/commit/a5e344ad3be2ba6eabeb28196bedc0fbec92edea)
 
