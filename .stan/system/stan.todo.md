@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-13T18:20:00Z
+When updated: 2025-09-14T00:10:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -11,3 +11,9 @@ When updated: 2025-09-13T18:20:00Z
    needed.
 
 ## Completed (recent)
+1. Templates: drop redundant `as const` from envKeys in
+   templates/default/app/config/app.config.ts. Contextual typing preserves
+   compile‑time checking; runtime validation remains in place.
+2. Templates: align default params referenced by serverless.ts. Added
+   ESB_MINIFY/ESB_SOURCEMAP (global) and DOMAIN_NAME/DOMAIN_CERTIFICATE_ARN
+   (stage) to templates/default/app/config/app.config.ts with sensible dev defaults.
