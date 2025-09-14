@@ -278,16 +278,19 @@ const launchInline = async (
       'inline server entry missing in package (dist/mjs/cli/inline-server.js)',
     );
   }
+
   // Prefer project-local tsx; otherwise probe PATH for tsx availability
   const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
   let cmd: string;
   let args: string[];
   let useShell = false;
   let tsxAvailable = false;
+  const tsxArgsExtra = ['--tsconfig-paths'];
+
   if (fs.existsSync(tsxCli)) {
     tsxAvailable = true;
     cmd = process.execPath;
-    args = [tsxCli, entry];
+    args = [tsxCli, ...tsxArgsExtra, entry];
   } else {
     // Probe PATH: tsx --version
     const probe = spawnSync(
@@ -298,7 +301,7 @@ const launchInline = async (
     if (typeof probe.status === 'number' && probe.status === 0)
       tsxAvailable = true;
     cmd = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
-    args = [entry];
+    args = [...tsxArgsExtra, entry];
     useShell = true;
   }
   if (!tsxAvailable) {
@@ -314,6 +317,7 @@ const launchInline = async (
       shell: useShell,
       env: {
         ...process.env,
+        TSX_TSCONFIG_PATHS: '1',
         SMOZ_STAGE: opts.stage,
         SMOZ_PORT: String(opts.port),
         SMOZ_VERBOSE: opts.verbose ? '1' : '',

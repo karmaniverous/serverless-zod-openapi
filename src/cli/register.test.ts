@@ -42,10 +42,10 @@ describe('CLI: register', () => {
       // POSIX-form imports and stable substrings
       // Relative from app/generated → app/functions/...
       expect(fns).toMatch(
-        /import ['"]\.\.\/functions\/rest\/hello\/get\/lambda\.ts['"];?/,
+        /import ['"]\.\.\/functions\/rest\/hello\/get\/lambda['"];?/,
       );
       expect(oai).toMatch(
-        /import ['"]\.\.\/functions\/rest\/hello\/get\/openapi\.ts['"];?/,
+        /import ['"]\.\.\/functions\/rest\/hello\/get\/openapi['"];?/,
       );
       // Second run: No changes
       const second = await runRegister(root);
