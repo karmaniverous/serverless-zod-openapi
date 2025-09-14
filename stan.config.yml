@@ -6,6 +6,7 @@ excludes:
   - '**/generated/**'
   - '**/node_modules/**'
   - '**/*.tsbuildinfo'
+  - CHANGELOG.md
   - docs
   - package-lock.json
 includes:
@@ -24,4 +25,3 @@ scripts:
   templates-lint: npm run templates:lint
   templates-typecheck: npm run templates:typecheck
 stanPath: .stan
-
