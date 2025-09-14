@@ -8,12 +8,11 @@ import { app } from '@/app/config/app.config';
 /**
  * Template note:
  * - Templates do NOT commit generated register files under app/generated; they
- *   are declared via ambient types (templates/minimal/types/registers.d.ts) so
+ *   are declared via ambient types (templates/default/types/registers.d.ts) so
  *   TypeScript can typecheck without artifacts.
  * - To ensure side effects still run (endpoint registration) and to satisfy
  *   noUncheckedSideEffectImports, import the register module as a namespace and
- *   reference it via `void`.
- * - In real apps, `smoz init` seeds placeholders and `smoz register` rewrites
+ *   reference it via `void`. * - In real apps, `smoz init` seeds placeholders and `smoz register` rewrites
  *   app/generated/register.*.ts at author time.
  */
 import * as __register_openapi from '@/app/generated/register.openapi';

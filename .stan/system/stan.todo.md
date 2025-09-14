@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-14T00:24:00Z
+When updated: 2025-09-14T00:36:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -19,3 +19,5 @@ When updated: 2025-09-14T00:24:00Z
    (stage) to templates/default/app/config/app.config.ts with sensible dev defaults.
 3. Templates: wire esbuild block in serverless.ts to use ESB_* params and
    add README note documenting ESB_* and DOMAIN_* param usage.
+4. Templates: fix comments to reference ambient types at
+   templates/default/types/registers.d.ts (not minimal).
