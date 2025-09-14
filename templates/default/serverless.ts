@@ -107,9 +107,6 @@ const config: AWS = {
     versionFunctions: false,
   },
   functions: app.buildAllServerlessFunctions() as NonNullable<AWS['functions']>,
-  // Optional esbuild configuration (parity with /app fixture):
-  // These booleans are driven by global params in app.config.ts:
-  //   ESB_MINIFY, ESB_SOURCEMAP
   build: {
     esbuild: {
       bundle: true,
