@@ -18,7 +18,6 @@ export default [
       'coverage/**',
       'dist/**',
       'docs/**',
-      'templates/**',
       'node_modules/**',
     ],
   },

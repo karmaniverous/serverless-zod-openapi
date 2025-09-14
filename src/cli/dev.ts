@@ -270,15 +270,14 @@ const launchInline = async (
   const path = await import('node:path');
   const fs = await import('node:fs');
 
-  // Resolve packaged inline server (dist/mjs/cli/inline-server.js) relative to CLI dist
-  // dist/cli/index.cjs -> ../mjs/cli/inline-server.js
-  const entry = path.resolve(__dirname, '..', 'mjs', 'cli', 'inline-server.js');
+  // Resolve packaged inline server from the project root so this works
+  // both when running the built CLI and via tsx on sources.
+  const entry = path.resolve(root, 'dist', 'mjs', 'cli', 'inline-server.js');
   if (!fs.existsSync(entry)) {
     throw new Error(
       'inline server entry missing in package (dist/mjs/cli/inline-server.js)',
     );
   }
-
   // Prefer project-local tsx; otherwise probe PATH for tsx availability
   const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
   let cmd: string;

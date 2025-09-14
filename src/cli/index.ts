@@ -262,7 +262,7 @@ const main = (): void => {
     .option('-l, --local [mode]', 'Local server mode: inline|offline', 'inline')
     .option('-s, --stage <name>', 'Stage name (default inferred)')
     .option('-p, --port <n>', 'Port (0=random)', (v) => Number(v), 0)
-    .option('-v, --verbose', 'Verbose logging', false)
+    .option('-V, --verbose', 'Verbose logging', false)
     .action(
       async (opts: {
         register?: boolean;

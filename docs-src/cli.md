@@ -158,7 +158,7 @@ Flags (CLI wins over config defaults; `cliDefaults.dev.local` sets the default):
 - `-l, --local [mode]` — `inline` (default) or `offline`
 - `-s, --stage <name>` — stage name (default inferred)
 - `-p, --port <n>` — port (0=random)
-- `-v, --verbose` — verbose logging
+- `-V, --verbose` — verbose logging
 
 Root version flag:
 

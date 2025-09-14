@@ -47,7 +47,8 @@ const loadRegisters = async (root: string): Promise<void> => {
 
 type Route = {
   method: string; // UPPER
-  pattern: string; // e.g., /users/{id}  segs: Array<{ literal?: string; key?: string }>;
+  pattern: string; // e.g., /users/{id}
+  segs: Segment[]; // parsed path segments
   handlerRef: string; // module.export (from handler string)
   handler: (
     e: APIGatewayProxyEvent,
@@ -55,7 +56,12 @@ type Route = {
   ) => Promise<APIGatewayProxyResult>;
 };
 
-const splitPattern = (p: string): Array<{ literal?: string; key?: string }> =>
+type Segment = {
+  literal?: string;
+  key?: string;
+};
+
+const splitPattern = (p: string): Segment[] =>
   p
     .replace(/\\/g, '/')
     .replace(/^\/+|\/+$/g, '')
@@ -174,10 +180,10 @@ const makeContext = (): Context =>
   }) as unknown as Context;
 
 const match = (
-  segs: Route['segs'],
+  segs: Segment[],
   pathName: string,
 ): { ok: boolean; params: Record<string, string> } => {
-  const parts = pathName
+  const parts: string[] = pathName
     .replace(/^\/+|\/+$/g, '')
     .split('/')
     .filter(Boolean);
