@@ -58,7 +58,8 @@ const startInline = async (): Promise<{
     'src',
     'cli',
     'local',
-    'inline.server.ts',
+    'inline.server',
+    'index.ts',
   );
 
   const args: string[] = [];

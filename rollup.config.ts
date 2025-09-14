@@ -152,7 +152,7 @@ export const buildInlineServer = (
   dest: string,
   tsconfigPath?: string,
 ): RollupOptions => ({
-  input: 'src/cli/local/inline.server.ts',
+  input: 'src/cli/local/inline.server/index.ts',
   output: {
     file: `${dest}/mjs/cli/inline-server.js`,
     format: 'esm',

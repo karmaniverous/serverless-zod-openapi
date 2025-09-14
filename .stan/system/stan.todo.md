@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-14T20:00:00Z
+When updated: 2025-09-14T20:15:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -31,3 +31,7 @@ When updated: 2025-09-14T20:00:00Z
     match() signature to clear TypeScript errors and lint warnings.
 39. CLI polish: kept "-v/--version" for root version and switched `dev` verbose
     flag to "-V, --verbose". Updated docs accordingly.
+40. Decompose inline dev server: moved src/cli/local/inline.server.ts into
+    a folder module src/cli/local/inline.server/ with index.ts (entry),
+    loaders.ts, routes.ts, and http.ts. Updated Rollup input, test entry
+    path, and knip ignore; removed the original file.
