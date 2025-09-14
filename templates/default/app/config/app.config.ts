@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { App, baseEventTypeMapSchema, toPosixPath } from '@karmaniverous/smoz';
 import { z } from 'zod';
 
-// Derive the app root as the parent directory of app/config/export
-const APP_ROOT_ABS = toPosixPath(fileURLToPath(new URL('..', import.meta.url)));
+// Derive the app root as the parent directory of app/config/
+export const APP_ROOT_ABS = toPosixPath(
+  fileURLToPath(new URL('..', import.meta.url)),
+);
 
 export const app = App.create({
   appRootAbs: APP_ROOT_ABS,
