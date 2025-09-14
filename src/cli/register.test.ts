@@ -40,11 +40,12 @@ describe('CLI: register', () => {
       const fns = readFileSync(fnsPath, 'utf8');
       const oai = readFileSync(oaiPath, 'utf8');
       // POSIX-form imports and stable substrings
+      // Relative from app/generated → app/functions/...
       expect(fns).toMatch(
-        /import ['"]@\/app\/functions\/rest\/hello\/get\/lambda['"];?/,
+        /import ['"]\.\.\/functions\/rest\/hello\/get\/lambda['"];?/,
       );
       expect(oai).toMatch(
-        /import ['"]@\/app\/functions\/rest\/hello\/get\/openapi['"];?/,
+        /import ['"]\.\.\/functions\/rest\/hello\/get\/openapi['"];?/,
       );
       // Second run: No changes
       const second = await runRegister(root);

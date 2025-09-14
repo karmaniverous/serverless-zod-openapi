@@ -88,19 +88,23 @@ const collect = async (root: string): Promise<Buckets> => {
   return buckets;
 };
 
-const makeImports = (root: string, files: string[]): string[] => {
-  return files.map((abs) => {
-    const rel = toPosix(relative(root, abs));
-    const noExt = withoutTsExt(rel);
-    return `import '@/${noExt}';`;
+/**
+ * Build ESM import lines using POSIX-relative specifiers from the generated
+ * file directory (app/generated) to each target file. Avoids "@/" alias so
+ * dynamic import in the inline server works reliably under tsx.
+ */
+const makeImports = (root: string, outDir: string, files: string[]): string[] =>
+  files.map((abs) => {
+    const relFromOut = toPosix(relative(outDir, abs));
+    const noExt = withoutTsExt(relFromOut);
+    const spec = noExt.startsWith('.') ? noExt : `./${noExt}`;
+    return `import '${spec}';`;
   });
-};
 
 const buildFile = (imports: string[]): string => {
   if (imports.length === 0) return `${HEADER}\n`;
   return `${HEADER}\n${imports.join('\n')}\n`;
 };
-
 export const runRegister = async (
   root: string,
 ): Promise<{
@@ -108,11 +112,11 @@ export const runRegister = async (
 }> => {
   const buckets = await collect(root);
 
-  const lambdaImports = makeImports(root, buckets.lambda);
-  const openapiImports = makeImports(root, buckets.openapi);
-  const serverlessImports = makeImports(root, buckets.serverless);
-
   const outDir = join(root, 'app', 'generated');
+  const lambdaImports = makeImports(root, outDir, buckets.lambda);
+  const openapiImports = makeImports(root, outDir, buckets.openapi);
+  const serverlessImports = makeImports(root, outDir, buckets.serverless);
+
   const fnsPath = join(outDir, 'register.functions.ts');
   const oaiPath = join(outDir, 'register.openapi.ts');
   const srvPath = join(outDir, 'register.serverless.ts');

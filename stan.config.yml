@@ -2,15 +2,15 @@ cliDefaults:
   run:
     sequential: true
 excludes:
-  - '**/.tsbuild/**'
-  - '**/generated/**'
-  - '**/node_modules/**'
-  - '**/*.tsbuildinfo'
+  - "**/.tsbuild/**"
+  - "**/generated/**"
+  - "**/node_modules/**"
+  - "**/*.tsbuildinfo"
   - CHANGELOG.md
   - docs
   - package-lock.json
 includes:
-  - 'templates/**'
+  - templates/**
 outputPath: .stan
 patchOpenCommand: code -g {file}
 scripts:
