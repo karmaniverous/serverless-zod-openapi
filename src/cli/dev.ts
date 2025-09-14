@@ -1,4 +1,5 @@
 /* Dev loop orchestrator
+ * - Prefers inline dev (packaged entry) when tsx is available; falls back to offline when not.
  * - Watches author sources; debounces bursts; runs tasks in order: register → openapi.
  * - Optional local serving (--local inline|offline).
  * - Stage/env: seeds process.env with concrete values for the selected stage.
@@ -35,7 +36,8 @@ export const runDev = async (
     if (verbose)
       console.warn('[dev] env seeding warning:', (e as Error).message);
   }
-  const mode: LocalMode = opts.local;
+  const modeInitial: LocalMode = opts.local;
+  let mode: LocalMode = modeInitial;
   const port = typeof opts.port === 'number' ? opts.port : 0;
 
   if (verbose) {
@@ -126,8 +128,17 @@ export const runDev = async (
   if (mode === 'offline') {
     offline = await launchOffline(root, { stage, port, verbose });
   } else if (mode === 'inline') {
-    inlineChild = await launchInline(root, { stage, port, verbose });
-  } // Watch sources
+    try {
+      inlineChild = await launchInline(root, { stage, port, verbose });
+    } catch (e) {
+      const msg = (e as Error).message;
+      console.warn('[dev] inline unavailable:', msg);
+      console.warn('[dev] Falling back to serverless-offline.');
+      mode = 'offline';
+      offline = await launchOffline(root, { stage, port, verbose });
+    }
+  }
+  // Watch sources
   const globs = [
     path.join(root, 'app', 'functions', '**', 'lambda.ts'),
     path.join(root, 'app', 'functions', '**', 'openapi.ts'),
@@ -255,29 +266,53 @@ const launchInline = async (
   root: string,
   opts: { stage: string; port: number; verbose: boolean },
 ) => {
-  const { spawn } = await import('node:child_process');
+  const { spawn, spawnSync } = await import('node:child_process');
   const path = await import('node:path');
   const fs = await import('node:fs');
-  const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
-  const entry = path.resolve(root, 'src', 'cli', 'local', 'inline.server.ts');
+
+  // Resolve packaged inline server (dist/mjs/cli/inline-server.js) relative to CLI dist
+  // dist/cli/index.cjs -> ../mjs/cli/inline-server.js
+  const entry = path.resolve(__dirname, '..', 'mjs', 'cli', 'inline-server.js');
   if (!fs.existsSync(entry)) {
     throw new Error(
-      'inline server entry missing: src/cli/local/inline.server.ts',
+      'inline server entry missing in package (dist/mjs/cli/inline-server.js)',
     );
   }
-  const args = [tsxCli, entry];
-  if (!fs.existsSync(tsxCli)) {
-    // Fallback to PATH resolution
-    args.shift();
-    args.unshift(process.platform === 'win32' ? 'tsx.cmd' : 'tsx');
+
+  // Prefer project-local tsx; otherwise probe PATH for tsx availability
+  const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
+  let cmd: string;
+  let args: string[];
+  let useShell = false;
+  let tsxAvailable = false;
+  if (fs.existsSync(tsxCli)) {
+    tsxAvailable = true;
+    cmd = process.execPath;
+    args = [tsxCli, entry];
   } else {
-    args.unshift(process.execPath);
+    // Probe PATH: tsx --version
+    const probe = spawnSync(
+      process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
+      ['--version'],
+      { shell: true },
+    );
+    if (typeof probe.status === 'number' && probe.status === 0)
+      tsxAvailable = true;
+    cmd = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
+    args = [entry];
+    useShell = true;
   }
+  if (!tsxAvailable) {
+    throw new Error(
+      'tsx not found (required for inline). Install "tsx" as a devDependency or use --local offline.',
+    );
+  }
+
   const spawnChild = () =>
-    spawn(args[0]!, args.slice(1), {
+    spawn(cmd, args, {
       cwd: root,
       stdio: 'inherit',
-      shell: !args[0]!.endsWith('.js'),
+      shell: useShell,
       env: {
         ...process.env,
         SMOZ_STAGE: opts.stage,

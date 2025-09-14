@@ -6,8 +6,6 @@
  * - Maps Node HTTP → APIGatewayProxyEvent (v1) → handler → writes APIGatewayProxyResult.
  * - Normalizes headers/query; prints route table and chosen port.
  */
-// Ensure function registry is populated prior to building routes
-import '@/app/generated/register.functions';
 
 import http from 'node:http';
 import path from 'node:path';
@@ -21,10 +19,35 @@ import type {
 
 import { app } from '@/app/config/app.config';
 
+/**
+ * Load downstream registers to populate the app registry.
+ * This dynamically imports app/generated/register.functions.* from the
+ * downstream project root (CWD). Running under tsx allows .ts/.mts.
+ */
+const loadRegisters = async (root: string): Promise<void> => {
+  const candidates = [
+    path.resolve(root, 'app', 'generated', 'register.functions.ts'),
+    path.resolve(root, 'app', 'generated', 'register.functions.mts'),
+    path.resolve(root, 'app', 'generated', 'register.functions.js'),
+    path.resolve(root, 'app', 'generated', 'register.functions.mjs'),
+  ];
+  for (const p of candidates) {
+    try {
+      const url = pathToFileURL(p).href;
+      await import(url);
+      return;
+    } catch {
+      // try next candidate
+    }
+  }
+  console.warn(
+    '[inline] Could not load app/generated/register.functions.*. Run "npx smoz register" before inline dev.',
+  );
+};
+
 type Route = {
   method: string; // UPPER
-  pattern: string; // e.g., /users/{id}
-  segs: Array<{ literal?: string; key?: string }>;
+  pattern: string; // e.g., /users/{id}  segs: Array<{ literal?: string; key?: string }>;
   handlerRef: string; // module.export (from handler string)
   handler: (
     e: APIGatewayProxyEvent,
@@ -246,6 +269,8 @@ const writeResult = (
 
 const start = async () => {
   const root = process.cwd();
+  // Ensure register side-effects are loaded so the registry has routes
+  await loadRegisters(root);
   const routes = await loadHandlers(root);
   const portEnv = process.env.SMOZ_PORT;
   const port =

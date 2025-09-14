@@ -9,6 +9,19 @@ import { fileURLToPath } from 'url';
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default [
+  {
+    ignores: [
+      '.serverless/**',
+      '.stan/**',
+      '**/.tsbuild/**',
+      '**/generated/**',
+      'coverage/**',
+      'dist/**',
+      'docs/**',
+      'templates/**',
+      'node_modules/**',
+    ],
+  },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   prettierConfig,

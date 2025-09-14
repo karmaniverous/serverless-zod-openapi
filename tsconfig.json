@@ -7,7 +7,12 @@
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
-  "exclude": [".serverless/**", "node_modules/**", "templates/**"],
+  "exclude": [
+    ".serverless/**",
+    "node_modules/**",
+    "app/generated/**",
+    "templates/**"
+  ],
   "extends": "./tsconfig.base.json",
   "include": ["**/*", "**/*.json"]
 }

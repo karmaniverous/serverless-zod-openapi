@@ -144,10 +144,26 @@ export const buildTypes = (dest: string): RollupOptions => ({
   },
 });
 /**
- * CLI build (CJS bin with shebang).
- * - Output: dist/cli/index.cjs
+ * Inline server build (ESM only).
+ * - Output: dist/mjs/cli/inline-server.js
  * - Externalization: reuse commonInputOptions to keep built-ins/deps external.
  */
+export const buildInlineServer = (
+  dest: string,
+  tsconfigPath?: string,
+): RollupOptions => ({
+  input: 'src/cli/local/inline.server.ts',
+  output: {
+    file: `${dest}/mjs/cli/inline-server.js`,
+    format: 'esm',
+    sourcemap: false,
+  },
+  ...commonInputOptions(tsconfigPath),
+});
+/**
+ * CLI build (CJS bin with shebang).
+ * - Output: dist/cli/index.cjs
+ * - Externalization: reuse commonInputOptions to keep built-ins/deps external. */
 export const buildCli = (
   dest: string,
   tsconfigPath?: string,
@@ -166,4 +182,5 @@ export default [
   buildLibrary(outputPath, 'tsconfig.rollup.json'),
   buildTypes(outputPath),
   buildCli(outputPath, 'tsconfig.rollup.json'),
+  buildInlineServer(outputPath, 'tsconfig.rollup.json'),
 ];
