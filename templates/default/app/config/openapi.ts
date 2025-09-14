@@ -1,7 +1,6 @@
-import * as path from 'node:path';
-
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import { packageDirectorySync } from 'package-directory';
+import path from 'path';
 import { createDocument } from 'zod-openapi';
 
 import { app } from '@/app/config/app.config';
@@ -22,18 +21,20 @@ console.log('Generating OpenAPI document...');
 const paths = app.buildAllOpenApiPaths();
 export const doc = createDocument({
   openapi: '3.1.0',
-  servers: [{ description: 'Dev', url: 'http://localhost' }],
+  servers: [
+    { description: 'Production', url: 'https://api.example.test' },
+    { description: 'Dev', url: 'https://api.dev.example.test' },
+  ],
   info: {
-    title: process.env.npm_package_name ?? 'smoz-app',
-    version: process.env.npm_package_version ?? '0.0.0',
+    title: process.env.npm_package_name ?? '',
+    version: process.env.npm_package_version ?? '',
   },
   paths,
 });
 
 const pkgDir = packageDirectorySync();
-if (!pkgDir) {
-  throw new Error('Could not resolve package root directory');
-}
+if (!pkgDir) throw new Error('Could not find package root directory');
+
 const outDir = path.join(pkgDir, 'app', 'generated');
 fs.ensureDirSync(outDir);
 fs.writeFileSync(
