@@ -3,13 +3,14 @@
  * - Minimal library bundling: ESM + CJS outputs.
  * - Generate a single type declarations bundle at dist/index.d.ts.
  * - Keep runtime dependencies and Node built-ins external.
- * - No unnecessary plugins (no alias/replace/resolve/commonjs/json/terser).
+ * - Resolve TS path alias "@/..." to real sources for published outputs.
  */
 import { readFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import alias from '@rollup/plugin-alias';
 import typescriptPlugin from '@rollup/plugin-typescript';
 import type {
   InputOptions,
@@ -29,7 +30,14 @@ const entryPoints = {
   'serverless-plugin': 'src/serverless/plugin.ts',
 };
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename); // Collect runtime dependency names (dependencies + peerDependencies) to mark as external.
+const __dirname = path.dirname(__filename);
+
+// Resolve TS path alias "@/..." -> "<repo>/..."
+const aliasPlugin = alias({
+  entries: [{ find: /^@\//, replacement: path.resolve(__dirname) + '/' }],
+});
+
+// Collect runtime dependency names (dependencies + peerDependencies) to mark as external.
 let runtimeExternalPkgs = new Set<string>();
 try {
   const pkgJsonText = readFileSync(
@@ -60,6 +68,7 @@ const nodeExternals = new Set([
 ]);
 
 const makePlugins = (tsconfigPath?: string): Plugin[] => [
+  aliasPlugin,
   typescriptPlugin({
     // Do not write transpiled output to disk; let Rollup handle bundling.
     outputToFilesystem: false,
@@ -79,34 +88,10 @@ const makePlugins = (tsconfigPath?: string): Plugin[] => [
 const commonInputOptions = (tsconfigPath?: string): InputOptions => ({
   plugins: makePlugins(tsconfigPath),
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
-    // Suppress unresolved import warnings for alias externals that we
-    // intentionally mark as external for specialized builds (stan:build).
-    // This keeps the build output clean without altering bundling behavior.
-    // See external() below where '@/' is treated as external.
-    try {
-      const code = (warning as unknown as { code?: string }).code;
-      // Some plugins (e.g., rollup-plugin-dts) may not set `source`; check id/exporter too.
-      const anyWarn = warning as unknown as {
-        source?: unknown;
-        id?: unknown;
-        exporter?: unknown;
-      };
-      const source = anyWarn.source ?? anyWarn.id ?? anyWarn.exporter;
-      if (
-        code === 'UNRESOLVED_IMPORT' &&
-        typeof source === 'string' &&
-        source.startsWith('@/')
-      ) {
-        return;
-      }
-    } catch {
-      // Fall through to default handler on any unexpected shape
-    }
+    // Alias resolves "@/..." to real paths; no special suppression needed.
     defaultHandler(warning);
   },
   external: (id) =>
-    // Treat alias imports as external to avoid noisy unresolved warnings in specialized builds.
-    id.startsWith('@/') ||
     // Optional formatter used via dynamic import in the CLI; do not bundle.
     id === 'prettier' ||
     nodeExternals.has(id) ||
@@ -135,11 +120,10 @@ export const buildTypes = (dest: string): RollupOptions => ({
   // - dist/mutators/orval.d.ts
   // - dist/mutators/index.d.ts
   output: { dir: dest, format: 'es' },
-  // Treat alias and known externals explicitly as external during the DTS pass
+  // Treat known externals explicitly as external during the DTS pass
   // to avoid "Unresolved dependencies" warnings. The dts plugin will inline
   // what it can based on the provided paths mapping.
   external: (id) =>
-    id.startsWith('@/') ||
     nodeExternals.has(id) ||
     Array.from(runtimeExternalPkgs).some(
       (p) => id === p || id.startsWith(`${p}/`),
@@ -150,38 +134,15 @@ export const buildTypes = (dest: string): RollupOptions => ({
       // instead of leaving unresolved "@/" references.
       compilerOptions: {
         baseUrl: '.',
-        paths: {
-          '@/*': ['src/*'],
-        },
+        paths: { '@/*': ['*'] },
       },
     }),
   ],
-  // Suppress unresolved warnings for alias imports during DTS bundling.
-  // These are harmless with rollup-plugin-dts and keep build output clean.
+  // Keep warnings visible; no alias suppression needed with proper paths config.
   onwarn(warning: RollupLog, defaultHandler: (w: RollupLog) => void) {
-    try {
-      const code = (warning as unknown as { code?: string }).code;
-      // rollup-plugin-dts may provide id/exporter instead of source
-      const anyWarn = warning as unknown as {
-        source?: unknown;
-        id?: unknown;
-        exporter?: unknown;
-      };
-      const source = anyWarn.source ?? anyWarn.id ?? anyWarn.exporter;
-      if (
-        code === 'UNRESOLVED_IMPORT' &&
-        typeof source === 'string' &&
-        source.startsWith('@/')
-      ) {
-        return;
-      }
-    } catch {
-      // Fall through to default handler on any unexpected shape
-    }
     defaultHandler(warning);
   },
 });
-
 /**
  * CLI build (CJS bin with shebang).
  * - Output: dist/cli/index.cjs
