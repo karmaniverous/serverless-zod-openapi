@@ -10,19 +10,20 @@ When updated: 2025-09-14T19:30:00Z
 
 ## Completed (recent)
 
-26. Inline dev (Windows): remove the `--tsconfig-paths` CLI flag when spawning
+27. Inline dev: Fix empty route table by loading the App from TS source at
+    runtime (same module instance as registers) instead of a bundled import.
+    This ensures registrations and route aggregation operate on the same App.
+28. Inline dev (Windows): remove the `--tsconfig-paths` CLI flag when spawning
     tsx and rely on `TSX_TSCONFIG_PATHS=1` in the environment to enable
     tsconfig-paths. Fixes "C:\Program Files\nodejs\node.exe: bad option:
     --tsconfig-paths" seen during `smoz dev`.
-27. Inline dev: enable tsconfig-paths in the tsx child (`--tsconfig-paths`)
+29. Inline dev: enable tsconfig-paths in the tsx child (`--tsconfig-paths`)
     so "@/..." aliases in endpoint modules resolve at runtime. Keep register
     imports extensionless, POSIX-relative (TS-friendly) to avoid TS5097.
-28. Inline dev: route detection fix — registers now use POSIX-relative import
+30. Inline dev: route detection fix — registers now use POSIX-relative import
     specifiers from app/generated to targets (no "@/" alias). Inline server
-    successfully loads registers and routes (e.g., /openapi) resolve in dev.20. Dev UX (inline): fixed “\_\_dirname is not defined” by resolving the packaged
-    inline server from the repo root in the dev runner; works under tsx and the built CLI. This also keeps fallback to serverless‑offline intact.
-29. Inline server type hygiene: added Route.segs and Segment typing; updated
-    match() signature to clear TypeScript errors and lint warnings.22. Templates lint: removed self‑ignoring "templates/\*\*" from the template
-    ESLint config so `npm run templates:lint` operates on template sources.
-30. CLI polish: kept "-v/--version" for root version and switched `dev` verbose
+    successfully loads registers and routes (e.g., /openapi) resolve in dev.
+31. Inline server type hygiene: added Route.segs and Segment typing; updated
+    match() signature to clear TypeScript errors and lint warnings.
+32. CLI polish: kept "-v/--version" for root version and switched `dev` verbose
     flag to "-V, --verbose". Updated docs accordingly.

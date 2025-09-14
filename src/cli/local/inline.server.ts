@@ -16,14 +16,13 @@ import type {
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
-
-import { app } from '@/app/config/app.config';
+// Note: load the App from TS source at runtime to share the same module
+// instance as the register side-effects. Avoid bundling the App.
 
 /**
  * Load downstream registers to populate the app registry.
  * This dynamically imports app/generated/register.functions.* from the
- * downstream project root (CWD). Running under tsx allows .ts/.mts.
- */
+ * downstream project root (CWD). Running under tsx allows .ts/.mts. */
 const loadRegisters = async (root: string): Promise<void> => {
   const candidates = [
     path.resolve(root, 'app', 'generated', 'register.functions.ts'),
@@ -45,11 +44,27 @@ const loadRegisters = async (root: string): Promise<void> => {
   );
 };
 
+type AppLike = {
+  buildAllServerlessFunctions: () => Record<string, unknown>;
+};
+const loadApp = async (root: string): Promise<AppLike> => {
+  const p = path.resolve(root, 'app', 'config', 'app.config.ts');
+  const url = pathToFileURL(p).href;
+  // The tsx runtime will transpile the TS module on the fly.
+  const mod = (await import(url)) as Record<string, unknown>;
+  const app = mod.app as AppLike | undefined;
+  if (!app || typeof app.buildAllServerlessFunctions !== 'function') {
+    throw new Error(
+      'Failed to load app/config/app.config.ts (missing export "app").',
+    );
+  }
+  return app;
+};
+
 type Route = {
   method: string; // UPPER
   pattern: string; // e.g., /users/{id}
-  segs: Segment[]; // parsed path segments
-  handlerRef: string; // module.export (from handler string)
+  segs: Segment[]; // parsed path segments  handlerRef: string; // module.export (from handler string)
   handler: (
     e: APIGatewayProxyEvent,
     c: Context,
@@ -73,8 +88,11 @@ const splitPattern = (p: string): Segment[] =>
         : { literal: s },
     );
 
-const loadHandlers = async (root: string): Promise<Route[]> => {
-  const fns = app.buildAllServerlessFunctions() as Record<string, unknown>;
+const loadHandlers = async (root: string, app: AppLike): Promise<Route[]> => {
+  const fns = app.buildAllServerlessFunctions() as Record<
+    string,
+    { handler?: unknown; events?: unknown }
+  >;
   const routes: Route[] = [];
 
   for (const [, defUnknown] of Object.entries(fns)) {
@@ -277,7 +295,9 @@ const start = async () => {
   const root = process.cwd();
   // Ensure register side-effects are loaded so the registry has routes
   await loadRegisters(root);
-  const routes = await loadHandlers(root);
+  // Load the App instance from the same TS source as the registers
+  const app = await loadApp(root);
+  const routes = await loadHandlers(root, app);
   const portEnv = process.env.SMOZ_PORT;
   const port =
     typeof portEnv === 'string' && portEnv.length > 0 ? Number(portEnv) : 0;
