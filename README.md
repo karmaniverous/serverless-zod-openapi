@@ -4,6 +4,7 @@
 
 [Serverless](https://www.serverless.com/) · [Middy](https://middy.js.org/) · [OpenAPI 3.1](https://spec.openapis.org/oas/latest.html) · [Zod](https://zod.dev/)
 
+[![CI](https://github.com/karmaniverous/smoz/actions/workflows/ci.yml/badge.svg)](https://github.com/karmaniverous/smoz/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@karmaniverous/smoz.svg)](https://www.npmjs.com/package/@karmaniverous/smoz)
 ![Node Current](https://img.shields.io/node/v/@karmaniverous/smoz)
 [![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/smoz)
@@ -44,7 +45,7 @@ npx smoz add rest/foo/get
 ```
 
 ## Quick links
- 
+
 - [Overview](https://docs.karmanivero.us/smoz/documents/Overview.html)
 - [Why smoz?](https://docs.karmanivero.us/smoz/documents/Why_smoz_.html)
 - [Getting started](https://docs.karmanivero.us/smoz/documents/Getting_started.html)
@@ -52,7 +53,7 @@ npx smoz add rest/foo/get
 - [HTTP Middleware](https://docs.karmanivero.us/smoz/documents/HTTP_middleware.html)
 - [Recipes](https://docs.karmanivero.us/smoz/documents/Recipes.html)
   - [SQS function](https://docs.karmanivero.us/smoz/documents/Recipes.SQS_function.html)
-  - [Contexts + Cognito authorizer](https://docs.karmanivero.us/smoz/documents/Recipes.Contexts_+_Cognito_authorizer.html)  - [Custom middleware insertion](https://docs.karmanivero.us/smoz/documents/Recipes.Custom_middleware_insertion.html)
+  - [Contexts + Cognito authorizer](https://docs.karmanivero.us/smoz/documents/Recipes.Contexts_+_Cognito_authorizer.html) - [Custom middleware insertion](https://docs.karmanivero.us/smoz/documents/Recipes.Custom_middleware_insertion.html)
   - [Per‑function env](<https://docs.karmanivero.us/smoz/documents/Recipes.Per%E2%80%91function_env_(fnEnvKeys).html>)
   - [Observability](<https://docs.karmanivero.us/smoz/documents/Recipes.Observability_(requestId_header).html>)
   - [Troubleshooting](https://docs.karmanivero.us/smoz/documents/Recipes.Troubleshooting.html)
