@@ -2,18 +2,23 @@
 
 # Development Plan
 
-When updated: 2025-09-15T01:05:00Z
+When updated: 2025-09-15T01:20:00Z
 
 ## Next up (near‑term, actionable)
-
 1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
 
 ## Completed (recent)
 
+48. Pin Node 22.19.0 across parent repo and templates:
+    - Parent: add engines (>=22.19.0 <23), Volta node=22.19.0, .nvmrc,
+      .node-version, and .npmrc (engine-strict=true); add CI workflow using
+      actions/setup-node@v4 with node-version 22.19.0; add @types/node^22.
+    - Templates/default: add engines/Volta; add .nvmrc/.node-version and
+      .npmrc (engine-strict); include a sample CI workflow pinned to 22.19.0.
+
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
     for loaded registers, and print "(none found)" when the route list is
-    empty. Resolves TS/Lint errors and clarifies empty-route cases in verbose
-    runs.
+    empty. Resolves TS/Lint errors and clarifies empty-route cases in verbose    runs.
 34. Inline dev: Fix empty route table by loading the App from TS source at
     runtime (same module instance as registers) instead of a bundled import.
     This ensures registrations and route aggregation operate on the same App.
