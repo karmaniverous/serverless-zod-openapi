@@ -2,12 +2,11 @@
 
 # Development Plan
 
-When updated: 2025-09-15T00:00:00Z
+When updated: 2025-09-15T00:25:00Z
 
 ## Next up (near‑term, actionable)
 
 1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
-
 ## Completed (recent)
 
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
@@ -56,3 +55,7 @@ When updated: 2025-09-15T00:00:00Z
     behavior when a local tsx is present (node + JS CLI) and when tsx is
     unavailable (hard error). This surfaces loader misconfigurations in CI
     and prevents silent fallback.
+45. Inline dev: normalize the project-local tsx CLI path to POSIX
+    separators in resolveTsxCommand to keep tests stable on Windows, and
+    switch src/cli/dev.ts to use fs-extra for consistency with the rest of
+    the codebase.

@@ -5,11 +5,11 @@
  * - Stage/env: seeds process.env with concrete values for the selected stage.
  */
 import { spawn, spawnSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import chokidar from 'chokidar';
+import fs from 'fs-extra';
 import { packageDirectorySync } from 'package-directory';
 
 import { launchOffline, type OfflineRunner } from './local/offline';
@@ -267,8 +267,14 @@ export const resolveTsxCommand = (
   tsEntry: string,
 ): { cmd: string; args: string[]; shell: boolean } => {
   const localCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
-  if (fs.existsSync(localCli)) {
-    return { cmd: process.execPath, args: [localCli, tsEntry], shell: false };
+  if (fs.pathExistsSync(localCli)) {
+    // Normalize to POSIX separators for cross-platform comparisons (tests)
+    const localCliPosix = localCli.split(path.sep).join('/');
+    return {
+      cmd: process.execPath,
+      args: [localCliPosix, tsEntry],
+      shell: false,
+    };
   }
   const probe = spawnSync(
     process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
