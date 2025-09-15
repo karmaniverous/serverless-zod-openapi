@@ -4,7 +4,6 @@
 
 [Serverless](https://www.serverless.com/) · [Middy](https://middy.js.org/) · [OpenAPI 3.1](https://spec.openapis.org/oas/latest.html) · [Zod](https://zod.dev/)
 
-[![CI](https://github.com/karmaniverous/smoz/actions/workflows/ci.yml/badge.svg)](https://github.com/karmaniverous/smoz/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@karmaniverous/smoz.svg)](https://www.npmjs.com/package/@karmaniverous/smoz)
 ![Node Current](https://img.shields.io/node/v/@karmaniverous/smoz)
 [![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/smoz)
