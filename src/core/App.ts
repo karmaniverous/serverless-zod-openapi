@@ -1,10 +1,10 @@
 /**
  * App (schema‑first)
  *
+ * Overloads on create() preserve strong inference when eventTypeMapSchema is omitted.
  * Central orchestrator for a SMOZ application. You provide:
  * - Global/stage parameter schemas and env exposure keys
- * - Serverless defaults (handler filename/export and context map)
- * - Event‑type map schema (extendable: e.g., add 'step')
+ * - Serverless defaults (handler filename/export and context map) * - Event‑type map schema (extendable: e.g., add 'step')
  *
  * The instance:
  * - Validates configuration
@@ -185,6 +185,22 @@ export interface AppInit<
    * @param init - initialization object (schemas, serverless defaults, params/envKeys)
    * @returns a new App instance
    */
+  // Overload 1: eventTypeMapSchema omitted → default to baseEventTypeMapSchema (typed)
+  static create<
+    GlobalParamsSchema extends ZodObj,
+    StageParamsSchema extends ZodObj,
+  >(
+    init: Omit<
+      AppInit<
+        GlobalParamsSchema,
+        StageParamsSchema,
+        typeof baseEventTypeMapSchema
+      >,
+      'eventTypeMapSchema'
+    > & { eventTypeMapSchema?: undefined },
+  ): App<GlobalParamsSchema, StageParamsSchema, typeof baseEventTypeMapSchema>;
+
+  // Overload 2: eventTypeMapSchema provided → infer from provided schema (typed)
   static create<
     GlobalParamsSchema extends ZodObj,
     StageParamsSchema extends ZodObj,
@@ -194,7 +210,6 @@ export interface AppInit<
   ): App<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema> {
     return new App(init);
   }
-
   /**
    * Register a function (HTTP or non‑HTTP).
    *
