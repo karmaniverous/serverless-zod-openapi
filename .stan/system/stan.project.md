@@ -238,9 +238,12 @@ Manifest handling:
 - The single source of truth for event tokens is baseEventTypeMapSchema
   (rest, http, sqs, ...). Extend it per project needs.
 - defaultHttpEventTypeTokens establishes which tokens are treated as HTTP at runtime.
+- The base map includes a first‑class step token that mirrors Step Functions
+  “Lambda Invoke” behavior: an object wrapper with an optional Payload key.
+  In Zod v4 this is expressed as z.object({ Payload: z.unknown().optional() })
+  .catchall(z.unknown()) to allow additional properties (passthrough is deprecated).
 
 ## 11) App‑level function defaults (env keys)
-
 - App.create accepts optional functionDefaults.fnEnvKeys.
 - Registry merges defaults and per‑function fnEnvKeys.
 - Provider‑level environment is built from globally exposed keys; per‑function

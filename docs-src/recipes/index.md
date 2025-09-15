@@ -4,10 +4,10 @@ sidebar_label: Recipes
 sidebar_position: 6
 children:
   - ./sqs.md
+  - ./step.md
   - ./contexts-auth.md
   - ./custom-middleware.md
-  - ./per-function-env.md
-  - ./observability.md
+  - ./per-function-env.md  - ./observability.md
   - ./troubleshooting.md
 ---
 
@@ -16,12 +16,12 @@ children:
 Concrete patterns you can lift into your app. Each recipe links to a focusedpage with short snippets.
 
 - [SQS function](./sqs.md)
+- [Step Functions function](./step.md)
 - [Contexts + Cognito authorizer](./contexts-auth.md)
 - [Custom middleware (insertAfter 'shape')](./custom-middleware.md)
 - [Per‑function env (fnEnvKeys)](./per-function-env.md)
 - [Observability (requestId header)](./observability.md)
 - [Troubleshooting](./troubleshooting.md)
-
 Examples (in repository)
 
 - REST only: https://github.com/karmaniverous/smoz/tree/main/examples/rest-only
