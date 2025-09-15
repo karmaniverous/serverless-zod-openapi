@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.8](https://github.com/karmaniverous/smoz/compare/0.2.7...0.2.8)
+
+- Fix downstream inline entry resolution; prefer dist under tsx [`be66721`](https://github.com/karmaniverous/smoz/commit/be667214989117a3223f4b51262ed9bec5a95272)
+
 #### [0.2.7](https://github.com/karmaniverous/smoz/compare/0.2.6...0.2.7)
 
+> 15 September 2025
+
+- chore: release v0.2.7 [`3480c5f`](https://github.com/karmaniverous/smoz/commit/3480c5f55d05c498e75aba6a3d8f575b22560126)
 - Decompose dev loop into module; fix test and use node:fs [`2f87523`](https://github.com/karmaniverous/smoz/commit/2f875234277842062f635c26764312b06a71b42e)
 - Make tsx mandatory for inline dev; add tests and remove fallback [`ae307a6`](https://github.com/karmaniverous/smoz/commit/ae307a6c3313407123f13ff0aacb278880d85445)
 - fix(dev): robust inline discovery + offline resolved URL display [`41750d4`](https://github.com/karmaniverous/smoz/commit/41750d4ef62779478ae471ed885b9416be2536ad)
