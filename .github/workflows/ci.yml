@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -16,6 +16,16 @@ jobs:
         with:
           node-version: '22.19.0'
           cache: 'npm'
+      - name: Prepare npm (pin version, registry, retries)
+        run: |
+          npm i -g npm@10.9.0
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 10000
+          npm config set fetch-retry-maxtimeout 120000
+          npm --version
+          npm config get registry
+          npm config get fetch-retries
       - name: Install
         run: npm i
       - name: Typecheck
