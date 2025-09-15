@@ -4,6 +4,8 @@
  * - Optional local serving (--local inline|offline).
  * - Stage/env: seeds process.env with concrete values for the selected stage.
  */
+import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -38,7 +40,7 @@ export const runDev = async (
       console.warn('[dev] env seeding warning:', (e as Error).message);
   }
   const modeInitial: LocalMode = opts.local;
-  let mode: LocalMode = modeInitial;
+  const mode: LocalMode = modeInitial;
   const port = typeof opts.port === 'number' ? opts.port : 0;
 
   if (verbose) {
@@ -129,16 +131,10 @@ export const runDev = async (
   if (mode === 'offline') {
     offline = await launchOffline(root, { stage, port, verbose });
   } else if (mode === 'inline') {
-    try {
-      inlineChild = await launchInline(root, { stage, port, verbose });
-    } catch (e) {
-      const msg = (e as Error).message;
-      console.warn('[dev] inline unavailable:', msg);
-      console.warn('[dev] Falling back to serverless-offline.');
-      mode = 'offline';
-      offline = await launchOffline(root, { stage, port, verbose });
-    }
+    // Hard error on failure; no fallback to offline.
+    inlineChild = await launchInline(root, { stage, port, verbose });
   }
+
   // Watch sources
   const globs = [
     path.join(root, 'app', 'functions', '**', 'lambda.ts'),
@@ -262,16 +258,40 @@ const seedEnvForStage = async (
   }
 };
 
-// Inline local runner: robustly resolve packaged inline entry (compiled-first),
-// falling back to TS entry via tsx during toolkit dev/dogfooding.
+// Resolve a tsx invocation for the given root + TS entry.
+// - Prefer project-local tsx JS CLI: node <root>/node_modules/tsx/dist/cli.js <entry>
+// - Fallback to PATH: "tsx <entry>" (shell=true)
+// - Throw a hard error when unavailable.
+export const resolveTsxCommand = (
+  root: string,
+  tsEntry: string,
+): { cmd: string; args: string[]; shell: boolean } => {
+  const localCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
+  if (fs.existsSync(localCli)) {
+    return { cmd: process.execPath, args: [localCli, tsEntry], shell: false };
+  }
+  const probe = spawnSync(
+    process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
+    ['--version'],
+    { shell: true },
+  );
+  if (typeof probe.status === 'number' && probe.status === 0) {
+    return {
+      cmd: process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
+      args: [tsEntry],
+      shell: true,
+    };
+  }
+  throw new Error(
+    'Inline requires tsx. Install it with "npm i -D tsx", or run "smoz dev -l offline".',
+  );
+};
+
+// Inline local runner: always use tsx for the TS entry.
 const launchInline = async (
   root: string,
   opts: { stage: string; port: number; verbose: boolean },
 ) => {
-  const { spawn, spawnSync } = await import('node:child_process');
-  const path = await import('node:path');
-  const fs = await import('node:fs');
-
   // Resolve the installed smoz package root robustly (works from compiled CLI and tsx ESM):
   // Prefer __dirname when available (CJS), otherwise derive from import.meta.url (ESM).
   const here =
@@ -279,13 +299,6 @@ const launchInline = async (
       ? __dirname
       : path.dirname(fileURLToPath(import.meta.url));
   const pkgRoot = packageDirectorySync({ cwd: here }) ?? process.cwd();
-  const compiledEntry = path.resolve(
-    pkgRoot,
-    'dist',
-    'mjs',
-    'cli',
-    'inline-server.js',
-  );
   const tsEntry = path.resolve(
     pkgRoot,
     'src',
@@ -295,51 +308,12 @@ const launchInline = async (
     'index.ts',
   );
 
-  const spawnCompiled = () =>
-    spawn(process.execPath, [compiledEntry], {
-      cwd: root,
-      stdio: 'inherit',
-      shell: false,
-      env: {
-        ...process.env,
-        SMOZ_STAGE: opts.stage,
-        SMOZ_PORT: String(opts.port),
-        SMOZ_VERBOSE: opts.verbose ? '1' : '',
-      },
-    });
-
-  const spawnTs = () => {
-    // Prefer project-local tsx; otherwise probe PATH for tsx availability
-    const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
-    let cmd: string;
-    let args: string[];
-    let useShell = false;
-    let tsxAvailable = false;
-    if (fs.existsSync(tsxCli)) {
-      tsxAvailable = true;
-      cmd = process.execPath;
-      args = [tsxCli, tsEntry];
-    } else {
-      const probe = spawnSync(
-        process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
-        ['--version'],
-        { shell: true },
-      );
-      if (typeof probe.status === 'number' && probe.status === 0)
-        tsxAvailable = true;
-      cmd = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
-      args = [tsEntry];
-      useShell = true;
-    }
-    if (!tsxAvailable) {
-      throw new Error(
-        'tsx not found (required for inline). Install "tsx" as a devDependency or use --local offline.',
-      );
-    }
+  const makeTsx = () => {
+    const { cmd, args, shell } = resolveTsxCommand(root, tsEntry);
     return spawn(cmd, args, {
       cwd: root,
       stdio: 'inherit',
-      shell: useShell,
+      shell,
       // Enable tsconfig paths for "@/..." during TS fallback.
       env: {
         ...process.env,
@@ -351,11 +325,7 @@ const launchInline = async (
     });
   };
 
-  const mode: 'compiled' | 'ts' = fs.existsSync(compiledEntry)
-    ? 'compiled'
-    : 'ts';
-  const spawnChild = () => (mode === 'compiled' ? spawnCompiled() : spawnTs());
-  let child = spawnChild();
+  let child = makeTsx();
   const close = async () =>
     new Promise<void>((resolve) => {
       // If the process has already exited (exitCode set), resolve immediately.
@@ -373,7 +343,7 @@ const launchInline = async (
     });
   const restart = async () => {
     await close();
-    child = spawnChild();
+    child = makeTsx();
   };
   return { close, restart };
 };

@@ -2,11 +2,13 @@
 
 # Development Plan
 
-When updated: 2025-09-14T20:40:00Z
+When updated: 2025-09-15T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-1. No immediate items. Monitor dev UX and template lint/typecheck in CI.## Completed (recent)
+1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
+
+## Completed (recent)
 
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
     for loaded registers, and print "(none found)" when the route list is
@@ -42,6 +44,15 @@ When updated: 2025-09-14T20:40:00Z
       so the route summary’s "localhost:0" does not confuse users.
 
 42. Dev loop robustness:
-    - Inline: replace __dirname usage with ESM‑safe fallback using
+    - Inline: replace \_\_dirname usage with ESM‑safe fallback using
       fileURLToPath(import.meta.url) to seed packageDirectory cwd.
     - Offline: fix lint by guarding capture group before logging URL.
+
+43. Inline dev: Make tsx a hard requirement; remove the compiled inline
+    fallback entirely and do not fall back to serverless-offline when tsx
+    is missing. The dev loop now throws a clear error instructing users to
+    install tsx or run with --local offline.
+44. Inline dev: Add resolveTsxCommand helper and unit tests that verify
+    behavior when a local tsx is present (node + JS CLI) and when tsx is
+    unavailable (hard error). This surfaces loader misconfigurations in CI
+    and prevents silent fallback.
