@@ -36,6 +36,28 @@ export const resolveTsxCommand = (
   );
 };
 
+export const resolveInlineEntry = (
+  pkgRoot: string,
+): { entry: string; kind: 'compiled' | 'ts' } => {
+  const compiled = path.resolve(
+    pkgRoot,
+    'dist',
+    'mjs',
+    'cli',
+    'inline-server.js',
+  );
+  if (fs.existsSync(compiled)) return { entry: compiled, kind: 'compiled' };
+  const tsPath = path.resolve(
+    pkgRoot,
+    'src',
+    'cli',
+    'local',
+    'inline.server',
+    'index.ts',
+  );
+  return { entry: tsPath, kind: 'ts' };
+};
+
 export const launchInline = async (
   root: string,
   opts: { stage: string; port: number; verbose: boolean },
@@ -47,17 +69,10 @@ export const launchInline = async (
       ? __dirname
       : path.dirname(fileURLToPath(import.meta.url));
   const pkgRoot = packageDirectorySync({ cwd: here }) ?? process.cwd();
-  const tsEntry = path.resolve(
-    pkgRoot,
-    'src',
-    'cli',
-    'local',
-    'inline.server',
-    'index.ts',
-  );
+  const { entry } = resolveInlineEntry(pkgRoot);
 
   const makeTsx = () => {
-    const { cmd, args, shell } = resolveTsxCommand(root, tsEntry);
+    const { cmd, args, shell } = resolveTsxCommand(root, entry);
     return spawn(cmd, args, {
       cwd: root,
       stdio: 'inherit',

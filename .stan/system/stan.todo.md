@@ -2,11 +2,13 @@
 
 # Development Plan
 
-When updated: 2025-09-15T00:40:00Z
+When updated: 2025-09-15T01:05:00Z
 
 ## Next up (near‑term, actionable)
 
-1. No immediate items. Monitor dev UX and template lint/typecheck in CI.## Completed (recent)
+1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
+
+## Completed (recent)
 
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
     for loaded registers, and print "(none found)" when the route list is
@@ -64,3 +66,8 @@ When updated: 2025-09-15T00:40:00Z
     - Update CLI entry to import from ./dev/index and tests to import the
       new module path. Delete src/cli/dev.ts manually to avoid large
       deletion diff.
+47. Inline dev (downstream fix): prefer the compiled dist entry
+    (dist/mjs/cli/inline-server.js) when present and still run it under
+    tsx so downstream TS files import cleanly; fall back to the TS entry
+    only in the repo workspace. Added unit tests for entry selection
+    (compiled vs TS) to surface regressions early.
