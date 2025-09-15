@@ -7,6 +7,7 @@
 import { pathToFileURL } from 'node:url';
 
 import chokidar from 'chokidar';
+import { packageDirectorySync } from 'package-directory';
 
 import { launchOffline, type OfflineRunner } from './local/offline';
 import { runOpenapi } from './openapi';
@@ -260,7 +261,8 @@ const seedEnvForStage = async (
   }
 };
 
-// Inline local runner: spawn tsx to run a TS server script.
+// Inline local runner: robustly resolve packaged inline entry (compiled-first),
+// falling back to TS entry via tsx during toolkit dev/dogfooding.
 const launchInline = async (
   root: string,
   opts: { stage: string; port: number; verbose: boolean },
@@ -269,58 +271,70 @@ const launchInline = async (
   const path = await import('node:path');
   const fs = await import('node:fs');
 
-  // Resolve packaged inline server from the project root so this works
-  // both when running the built CLI and via tsx on sources.
-  const entry = path.resolve(root, 'dist', 'mjs', 'cli', 'inline-server.js');
-  if (!fs.existsSync(entry)) {
-    throw new Error(
-      'inline server entry missing in package (dist/mjs/cli/inline-server.js)',
-    );
-  }
+  // Resolve the installed smoz package root robustly (works from compiled CLI).
+  const pkgRoot = packageDirectorySync({ cwd: __dirname }) ?? process.cwd();
+  const compiledEntry = path.resolve(
+    pkgRoot,
+    'dist',
+    'mjs',
+    'cli',
+    'inline-server.js',
+  );
+  const tsEntry = path.resolve(
+    pkgRoot,
+    'src',
+    'cli',
+    'local',
+    'inline.server',
+    'index.ts',
+  );
 
-  // Prefer project-local tsx; otherwise probe PATH for tsx availability
-  const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
-  let cmd: string;
-  let args: string[];
-  let useShell = false;
-  let tsxAvailable = false;
+  const spawnCompiled = () =>
+    spawn(process.execPath, [compiledEntry], {
+      cwd: root,
+      stdio: 'inherit',
+      shell: false,
+      env: {
+        ...process.env,
+        SMOZ_STAGE: opts.stage,
+        SMOZ_PORT: String(opts.port),
+        SMOZ_VERBOSE: opts.verbose ? '1' : '',
+      },
+    });
 
-  if (fs.existsSync(tsxCli)) {
-    tsxAvailable = true;
-    cmd = process.execPath;
-    // Pass the TSX CLI script followed by our entry. On Windows, avoid
-    // putting unknown flags before the script to prevent Node from treating
-    // them as its own options. Enable tsconfig-paths via env only.
-    args = [tsxCli, entry];
-  } else {
-    // Probe PATH: tsx --version
-    const probe = spawnSync(
-      process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
-      ['--version'],
-      { shell: true },
-    );
-    if (typeof probe.status === 'number' && probe.status === 0)
+  const spawnTs = () => {
+    // Prefer project-local tsx; otherwise probe PATH for tsx availability
+    const tsxCli = path.resolve(root, 'node_modules', 'tsx', 'dist', 'cli.js');
+    let cmd: string;
+    let args: string[];
+    let useShell = false;
+    let tsxAvailable = false;
+    if (fs.existsSync(tsxCli)) {
       tsxAvailable = true;
-    cmd = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
-    // Invoke tsx from PATH with just the script entry; rely on
-    // TSX_TSCONFIG_PATHS=1 in the environment for path alias resolution.
-    args = [entry];
-    useShell = true;
-  }
-  if (!tsxAvailable) {
-    throw new Error(
-      'tsx not found (required for inline). Install "tsx" as a devDependency or use --local offline.',
-    );
-  }
-
-  const spawnChild = () =>
-    spawn(cmd, args, {
+      cmd = process.execPath;
+      args = [tsxCli, tsEntry];
+    } else {
+      const probe = spawnSync(
+        process.platform === 'win32' ? 'tsx.cmd' : 'tsx',
+        ['--version'],
+        { shell: true },
+      );
+      if (typeof probe.status === 'number' && probe.status === 0)
+        tsxAvailable = true;
+      cmd = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
+      args = [tsEntry];
+      useShell = true;
+    }
+    if (!tsxAvailable) {
+      throw new Error(
+        'tsx not found (required for inline). Install "tsx" as a devDependency or use --local offline.',
+      );
+    }
+    return spawn(cmd, args, {
       cwd: root,
       stdio: 'inherit',
       shell: useShell,
-      // Enable tsconfig paths resolution for "@/..." via environment;
-      // avoids passing CLI flags that can confuse Node on Windows.
-      // Keep additional SMOZ_* env for server configuration.
+      // Enable tsconfig paths for "@/..." during TS fallback.
       env: {
         ...process.env,
         TSX_TSCONFIG_PATHS: '1',
@@ -329,6 +343,12 @@ const launchInline = async (
         SMOZ_VERBOSE: opts.verbose ? '1' : '',
       },
     });
+  };
+
+  const mode: 'compiled' | 'ts' = fs.existsSync(compiledEntry)
+    ? 'compiled'
+    : 'ts';
+  const spawnChild = () => (mode === 'compiled' ? spawnCompiled() : spawnTs());
   let child = spawnChild();
   const close = async () =>
     new Promise<void>((resolve) => {

@@ -136,15 +136,24 @@ const spawnOffline = (
   });
 
   const prefix = '[offline] ';
+  let announced = false;
   const emit = (buf: Buffer) => {
     const text = buf.toString('utf8');
     if (verbose) process.stdout.write(prefix + text);
+    // Detect the actual listening URL and announce it once to avoid "0" confusion.
+    const m = text.match(
+      /listening on (https?:\/\/(?:localhost|127\.0\.0\.1):\d+)/i,
+    );
+    if (m && !announced) {
+      announced = true;
+      // Print a concise, canonical URL line.
+      process.stdout.write(`[dev] offline: ${m[1]}\n`);
+    }
   };
   const emitErr = (buf: Buffer) => {
     const text = buf.toString('utf8');
     process.stderr.write(prefix + text);
   };
-
   // With stdio: 'pipe', these streams are present
   child.stdout.on('data', emit);
   child.stderr.on('data', emitErr);

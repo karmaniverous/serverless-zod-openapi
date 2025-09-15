@@ -2,12 +2,11 @@
 
 # Development Plan
 
-When updated: 2025-09-14T20:15:00Z
+When updated: 2025-09-14T20:30:00Z
 
 ## Next up (near‑term, actionable)
 
 1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
-
 ## Completed (recent)
 
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
@@ -35,3 +34,10 @@ When updated: 2025-09-14T20:15:00Z
     a folder module src/cli/local/inline.server/ with index.ts (entry),
     loaders.ts, routes.ts, and http.ts. Updated Rollup input, test entry
     path, and knip ignore; removed the original file.
+
+41. Dev loop polish:
+    - Inline: discover inline entry using packageDirectorySync based on the
+      compiled CLI location; prefer compiled dist/mjs/cli/inline-server.js
+      (spawn node), fallback to TS entry via tsx with TSX_TSCONFIG_PATHS=1.
+    - Offline: parse and print the resolved listening URL ("[dev] offline: …")
+      so the route summary’s "localhost:0" does not confuse users.
