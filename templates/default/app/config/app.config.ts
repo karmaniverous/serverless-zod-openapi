@@ -23,7 +23,9 @@ export const app = App.create({
     DOMAIN_NAME: z.string(),
     STAGE: z.string(),
   }),
-  eventTypeMapSchema: baseEventTypeMapSchema,
+  eventTypeMapSchema: baseEventTypeMapSchema.extend({
+    foo: z.custom<Record<string, unknown>>(),
+  }),
   serverless: {
     httpContextEventMap: {
       my: {}, // place a Cognito authorizer here if needed

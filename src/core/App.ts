@@ -185,7 +185,17 @@ export interface AppInit<
    * @param init - initialization object (schemas, serverless defaults, params/envKeys)
    * @returns a new App instance
    */
-  // Overload 1: eventTypeMapSchema omitted → default to baseEventTypeMapSchema (typed)
+  // Overload 1: eventTypeMapSchema provided → infer from provided schema (typed)
+  static create<
+    GlobalParamsSchema extends ZodObj,
+    StageParamsSchema extends ZodObj,
+    EventTypeMapSchema extends ZodObj,
+  >(
+    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,
+  ): App<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema> {
+    return new App(init);
+  }
+  // Overload 2: eventTypeMapSchema omitted → default to baseEventTypeMapSchema (typed)
   static create<
     GlobalParamsSchema extends ZodObj,
     StageParamsSchema extends ZodObj,
@@ -199,23 +209,11 @@ export interface AppInit<
       'eventTypeMapSchema'
     > & { eventTypeMapSchema?: undefined },
   ): App<GlobalParamsSchema, StageParamsSchema, typeof baseEventTypeMapSchema>;
-
-  // Overload 2: eventTypeMapSchema provided → infer from provided schema (typed)
-  static create<
-    GlobalParamsSchema extends ZodObj,
-    StageParamsSchema extends ZodObj,
-    EventTypeMapSchema extends ZodObj,
-  >(
-    init: AppInit<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema>,
-  ): App<GlobalParamsSchema, StageParamsSchema, EventTypeMapSchema> {
-    return new App(init);
-  }
   /**
    * Register a function (HTTP or non‑HTTP).
    *
    * @typeParam EventType      - A key from your eventTypeMapSchema (e.g., 'rest' | 'http' | 'sqs' | 'step')
-   * @typeParam EventSchema    - Optional Zod schema validated BEFORE the handler (refines event shape)
-   * @typeParam ResponseSchema - Optional Zod schema validated AFTER the handler (refines response shape)
+   * @typeParam EventSchema    - Optional Zod schema validated BEFORE the handler (refines event shape)   * @typeParam ResponseSchema - Optional Zod schema validated AFTER the handler (refines response shape)
    * @param options - per‑function configuration (method/basePath/httpContexts for HTTP; serverless extras for non‑HTTP)
    * @returns a per‑function API: { handler(business), openapi(baseOperation), serverless(extras) }
    */

@@ -24,7 +24,7 @@ export const app = App.create({
     STAGE: z.string(),
   }),
   eventTypeMapSchema: baseEventTypeMapSchema.extend({
-    step: z.custom<Record<string, unknown>>(),
+    foo: z.custom<Record<string, unknown>>(),
   }),
   serverless: {
     httpContextEventMap: {

@@ -2,7 +2,7 @@
 
 # Development Plan
 
-When updated: 2025-09-15T12:45:00Z
+When updated: 2025-09-15T13:05:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -91,3 +91,8 @@ When updated: 2025-09-15T12:45:00Z
     tsx so downstream TS files import cleanly; fall back to the TS entry
     only in the repo workspace. Added unit tests for entry selection
     (compiled vs TS) to surface regressions early.
+72. Fix App.create overload selection when providing eventTypeMapSchema:
+    reorder overloads so the “provided schema” signature appears first.
+    This resolves TS2322 errors seen in apps/tests that extend
+    baseEventTypeMapSchema and restores typecheck/build/docs green without
+    changing runtime behavior.
