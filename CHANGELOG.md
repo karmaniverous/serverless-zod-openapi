@@ -2,8 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.9](https://github.com/karmaniverous/smoz/compare/0.2.8...0.2.9)
+
+- Pin Node 22.19.0 across repo and templates [`cf90d9a`](https://github.com/karmaniverous/smoz/commit/cf90d9a4fd6ebb139175f3a6a93983f85ce59790)
+- Removed CI workflow [`b4760a2`](https://github.com/karmaniverous/smoz/commit/b4760a20d20d353a736f39a8bab9271c7764c57b)
+- Harden CI npm install to avoid alias/tarball 404s [`ada2c2c`](https://github.com/karmaniverous/smoz/commit/ada2c2c4a6caeb06c0b4085938520c28e79ba665)
+- Added CI badge [`59f2c74`](https://github.com/karmaniverous/smoz/commit/59f2c740154e13e115c2a2cf23820fafea2c658c)
+
 #### [0.2.8](https://github.com/karmaniverous/smoz/compare/0.2.7...0.2.8)
 
+> 15 September 2025
+
+- chore: release v0.2.8 [`fad0163`](https://github.com/karmaniverous/smoz/commit/fad0163901842201506d69f3973ad2ce1a9235d7)
 - Fix downstream inline entry resolution; prefer dist under tsx [`be66721`](https://github.com/karmaniverous/smoz/commit/be667214989117a3223f4b51262ed9bec5a95272)
 
 #### [0.2.7](https://github.com/karmaniverous/smoz/compare/0.2.6...0.2.7)
