@@ -2,9 +2,20 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.7](https://github.com/karmaniverous/smoz/compare/0.2.6...0.2.7)
+
+- Decompose dev loop into module; fix test and use node:fs [`2f87523`](https://github.com/karmaniverous/smoz/commit/2f875234277842062f635c26764312b06a71b42e)
+- Make tsx mandatory for inline dev; add tests and remove fallback [`ae307a6`](https://github.com/karmaniverous/smoz/commit/ae307a6c3313407123f13ff0aacb278880d85445)
+- fix(dev): robust inline discovery + offline resolved URL display [`41750d4`](https://github.com/karmaniverous/smoz/commit/41750d4ef62779478ae471ed885b9416be2536ad)
+- fix(dev): ESM-safe inline cwd + offline URL lint guard [`a5dfed6`](https://github.com/karmaniverous/smoz/commit/a5dfed6444c675475b11c21df85d60d5e34138c1)
+- Fix Windows test flake; normalize tsx path and use fs-extra [`eeb762d`](https://github.com/karmaniverous/smoz/commit/eeb762d8565e02470d5985a82bf1594c5200c5bd)
+
 #### [0.2.6](https://github.com/karmaniverous/smoz/compare/0.2.5...0.2.6)
 
+> 15 September 2025
+
 - refactor: split inline server into module folder and remove monolith [`4cdf4eb`](https://github.com/karmaniverous/smoz/commit/4cdf4eb2ace03d862f3bcf4ac89a294bc390df47)
+- chore: release v0.2.6 [`0b83955`](https://github.com/karmaniverous/smoz/commit/0b8395527ba60444e8d9c923dfd11e20c108fe4b)
 - dev: run packaged inline via tsx; warn/fallback when unavailable [`1269f64`](https://github.com/karmaniverous/smoz/commit/1269f64b16bc68c7400cd5ed5681554aeb27a9b6)
 - fix(dev): resolve inline entry without __dirname; type/lint cleanup; dev -V [`dcce6c9`](https://github.com/karmaniverous/smoz/commit/dcce6c981e4c5db4778bfbaf585dd20aedd2cf9c)
 - fix(inline): restore Route typing, add diagnostics; show empty routes [`042588c`](https://github.com/karmaniverous/smoz/commit/042588cd01fcf6453ef969a60ebe25a6ab86d36b)
