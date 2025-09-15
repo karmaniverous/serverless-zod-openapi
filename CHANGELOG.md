@@ -2,8 +2,20 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.10](https://github.com/karmaniverous/smoz/compare/0.2.9...0.2.10)
+
+- Docs: Step Functions recipe + project note on Zod v4 catchall [`fefff66`](https://github.com/karmaniverous/smoz/commit/fefff66f68fcb2f5e4a970e2a1967880cd2d4535)
+- Preserve typed default for event map via App.create overloads [`089555a`](https://github.com/karmaniverous/smoz/commit/089555aaf9d62320f377517b53f4565f06e1bf6c)
+- fix: App.create overload order for provided eventTypeMapSchema [`4e8a014`](https://github.com/karmaniverous/smoz/commit/4e8a014dcbacca800e5bc42b3e64ac513c533a95)
+- fix: place App.create implementation after overload signatures [`0bfa04a`](https://github.com/karmaniverous/smoz/commit/0bfa04a3994620cf6be55c0356a8bdbf8d4ac26f)
+- Add Step Functions event (Payload wrapper) to base map [`831c089`](https://github.com/karmaniverous/smoz/commit/831c0893b3bd2c251d646243bebdb7d3c9d3318c)
+- updated dependencies [`5d8b3a7`](https://github.com/karmaniverous/smoz/commit/5d8b3a7ce3e012917696b8b885acbfe26e41cbc9)
+
 #### [0.2.9](https://github.com/karmaniverous/smoz/compare/0.2.8...0.2.9)
 
+> 15 September 2025
+
+- chore: release v0.2.9 [`ce0ab78`](https://github.com/karmaniverous/smoz/commit/ce0ab7836327d5ca9e56fff306afe51be358870a)
 - Pin Node 22.19.0 across repo and templates [`cf90d9a`](https://github.com/karmaniverous/smoz/commit/cf90d9a4fd6ebb139175f3a6a93983f85ce59790)
 - Removed CI workflow [`b4760a2`](https://github.com/karmaniverous/smoz/commit/b4760a20d20d353a736f39a8bab9271c7764c57b)
 - Harden CI npm install to avoid alias/tarball 404s [`ada2c2c`](https://github.com/karmaniverous/smoz/commit/ada2c2c4a6caeb06c0b4085938520c28e79ba665)
