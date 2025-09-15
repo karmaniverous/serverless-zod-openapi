@@ -18,7 +18,7 @@ vi.mock('node:child_process', () => {
 });
 
 describe('dev.inline: resolveTsxCommand', async () => {
-  const mod = await import('@/src/cli/dev');
+  const mod = await import('@/src/cli/dev/index');
   const { resolveTsxCommand } = mod as unknown as {
     resolveTsxCommand: (
       root: string,

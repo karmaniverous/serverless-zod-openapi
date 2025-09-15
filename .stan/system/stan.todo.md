@@ -2,12 +2,11 @@
 
 # Development Plan
 
-When updated: 2025-09-15T00:25:00Z
+When updated: 2025-09-15T00:40:00Z
 
 ## Next up (near‑term, actionable)
 
-1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
-## Completed (recent)
+1. No immediate items. Monitor dev UX and template lint/typecheck in CI.## Completed (recent)
 
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
     for loaded registers, and print "(none found)" when the route list is
@@ -59,3 +58,9 @@ When updated: 2025-09-15T00:25:00Z
     separators in resolveTsxCommand to keep tests stable on Windows, and
     switch src/cli/dev.ts to use fs-extra for consistency with the rest of
     the codebase.
+46. Decompose dev loop:
+    - New module: src/cli/dev/index.ts (orchestrator), src/cli/dev/env.ts
+      (env helpers), src/cli/dev/inline.ts (inline/tsx).
+    - Update CLI entry to import from ./dev/index and tests to import the
+      new module path. Delete src/cli/dev.ts manually to avoid large
+      deletion diff.

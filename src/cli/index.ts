@@ -13,11 +13,10 @@ import { Command } from 'commander';
 import { packageDirectorySync } from 'package-directory';
 
 import { runAdd } from './add';
-import { runDev } from './dev';
+import { runDev } from './dev/index';
 import { runInit } from './init';
 import { runOpenapi } from './openapi';
 import { runRegister } from './register';
-
 type Pkg = { name?: string; version?: string };
 const getRepoRoot = (): string => packageDirectorySync() ?? process.cwd();
 const readPkg = (root: string): Pkg => {
