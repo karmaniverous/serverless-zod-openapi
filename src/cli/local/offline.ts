@@ -144,10 +144,11 @@ const spawnOffline = (
     const m = text.match(
       /listening on (https?:\/\/(?:localhost|127\.0\.0\.1):\d+)/i,
     );
-    if (m && !announced) {
+    const url = m?.[1];
+    if (url && !announced) {
       announced = true;
       // Print a concise, canonical URL line.
-      process.stdout.write(`[dev] offline: ${m[1]}\n`);
+      process.stdout.write(`[dev] offline: ${url}\n`);
     }
   };
   const emitErr = (buf: Buffer) => {

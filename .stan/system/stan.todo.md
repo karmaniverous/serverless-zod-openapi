@@ -2,12 +2,11 @@
 
 # Development Plan
 
-When updated: 2025-09-14T20:30:00Z
+When updated: 2025-09-14T20:40:00Z
 
 ## Next up (near‑term, actionable)
 
-1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
-## Completed (recent)
+1. No immediate items. Monitor dev UX and template lint/typecheck in CI.## Completed (recent)
 
 33. Inline dev: restore Route.handlerRef typing, add SMOZ_VERBOSE diagnostics
     for loaded registers, and print "(none found)" when the route list is
@@ -41,3 +40,8 @@ When updated: 2025-09-14T20:30:00Z
       (spawn node), fallback to TS entry via tsx with TSX_TSCONFIG_PATHS=1.
     - Offline: parse and print the resolved listening URL ("[dev] offline: …")
       so the route summary’s "localhost:0" does not confuse users.
+
+42. Dev loop robustness:
+    - Inline: replace __dirname usage with ESM‑safe fallback using
+      fileURLToPath(import.meta.url) to seed packageDirectory cwd.
+    - Offline: fix lint by guarding capture group before logging URL.

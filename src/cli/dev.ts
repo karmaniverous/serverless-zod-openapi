@@ -3,8 +3,9 @@
  * - Watches author sources; debounces bursts; runs tasks in order: register → openapi.
  * - Optional local serving (--local inline|offline).
  * - Stage/env: seeds process.env with concrete values for the selected stage.
- */ import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+ */
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import chokidar from 'chokidar';
 import { packageDirectorySync } from 'package-directory';
@@ -271,8 +272,13 @@ const launchInline = async (
   const path = await import('node:path');
   const fs = await import('node:fs');
 
-  // Resolve the installed smoz package root robustly (works from compiled CLI).
-  const pkgRoot = packageDirectorySync({ cwd: __dirname }) ?? process.cwd();
+  // Resolve the installed smoz package root robustly (works from compiled CLI and tsx ESM):
+  // Prefer __dirname when available (CJS), otherwise derive from import.meta.url (ESM).
+  const here =
+    typeof __dirname === 'string'
+      ? __dirname
+      : path.dirname(fileURLToPath(import.meta.url));
+  const pkgRoot = packageDirectorySync({ cwd: here }) ?? process.cwd();
   const compiledEntry = path.resolve(
     pkgRoot,
     'dist',
