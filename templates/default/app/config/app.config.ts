@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { App, baseEventTypeMapSchema, toPosixPath } from '@karmaniverous/smoz';
+import { App, toPosixPath } from '@karmaniverous/smoz';
 import { z } from 'zod';
 
 // Derive the app root as the parent directory of app/config/
@@ -22,9 +22,6 @@ export const app = App.create({
     DOMAIN_CERTIFICATE_ARN: z.string(),
     DOMAIN_NAME: z.string(),
     STAGE: z.string(),
-  }),
-  eventTypeMapSchema: baseEventTypeMapSchema.extend({
-    foo: z.custom<Record<string, unknown>>(),
   }),
   serverless: {
     httpContextEventMap: {

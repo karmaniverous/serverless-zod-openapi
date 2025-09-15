@@ -2,14 +2,13 @@
 
 # Development Plan
 
-When updated: 2025-09-15T13:05:00Z
+When updated: 2025-09-15T13:14:00Z
 
 ## Next up (near‑term, actionable)
 
 1. No immediate items. Monitor dev UX and template lint/typecheck in CI.
 
 ## Completed (recent)
-
 52. App.create overloads: preserve strong type inference when
     eventTypeMapSchema is omitted by defaulting to baseEventTypeMapSchema
     (typed) without making it required; retains runtime default behavior.
@@ -96,3 +95,7 @@ When updated: 2025-09-15T13:05:00Z
     This resolves TS2322 errors seen in apps/tests that extend
     baseEventTypeMapSchema and restores typecheck/build/docs green without
     changing runtime behavior.
+73. Follow-up: place the create() implementation after both overload
+    signatures (TypeScript requires all overload signatures to precede
+    the implementation). Keeps the “provided schema” signature first
+    while satisfying TS2389 and preserving runtime behavior.
