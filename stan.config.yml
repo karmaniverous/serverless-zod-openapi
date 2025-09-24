@@ -1,11 +1,12 @@
 cliDefaults:
   run:
+    plan: false
     sequential: true
 excludes:
-  - "**/.tsbuild/**"
-  - "**/generated/**"
-  - "**/node_modules/**"
-  - "**/*.tsbuildinfo"
+  - '**/.tsbuild/**'
+  - '**/generated/**'
+  - '**/node_modules/**'
+  - '**/*.tsbuildinfo'
   - CHANGELOG.md
   - docs
   - package-lock.json

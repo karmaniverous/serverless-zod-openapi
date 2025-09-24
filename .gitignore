@@ -10,7 +10,6 @@
 **/.tsbuild/
 dist/
 node_modules/
-stan/
 
 # Guard against accidental temp artifacts created by nested toolchains on Windows
 # (e.g., when a temp env var is undefined and a relative path is composed)

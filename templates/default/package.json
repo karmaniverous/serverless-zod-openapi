@@ -33,16 +33,15 @@
   },
   "name": "smoz-template-default",
   "scripts": {
-    "register": "smoz register",
+    "dev": "smoz dev",
+    "docs": "typedoc",
+    "lint:fix": "eslint --fix .",
+    "lint": "eslint .",
     "openapi": "smoz register && tsx app/config/openapi && prettier -w app/generated/openapi.json",
     "package": "smoz register && serverless package",
-    "dev": "smoz dev",
-    "dev:offline": "smoz dev --local offline",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "register": "smoz register",
     "test": "vitest run",
-    "docs": "typedoc"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "type": "module",
   "version": "0.0.0",
